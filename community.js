@@ -1,6 +1,6 @@
 // Community Chat JavaScript
 
-const API_BASE_URL = 'your-railway-backend-url'; // Replace with your Railway backend URL
+const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
 let socket; // For WebSocket connection
 let currentRoom = 'general';
 let currentUser = null;
