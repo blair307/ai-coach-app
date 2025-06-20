@@ -2,7 +2,7 @@
 
 // Configuration
 const OPENAI_API_KEY = 'your-openai-api-key-here'; // You'll need to replace this
-const API_BASE_URL = 'your-railway-backend-url'; // You'll need to replace this
+const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
 
 // Chat state
 let chatHistory = [];
