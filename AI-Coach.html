@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Coach - Coaching Session</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>AI Coach</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">
+                    <span class="icon">🏠</span>Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item active">
+                    <span class="icon">🤖</span>AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    <span class="icon">👥</span>Community
+                </a></li>
+                <li><a href="notifications.html" class="menu-item">
+                    <span class="icon">🔔</span>Notifications
+                    <span class="notification-badge" id="notificationBadge">3</span>
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    <span class="icon">💳</span>Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    <span class="icon">🚪</span>Logout
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="coach-info">
+                        <div class="coach-avatar">🤖</div>
+                        <div class="coach-details">
+                            <h2>Your AI Life Coach</h2>
+                            <div class="coach-status">
+                                <span class="status-dot online"></span>
+                                Ready to help you grow
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-actions">
+                        <button class="btn btn-secondary" onclick="clearChat()">
+                            Clear Chat
+                        </button>
+                        <button class="btn btn-secondary" onclick="exportChat()">
+                            Export History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message coach-message">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Hello! I'm your personal AI life coach. I'm here to help you achieve your goals, overcome challenges, and become the best version of yourself. 
+                                <br><br>
+                                I remember all our previous conversations, so we can build on what we've discussed before. What would you like to work on today?
+                            </div>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-container">
+                    <div class="chat-input">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Share what's on your mind or ask for guidance..."
+                            rows="3"
+                            onkeypress="handleKeyPress(event)"
+                        ></textarea>
+                        <div class="input-actions">
+                            <button class="btn btn-primary" onclick="sendMessage()" id="sendButton">
+                                Send Message
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar Panel -->
+            <div class="coaching-sidebar">
+                <div class="sidebar-section">
+                    <h3>Session Goals</h3>
+                    <div class="goals-list" id="sessionGoals">
+                        <div class="goal-item">
+                            <input type="checkbox" id="goal1">
+                            <label for="goal1">Identify key priorities for this week</label>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" id="goal2">
+                            <label for="goal2">Work through a current challenge</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary btn-small" onclick="addGoal()">
+                        + Add Goal
+                    </button>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Quick Topics</h3>
+                    <div class="topic-buttons">
+                        <button class="topic-btn" onclick="selectTopic('career')">
+                            💼 Career Growth
+                        </button>
+                        <button class="topic-btn" onclick="selectTopic('relationships')">
+                            ❤️ Relationships
+                        </button>
+                        <button class="topic-btn" onclick="selectTopic('health')">
+                            🏃 Health & Wellness
+                        </button>
+                        <button class="topic-btn" onclick="selectTopic('personal')">
+                            🌱 Personal Development
+                        </button>
+                        <button class="topic-btn" onclick="selectTopic('stress')">
+                            😌 Stress Management
+                        </button>
+                        <button class="topic-btn" onclick="selectTopic('goals')">
+                            🎯 Goal Setting
+                        </button>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <h3>Recent Insights</h3>
+                    <div class="insights-list" id="recentInsights">
+                        <div class="insight-item">
+                            <p>"Focus on progress, not perfection"</p>
+                            <small>From yesterday's session</small>
+                        </div>
+                        <div class="insight-item">
+                            <p>"Your biggest obstacle is often your own mindset"</p>
+                            <small>From last week</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>AI Coach is thinking...</span>
+    </div>
+
+    <script src="ai-coach.js"></script>
+</body>
+</html>

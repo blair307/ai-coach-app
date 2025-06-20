@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Coach</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>AI Coach</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item active">
+                    <span class="icon">🏠</span>Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    <span class="icon">🤖</span>AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    <span class="icon">👥</span>Community
+                </a></li>
+                <li><a href="notifications.html" class="menu-item">
+                    <span class="icon">🔔</span>Notifications
+                    <span class="notification-badge" id="notificationBadge">3</span>
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    <span class="icon">💳</span>Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    <span class="icon">🚪</span>Logout
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Welcome back, <span id="userName">Loading...</span>!</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="window.location.href='ai-coach.html'">
+                        Start Coaching Session
+                    </button>
+                </div>
+            </header>
+
+            <div class="dashboard-grid">
+                <!-- Quick Stats -->
+                <div class="dashboard-card">
+                    <h3>Your Progress</h3>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-number" id="totalSessions">0</div>
+                            <div class="stat-label">Coaching Sessions</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="streak">0</div>
+                            <div class="stat-label">Day Streak</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="communityMessages">0</div>
+                            <div class="stat-label">Community Messages</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-card">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="recentActivity">
+                        <div class="activity-item">
+                            <div class="activity-icon">🤖</div>
+                            <div class="activity-content">
+                                <p>Completed coaching session on goal setting</p>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon">👥</div>
+                            <div class="activity-content">
+                                <p>Shared an insight in the community</p>
+                                <small>1 day ago</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-card">
+                    <h3>Quick Actions</h3>
+                    <div class="quick-actions">
+                        <a href="ai-coach.html" class="quick-action">
+                            <div class="action-icon">🤖</div>
+                            <div class="action-text">
+                                <h4>Start AI Session</h4>
+                                <p>Continue your coaching journey</p>
+                            </div>
+                        </a>
+                        <a href="community.html" class="quick-action">
+                            <div class="action-icon">👥</div>
+                            <div class="action-text">
+                                <h4>Join Community</h4>
+                                <p>Connect with others</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Notifications Preview -->
+                <div class="dashboard-card">
+                    <h3>Recent Notifications</h3>
+                    <div class="notifications-preview" id="notificationsPreview">
+                        <div class="notification-item unread">
+                            <div class="notification-content">
+                                <p>New community message from Sarah</p>
+                                <small>30 minutes ago</small>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-content">
+                                <p>Your weekly progress report is ready</p>
+                                <small>1 day ago</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="notifications.html" class="view-all-link">View all notifications</a>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

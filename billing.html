@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - AI Coach</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>AI Coach</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">
+                    <span class="icon">🏠</span>Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    <span class="icon">🤖</span>AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    <span class="icon">👥</span>Community
+                </a></li>
+                <li><a href="notifications.html" class="menu-item">
+                    <span class="icon">🔔</span>Notifications
+                    <span class="notification-badge" id="notificationBadge">3</span>
+                </a></li>
+                <li><a href="billing.html" class="menu-item active">
+                    <span class="icon">💳</span>Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    <span class="icon">🚪</span>Logout
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Billing & Subscription</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="downloadInvoice()">
+                        Download Receipt
+                    </button>
+                </div>
+            </header>
+
+            <div class="billing-container">
+                <!-- Current Plan -->
+                <div class="billing-card">
+                    <div class="card-header">
+                        <h2>Current Plan</h2>
+                        <div class="plan-status active">Active</div>
+                    </div>
+                    <div class="plan-details">
+                        <div class="plan-info">
+                            <h3>Yearly Plan</h3>
+                            <div class="plan-price">$929 <span>/year</span></div>
+                            <p>Full access to AI Coach and Community features</p>
+                        </div>
+                        <div class="plan-actions">
+                            <button class="btn btn-secondary" onclick="changePlan()">
+                                Change Plan
+                            </button>
+                            <button class="btn btn-outline" onclick="cancelSubscription()">
+                                Cancel Subscription
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="billing-info">
+                        <div class="info-row">
+                            <span>Next billing date:</span>
+                            <strong>June 20, 2026</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Payment method:</span>
+                            <strong>•••• •••• •••• 4242</strong>
+                            <button class="btn-link" onclick="updatePayment()">Update</button>
+                        </div>
+                        <div class="info-row">
+                            <span>Plan started:</span>
+                            <strong>June 20, 2025</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="billing-card">
+                    <div class="card-header">
+                        <h2>Payment Method</h2>
+                    </div>
+                    <div class="payment-method">
+                        <div class="card-info">
+                            <div class="card-icon">💳</div>
+                            <div class="card-details">
+                                <h4>Visa ending in 4242</h4>
+                                <p>Expires 12/2028</p>
+                            </div>
+                            <button class="btn btn-secondary btn-small" onclick="updatePayment()">
+                                Update Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Billing History -->
+                <div class="billing-card">
+                    <div class="card-header">
+                        <h2>Billing History</h2>
+                    </div>
+                    <div class="billing-history">
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-date">June 20, 2025</div>
+                                <div class="history-description">Yearly Plan - Annual Subscription</div>
+                            </div>
+                            <div class="history-amount">$929.00</div>
+                            <div class="history-status paid">Paid</div>
+                            <div class="history-actions">
+                                <button class="btn-link" onclick="downloadInvoice('inv_001')">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-date">May 15, 2025</div>
+                                <div class="history-description">Monthly Plan - Subscription</div>
+                            </div>
+                            <div class="history-amount">$97.00</div>
+                            <div class="history-status paid">Paid</div>
+                            <div class="history-actions">
+                                <button class="btn-link" onclick="downloadInvoice('inv_002')">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="history-item">
+                            <div class="history-info">
+                                <div class="history-date">April 15, 2025</div>
+                                <div class="history-description">Monthly Plan - Subscription</div>
+                            </div>
+                            <div class="history-amount">$97.00</div>
+                            <div class="history-status paid">Paid</div>
+                            <div class="history-actions">
+                                <button class="btn-link" onclick="downloadInvoice('inv_003')">
+                                    Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plan Options -->
+                <div class="billing-card">
+                    <div class="card-header">
+                        <h2>Available Plans</h2>
+                    </div>
+                    <div class="plans-grid">
+                        <div class="plan-option">
+                            <h3>Monthly Plan</h3>
+                            <div class="price">$97<span>/month</span></div>
+                            <ul class="plan-features">
+                                <li>✅ Unlimited AI Coach sessions</li>
+                                <li>✅ Community access</li>
+                                <li>✅ Progress tracking</li>
+                                <li>✅ Email support</li>
+                            </ul>
+                            <button class="btn btn-primary" disabled>
+                                Current Plan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Usage Statistics -->
+                <div class="billing-card">
+                    <div class="card-header">
+                        <h2>Usage This Month</h2>
+                    </div>
+                    <div class="usage-stats">
+                        <div class="usage-item">
+                            <div class="usage-label">AI Coach Sessions</div>
+                            <div class="usage-value">42 sessions</div>
+                            <div class="usage-limit">Unlimited</div>
+                        </div>
+                        <div class="usage-item">
+                            <div class="usage-label">Community Messages</div>
+                            <div class="usage-value">156 messages</div>
+                            <div class="usage-limit">Unlimited</div>
+                        </div>
+                        <div class="usage-item">
+                            <div class="usage-label">Data Export</div>
+                            <div class="usage-value">3 exports</div>
+                            <div class="usage-limit">Unlimited</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Update Payment Modal -->
+    <div class="modal" id="updatePaymentModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Update Payment Method</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Update your payment information securely.</p>
+                <div id="card-element-update">
+                    <!-- Stripe Elements will create form elements here -->
+                </div>
+                <div id="card-errors-update" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="savePaymentMethod()">Save Payment Method</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="billing.js"></script>
+</body>
+</html>
