@@ -1,5 +1,10 @@
 // Simple Notifications JavaScript
 
+const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
+
+// Check if user is logged in when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    
 // Check if user is logged in when page loads
 document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
