@@ -26,13 +26,13 @@ function updateNotificationBadge() {
 }
 
 function updateStats() {
-    // Update coaching sessions count
+    // Update coaching sessions count (real user data)
     const coachingHistory = localStorage.getItem('eeh_coach_conversation');
     const sessions = coachingHistory ? JSON.parse(coachingHistory).filter(msg => msg.type === 'user').length : 0;
     
-    // Update community posts count
+    // Update community posts count (real user data)
     const communityHistory = localStorage.getItem('eeh_community_messages');
-    const posts = communityHistory ? JSON.parse(communityHistory).length : 18;
+    const posts = communityHistory ? JSON.parse(communityHistory).filter(msg => msg.type === 'user').length : 0;
     
     // Update day streak
     const dayStreak = calculateDayStreak();
@@ -44,7 +44,7 @@ function updateStats() {
     // Update the stats display
     const statsElements = document.querySelectorAll('.stat-number');
     if (statsElements.length >= 4) {
-        statsElements[0].textContent = Math.max(sessions, 127); // Keep it realistic
+        statsElements[0].textContent = sessions;
         statsElements[1].textContent = dayStreak;
         statsElements[2].textContent = posts;
         statsElements[3].textContent = activeGoalsCount;
@@ -60,6 +60,9 @@ function updateStats() {
 function calculateDayStreak() {
     const today = new Date().toDateString();
     const activityLog = JSON.parse(localStorage.getItem('eeh_activity_log') || '[]');
+    
+    // If no activity recorded yet, return 0
+    if (activityLog.length === 0) return 0;
     
     // Record today's activity if user is active
     const hasActivity = checkTodayActivity();
@@ -105,7 +108,7 @@ function calculateDayStreak() {
         }
     }
     
-    return Math.max(streak, 1); // Minimum streak of 1 if user has any activity
+    return streak;
 }
 
 function checkTodayActivity() {
@@ -300,14 +303,8 @@ function logout() {
 function initializeDefaultGoals() {
     const savedGoals = localStorage.getItem('eeh_user_goals');
     if (!savedGoals) {
-        const defaultGoals = [
-            { text: 'Improve work-life balance', completed: true, createdAt: new Date().toISOString() },
-            { text: 'Increase emotional intelligence', completed: false, createdAt: new Date().toISOString() },
-            { text: 'Build stronger team relationships', completed: true, createdAt: new Date().toISOString() },
-            { text: 'Develop stress management skills', completed: false, createdAt: new Date().toISOString() },
-            { text: 'Practice daily meditation', completed: false, createdAt: new Date().toISOString() },
-            { text: 'Improve public speaking confidence', completed: false, createdAt: new Date().toISOString() }
-        ];
+        // New users start with NO goals - they add their own
+        const defaultGoals = [];
         localStorage.setItem('eeh_user_goals', JSON.stringify(defaultGoals));
         return defaultGoals;
     }
