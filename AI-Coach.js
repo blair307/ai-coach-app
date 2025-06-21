@@ -320,45 +320,88 @@ class AICoach {
     generateContextualResponse(userMessage) {
         const message = userMessage.toLowerCase();
         
-        if (message.includes('stress') || message.includes('overwhelm')) {
-            return [
-                "I understand that stress can feel overwhelming, especially as an entrepreneur. Let's work on some strategies to help you manage it. What specific situations trigger your stress the most?",
-                "Stress is a common challenge for entrepreneurs. One effective technique is the 4-7-8 breathing method. Would you like me to guide you through it?",
-                "It sounds like you're dealing with a lot right now. Remember that stress is often a signal that we need to pause and reassess. What's the most pressing thing on your mind today?"
+        // More dynamic and personalized responses
+        if (message.includes('stress') || message.includes('overwhelm') || message.includes('pressure')) {
+            const responses = [
+                `I can hear that you're feeling overwhelmed. Stress is incredibly common for entrepreneurs - you're managing so many moving pieces. What specific aspect of your work is creating the most pressure right now?`,
+                `It sounds like stress is weighing on you. One thing I've noticed with successful entrepreneurs is that stress often comes from feeling like everything is urgent. Can you tell me what's feeling most overwhelming today?`,
+                `Stress can be both a signal and an obstacle. For entrepreneurs, it often means you're pushing boundaries, which is good, but it can also cloud your decision-making. What would help you feel more in control right now?`,
+                `I understand that entrepreneurial stress can feel all-consuming. Sometimes the best way forward is to pause and get perspective. What's one thing that's been keeping you up at night lately?`
             ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
         }
         
-        if (message.includes('team') || message.includes('employee') || message.includes('leadership')) {
-            return [
-                "Leadership challenges are part of every entrepreneur's journey. What specific team dynamics are you finding difficult right now?",
-                "Building a strong team requires emotional intelligence and clear communication. Can you tell me more about what's happening with your team?",
-                "Great leaders know when to listen and when to act. What kind of leadership challenge are you facing?"
+        if (message.includes('team') || message.includes('employee') || message.includes('leadership') || message.includes('staff')) {
+            const responses = [
+                `Leadership challenges are at the heart of every growing business. Building a team means you're scaling beyond yourself, which is exciting but complex. What's the biggest challenge you're facing with your team right now?`,
+                `Team dynamics can make or break a company's success. As an entrepreneur, you're not just building a product or service - you're building a culture. What kind of team environment are you trying to create?`,
+                `Managing people is often the hardest part of entrepreneurship because it requires both business acumen and emotional intelligence. What specific team situation is on your mind today?`,
+                `Great leaders know that their team's success is their success. It sounds like you're thinking deeply about your people, which is already a sign of good leadership. What's your biggest concern about your team dynamics?`
             ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
         }
         
-        if (message.includes('goal') || message.includes('planning') || message.includes('future')) {
-            return [
-                "Setting meaningful goals is crucial for entrepreneurial success. What goals are you working toward right now?",
-                "I'd love to help you clarify your goals. What does success look like for you in the next 3-6 months?",
-                "Goal setting is both an art and a science. Let's break down what you want to achieve into manageable steps."
+        if (message.includes('goal') || message.includes('planning') || message.includes('future') || message.includes('objective')) {
+            const responses = [
+                `Goal-setting is crucial for entrepreneurs because it's easy to get pulled in every direction. Having clear objectives helps you say no to distractions. What's your most important goal right now?`,
+                `I love that you're thinking about goals. Successful entrepreneurs are always balancing long-term vision with short-term execution. Are you feeling clear about your direction, or are you trying to figure out what to focus on?`,
+                `Goals give us direction, but they also need to be flexible as circumstances change. As an entrepreneur, you probably face this balance daily. What goal feels most critical to your business right now?`,
+                `The fact that you're thinking about goal-setting shows strong self-awareness. Many entrepreneurs get so caught up in daily operations that they lose sight of the bigger picture. What would success look like for you in the next six months?`
             ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
         }
         
-        if (message.includes('balance') || message.includes('life') || message.includes('personal')) {
-            return [
-                "Work-life balance is especially challenging for entrepreneurs who are passionate about their vision. How are you currently managing the boundaries between work and personal time?",
-                "Finding balance doesn't mean perfect equality—it means being intentional about your energy and time. What areas of your life feel out of balance right now?",
-                "As an entrepreneur, you're likely used to putting your business first. But taking care of yourself is essential for long-term success. What does self-care look like for you?"
+        if (message.includes('balance') || message.includes('life') || message.includes('personal') || message.includes('burnout')) {
+            const responses = [
+                `Work-life balance as an entrepreneur is uniquely challenging because your business often feels like your baby. The lines blur easily. How are you currently managing the boundaries between work and personal time?`,
+                `Entrepreneurial life can consume everything if we let it. The irony is that taking care of yourself isn't selfish - it's essential for your business's long-term success. What does balance look like for you right now?`,
+                `Many entrepreneurs struggle with this because passion for your work can make it hard to switch off. But sustainable success requires sustainable habits. What's making it difficult to find balance in your life?`,
+                `You're wise to think about balance. Burnout is real, and it can derail everything you've worked to build. What's one area of your life that feels out of balance right now?`
             ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
         }
         
-        // Default responses
-        return [
-            "Thank you for sharing that with me. As an entrepreneur, you face unique challenges that require both emotional resilience and practical strategies. Can you tell me more about what's on your mind?",
-            "I appreciate you opening up. Every entrepreneur's journey is different, and it's important to acknowledge both the struggles and the growth. What would be most helpful to focus on right now?",
-            "What you're experiencing is very common among entrepreneurs. The combination of pressure, uncertainty, and responsibility can be intense. How can I best support you through this?",
-            "I'm here to help you navigate both the emotional and practical aspects of entrepreneurship. What feels like the biggest challenge you're facing today?"
+        if (message.includes('decision') || message.includes('choice') || message.includes('difficult') || message.includes('unsure')) {
+            const responses = [
+                `Decision-making is one of the heaviest responsibilities of entrepreneurship. Every choice feels significant because it is. What decision is weighing on you most heavily right now?`,
+                `Tough decisions come with the territory of being an entrepreneur. The uncertainty can be paralyzing, but often the act of making a decision and moving forward is more important than making the perfect decision. What choice are you grappling with?`,
+                `I can sense you're working through something difficult. Entrepreneurs face decisions daily that employees never have to think about. What's the decision that's keeping you up at night?`,
+                `Decision fatigue is real for entrepreneurs. You make countless choices every day, so when a big decision comes up, it can feel overwhelming. What's the most important decision you're facing right now?`
+            ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
+        }
+        
+        if (message.includes('money') || message.includes('financial') || message.includes('revenue') || message.includes('profit') || message.includes('cash')) {
+            const responses = [
+                `Financial stress is one of the most common challenges entrepreneurs face. Money affects everything - your decisions, your sleep, your relationships. What's your biggest financial concern right now?`,
+                `Cash flow and financial planning are critical for any business, but they can create significant emotional stress too. How are you feeling about your financial situation these days?`,
+                `Money in entrepreneurship isn't just about numbers - it represents security, freedom, and validation. What aspect of your finances is causing you the most stress or excitement right now?`,
+                `Financial challenges are part of the entrepreneurial journey for most of us. The key is not letting financial stress paralyze decision-making. What's your current financial situation keeping you awake at night?`
+            ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
+        }
+        
+        if (message.includes('lonely') || message.includes('isolated') || message.includes('alone') || message.includes('support')) {
+            const responses = [
+                `Entrepreneurship can be incredibly isolating. You're making decisions that affect others, but often you feel like you're making them alone. That's a heavy burden. How has this isolation been affecting you?`,
+                `Many entrepreneurs experience loneliness because the people around them don't always understand the unique pressures and challenges. You're dealing with problems that employees don't face. What kind of support do you feel like you're missing?`,
+                `The isolation of entrepreneurship is real and underestimated. You can be surrounded by people but still feel alone in your decisions and worries. Who in your life really understands what you're going through?`,
+                `Feeling alone in your entrepreneurial journey is incredibly common. The weight of responsibility can feel isolating even when you have a team. What would meaningful support look like for you right now?`
+            ];
+            return [responses[Math.floor(Math.random() * responses.length)]];
+        }
+        
+        // Default personalized responses based on context
+        const genericResponses = [
+            `Thank you for sharing that with me. Every entrepreneur's journey is unique, and what you're experiencing matters. Can you tell me more about what's been on your mind lately?`,
+            `I appreciate you opening up. Running a business while managing your emotional health requires incredible strength. What's feeling most challenging for you right now?`,
+            `What you're going through is part of the entrepreneurial experience, but that doesn't make it any less significant. How can I best support you through whatever you're facing today?`,
+            `I'm here to help you navigate both the business and emotional sides of entrepreneurship. They're more connected than people realize. What would be most helpful to focus on right now?`,
+            `Your willingness to reflect on your experiences shows real emotional intelligence. That's actually a huge advantage in business. What's been weighing on your mind lately?`,
+            `Entrepreneurship tests us in ways that regular employment never does. It sounds like you're working through something important. What's the biggest challenge you're facing right now?`
         ];
+        
+        return [genericResponses[Math.floor(Math.random() * genericResponses.length)]];
     }
 
     // Quick topic handlers
