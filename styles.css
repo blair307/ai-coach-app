@@ -2355,36 +2355,82 @@ select:focus-visible,
 }
 
 /* =================================
-   CLEAN SIDEBAR TOGGLE - REPLACE THE CSS AT THE BOTTOM
+   WORKING SIDEBAR TOGGLE - REPLACE THE EXISTING TOGGLE CSS
    ================================= */
 
-/* Remove the existing sidebar toggle CSS at the bottom and replace with this */
-
-/* Sidebar toggle button */
+/* Modern hamburger toggle button in sidebar header */
 .sidebar-toggle {
-    background: var(--primary);
-    color: white;
+    background: none;
     border: none;
-    border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
     transition: all 0.3s ease;
-    font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    align-items: center;
     margin-right: 1rem;
 }
 
 .sidebar-toggle:hover {
-    background: var(--primary-dark);
+    background: var(--surface);
     transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
 }
 
-/* Basic sidebar positioning and transitions */
+.hamburger-line {
+    width: 18px;
+    height: 2px;
+    background: var(--text-secondary);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle:hover .hamburger-line {
+    background: var(--primary);
+}
+
+/* Animate hamburger to X when sidebar is open */
+.sidebar.sidebar-open .hamburger-line:nth-child(1),
+.sidebar.active .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.sidebar.sidebar-open .hamburger-line:nth-child(2),
+.sidebar.active .hamburger-line:nth-child(2) {
+    opacity: 0;
+}
+
+.sidebar.sidebar-open .hamburger-line:nth-child(3),
+.sidebar.active .hamburger-line:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Updated sidebar header layout */
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+/* Core sidebar behavior - THIS IS THE KEY PART */
 .sidebar {
     position: fixed;
     left: 0;
@@ -2397,6 +2443,35 @@ select:focus-visible,
     transition: transform 0.3s ease-in-out;
     z-index: 999;
     overflow-y: auto;
+}
+
+/* Hide sidebar when not active */
+.sidebar:not(.sidebar-open):not(.active) {
+    transform: translateX(-280px);
+}
+
+/* Show sidebar when active */
+.sidebar.sidebar-open,
+.sidebar.active {
+    transform: translateX(0);
+}
+
+/* Adjust main content based on sidebar state */
+.main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    padding: 2rem;
+    background: var(--surface);
+}
+
+/* When sidebar is hidden, expand main content */
+.app-container:has(.sidebar:not(.sidebar-open):not(.active)) .main-content {
+    margin-left: 0;
+}
+
+/* Fallback for browsers that don't support :has() */
+body.sidebar-hidden .main-content {
+    margin-left: 0;
 }
 
 /* Sidebar overlay for mobile */
@@ -2423,17 +2498,51 @@ body.sidebar-active {
     overflow: hidden;
 }
 
-/* Main content positioning */
-.main-content {
-    margin-left: 280px;
-    transition: margin-left 0.3s ease;
+/* Mobile responsive behavior */
+@media (max-width: 768px) {
+    /* On mobile, sidebar starts hidden */
+    .sidebar {
+        transform: translateX(-280px);
+    }
+    
+    /* Show sidebar when active on mobile */
+    .sidebar.sidebar-open,
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    /* Main content always full width on mobile */
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    /* Show overlay on mobile when sidebar is open */
+    .sidebar.sidebar-open ~ .sidebar-overlay,
+    .sidebar.active ~ .sidebar-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
 }
 
-/* Content header layout for toggle button */
+/* Desktop behavior - sidebar visible by default */
+@media (min-width: 769px) {
+    /* On desktop, sidebar starts visible */
+    .sidebar {
+        transform: translateX(0);
+    }
+    
+    /* Allow hiding on desktop too */
+    .sidebar:not(.sidebar-open):not(.active) {
+        transform: translateX(-280px);
+    }
+}
+
+/* Content header adjustments */
 .content-header {
     display: flex;
-    align-items: center;
     justify-content: space-between;
+    align-items: center;
     margin-bottom: 3rem;
     padding-bottom: 1rem;
     border-bottom: 1px solid var(--border);
@@ -2451,66 +2560,4 @@ body.sidebar-active {
     display: flex;
     gap: 1rem;
     align-items: center;
-}
-
-/* Mobile responsive behavior */
-@media (max-width: 768px) {
-    /* Hide sidebar by default on mobile */
-    .sidebar {
-        transform: translateX(-100%);
-    }
-    
-    /* Show sidebar when active */
-    .sidebar.sidebar-open,
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    /* Adjust main content for mobile */
-    .main-content {
-        margin-left: 0;
-        padding: 1rem;
-    }
-    
-    /* Always show toggle button on mobile */
-    .sidebar-toggle {
-        display: flex;
-    }
-}
-
-/* Desktop behavior */
-@media (min-width: 769px) {
-    /* Hide toggle button on desktop by default */
-    .sidebar-toggle {
-        display: none;
-    }
-    
-    /* Sidebar is always visible on desktop */
-    .sidebar {
-        transform: translateX(0);
-    }
-    
-    /* If you want toggle functionality on desktop too, uncomment this */
-    /*
-    .sidebar-toggle {
-        display: flex;
-        position: fixed;
-        top: 1rem;
-        left: 1rem;
-        z-index: 1001;
-    }
-    
-    .sidebar.sidebar-open,
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    .sidebar:not(.sidebar-open):not(.active) {
-        transform: translateX(-100%);
-    }
-    
-    .sidebar:not(.sidebar-open):not(.active) + .main-content {
-        margin-left: 0;
-    }
-    */
 }
