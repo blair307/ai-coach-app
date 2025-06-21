@@ -1,6 +1,6 @@
 // Simple Billing JavaScript
 
-const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 // Check if user is logged in when page loads
 document.addEventListener('DOMContentLoaded', function() {
