@@ -355,9 +355,20 @@ function updateInsights() {
 }
 
 function generateInsightsFromUserData() {
+    // First, get insights generated from actual conversations
+    const conversationInsights = JSON.parse(localStorage.getItem('eeh_user_insights') || '[]');
+    
     const insights = [];
     
-    // Get user's conversation history
+    // Add conversation-based insights (most recent first)
+    conversationInsights.slice(0, 2).forEach(insight => {
+        insights.push({
+            text: insight.text,
+            source: insight.source
+        });
+    });
+    
+    // Get user's conversation history for additional analysis
     const coachHistory = localStorage.getItem('eeh_coach_conversation');
     const conversations = coachHistory ? JSON.parse(coachHistory) : [];
     
@@ -367,70 +378,43 @@ function generateInsightsFromUserData() {
     // Get activity log
     const activityLog = JSON.parse(localStorage.getItem('eeh_activity_log') || '[]');
     
-    // Generate insights based on actual user data
-    if (conversations.length > 5) {
+    // Add behavioral insights if we don't have enough conversation insights
+    if (insights.length < 3 && conversations.length > 5) {
         const userMessages = conversations.filter(msg => msg.type === 'user');
-        const stressCount = userMessages.filter(msg => 
-            msg.content.toLowerCase().includes('stress') || 
-            msg.content.toLowerCase().includes('overwhelm')
-        ).length;
         
-        if (stressCount > 2) {
+        // Activity pattern insight
+        if (activityLog.length > 7 && insights.length < 3) {
             insights.push({
-                text: "You've mentioned stress multiple times. Consider implementing daily stress management techniques.",
-                source: `Based on ${userMessages.length} coaching conversations`
+                text: "You're building a consistent habit of self-reflection and growth through regular platform use.",
+                source: `Active for ${activityLog.length} days total`
             });
         }
         
-        const goalMessages = userMessages.filter(msg => 
-            msg.content.toLowerCase().includes('goal') || 
-            msg.content.toLowerCase().includes('objective')
-        ).length;
-        
-        if (goalMessages > 1) {
-            insights.push({
-                text: "You frequently discuss goals, which shows strong self-awareness and growth mindset.",
-                source: `Observed in ${goalMessages} conversations`
-            });
+        // Goal completion insight
+        if (goals.length > 2 && insights.length < 3) {
+            const completedGoals = goals.filter(goal => goal.completed).length;
+            const completionRate = Math.round((completedGoals / goals.length) * 100);
+            
+            if (completionRate > 0) {
+                insights.push({
+                    text: `You have a ${completionRate}% goal completion rate, showing ${completionRate > 50 ? 'strong' : 'developing'} follow-through on commitments.`,
+                    source: `Based on ${goals.length} personal goals`
+                });
+            }
         }
         
-        const teamMessages = userMessages.filter(msg => 
-            msg.content.toLowerCase().includes('team') || 
-            msg.content.toLowerCase().includes('employee')
-        ).length;
-        
-        if (teamMessages > 1) {
+        // Engagement insight
+        if (userMessages.length > 10 && insights.length < 3) {
             insights.push({
-                text: "Leadership and team dynamics are important to you. Focus on emotional intelligence skills.",
-                source: `Pattern from ${teamMessages} team-related discussions`
+                text: "Your consistent engagement with coaching shows a strong commitment to personal development.",
+                source: `From ${userMessages.length} coaching conversations`
             });
         }
-    }
-    
-    // Goal-based insights
-    if (goals.length > 3) {
-        const completedGoals = goals.filter(goal => goal.completed).length;
-        const completionRate = Math.round((completedGoals / goals.length) * 100);
-        
-        if (completionRate > 50) {
-            insights.push({
-                text: `You have a ${completionRate}% goal completion rate, showing strong follow-through on commitments.`,
-                source: `Based on ${goals.length} personal goals`
-            });
-        }
-    }
-    
-    // Activity-based insights
-    if (activityLog.length > 7) {
-        insights.push({
-            text: "You're building a consistent habit of self-reflection and growth through regular platform use.",
-            source: `Active for ${activityLog.length} days total`
-        });
     }
     
     // Community insights (if available)
     const communityHistory = localStorage.getItem('eeh_community_messages');
-    if (communityHistory) {
+    if (communityHistory && insights.length < 3) {
         const communityMessages = JSON.parse(communityHistory);
         if (communityMessages.length > 5) {
             insights.push({
