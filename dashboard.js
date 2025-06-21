@@ -221,20 +221,142 @@ function recordActivity() {
 function manageGoals() {
     const currentGoals = getActiveGoals();
     
-    let goalText = "Current Goals:\n\n";
-    currentGoals.forEach((goal, index) => {
-        goalText += `${index + 1}. ${goal.completed ? '✓' : '○'} ${goal.text}\n`;
+    // Create a simple modal instead of using prompt
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Goals</h3>
+                <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="margin-bottom: 1rem;">Current Goals (${currentGoals.length})</h4>
+                    <div id="modalGoalsList" style="max-height: 200px; overflow-y: auto;">
+                        ${currentGoals.length === 0 ? 
+                            '<p style="color: var(--text-muted); text-align: center; padding: 1rem;">No goals yet. Add your first goal below!</p>' :
+                            currentGoals.map((goal, index) => `
+                                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--border);">
+                                    <input type="checkbox" ${goal.completed ? 'checked' : ''} onchange="toggleGoalInModal(${index})">
+                                    <span style="flex: 1; ${goal.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${goal.text}</span>
+                                    <button onclick="deleteGoalInModal(${index})" style="background: var(--error); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--radius); font-size: 0.75rem;">Delete</button>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Add New Goal</h4>
+                    <input type="text" id="newGoalInput" placeholder="Enter your new goal..." style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: var(--radius); margin-bottom: 1rem;">
+                    <button onclick="addGoalFromModal()" class="btn btn-primary" style="width: 100%;">Add Goal</button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Close modal when clicking outside
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
     });
+
+    document.body.appendChild(modal);
     
-    goalText += "\nWhat would you like to do?\n";
-    goalText += "• Add a new goal\n";
-    goalText += "• Edit existing goals in the sidebar\n";
-    goalText += "• Visit the AI Coach for goal guidance";
+    // Focus on input
+    setTimeout(() => {
+        const input = document.getElementById('newGoalInput');
+        if (input) input.focus();
+    }, 100);
+}
+
+// Modal goal management functions
+function addGoalFromModal() {
+    const input = document.getElementById('newGoalInput');
+    const goalText = input.value.trim();
     
-    const action = prompt(goalText + "\n\nEnter 'add' to add a new goal, or press Cancel:");
+    if (goalText) {
+        const savedGoals = localStorage.getItem('eeh_user_goals');
+        const goals = savedGoals ? JSON.parse(savedGoals) : [];
+        
+        goals.push({
+            text: goalText,
+            completed: false,
+            createdAt: new Date().toISOString()
+        });
+        
+        localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+        
+        // Update displays
+        updateGoalDisplay(goals);
+        updateStats();
+        updateInsights();
+        recordActivity();
+        
+        // Clear input and update modal
+        input.value = '';
+        showToast('Goal added successfully!');
+        
+        // Update the modal display
+        updateModalGoalsList();
+    }
+}
+
+function toggleGoalInModal(index) {
+    const savedGoals = localStorage.getItem('eeh_user_goals');
+    if (savedGoals) {
+        const goals = JSON.parse(savedGoals);
+        goals[index].completed = !goals[index].completed;
+        localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+        
+        // Update displays
+        updateGoalDisplay(goals);
+        updateStats();
+        updateInsights();
+        recordActivity();
+        
+        // Update modal
+        updateModalGoalsList();
+        showToast(goals[index].completed ? 'Goal completed!' : 'Goal marked as incomplete');
+    }
+}
+
+function deleteGoalInModal(index) {
+    if (confirm('Are you sure you want to delete this goal?')) {
+        const savedGoals = localStorage.getItem('eeh_user_goals');
+        if (savedGoals) {
+            const goals = JSON.parse(savedGoals);
+            goals.splice(index, 1);
+            localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+            
+            // Update displays
+            updateGoalDisplay(goals);
+            updateStats();
+            updateInsights();
+            
+            // Update modal
+            updateModalGoalsList();
+            showToast('Goal deleted');
+        }
+    }
+}
+
+function updateModalGoalsList() {
+    const currentGoals = getActiveGoals();
+    const modalGoalsList = document.getElementById('modalGoalsList');
     
-    if (action && action.toLowerCase() === 'add') {
-        addGoal();
+    if (modalGoalsList) {
+        modalGoalsList.innerHTML = currentGoals.length === 0 ? 
+            '<p style="color: var(--text-muted); text-align: center; padding: 1rem;">No goals yet. Add your first goal below!</p>' :
+            currentGoals.map((goal, index) => `
+                <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--border);">
+                    <input type="checkbox" ${goal.completed ? 'checked' : ''} onchange="toggleGoalInModal(${index})">
+                    <span style="flex: 1; ${goal.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${goal.text}</span>
+                    <button onclick="deleteGoalInModal(${index})" style="background: var(--error); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: var(--radius); font-size: 0.75rem;">Delete</button>
+                </div>
+            `).join('');
     }
 }
 
