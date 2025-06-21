@@ -109,34 +109,37 @@
                     <a href="#" class="view-all-link">View All Activity</a>
                 </div>
 
-                <!-- Timer and Calendar Section - Replaces Quick Actions -->
+                <!-- Combined Timer and Calendar Section -->
                 <div class="dashboard-card">
-                    <h3>Current Time</h3>
+                    <h3>Time & Schedule</h3>
+                    
+                    <!-- Timer Display -->
                     <div class="timer-display">
                         <div class="current-time" id="currentTime">--:--:-- --</div>
                         <div class="current-date" id="currentDate">Loading...</div>
                         <div class="timezone">Central Time (CST/CDT)</div>
                     </div>
-                </div>
-
-                <div class="dashboard-card">
-                    <h3>Meeting Calendar</h3>
+                    
+                    <!-- Compact Calendar -->
                     <div class="calendar-container">
                         <div class="calendar-header">
                             <button class="calendar-nav" id="prevMonth">‹</button>
-                            <h4 id="currentMonth">June 2025</h4>
+                            <h4 id="currentMonth">July 2025</h4>
                             <button class="calendar-nav" id="nextMonth">›</button>
                         </div>
-                        <div class="calendar-grid">
-                            <div class="calendar-day-header">Sun</div>
-                            <div class="calendar-day-header">Mon</div>
-                            <div class="calendar-day-header">Tue</div>
-                            <div class="calendar-day-header">Wed</div>
-                            <div class="calendar-day-header">Thu</div>
-                            <div class="calendar-day-header">Fri</div>
-                            <div class="calendar-day-header">Sat</div>
-                            <!-- Calendar days will be populated by JavaScript -->
-                            <div id="calendarDays"></div>
+                        <div class="compact-calendar">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">S</div>
+                                <div class="weekday">M</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">W</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">F</div>
+                                <div class="weekday">S</div>
+                            </div>
+                            <div class="calendar-days" id="calendarDays">
+                                <!-- Days will be populated by JavaScript -->
+                            </div>
                         </div>
                         <div class="meeting-legend">
                             <span class="legend-item">
@@ -254,8 +257,8 @@
     let currentDate = new Date();
     let selectedMeetingDate = null;
 
-    // Meeting schedule: Every two weeks on Tuesday, 5:30 PM CST, starting June 8th, 2025
-    const MEETING_START_DATE = new Date('2025-06-08T17:30:00-05:00'); // June 8, 2025, 5:30 PM CST
+    // UPDATED: Meeting schedule starting July 8th, 2025
+    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00'); // July 8, 2025, 5:30 PM CST
     const MEETING_DURATION = 80; // 80 minutes
     const EARLY_ACCESS = 10; // 10 minutes before
     const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
@@ -313,7 +316,6 @@
 
     function generateCalendar(year, month) {
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - firstDay.getDay());
         
@@ -323,6 +325,7 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
+        // Generate 6 weeks (42 days) for compact view
         for (let i = 0; i < 42; i++) {
             const cellDate = new Date(startDate);
             cellDate.setDate(startDate.getDate() + i);
