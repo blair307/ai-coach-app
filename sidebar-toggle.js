@@ -1,119 +1,154 @@
 /**
- * Permanent Sidebar Toggle - Works on all pages
+ * Fixed Permanent Sidebar Toggle - Works on all pages
  * Replace entire sidebar-toggle.js file with this code
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing permanent sidebar toggle...');
+    console.log('🚀 Initializing fixed sidebar toggle...');
     
     // Find elements
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
     const sidebarHeader = document.querySelector('.sidebar-header');
-    const button = document.querySelector('#sidebar-toggle');
+    
+    // Find ALL toggle buttons (there are two with same ID - we'll fix this)
+    const toggleButtons = document.querySelectorAll('#sidebar-toggle, .sidebar-toggle');
     
     console.log('Found elements:', {
         sidebar: !!sidebar,
         mainContent: !!mainContent,
         sidebarHeader: !!sidebarHeader,
-        button: !!button
+        toggleButtons: toggleButtons.length
     });
     
-    if (!sidebar || !mainContent || !sidebarHeader) {
-        console.log('Missing required elements for sidebar toggle');
+    if (!sidebar || !mainContent) {
+        console.error('❌ Missing required elements for sidebar toggle');
         return;
     }
     
-    // Create floating button for when sidebar is closed
-    const floatingButton = document.createElement('button');
-    floatingButton.id = 'floating-toggle';
-    floatingButton.innerHTML = `
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-    `;
-    floatingButton.className = 'floating-toggle';
-    floatingButton.setAttribute('aria-label', 'Open navigation menu');
-    floatingButton.style.display = 'none'; // Hidden initially
+    // Create floating button if it doesn't exist
+    let floatingButton = document.querySelector('#floating-toggle');
+    if (!floatingButton) {
+        floatingButton = document.createElement('button');
+        floatingButton.id = 'floating-toggle';
+        floatingButton.innerHTML = `
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        `;
+        floatingButton.className = 'floating-toggle';
+        floatingButton.setAttribute('aria-label', 'Open navigation menu');
+        floatingButton.style.display = 'none'; // Hidden initially
+        
+        document.body.appendChild(floatingButton);
+        console.log('✅ Created floating toggle button');
+    }
     
-    document.body.appendChild(floatingButton);
+    // Set initial state based on screen size
+    let isOpen = window.innerWidth > 768; // Open on desktop, closed on mobile
     
-    // Set initial state
-    let isOpen = true;
+    // Apply initial state
+    function setInitialState() {
+        if (isOpen) {
+            // Sidebar open
+            sidebar.classList.remove('sidebar-closed');
+            sidebar.classList.add('sidebar-open');
+            floatingButton.style.display = 'none';
+            console.log('📱 Initial state: OPEN');
+        } else {
+            // Sidebar closed
+            sidebar.classList.remove('sidebar-open');
+            sidebar.classList.add('sidebar-closed');
+            floatingButton.style.display = 'flex';
+            console.log('📱 Initial state: CLOSED');
+        }
+        
+        // Update ARIA attributes
+        sidebar.setAttribute('aria-hidden', !isOpen);
+        floatingButton.setAttribute('aria-expanded', isOpen);
+    }
     
     // Toggle function
     function toggleSidebar() {
-        console.log('Toggle clicked! Current state:', isOpen ? 'OPEN' : 'CLOSED');
+        console.log('🔄 Toggle clicked! Current state:', isOpen ? 'OPEN' : 'CLOSED');
         
         if (isOpen) {
             // Close sidebar
-            console.log('Closing sidebar...');
-            sidebar.classList.remove('sidebar-open', 'active');
+            console.log('🔒 Closing sidebar...');
+            sidebar.classList.remove('sidebar-open');
             sidebar.classList.add('sidebar-closed');
-            
-            // Show floating button
             floatingButton.style.display = 'flex';
-            
             isOpen = false;
             console.log('✅ Sidebar closed, floating button visible');
         } else {
             // Open sidebar
-            console.log('Opening sidebar...');
+            console.log('🔓 Opening sidebar...');
             sidebar.classList.remove('sidebar-closed');
-            sidebar.classList.add('sidebar-open', 'active');
-            
-            // Hide floating button
+            sidebar.classList.add('sidebar-open');
             floatingButton.style.display = 'none';
-            
             isOpen = true;
             console.log('✅ Sidebar opened, floating button hidden');
         }
         
         // Update ARIA attributes
         sidebar.setAttribute('aria-hidden', !isOpen);
-        if (button) button.setAttribute('aria-expanded', isOpen);
         floatingButton.setAttribute('aria-expanded', isOpen);
-    }
-    
-    // Attach click handlers
-    if (button) {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleSidebar();
+        
+        // Update all toggle buttons
+        toggleButtons.forEach(btn => {
+            btn.setAttribute('aria-expanded', isOpen);
         });
     }
     
+    // Attach click handlers to ALL toggle buttons
+    toggleButtons.forEach((button, index) => {
+        console.log(`🎯 Attaching handler to button ${index + 1}`);
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`🖱️ Button ${index + 1} clicked!`);
+            toggleSidebar();
+        });
+    });
+    
+    // Attach handler to floating button
     floatingButton.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
+        console.log('🎯 Floating button clicked!');
         toggleSidebar();
     });
     
     // Handle escape key
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && isOpen) {
+        if (e.key === 'Escape' && isOpen && window.innerWidth <= 768) {
+            console.log('⌨️ Escape key pressed - closing sidebar');
             toggleSidebar();
         }
     });
     
     // Handle window resize
+    let resizeTimeout;
     window.addEventListener('resize', function() {
-        // On mobile, close sidebar by default
-        if (window.innerWidth <= 768 && isOpen) {
-            toggleSidebar();
-        }
-        // On desktop, open sidebar by default
-        else if (window.innerWidth > 768 && !isOpen) {
-            toggleSidebar();
-        }
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            const shouldBeOpen = window.innerWidth > 768;
+            if (shouldBeOpen !== isOpen) {
+                console.log(`📏 Screen size changed - ${shouldBeOpen ? 'opening' : 'closing'} sidebar`);
+                isOpen = !shouldBeOpen; // Flip it so toggle() will set it correctly
+                toggleSidebar();
+            }
+        }, 100);
     });
     
-    // Set initial state based on screen size
-    if (window.innerWidth <= 768) {
-        // Start closed on mobile
-        toggleSidebar();
-    }
+    // Set initial state
+    setInitialState();
     
     console.log('🎉 Sidebar toggle initialized successfully!');
+    console.log('🔍 Debug info:', {
+        isOpen,
+        sidebarClasses: sidebar.className,
+        floatingButtonDisplay: floatingButton.style.display,
+        screenWidth: window.innerWidth
+    });
 });
