@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration
+// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Stripe = require('stripe');
 const OpenAI = require('openai');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
@@ -27,12 +29,27 @@ if (process.env.OPENAI_API_KEY) {
   console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
 }
 
+// Email configuration
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+  transporter = nodemailer.createTransporter({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    }
+  });
+  console.log("📧 Email service configured");
+} else {
+  console.log("⚠️ Email credentials not found - password reset will be disabled");
+}
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Updated User Schema with Streak Tracking
+// Updated User Schema with Streak Tracking + Password Reset
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -49,14 +66,18 @@ const userSchema = new mongoose.Schema({
     lastLoginDate: { type: Date, default: null },
     longestStreak: { type: Number, default: 0 }
   },
+  // Password reset fields
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   createdAt: { type: Date, default: Date.now }
 });
 
 const User = mongoose.model('User', userSchema);
 
-// Chat History Schema
+// Chat History Schema with Conversation Memory
 const chatSchema = new mongoose.Schema({
   userId: String,
+  threadId: String, // OpenAI thread ID for conversation memory
   messages: [{
     role: String,
     content: String,
@@ -265,6 +286,116 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
   res.json({ message: 'Token is valid', user: req.user });
 });
 
+// Password Reset Request
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    if (!transporter) {
+      return res.status(500).json({ message: 'Email service not configured' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      // Don't reveal if user exists or not for security
+      return res.status(200).json({ 
+        message: 'If an account with that email exists, a password reset link has been sent.' 
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    
+    // Hash token and set to user
+    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    
+    await user.save();
+
+    // Create reset URL
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
+
+    // Email content
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Password Reset Request - EEH Platform',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #667eea;">Reset Your Password</h2>
+          <p>You requested a password reset for your Entrepreneur Emotional Health account.</p>
+          <p>Click the button below to reset your password:</p>
+          <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">Reset Password</a>
+          <p>Or copy and paste this link into your browser:</p>
+          <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
+          <p><strong>This link will expire in 10 minutes.</strong></p>
+          <p>If you didn't request this, please ignore this email.</p>
+          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
+          <p style="color: #666; font-size: 14px;">Entrepreneur Emotional Health Platform</p>
+        </div>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.status(200).json({ 
+      message: 'If an account with that email exists, a password reset link has been sent.' 
+    });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Error processing password reset request' });
+  }
+});
+
+// Password Reset Confirmation
+app.post('/api/auth/reset-password', async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+    }
+
+    // Hash the token to compare with stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    
+    // Find user with valid reset token
+    const user = await User.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+
+    // Update password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    
+    // Clear reset token fields
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successful' });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Error resetting password' });
+  }
+});
+
 // Create Stripe subscription
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
@@ -294,7 +425,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
   }
 });
 
-// Send message to AI Assistant - UPDATED TO USE YOUR CUSTOM ASSISTANT
+// Send message to AI Assistant with Conversation Memory
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
@@ -309,28 +440,50 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     // Your Custom Assistant ID
     const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
 
-    // Create a new thread for this conversation
-    const thread = await openai.beta.threads.create();
+    // Get or create conversation thread for this user
+    let chat = await Chat.findOne({ userId });
+    let threadId;
+
+    if (!chat || !chat.threadId) {
+      // Create a new thread for this user
+      const thread = await openai.beta.threads.create();
+      threadId = thread.id;
+      
+      // Save or update chat record with threadId
+      if (chat) {
+        chat.threadId = threadId;
+        await chat.save();
+      } else {
+        chat = new Chat({
+          userId,
+          threadId,
+          messages: []
+        });
+        await chat.save();
+      }
+    } else {
+      threadId = chat.threadId;
+    }
 
     // Add the user's message to the thread
-    await openai.beta.threads.messages.create(thread.id, {
+    await openai.beta.threads.messages.create(threadId, {
       role: "user",
       content: message
     });
 
     // Run the assistant
-    const run = await openai.beta.threads.runs.create(thread.id, {
+    const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: ASSISTANT_ID
     });
 
     // Wait for the assistant to complete (simple polling)
-    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
     
     // Keep checking until the assistant is done (max 30 seconds)
     let attempts = 0;
     while (runStatus.status !== 'completed' && attempts < 30) {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
-      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
       attempts++;
     }
 
@@ -339,7 +492,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     }
 
     // Get the assistant's response
-    const messages = await openai.beta.threads.messages.list(thread.id);
+    const messages = await openai.beta.threads.messages.list(threadId);
     const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
     
     if (!assistantMessage) {
@@ -347,6 +500,14 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     }
 
     const response = assistantMessage.content[0].text.value;
+
+    // Save the conversation to our database for backup
+    chat.messages.push(
+      { role: 'user', content: message, timestamp: new Date() },
+      { role: 'assistant', content: response, timestamp: new Date() }
+    );
+    chat.updatedAt = new Date();
+    await chat.save();
 
     res.json({ response });
 
@@ -543,7 +704,8 @@ app.get('/health', (req, res) => {
     services: {
       mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
       openai: openai ? 'available' : 'unavailable',
-      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured'
+      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
+      email: transporter ? 'configured' : 'not configured'
     }
   });
 });
@@ -569,135 +731,5 @@ app.listen(PORT, () => {
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
+  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
 });
-
-// Add these routes to your server.js file
-
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-
-// Add to User schema (in your existing User model)
-const resetTokenSchema = {
-  resetPasswordToken: String,
-  resetPasswordExpires: Date
-};
-
-// Email configuration - add to your environment variables
-const transporter = nodemailer.createTransporter({
-  service: 'gmail', // or your email service
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
-
-// Password Reset Request
-app.post('/api/auth/forgot-password', async (req, res) => {
-  try {
-    const { email } = req.body;
-    
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) {
-      // Don't reveal if user exists or not for security
-      return res.status(200).json({ 
-        message: 'If an account with that email exists, a password reset link has been sent.' 
-      });
-    }
-
-    // Generate reset token
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    
-    // Hash token and set to user
-    user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
-    
-    await user.save();
-
-    // Create reset URL
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
-
-    // Email content
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Password Reset Request - EEH Platform',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #667eea;">Reset Your Password</h2>
-          <p>You requested a password reset for your Entrepreneur Emotional Health account.</p>
-          <p>Click the button below to reset your password:</p>
-          <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 20px 0;">Reset Password</a>
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
-          <p><strong>This link will expire in 10 minutes.</strong></p>
-          <p>If you didn't request this, please ignore this email.</p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #666; font-size: 14px;">Entrepreneur Emotional Health Platform</p>
-        </div>
-      `
-    };
-
-    await transporter.sendMail(mailOptions);
-
-    res.status(200).json({ 
-      message: 'If an account with that email exists, a password reset link has been sent.' 
-    });
-
-  } catch (error) {
-    console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Error processing password reset request' });
-  }
-});
-
-// Password Reset Confirmation
-app.post('/api/auth/reset-password', async (req, res) => {
-  try {
-    const { token, newPassword } = req.body;
-    
-    if (!token || !newPassword) {
-      return res.status(400).json({ message: 'Token and new password are required' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long' });
-    }
-
-    // Hash the token to compare with stored hash
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-    
-    // Find user with valid reset token
-    const user = await User.findOne({
-      resetPasswordToken: hashedToken,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid or expired reset token' });
-    }
-
-    // Update password
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    
-    // Clear reset token fields
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    
-    await user.save();
-
-    res.status(200).json({ message: 'Password reset successful' });
-
-  } catch (error) {
-    console.error('Reset password error:', error);
-    res.status(500).json({ message: 'Error resetting password' });
-  }
-});
-
-// Add these to your environment variables:
-// EMAIL_USER=your-email@gmail.com
-// EMAIL_PASS=your-app-password
-// FRONTEND_URL=https://your-netlify-url.netlify.app
