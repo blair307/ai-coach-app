@@ -30,7 +30,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    <span class="notification-badge" id="notificationBadge">2</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -61,53 +61,53 @@
                     </div>
                     
                     <div class="rooms-list" id="roomsList">
-                        <div class="room-item active" data-room="general" onclick="switchRoom('general')">
+                        <div class="room-item active" data-room="general" data-message-count="5" onclick="switchRoom('general')">
                             <div class="room-info">
                                 <h4>General Discussion</h4>
                                 <p>Open chat for everyone</p>
                             </div>
                             <div class="room-stats">
-                                <span class="message-count">24</span>
+                                <span class="message-count">5</span>
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="emotional-wellness" onclick="switchRoom('emotional-wellness')">
+                        <div class="room-item" data-room="emotional-wellness" data-message-count="12" onclick="switchRoom('emotional-wellness')">
                             <div class="room-info">
                                 <h4>Emotional Wellness</h4>
                                 <p>Mental health & emotional intelligence</p>
                             </div>
                             <div class="room-stats">
-                                <span class="message-count">18</span>
+                                <span class="message-count">12</span>
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="business-growth" onclick="switchRoom('business-growth')">
+                        <div class="room-item" data-room="business-growth" data-message-count="8" onclick="switchRoom('business-growth')">
                             <div class="room-info">
                                 <h4>Business Growth</h4>
                                 <p>Scaling strategies & challenges</p>
                             </div>
                             <div class="room-stats">
-                                <span class="message-count">31</span>
+                                <span class="message-count">8</span>
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="success-stories" onclick="switchRoom('success-stories')">
+                        <div class="room-item" data-room="success-stories" data-message-count="3" onclick="switchRoom('success-stories')">
                             <div class="room-info">
                                 <h4>Success Stories</h4>
                                 <p>Celebrate your wins & breakthroughs</p>
                             </div>
                             <div class="room-stats">
-                                <span class="message-count">15</span>
+                                <span class="message-count">3</span>
                             </div>
                         </div>
 
-                        <div class="room-item" data-room="work-life-balance" onclick="switchRoom('work-life-balance')">
+                        <div class="room-item" data-room="work-life-balance" data-message-count="7" onclick="switchRoom('work-life-balance')">
                             <div class="room-info">
                                 <h4>Work-Life Balance</h4>
                                 <p>Managing entrepreneurial stress</p>
                             </div>
                             <div class="room-stats">
-                                <span class="message-count">22</span>
+                                <span class="message-count">7</span>
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
 
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Sample Messages -->
+                            <!-- Sample Messages for General Discussion (5 messages) -->
                             <div class="message-group" data-searchable="mike chen biggest breakthrough sarah">
                                 <div class="message-header">
                                     <div class="user-avatar">MC</div>
@@ -253,6 +253,41 @@
     <script src="sidebar-toggle.js"></script>
     <script src="community.js"></script>
     <script>
+    // Room message data - matches actual message counts
+    const roomData = {
+        'general': {
+            name: 'General Discussion',
+            description: 'Open chat for everyone to discuss anything',
+            messages: [
+                {username: 'Mike Chen', avatar: 'MC', time: '2:30 PM', content: "That's awesome Sarah! What was your biggest breakthrough?", searchable: 'mike chen biggest breakthrough sarah'},
+                {username: 'Sarah Johnson', avatar: 'SJ', time: '2:32 PM', content: 'Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer!', searchable: 'sarah johnson goals prioritize ai game changer', avatarColor: '#10b981'},
+                {username: 'Alex Rivera', avatar: 'AR', time: '2:35 PM', content: "Love that! I've been struggling with the same thing. Quality over quantity when it comes to goals really does make a difference in productivity.", searchable: 'alex rivera focus quality productivity', avatarColor: '#f59e0b'},
+                {username: 'Mike Chen', avatar: 'MC', time: '2:38 PM', content: 'Has anyone tried the new stress management exercises from the latest coaching session? Curious about your experiences.', searchable: 'mike chen coaching session stress management'},
+                {username: 'Sarah Johnson', avatar: 'SJ', time: '2:40 PM', content: '@Mike the breathing technique has been really helpful! I use it before important meetings now.', searchable: 'sarah johnson meditation breathing technique', avatarColor: '#10b981'}
+            ]
+        },
+        'emotional-wellness': {
+            name: 'Emotional Wellness',
+            description: 'Mental health & emotional intelligence discussions',
+            messages: [] // Would have 12 messages
+        },
+        'business-growth': {
+            name: 'Business Growth', 
+            description: 'Scaling strategies & business challenges',
+            messages: [] // Would have 8 messages
+        },
+        'success-stories': {
+            name: 'Success Stories',
+            description: 'Celebrate your wins & breakthroughs',
+            messages: [] // Would have 3 messages
+        },
+        'work-life-balance': {
+            name: 'Work-Life Balance',
+            description: 'Managing entrepreneurial stress and balance',
+            messages: [] // Would have 7 messages
+        }
+    };
+    
     // Community Search Functionality
     function searchMessages(query) {
         const searchResults = document.getElementById('searchResults');
@@ -264,27 +299,17 @@
             return;
         }
         
-        // Search through messages
-        const messages = document.querySelectorAll('.message-group');
+        // Search through current room messages
+        const currentRoom = document.querySelector('.room-item.active').getAttribute('data-room');
+        const messages = roomData[currentRoom].messages;
         const results = [];
         
         messages.forEach(message => {
-            const searchableText = message.getAttribute('data-searchable') || '';
-            const messageText = message.querySelector('.message-content').textContent;
-            const username = message.querySelector('.username').textContent;
-            const timestamp = message.querySelector('.message-timestamp').textContent;
-            
-            if (searchableText.toLowerCase().includes(query.toLowerCase()) || 
-                messageText.toLowerCase().includes(query.toLowerCase()) ||
-                username.toLowerCase().includes(query.toLowerCase())) {
+            if (message.searchable.toLowerCase().includes(query.toLowerCase()) || 
+                message.content.toLowerCase().includes(query.toLowerCase()) ||
+                message.username.toLowerCase().includes(query.toLowerCase())) {
                 
-                results.push({
-                    username: username,
-                    content: messageText,
-                    timestamp: timestamp,
-                    avatar: message.querySelector('.user-avatar').textContent,
-                    avatarColor: message.querySelector('.user-avatar').style.background || '#6366f1'
-                });
+                results.push(message);
             }
         });
         
@@ -293,9 +318,9 @@
             searchResultsContent.innerHTML = results.map(result => `
                 <div class="search-result-item">
                     <div class="result-header">
-                        <div class="user-avatar" style="background: ${result.avatarColor};">${result.avatar}</div>
+                        <div class="user-avatar" style="background: ${result.avatarColor || '#6366f1'};">${result.avatar}</div>
                         <span class="username">${result.username}</span>
-                        <span class="timestamp">${result.timestamp}</span>
+                        <span class="timestamp">${result.time}</span>
                     </div>
                     <div class="result-content">${highlightQuery(result.content, query)}</div>
                 </div>
@@ -335,43 +360,41 @@
         document.querySelector(`[data-room="${roomName}"]`).classList.add('active');
         
         // Update room title and description
-        const roomTitles = {
-            'general': 'General Discussion',
-            'emotional-wellness': 'Emotional Wellness',
-            'business-growth': 'Business Growth', 
-            'success-stories': 'Success Stories',
-            'work-life-balance': 'Work-Life Balance'
-        };
+        const room = roomData[roomName];
+        document.getElementById('currentRoomName').textContent = room.name;
+        document.getElementById('currentRoomDescription').textContent = room.description;
         
-        const roomDescriptions = {
-            'general': 'Open chat for everyone to discuss anything',
-            'emotional-wellness': 'Mental health & emotional intelligence discussions',
-            'business-growth': 'Scaling strategies & business challenges',
-            'success-stories': 'Celebrate your wins & breakthroughs',
-            'work-life-balance': 'Managing entrepreneurial stress and balance'
-        };
-        
-        document.getElementById('currentRoomName').textContent = roomTitles[roomName];
-        document.getElementById('currentRoomDescription').textContent = roomDescriptions[roomName];
+        // Load messages for the room
+        loadRoomMessages(roomName);
         
         // Clear any active search when switching rooms
         clearSearch();
         
-        // In a real app, you would load messages for the selected room here
         console.log('Switched to room:', roomName);
     }
     
-    // Dynamic notification badge management
-    function updateNotificationBadge() {
-        // This would normally check for actual notifications
-        const unreadCount = 2; // Example: 2 unread notifications
-        const badge = document.getElementById('notificationBadge');
+    function loadRoomMessages(roomName) {
+        const chatMessages = document.getElementById('communityMessages');
+        const room = roomData[roomName];
         
-        if (unreadCount > 0) {
-            badge.textContent = unreadCount;
-            badge.style.display = 'inline';
+        if (room.messages.length > 0) {
+            chatMessages.innerHTML = room.messages.map(message => `
+                <div class="message-group" data-searchable="${message.searchable}">
+                    <div class="message-header">
+                        <div class="user-avatar" style="background: ${message.avatarColor || '#6366f1'};">${message.avatar}</div>
+                        <span class="username">${message.username}</span>
+                        <span class="message-timestamp">${message.time}</span>
+                    </div>
+                    <div class="message-content">${message.content}</div>
+                </div>
+            `).join('');
         } else {
-            badge.style.display = 'none';
+            chatMessages.innerHTML = `
+                <div class="empty-room">
+                    <p>This room is ready for conversation!</p>
+                    <p>Be the first to share something with the ${room.name.toLowerCase()} community.</p>
+                </div>
+            `;
         }
     }
     
@@ -388,21 +411,40 @@
         const message = input.value.trim();
         
         if (message) {
-            // In a real app, you would send the message to the server
-            console.log('Sending message:', message);
+            // Add message to current room
+            const activeRoom = document.querySelector('.room-item.active');
+            const roomName = activeRoom.getAttribute('data-room');
+            const currentCount = parseInt(activeRoom.getAttribute('data-message-count'));
+            
+            // Update message count
+            const newCount = currentCount + 1;
+            activeRoom.setAttribute('data-message-count', newCount);
+            activeRoom.querySelector('.message-count').textContent = newCount;
+            
+            // Add message to room data (in a real app, this would be sent to server)
+            const newMessage = {
+                username: 'You',
+                avatar: 'YU',
+                time: new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
+                content: message,
+                searchable: `you ${message.toLowerCase()}`,
+                avatarColor: '#6366f1'
+            };
+            
+            roomData[roomName].messages.push(newMessage);
+            
+            // Reload messages to show new message
+            loadRoomMessages(roomName);
+            
+            // Clear input
             input.value = '';
             
-            // Update message count for current room
-            updateMessageCount();
+            // Scroll to bottom
+            const chatMessages = document.getElementById('communityMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            console.log('Message sent to', roomName, ':', message);
         }
-    }
-    
-    function updateMessageCount() {
-        // Increment message count for active room
-        const activeRoom = document.querySelector('.room-item.active');
-        const countElement = activeRoom.querySelector('.message-count');
-        const currentCount = parseInt(countElement.textContent);
-        countElement.textContent = currentCount + 1;
     }
     
     function addEmoji() {
@@ -418,13 +460,13 @@
     }
     
     function createRoom() {
-        // Placeholder for create room functionality
         alert('Create new room functionality would be implemented here');
     }
     
     // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-        updateNotificationBadge();
+        // Load initial room messages
+        loadRoomMessages('general');
         
         // Close emoji modal when clicking outside
         document.addEventListener('click', function(e) {
@@ -511,6 +553,17 @@
     .room-item.active .message-count {
         background: rgba(255,255,255,0.9);
         color: var(--primary);
+    }
+    
+    /* Empty room styles */
+    .empty-room {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-room p {
+        margin-bottom: 0.5rem;
     }
     
     /* Search Results Styles */
