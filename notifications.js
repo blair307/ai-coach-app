@@ -1,153 +1,275 @@
-// Simple Notifications JavaScript
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Entrepreneur Emotional Health</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+                <li><a href="notifications.html" class="menu-item active">
+                    Notifications
+                    <span class="notification-badge" id="notificationBadge">3</span>
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
+            </ul>
+        </nav>
 
-const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Notifications</h1>
+                <div class="header-actions">
+                    <button class="btn btn-secondary" onclick="markAllRead()" id="markAllReadBtn">
+                        Mark All Read
+                    </button>
+                    <button class="btn btn-outline" onclick="clearAll()">
+                        Clear All
+                    </button>
+                </div>
+            </header>
 
-// Check if user is logged in when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    
-// Check if user is logged in when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    updateUnreadCount();
-});
+            <div class="notifications-container">
+                <!-- Notification Filters -->
+                <div class="notification-filters">
+                    <button class="filter-btn active" onclick="filterNotifications('all')">
+                        All Notifications
+                        <span class="count" id="allCount">8</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('unread')">
+                        Unread
+                        <span class="count" id="unreadCount">3</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('coaching')">
+                        AI Coach
+                        <span class="count" id="coachingCount">2</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('community')">
+                        Community
+                        <span class="count" id="communityCount">3</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('system')">
+                        System
+                        <span class="count" id="systemCount">2</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('billing')">
+                        Billing
+                        <span class="count" id="billingCount">1</span>
+                    </button>
+                </div>
 
-// Check authentication
-function checkAuth() {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        window.location.href = 'login.html';
-    }
-}
+                <!-- Notifications List -->
+                <div class="notifications-list" id="notificationsList">
+                    <!-- Unread Coaching Notification -->
+                    <div class="notification-item unread" data-type="coaching" data-id="1">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Coaching Insights Available</h3>
+                                <span class="notification-time">2 hours ago</span>
+                            </div>
+                            <p>Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCoach()">View Insights</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Filter notifications by type
-function filterNotifications(type) {
-    const notifications = document.querySelectorAll('.notification-item');
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const emptyState = document.getElementById('emptyState');
-    
-    // Update active filter button
-    filterButtons.forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    let visibleCount = 0;
-    
-    notifications.forEach(notification => {
-        const notificationType = notification.getAttribute('data-type');
-        const isUnread = notification.classList.contains('unread');
-        
-        let shouldShow = false;
-        
-        switch(type) {
-            case 'all':
-                shouldShow = true;
-                break;
-            case 'unread':
-                shouldShow = isUnread;
-                break;
-            default:
-                shouldShow = notificationType === type;
-        }
-        
-        if (shouldShow) {
-            notification.style.display = 'flex';
-            visibleCount++;
-        } else {
-            notification.style.display = 'none';
-        }
-    });
-    
-    // Show empty state if no notifications visible
-    if (visibleCount === 0) {
-        emptyState.style.display = 'block';
-    } else {
-        emptyState.style.display = 'none';
-    }
-}
+                    <!-- Unread Community Notification -->
+                    <div class="notification-item unread" data-type="community" data-id="2">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Messages in Business Growth</h3>
+                                <span class="notification-time">4 hours ago</span>
+                            </div>
+                            <p>Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Join Conversation</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Mark single notification as read
-function markAsRead(button) {
-    const notification = button.closest('.notification-item');
-    notification.classList.remove('unread');
-    notification.classList.add('read');
-    
-    // Remove the mark as read button
-    button.remove();
-    
-    updateUnreadCount();
-}
+                    <!-- Unread System Notification -->
+                    <div class="notification-item unread" data-type="system" data-id="3">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Weekly Progress Report Ready</h3>
+                                <span class="notification-time">1 day ago</span>
+                            </div>
+                            <p>Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">View Report</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Mark all notifications as read
-function markAllRead() {
-    const unreadNotifications = document.querySelectorAll('.notification-item.unread');
-    
-    unreadNotifications.forEach(notification => {
-        notification.classList.remove('unread');
-        notification.classList.add('read');
-        
-        // Remove mark as read buttons
-        const markReadBtn = notification.querySelector('.btn-link[onclick*="markAsRead"]');
-        if (markReadBtn) {
-            markReadBtn.remove();
-        }
-    });
-    
-    updateUnreadCount();
-    alert('All notifications marked as read!');
-}
+                    <!-- Read Coaching Notification -->
+                    <div class="notification-item read" data-type="coaching" data-id="4">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Goal Achievement Milestone</h3>
+                                <span class="notification-time">2 days ago</span>
+                            </div>
+                            <p>Congratulations! You've completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCoach()">View Progress</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Clear all notifications
-function clearAll() {
-    if (confirm('Are you sure you want to clear all notifications? This cannot be undone.')) {
-        const notificationsList = document.getElementById('notificationsList');
-        notificationsList.innerHTML = '';
-        
-        const emptyState = document.getElementById('emptyState');
-        emptyState.style.display = 'block';
-        
-        updateUnreadCount();
-    }
-}
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="5">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Someone Mentioned You</h3>
+                                <span class="notification-time">3 days ago</span>
+                            </div>
+                            <p>Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">View Message</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Update unread count
-function updateUnreadCount() {
-    const unreadNotifications = document.querySelectorAll('.notification-item.unread');
-    const unreadCount = unreadNotifications.length;
-    const countElement = document.getElementById('unreadCount');
-    
-    if (countElement) {
-        countElement.textContent = unreadCount;
-        
-        // Hide count if zero
-        if (unreadCount === 0) {
-            countElement.style.display = 'none';
-        } else {
-            countElement.style.display = 'inline';
-        }
-    }
-}
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="6">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Room Created: Mindfulness</h3>
+                                <span class="notification-time">4 days ago</span>
+                            </div>
+                            <p>A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Explore Room</button>
+                            </div>
+                        </div>
+                    </div>
 
-// Navigation functions
-function goToCommunity() {
-    window.location.href = 'community.html';
-}
+                    <!-- Read System Notification -->
+                    <div class="notification-item read" data-type="system" data-id="7">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Platform Update: New Features</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>We've added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">See What's New</button>
+                            </div>
+                        </div>
+                    </div>
 
-function goToCoach() {
-    window.location.href = 'ai-coach.html';
-}
+                    <!-- Read Billing Notification -->
+                    <div class="notification-item read" data-type="billing" data-id="8">
+                        <div class="notification-icon billing">
+                            <div class="icon-text">BI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Payment Successful</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToBilling()">View Receipt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-function goToBilling() {
-    window.location.href = 'billing.html';
-}
+                <!-- Empty State (Hidden by default) -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h3>No notifications found</h3>
+                    <p>You're all caught up! Check back later for updates on your emotional health journey.</p>
+                </div>
+            </div>
+        </main>
+    </div>
 
-function goToDashboard() {
-    window.location.href = 'dashboard.html';
-}
+    <!-- Notification Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notification Settings</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> AI Coach Insights
+                    </label>
+                    <small>Get notified when new coaching insights are available</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Community Messages
+                    </label>
+                    <small>Receive notifications for community activity</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Weekly Reports
+                    </label>
+                    <small>Get your weekly progress summaries</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Billing Updates
+                    </label>
+                    <small>Payment confirmations and billing reminders</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
 
-// Logout function
-function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
-        window.location.href = 'login.html';
-    }
-}
+    <script src="notifications.js"></script>
+</body>
+</html>
