@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- ADD THIS: Notification Manager -->
+    <script src="notification-manager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.notificationManager) {
+                window.notificationManager.init();
+                setTimeout(() => window.notificationManager.updateBadge(), 100);
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -30,7 +41,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge">2</span>
+                    <span class="notification-badge" id="notificationBadge">0</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -261,6 +272,25 @@
     <script src="sidebar-toggle.js"></script>
     <script src="dashboard.js"></script>
     <script>
+    // Common logout function
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('eeh_notifications');
+        localStorage.removeItem('eeh_rooms');
+        window.location.href = 'login.html';
+    }
+
+    function startCoachingSession() {
+        window.location.href = 'ai-coach.html';
+    }
+
+    function addGoal() {
+        // Goal functionality would be implemented here
+        alert('Add new goal functionality would be implemented here');
+    }
+
     // Timer and Calendar Functionality
     let currentDate = new Date();
     let selectedMeetingDate = null;
