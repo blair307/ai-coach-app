@@ -1,20 +1,123 @@
-// Replace your entire callOpenAI function in ai-coach.js with this:
+// Complete ai-coach.js file with all functions and error fixes
 
+// Wait for page to load
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 AI Coach page loaded');
+    
+    // Initialize the page
+    initializePage();
+    loadChatHistory();
+});
+
+// Initialize page elements and event listeners
+function initializePage() {
+    const sendButton = document.getElementById('send-btn');
+    const userInput = document.getElementById('user-input');
+    
+    if (sendButton) {
+        sendButton.addEventListener('click', sendMessage);
+        console.log('✅ Send button event listener added');
+    } else {
+        console.error('❌ Send button not found');
+    }
+    
+    if (userInput) {
+        userInput.addEventListener('keypress', handleKeyPress);
+        console.log('✅ Input field event listener added');
+    } else {
+        console.error('❌ User input field not found');
+    }
+}
+
+// Handle Enter key press
+function handleKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
+    }
+}
+
+// Main function to send messages
+async function sendMessage() {
+    console.log('📤 Send message function called');
+    
+    const userInput = document.getElementById('user-input');
+    if (!userInput) {
+        console.error('❌ User input element not found');
+        return;
+    }
+    
+    const message = userInput.value.trim();
+    console.log('📝 Message to send:', message);
+    
+    if (!message) {
+        console.log('⚠️ Empty message, not sending');
+        return;
+    }
+    
+    // Add user message to chat
+    addMessage(message, 'user');
+    userInput.value = '';
+    
+    // Show typing indicator
+    showTypingIndicator();
+    
+    try {
+        console.log('🚀 Calling AI...');
+        
+        // Get conversation history
+        const conversationHistory = getConversationHistory();
+        
+        // Call AI with backend
+        const response = await callOpenAI(message, conversationHistory);
+        
+        // Remove typing indicator
+        hideTypingIndicator();
+        
+        // Add AI response to chat
+        addMessage(response, 'ai');
+        
+        // Save conversation history
+        saveConversationHistory(message, response);
+        
+        // Update stats if functions exist
+        if (typeof updateInsights === 'function') {
+            updateInsights(response);
+        }
+        if (typeof incrementSessionCount === 'function') {
+            incrementSessionCount();
+        }
+        
+        console.log('✅ Message sent successfully');
+        
+    } catch (error) {
+        console.error('❌ Error in sendMessage:', error);
+        hideTypingIndicator();
+        addMessage("I'm having trouble responding right now. Please try again in a moment.", 'ai');
+    }
+}
+
+// Call your backend API
 async function callOpenAI(message, conversationHistory = []) {
     try {
-        // Get the auth token (your backend requires authentication)
-        const token = localStorage.getItem('eeh_token') || localStorage.getItem('auth_token') || localStorage.getItem('token');
+        console.log('🔍 Looking for auth token...');
+        
+        // Get the auth token
+        const token = localStorage.getItem('eeh_token') || 
+                     localStorage.getItem('auth_token') || 
+                     localStorage.getItem('token');
+        
+        console.log('🔑 Token found:', token ? 'Yes' : 'No');
         
         if (!token) {
-            // Redirect to login if no token
-            console.log('No auth token found, redirecting to login');
+            console.log('❌ No auth token found, redirecting to login');
             window.location.href = 'login.html';
             return "Please log in to continue.";
         }
 
-        console.log('Calling backend API with message:', message);
+        console.log('📡 Calling backend API...');
 
-        // Call your Render backend endpoint
+        // Call your Render backend
         const response = await fetch('/api/chat/send', {
             method: 'POST',
             headers: {
@@ -27,15 +130,14 @@ async function callOpenAI(message, conversationHistory = []) {
             })
         });
 
-        console.log('Backend response status:', response.status);
+        console.log('📊 Backend response status:', response.status);
 
         const data = await response.json();
-        console.log('Backend response data:', data);
+        console.log('📄 Backend response data:', data);
         
         if (!response.ok) {
             if (response.status === 401 || response.status === 403) {
-                // Token expired, redirect to login
-                console.log('Token expired, redirecting to login');
+                console.log('🔒 Token expired, redirecting to login');
                 localStorage.removeItem('eeh_token');
                 localStorage.removeItem('auth_token');
                 localStorage.removeItem('token');
@@ -45,16 +147,11 @@ async function callOpenAI(message, conversationHistory = []) {
             throw new Error(data.message || 'Server error');
         }
 
-        console.log('✅ Got real AI response from backend!');
+        console.log('✅ Got real AI response from your custom Assistant!');
         return data.response;
 
     } catch (error) {
-        console.error('❌ Frontend API Error:', error);
-        
-        // If it's a network error, might be trying to call localhost instead of Render
-        if (error.message.includes('fetch')) {
-            console.error('🔍 Network error - check if calling correct backend URL');
-        }
+        console.error('❌ API Error:', error);
         
         // Entrepreneur-focused fallback messages
         const fallbacks = [
@@ -67,51 +164,154 @@ async function callOpenAI(message, conversationHistory = []) {
     }
 }
 
-// Also make sure your sendMessage function calls this correctly:
-async function sendMessage() {
-    const userInput = document.getElementById('user-input');
-    const message = userInput.value.trim();
+// Add message to chat display
+function addMessage(message, type) {
+    const chatContainer = document.getElementById('chat-container') || document.querySelector('.chat-container');
+    if (!chatContainer) {
+        console.error('❌ Chat container not found');
+        return;
+    }
     
-    if (!message) return;
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${type}-message`;
     
-    // Add user message to chat
-    addMessage(message, 'user');
-    userInput.value = '';
+    const messageContent = document.createElement('div');
+    messageContent.className = 'message-content';
+    messageContent.textContent = message;
     
-    // Show typing indicator
-    showTypingIndicator();
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.textContent = new Date().toLocaleTimeString();
     
-    try {
-        console.log('🚀 Sending message to AI...');
-        
-        // Get conversation history if you have this function
-        const conversationHistory = typeof getConversationHistory === 'function' ? getConversationHistory() : [];
-        
-        // Call your backend through the updated function
-        const response = await callOpenAI(message, conversationHistory);
-        
-        // Remove typing indicator
-        hideTypingIndicator();
-        
-        // Add AI response to chat
-        addMessage(response, 'ai');
-        
-        // Save conversation history if you have this function
-        if (typeof saveConversationHistory === 'function') {
-            saveConversationHistory(message, response);
-        }
-        
-        // Update insights and session count if you have these functions
-        if (typeof updateInsights === 'function') {
-            updateInsights(response);
-        }
-        if (typeof incrementSessionCount === 'function') {
-            incrementSessionCount();
-        }
-        
-    } catch (error) {
-        console.error('❌ Error in sendMessage:', error);
-        hideTypingIndicator();
-        addMessage("I'm having trouble responding right now. Please try again in a moment.", 'ai');
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(timestamp);
+    chatContainer.appendChild(messageDiv);
+    
+    // Scroll to bottom
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    console.log(`💬 Added ${type} message:`, message.substring(0, 50) + '...');
+}
+
+// Show typing indicator
+function showTypingIndicator() {
+    const existingIndicator = document.getElementById('typing-indicator');
+    if (existingIndicator) {
+        return; // Already showing
+    }
+    
+    const chatContainer = document.getElementById('chat-container') || document.querySelector('.chat-container');
+    if (!chatContainer) return;
+    
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'typing-indicator';
+    typingDiv.className = 'message ai-message typing';
+    typingDiv.innerHTML = '<div class="message-content">Thinking...</div>';
+    
+    chatContainer.appendChild(typingDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+    
+    console.log('⏳ Showing typing indicator');
+}
+
+// Hide typing indicator
+function hideTypingIndicator() {
+    const typingIndicator = document.getElementById('typing-indicator');
+    if (typingIndicator) {
+        typingIndicator.remove();
+        console.log('✅ Hiding typing indicator');
     }
 }
+
+// Get conversation history from localStorage
+function getConversationHistory() {
+    try {
+        const history = JSON.parse(localStorage.getItem('eeh_conversation_history') || '[]');
+        return history.map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
+    } catch (error) {
+        console.error('❌ Error loading conversation history:', error);
+        return [];
+    }
+}
+
+// Save conversation history to localStorage
+function saveConversationHistory(userMessage, aiResponse) {
+    try {
+        let history = JSON.parse(localStorage.getItem('eeh_conversation_history') || '[]');
+        
+        // Add new messages
+        history.push(
+            { type: 'user', content: userMessage, timestamp: new Date().toISOString() },
+            { type: 'ai', content: aiResponse, timestamp: new Date().toISOString() }
+        );
+        
+        // Keep only last 50 messages to manage storage
+        if (history.length > 50) {
+            history = history.slice(-50);
+        }
+        
+        localStorage.setItem('eeh_conversation_history', JSON.stringify(history));
+        console.log('💾 Saved conversation history');
+    } catch (error) {
+        console.error('❌ Error saving conversation history:', error);
+    }
+}
+
+// Load existing chat history on page load
+function loadChatHistory() {
+    try {
+        const history = JSON.parse(localStorage.getItem('eeh_conversation_history') || '[]');
+        
+        // Display last 20 messages
+        const recentHistory = history.slice(-20);
+        
+        recentHistory.forEach(msg => {
+            addMessage(msg.content, msg.type);
+        });
+        
+        console.log(`📚 Loaded ${recentHistory.length} previous messages`);
+    } catch (error) {
+        console.error('❌ Error loading chat history:', error);
+    }
+}
+
+// Helper functions for stats (if they don't exist elsewhere)
+function updateInsights(response) {
+    try {
+        // Simple insight generation based on AI response
+        const insights = JSON.parse(localStorage.getItem('eeh_insights') || '[]');
+        
+        // Add basic insight
+        if (response.toLowerCase().includes('stress') || response.toLowerCase().includes('overwhelm')) {
+            insights.push({
+                type: 'stress_management',
+                content: 'Focus on stress management techniques',
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // Keep only recent insights
+        const recentInsights = insights.slice(-10);
+        localStorage.setItem('eeh_insights', JSON.stringify(recentInsights));
+        
+        console.log('📊 Updated insights');
+    } catch (error) {
+        console.error('❌ Error updating insights:', error);
+    }
+}
+
+function incrementSessionCount() {
+    try {
+        const currentCount = parseInt(localStorage.getItem('eeh_session_count') || '0');
+        const newCount = currentCount + 1;
+        localStorage.setItem('eeh_session_count', newCount.toString());
+        console.log('📈 Session count updated to:', newCount);
+    } catch (error) {
+        console.error('❌ Error updating session count:', error);
+    }
+}
+
+console.log('📝 AI Coach JavaScript loaded successfully');
