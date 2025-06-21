@@ -2521,54 +2521,97 @@ select:focus-visible,
 }
 
 /* =================================
-   DIRECT HAMBURGER BUTTON FIX
-   Add this to the very END of styles.css
+   NUCLEAR HAMBURGER BUTTON FIX
+   Replace ALL previous hamburger CSS with this
    ================================= */
 
-/* Force the hamburger button to be visible and properly styled */
-button.sidebar-toggle,
-.sidebar-toggle {
+/* Complete reset and override for hamburger button */
+nav.sidebar .sidebar-header button.sidebar-toggle,
+.sidebar .sidebar-header .sidebar-toggle,
+button[aria-label="Toggle navigation menu"] {
+    /* Reset everything first */
+    all: unset !important;
+    
+    /* Force display and layout */
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    width: 40px !important;
-    height: 40px !important;
-    background: #f1f5f9 !important;
+    
+    /* Size and positioning */
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    
+    /* Styling */
+    background: #e2e8f0 !important;
     border: 2px solid #6366f1 !important;
     border-radius: 8px !important;
     cursor: pointer !important;
-    padding: 8px !important;
-    gap: 3px !important;
-    transition: all 0.2s ease !important;
-    flex-shrink: 0 !important;
+    
+    /* Layout within parent */
+    margin: 0 !important;
     margin-left: auto !important;
+    padding: 10px !important;
+    gap: 4px !important;
+    
+    /* Visual effects */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+    transition: all 0.2s ease !important;
+    
+    /* Ensure it's not hidden */
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 100 !important;
+    position: relative !important;
 }
 
-button.sidebar-toggle:hover,
-.sidebar-toggle:hover {
-    background: #e2e8f0 !important;
+/* Hover state */
+nav.sidebar .sidebar-header button.sidebar-toggle:hover,
+.sidebar .sidebar-header .sidebar-toggle:hover,
+button[aria-label="Toggle navigation menu"]:hover {
+    background: #cbd5e1 !important;
     border-color: #4f46e5 !important;
-    transform: scale(1.05) !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15) !important;
 }
 
-/* Force the hamburger lines to be visible */
-.sidebar-toggle .hamburger-line,
-button.sidebar-toggle .hamburger-line {
+/* Hamburger lines - very specific targeting */
+nav.sidebar .sidebar-header button.sidebar-toggle .hamburger-line,
+.sidebar .sidebar-header .sidebar-toggle .hamburger-line,
+button[aria-label="Toggle navigation menu"] .hamburger-line {
+    /* Reset everything first */
+    all: unset !important;
+    
+    /* Force display */
     display: block !important;
-    width: 20px !important;
+    
+    /* Size and shape */
+    width: 22px !important;
     height: 3px !important;
+    
+    /* Styling */
     background: #6366f1 !important;
     border-radius: 2px !important;
+    
+    /* Ensure visibility */
+    opacity: 1 !important;
+    visibility: visible !important;
+    
+    /* Animation */
     transition: all 0.2s ease !important;
 }
 
-.sidebar-toggle:hover .hamburger-line,
-button.sidebar-toggle:hover .hamburger-line {
+/* Hamburger lines on hover */
+nav.sidebar .sidebar-header button.sidebar-toggle:hover .hamburger-line,
+.sidebar .sidebar-header .sidebar-toggle:hover .hamburger-line,
+button[aria-label="Toggle navigation menu"]:hover .hamburger-line {
     background: #4f46e5 !important;
 }
 
-/* Make sure sidebar header layout is correct */
+/* Fix sidebar header layout */
+nav.sidebar .sidebar-header,
 .sidebar .sidebar-header {
     display: flex !important;
     justify-content: space-between !important;
@@ -2576,14 +2619,28 @@ button.sidebar-toggle:hover .hamburger-line {
     padding: 1.5rem 2rem !important;
     border-bottom: 1px solid var(--border) !important;
     background: var(--background) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
+/* Ensure EEH title doesn't interfere */
 .sidebar-header h2 {
     margin: 0 !important;
-    flex-grow: 1 !important;
+    flex: 1 !important;
+    font-size: 1.25rem !important;
+    font-weight: 800 !important;
 }
 
-/* Floating button for when sidebar is closed */
+/* Remove any pseudo-elements that might be causing the dots */
+.sidebar-header *::before,
+.sidebar-header *::after,
+.sidebar-header::before,
+.sidebar-header::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* Floating button */
 #floating-toggle,
 .floating-toggle {
     position: fixed !important;
@@ -2593,34 +2650,27 @@ button.sidebar-toggle:hover .hamburger-line {
     height: 50px !important;
     background: #6366f1 !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     cursor: pointer !important;
     z-index: 99999 !important;
     display: none !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
-    gap: 3px !important;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+    gap: 4px !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
     transition: all 0.3s ease !important;
 }
 
 #floating-toggle:hover,
 .floating-toggle:hover {
     background: #4f46e5 !important;
-    transform: scale(1.1) !important;
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
 }
 
 .floating-toggle .hamburger-line {
     background: white !important;
-    width: 18px !important;
-    height: 2px !important;
-}
-
-/* Remove that weird dot you mentioned */
-.sidebar-header::before,
-.sidebar-header::after {
-    display: none !important;
-    content: none !important;
+    width: 20px !important;
+    height: 3px !important;
 }
