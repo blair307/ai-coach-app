@@ -3,104 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - AI Coach</title>
+    <title>Sign Up - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
     <div class="auth-container">
         <div class="auth-card large">
             <div class="auth-header">
                 <h1>Start Your Journey</h1>
-                <p>Create your account and choose your plan</p>
+                <p>Join thousands of entrepreneurs transforming their emotional health</p>
             </div>
 
-            <!-- Step 1: Account Info -->
-            <div class="signup-step" id="step1">
-                <form class="auth-form" id="signupForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="firstName">First Name</label>
-                            <input type="text" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="lastName">Last Name</label>
-                            <input type="text" id="lastName" name="lastName" required>
-                        </div>
-                    </div>
-
+            <form class="auth-form" id="signupForm">
+                <!-- Personal Information -->
+                <div class="form-row">
                     <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" name="firstName" required>
                     </div>
-
                     <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" required>
-                        <small>At least 8 characters</small>
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" name="lastName" required>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required>
-                    </div>
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
 
-                    <button type="button" class="btn btn-primary btn-full" onclick="goToStep2()">Continue to Payment</button>
-                </form>
-            </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <small>Must be at least 8 characters with uppercase, lowercase, and numbers</small>
+                </div>
 
-            <!-- Step 2: Plan Selection & Payment -->
-            <div class="signup-step" id="step2" style="display: none;">
+                <!-- Plan Selection -->
                 <div class="plan-selection">
-                    <h3>Choose Your Plan</h3>
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose Your Plan</h3>
                     <div class="pricing-options">
-                        <div class="pricing-option" id="monthlyOption">
+                        <div class="pricing-option" onclick="selectPlan('monthly')">
                             <input type="radio" name="plan" value="monthly" id="monthly">
                             <label for="monthly">
                                 <div class="plan-details">
-                                    <h4>Monthly</h4>
-                                    <div class="plan-price">$97/month</div>
+                                    <h4>Monthly Plan</h4>
+                                    <div class="plan-price">$97<span>/month</span></div>
+                                    <p>Perfect for getting started</p>
                                 </div>
                             </label>
                         </div>
-                        <div class="pricing-option featured" id="yearlyOption">
+
+                        <div class="pricing-option featured" onclick="selectPlan('yearly')">
+                            <div class="badge">Best Value</div>
                             <input type="radio" name="plan" value="yearly" id="yearly" checked>
                             <label for="yearly">
                                 <div class="plan-details">
-                                    <h4>Yearly <span class="badge">Best Value</span></h4>
-                                    <div class="plan-price">$929/year</div>
-                                    <div class="plan-savings">Save $235</div>
+                                    <h4>Yearly Plan</h4>
+                                    <div class="plan-price">$929<span>/year</span></div>
+                                    <div class="plan-savings">Save $235 annually</div>
+                                    <p>Most popular choice</p>
                                 </div>
                             </label>
                         </div>
                     </div>
                 </div>
 
+                <!-- Payment Information -->
                 <div class="payment-section">
-                    <h3>Payment Information</h3>
-                    <div id="card-element">
-                        <!-- Stripe Elements will create form elements here -->
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Payment Information</h3>
+                    
+                    <div class="form-group">
+                        <label for="cardName">Name on Card</label>
+                        <input type="text" id="cardName" name="cardName" required>
                     </div>
-                    <div id="card-errors" role="alert"></div>
+
+                    <div class="form-group">
+                        <label>Card Information</label>
+                        <div id="card-element">
+                            <!-- Stripe Elements will create form elements here -->
+                        </div>
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="billingZip">ZIP Code</label>
+                            <input type="text" id="billingZip" name="billingZip" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="billingCountry">Country</label>
+                            <select id="billingCountry" name="billingCountry" required>
+                                <option value="US">United States</option>
+                                <option value="CA">Canada</option>
+                                <option value="UK">United Kingdom</option>
+                                <option value="AU">Australia</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Terms and Submit -->
+                <div class="form-group">
+                    <label style="display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0;">
+                        <input type="checkbox" id="terms" name="terms" required style="margin-top: 0.25rem;">
+                        <span style="font-size: 0.875rem; line-height: 1.4;">
+                            I agree to the <a href="#" style="color: var(--primary);">Terms of Service</a> and 
+                            <a href="#" style="color: var(--primary);">Privacy Policy</a>
+                        </span>
+                    </label>
                 </div>
 
                 <div class="form-actions">
-                    <button type="button" class="btn btn-secondary" onclick="goToStep1()">Back</button>
-                    <button type="button" class="btn btn-primary" id="submitPayment">Complete Purchase</button>
+                    <a href="login.html" class="btn btn-secondary">Back to Login</a>
+                    <button type="submit" class="btn btn-primary" id="submitButton">
+                        Start My Journey
+                    </button>
                 </div>
-            </div>
-
-            <div class="auth-footer">
-                <p>Already have an account? <a href="login.html">Sign in here</a></p>
-            </div>
+            </form>
         </div>
     </div>
 
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-spinner"></div>
-        <p>Processing your payment...</p>
-    </div>
-
+    <script src="https://js.stripe.com/v3/"></script>
     <script src="signup.js"></script>
 </body>
 </html>
