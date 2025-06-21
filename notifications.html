@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications - AI Coach</title>
+    <title>Notifications - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,26 +11,27 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2>AI Coach</h2>
+                <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">
-                    <span class="icon">🏠</span>Dashboard
+                    Dashboard
                 </a></li>
                 <li><a href="ai-coach.html" class="menu-item">
-                    <span class="icon">🤖</span>AI Coach
+                    AI Coach
                 </a></li>
                 <li><a href="community.html" class="menu-item">
-                    <span class="icon">👥</span>Community
+                    Community
                 </a></li>
                 <li><a href="notifications.html" class="menu-item active">
-                    <span class="icon">🔔</span>Notifications
+                    Notifications
+                    <span class="notification-badge" id="notificationBadge">3</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
-                    <span class="icon">💳</span>Billing
+                    Billing
                 </a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">
-                    <span class="icon">🚪</span>Logout
+                    Logout
                 </a></li>
             </ul>
         </nav>
@@ -40,151 +41,233 @@
             <header class="content-header">
                 <h1>Notifications</h1>
                 <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="markAllRead()">
+                    <button class="btn btn-secondary" onclick="markAllRead()" id="markAllReadBtn">
                         Mark All Read
                     </button>
-                    <button class="btn btn-secondary" onclick="clearAll()">
+                    <button class="btn btn-outline" onclick="clearAll()">
                         Clear All
                     </button>
                 </div>
             </header>
 
             <div class="notifications-container">
-                <!-- Filter Tabs -->
+                <!-- Notification Filters -->
                 <div class="notification-filters">
                     <button class="filter-btn active" onclick="filterNotifications('all')">
-                        All
+                        All Notifications
+                        <span class="count" id="allCount">8</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('unread')">
-                        Unread <span class="count" id="unreadCount">5</span>
+                        Unread
+                        <span class="count" id="unreadCount">3</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('coaching')">
+                        AI Coach
+                        <span class="count" id="coachingCount">2</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('community')">
                         Community
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('coach')">
-                        AI Coach
+                        <span class="count" id="communityCount">3</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('system')">
                         System
+                        <span class="count" id="systemCount">2</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('billing')">
+                        Billing
+                        <span class="count" id="billingCount">1</span>
                     </button>
                 </div>
 
                 <!-- Notifications List -->
                 <div class="notifications-list" id="notificationsList">
-                    <!-- Unread notifications -->
-                    <div class="notification-item unread" data-type="community">
-                        <div class="notification-icon">👥</div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>New Community Message</h3>
-                                <span class="notification-time">5 minutes ago</span>
-                            </div>
-                            <p>Sarah Johnson replied to your message in General Discussion</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">View Message</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark Read</button>
-                            </div>
+                    <!-- Unread Coaching Notification -->
+                    <div class="notification-item unread" data-type="coaching" data-id="1">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
                         </div>
-                    </div>
-
-                    <div class="notification-item unread" data-type="coach">
-                        <div class="notification-icon">🤖</div>
                         <div class="notification-content">
                             <div class="notification-header">
-                                <h3>Weekly Progress Update</h3>
-                                <span class="notification-time">1 hour ago</span>
-                            </div>
-                            <p>Your AI coach has prepared your weekly progress report. Great improvements this week!</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCoach()">View Report</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark Read</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="notification-item unread" data-type="community">
-                        <div class="notification-icon">👥</div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Someone mentioned you</h3>
+                                <h3>New Coaching Insights Available</h3>
                                 <span class="notification-time">2 hours ago</span>
                             </div>
-                            <p>Mike Chen mentioned you in Goal Setting: "Great advice from @you about morning routines!"</p>
+                            <p>Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.</p>
                             <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">View Mention</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark Read</button>
+                                <button class="btn-link" onclick="goToCoach()">View Insights</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
                             </div>
                         </div>
                     </div>
 
-                    <div class="notification-item unread" data-type="system">
-                        <div class="notification-icon">⚙️</div>
+                    <!-- Unread Community Notification -->
+                    <div class="notification-item unread" data-type="community" data-id="2">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
                         <div class="notification-content">
                             <div class="notification-header">
-                                <h3>Payment Processed</h3>
+                                <h3>New Messages in Business Growth</h3>
+                                <span class="notification-time">4 hours ago</span>
+                            </div>
+                            <p>Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Join Conversation</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unread System Notification -->
+                    <div class="notification-item unread" data-type="system" data-id="3">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Weekly Progress Report Ready</h3>
                                 <span class="notification-time">1 day ago</span>
                             </div>
-                            <p>Your monthly subscription payment of $97.00 has been processed successfully.</p>
+                            <p>Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">View Report</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Coaching Notification -->
+                    <div class="notification-item read" data-type="coaching" data-id="4">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Goal Achievement Milestone</h3>
+                                <span class="notification-time">2 days ago</span>
+                            </div>
+                            <p>Congratulations! You've completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCoach()">View Progress</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="5">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Someone Mentioned You</h3>
+                                <span class="notification-time">3 days ago</span>
+                            </div>
+                            <p>Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">View Message</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="6">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Room Created: Mindfulness</h3>
+                                <span class="notification-time">4 days ago</span>
+                            </div>
+                            <p>A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Explore Room</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read System Notification -->
+                    <div class="notification-item read" data-type="system" data-id="7">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Platform Update: New Features</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>We've added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">See What's New</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Billing Notification -->
+                    <div class="notification-item read" data-type="billing" data-id="8">
+                        <div class="notification-icon billing">
+                            <div class="icon-text">BI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Payment Successful</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToBilling()">View Receipt</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark Read</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="notification-item unread" data-type="coach">
-                        <div class="notification-icon">🎯</div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Goal Reminder</h3>
-                                <span class="notification-time">1 day ago</span>
-                            </div>
-                            <p>Don't forget about your goal to exercise 3 times this week. You're doing great so far!</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCoach()">Update Progress</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark Read</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read notifications -->
-                    <div class="notification-item read" data-type="community">
-                        <div class="notification-icon">👥</div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Welcome to the Community!</h3>
-                                <span class="notification-time">3 days ago</span>
-                            </div>
-                            <p>Welcome to AI Coach community! Introduce yourself in General Discussion.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">Join Discussion</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="notification-item read" data-type="system">
-                        <div class="notification-icon">🎉</div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Account Created Successfully</h3>
-                                <span class="notification-time">3 days ago</span>
-                            </div>
-                            <p>Welcome to AI Coach! Your account has been created and you're ready to start your journey.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToDashboard()">Get Started</button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Empty State -->
+                <!-- Empty State (Hidden by default) -->
                 <div class="empty-state" id="emptyState" style="display: none;">
-                    <div class="empty-icon">🔔</div>
-                    <h3>No notifications</h3>
-                    <p>You're all caught up! We'll notify you when something new happens.</p>
+                    <h3>No notifications found</h3>
+                    <p>You're all caught up! Check back later for updates on your emotional health journey.</p>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notification Settings</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> AI Coach Insights
+                    </label>
+                    <small>Get notified when new coaching insights are available</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Community Messages
+                    </label>
+                    <small>Receive notifications for community activity</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Weekly Reports
+                    </label>
+                    <small>Get your weekly progress summaries</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Billing Updates
+                    </label>
+                    <small>Payment confirmations and billing reminders</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
     </div>
 
     <script src="notifications.js"></script>
