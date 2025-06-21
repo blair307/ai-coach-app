@@ -13,7 +13,7 @@
     "bcryptjs": "^2.4.3",
     "mongoose": "^7.5.0",
     "stripe": "^13.6.0",
-    "openai": "^4.12.4"
+    "openai": "^4.12.4",
     "nodemailer": "^6.9.7"
   }
 }
