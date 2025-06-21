@@ -1,10 +1,10 @@
 /**
- * Bulletproof Sidebar Toggle - Guaranteed to work
+ * Fixed Sidebar Toggle - Uses the same method as the working red button
  * Replace entire sidebar-toggle.js file with this code
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Bulletproof sidebar toggle starting...');
+    console.log('🚀 Fixed sidebar toggle with working floating button...');
     
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
@@ -14,134 +14,141 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Force create floating button immediately
-    let floatingButton = document.querySelector('#floating-toggle');
-    if (floatingButton) {
-        floatingButton.remove(); // Remove any existing one
+    let isOpen = true;
+    let floatingButton = null;
+    
+    // Create floating button using the EXACT method that worked for the red button
+    function createFloatingButton() {
+        // Remove any existing floating button
+        if (floatingButton) {
+            floatingButton.remove();
+        }
+        
+        // Create button exactly like the working red one
+        floatingButton = document.createElement('button');
+        floatingButton.innerHTML = `
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 3px 0; border-radius: 2px;"></span>
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 3px 0; border-radius: 2px;"></span>
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 3px 0; border-radius: 2px;"></span>
+        `;
+        
+        // Use the EXACT same CSS technique that worked for the red button
+        floatingButton.style.cssText = `
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            width: 50px !important;
+            height: 50px !important;
+            background: #6366f1 !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 10px !important;
+            cursor: pointer !important;
+            z-index: 999999 !important;
+            display: none !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+            transition: all 0.3s ease !important;
+        `;
+        
+        // Add click handler using the same method
+        floatingButton.onclick = function() {
+            console.log('🎯 FLOATING BUTTON CLICKED!');
+            openSidebar();
+        };
+        
+        // Append to body (not sidebar!)
+        document.body.appendChild(floatingButton);
+        console.log('✅ Floating button created with working method');
     }
     
-    // Create fresh floating button
-    floatingButton = document.createElement('button');
-    floatingButton.id = 'floating-toggle';
-    floatingButton.className = 'floating-toggle';
-    floatingButton.innerHTML = `
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-    `;
-    floatingButton.setAttribute('aria-label', 'Open sidebar');
+    // Function to open sidebar
+    function openSidebar() {
+        console.log('🔓 OPENING SIDEBAR...');
+        sidebar.classList.remove('sidebar-closed');
+        sidebar.classList.add('sidebar-open');
+        
+        if (floatingButton) {
+            floatingButton.style.display = 'none';
+        }
+        
+        isOpen = true;
+        console.log('✅ SIDEBAR OPENED');
+    }
     
-    // Force it to be positioned and styled correctly
-    floatingButton.style.cssText = `
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
-        width: 50px !important;
-        height: 50px !important;
-        background: #6366f1 !important;
-        border: none !important;
-        border-radius: 10px !important;
-        cursor: pointer !important;
-        z-index: 99999 !important;
-        display: none !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 4px !important;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
-        transition: all 0.3s ease !important;
-    `;
+    // Function to close sidebar
+    function closeSidebar() {
+        console.log('🔒 CLOSING SIDEBAR...');
+        sidebar.classList.remove('sidebar-open');
+        sidebar.classList.add('sidebar-closed');
+        
+        // Show floating button using the working method
+        if (floatingButton) {
+            floatingButton.style.display = 'flex';
+        }
+        
+        isOpen = false;
+        console.log('✅ SIDEBAR CLOSED - FLOATING BUTTON VISIBLE');
+    }
     
-    document.body.appendChild(floatingButton);
-    console.log('✅ Created bulletproof floating button');
-    
-    // Start with sidebar open
-    let isOpen = true;
-    
-    // Simple toggle function
-    function toggleSidebar() {
-        console.log('🔄 TOGGLE! Current state:', isOpen ? 'OPEN' : 'CLOSED');
+    // Handle hamburger button in sidebar
+    function handleHamburgerClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('🎯 HAMBURGER CLICKED!');
         
         if (isOpen) {
-            // CLOSE sidebar
-            console.log('🔒 CLOSING SIDEBAR...');
-            sidebar.classList.remove('sidebar-open');
-            sidebar.classList.add('sidebar-closed');
-            
-            // FORCE floating button to show
-            floatingButton.style.display = 'flex';
-            console.log('✅ SIDEBAR CLOSED - FLOATING BUTTON FORCED VISIBLE');
-            isOpen = false;
-            
+            closeSidebar();
         } else {
-            // OPEN sidebar  
-            console.log('🔓 OPENING SIDEBAR...');
-            sidebar.classList.remove('sidebar-closed');
-            sidebar.classList.add('sidebar-open');
-            
-            // HIDE floating button
-            floatingButton.style.display = 'none';
-            console.log('✅ SIDEBAR OPENED - FLOATING BUTTON HIDDEN');
-            isOpen = true;
+            openSidebar();
         }
     }
     
-    // Attach floating button click handler
-    floatingButton.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🎯 FLOATING BUTTON CLICKED!');
-        toggleSidebar();
-    });
-    
-    // Function to attach sidebar button handler
-    function attachSidebarHandler() {
-        const sidebarBtn = sidebar.querySelector('.sidebar-toggle');
-        if (sidebarBtn) {
-            // Remove old handler first
-            sidebarBtn.removeEventListener('click', handleSidebarClick);
-            // Add new handler
-            sidebarBtn.addEventListener('click', handleSidebarClick);
-            console.log('🎯 Sidebar button handler attached');
+    // Attach handler to sidebar hamburger button
+    function attachHamburgerHandler() {
+        const hamburger = sidebar.querySelector('.sidebar-toggle');
+        if (hamburger) {
+            hamburger.removeEventListener('click', handleHamburgerClick);
+            hamburger.addEventListener('click', handleHamburgerClick);
+            console.log('🎯 Hamburger handler attached');
         }
     }
     
-    // Sidebar button click handler
-    function handleSidebarClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🎯 SIDEBAR BUTTON CLICKED!');
-        toggleSidebar();
-    }
+    // Initialize
+    createFloatingButton();
     
     // Set initial state
     sidebar.classList.add('sidebar-open');
-    floatingButton.style.display = 'none';
+    isOpen = true;
     
-    // Attach initial handlers
-    attachSidebarHandler();
+    // Attach hamburger handler
+    attachHamburgerHandler();
     
-    // Re-attach handlers every second to be absolutely sure
-    setInterval(attachSidebarHandler, 1000);
+    // Re-attach handler periodically to ensure it persists
+    setInterval(attachHamburgerHandler, 2000);
     
     // Handle window resize
     window.addEventListener('resize', function() {
         if (window.innerWidth <= 768 && isOpen) {
-            // Auto-close on mobile
-            toggleSidebar();
+            closeSidebar();
+        } else if (window.innerWidth > 768 && !isOpen) {
+            openSidebar();
         }
     });
     
-    console.log('🎉 Bulletproof sidebar toggle ready!');
+    console.log('🎉 Fixed sidebar toggle ready!');
     
-    // Debug: Show floating button manually after 3 seconds for testing
+    // Test the floating button visibility after 5 seconds
     setTimeout(() => {
-        console.log('🧪 TEST: Forcing floating button visible for 2 seconds...');
+        console.log('🧪 TEST: Showing floating button for 3 seconds...');
         const originalDisplay = floatingButton.style.display;
         floatingButton.style.display = 'flex';
+        
         setTimeout(() => {
             floatingButton.style.display = originalDisplay;
-            console.log('🧪 TEST: Floating button back to original state');
-        }, 2000);
-    }, 3000);
+            console.log('🧪 TEST: Floating button test complete');
+        }, 3000);
+    }, 5000);
 });
