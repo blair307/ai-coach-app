@@ -1,6 +1,6 @@
 // Signup and Payment JavaScript
 
-const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
 const STRIPE_PUBLISHABLE_KEY = 'pk_test_0Ej0byBWJ6uXamOeILEwu9ea'; // Replace with your Stripe key
 
 let stripe;
