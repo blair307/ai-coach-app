@@ -9,14 +9,19 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Floating Toggle Button - Always Visible -->
+        <button id="sidebar-toggle" class="sidebar-toggle floating-toggle" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
         <!-- Sidebar Navigation -->
-        <nav class="sidebar">
+        <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
                 <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
