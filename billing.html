@@ -5,20 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Billing - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="sidebar-toggle.js"></script>
 </head>
 <body>
     <div class="app-container">
         <!-- Sidebar Navigation -->
-        <nav class="sidebar">
-          <div class="sidebar-header">
-    <h2>EEH</h2>
-    <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation menu">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-    </button>
-</div>
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">
                     Dashboard
@@ -161,31 +160,4 @@
                                     <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
                                     <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
                                     <td style="padding: 1rem;">
-                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
-                                    </td>
-                                    <td style="padding: 1rem;">
-                                        <button class="btn-link" onclick="downloadInvoice('INV-2024-001')">Download</button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Feb 10, 2024</td>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Setup Fee</td>
-                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$0.00</td>
-                                    <td style="padding: 1rem;">
-                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
-                                    </td>
-                                    <td style="padding: 1rem;">
-                                        <button class="btn-link" onclick="downloadInvoice('INV-2024-000')">Download</button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script src="billing.js"></script>
-</body>
-</html>
+                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(
