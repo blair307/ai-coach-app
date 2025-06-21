@@ -2358,65 +2358,69 @@ select:focus-visible,
    WORKING SIDEBAR TOGGLE - REPLACE THE EXISTING TOGGLE CSS
    ================================= */
 
-/* Modern hamburger toggle button in sidebar header */
-.sidebar-toggle {
-    background: none;
+/* Floating toggle button - always visible */
+.sidebar-toggle.floating-toggle {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    background: var(--primary);
+    color: white;
     border: none;
+    border-radius: 8px;
+    width: 44px;
+    height: 44px;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
     transition: all 0.3s ease;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
     display: flex;
     flex-direction: column;
     gap: 3px;
-    width: 32px;
-    height: 32px;
     justify-content: center;
     align-items: center;
-    margin-right: 1rem;
 }
 
-.sidebar-toggle:hover {
-    background: var(--surface);
+.sidebar-toggle.floating-toggle:hover {
+    background: var(--primary-dark);
     transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
 }
 
 .hamburger-line {
     width: 18px;
     height: 2px;
-    background: var(--text-secondary);
+    background: white;
     border-radius: 2px;
     transition: all 0.3s ease;
 }
 
-.sidebar-toggle:hover .hamburger-line {
-    background: var(--primary);
-}
-
 /* Animate hamburger to X when sidebar is open */
-.sidebar.sidebar-open .hamburger-line:nth-child(1),
-.sidebar.active .hamburger-line:nth-child(1) {
+.sidebar.sidebar-open ~ .sidebar-toggle .hamburger-line:nth-child(1),
+.sidebar.active ~ .sidebar-toggle .hamburger-line:nth-child(1) {
     transform: rotate(45deg) translate(5px, 5px);
 }
 
-.sidebar.sidebar-open .hamburger-line:nth-child(2),
-.sidebar.active .hamburger-line:nth-child(2) {
+.sidebar.sidebar-open ~ .sidebar-toggle .hamburger-line:nth-child(2),
+.sidebar.active ~ .sidebar-toggle .hamburger-line:nth-child(2) {
     opacity: 0;
 }
 
-.sidebar.sidebar-open .hamburger-line:nth-child(3),
-.sidebar.active .hamburger-line:nth-child(3) {
+.sidebar.sidebar-open ~ .sidebar-toggle .hamburger-line:nth-child(3),
+.sidebar.active ~ .sidebar-toggle .hamburger-line:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -6px);
 }
 
-/* Updated sidebar header layout */
+/* Move toggle button when sidebar is open */
+.sidebar.sidebar-open ~ .sidebar-toggle,
+.sidebar.active ~ .sidebar-toggle {
+    left: 300px;
+    background: var(--error);
+}
+
+/* Sidebar header - back to simple */
 .sidebar-header {
-    padding: 1.5rem;
+    padding: 2rem;
     border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 1rem;
 }
 
 .sidebar-header h2 {
@@ -2430,7 +2434,7 @@ select:focus-visible,
     margin: 0;
 }
 
-/* Core sidebar behavior - THIS IS THE KEY PART */
+/* Core sidebar behavior */
 .sidebar {
     position: fixed;
     left: 0;
@@ -2439,15 +2443,10 @@ select:focus-visible,
     height: 100vh;
     background: var(--background);
     border-right: 1px solid var(--border);
-    transform: translateX(0);
+    transform: translateX(-280px);
     transition: transform 0.3s ease-in-out;
     z-index: 999;
     overflow-y: auto;
-}
-
-/* Hide sidebar when not active */
-.sidebar:not(.sidebar-open):not(.active) {
-    transform: translateX(-280px);
 }
 
 /* Show sidebar when active */
@@ -2456,25 +2455,21 @@ select:focus-visible,
     transform: translateX(0);
 }
 
-/* Adjust main content based on sidebar state */
+/* Main content - always full width to start */
 .main-content {
-    margin-left: 280px;
+    margin-left: 0;
     transition: margin-left 0.3s ease;
     padding: 2rem;
     background: var(--surface);
 }
 
-/* When sidebar is hidden, expand main content */
-.app-container:has(.sidebar:not(.sidebar-open):not(.active)) .main-content {
-    margin-left: 0;
+/* Adjust main content when sidebar is open */
+.sidebar.sidebar-open ~ .main-content,
+.sidebar.active ~ .main-content {
+    margin-left: 280px;
 }
 
-/* Fallback for browsers that don't support :has() */
-body.sidebar-hidden .main-content {
-    margin-left: 0;
-}
-
-/* Sidebar overlay for mobile */
+/* Sidebar overlay */
 .sidebar-overlay {
     position: fixed;
     top: 0;
@@ -2493,48 +2488,30 @@ body.sidebar-hidden .main-content {
     visibility: visible;
 }
 
-/* Prevent body scroll when sidebar is open on mobile */
+/* Prevent body scroll when sidebar is open */
 body.sidebar-active {
     overflow: hidden;
 }
 
 /* Mobile responsive behavior */
 @media (max-width: 768px) {
-    /* On mobile, sidebar starts hidden */
-    .sidebar {
-        transform: translateX(-280px);
-    }
-    
-    /* Show sidebar when active on mobile */
-    .sidebar.sidebar-open,
-    .sidebar.active {
-        transform: translateX(0);
-    }
-    
-    /* Main content always full width on mobile */
-    .main-content {
+    /* Main content adjusts differently on mobile */
+    .sidebar.sidebar-open ~ .main-content,
+    .sidebar.active ~ .main-content {
         margin-left: 0;
-        padding: 1rem;
     }
     
-    /* Show overlay on mobile when sidebar is open */
+    /* Toggle button doesn't move on mobile */
+    .sidebar.sidebar-open ~ .sidebar-toggle,
+    .sidebar.active ~ .sidebar-toggle {
+        left: 1rem;
+    }
+    
+    /* Show overlay on mobile */
     .sidebar.sidebar-open ~ .sidebar-overlay,
     .sidebar.active ~ .sidebar-overlay {
         opacity: 1;
         visibility: visible;
-    }
-}
-
-/* Desktop behavior - sidebar visible by default */
-@media (min-width: 769px) {
-    /* On desktop, sidebar starts visible */
-    .sidebar {
-        transform: translateX(0);
-    }
-    
-    /* Allow hiding on desktop too */
-    .sidebar:not(.sidebar-open):not(.active) {
-        transform: translateX(-280px);
     }
 }
 
