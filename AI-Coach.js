@@ -1,107 +1,389 @@
-// AI Coach JavaScript Functions
-
-// Configuration
-const OPENAI_API_KEY = 'your-openai-api-key-here'; // You'll need to replace this
-const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
-
-// Chat state
-let chatHistory = [];
-let isWaitingForResponse = false;
-
-// Initialize the chat when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadChatHistory();
-    checkAuthStatus();
-    initializeChat();
-});
-
-// Check if user is authenticated
-function checkAuthStatus() {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
+// AI Coach JavaScript
+class AICoach {
+    constructor() {
+        this.messages = [];
+        this.isTyping = false;
+        this.settings = this.loadSettings();
+        this.init();
     }
-    
-    // Load user data
-    loadUserData();
-}
 
-// Load user data from your backend
-async function loadUserData() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    init() {
+        this.updateBranding();
+        this.setupEventListeners();
+        this.loadConversationHistory();
+    }
+
+    updateBranding() {
+        document.title = 'AI Coach - Entrepreneur Emotional Health';
+        const brandElements = document.querySelectorAll('.sidebar-header h2');
+        brandElements.forEach(el => {
+            if (el.textContent === 'AI Coach') {
+                el.textContent = 'EEH';
             }
         });
-        
-        if (response.ok) {
-            const userData = await response.json();
-            // Update UI with user data if needed
-        }
-    } catch (error) {
-        console.error('Error loading user data:', error);
     }
-}
 
-// Load chat history from your backend
-async function loadChatHistory() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/chat/history`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    setupEventListeners() {
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        if (messageInput) {
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.sendMessage();
+                }
+            });
+
+            // Auto-resize textarea
+            messageInput.addEventListener('input', this.autoResizeTextarea);
+        }
+
+        if (sendButton) {
+            sendButton.addEventListener('click', () => this.sendMessage());
+        }
+    }
+
+    autoResizeTextarea(e) {
+        e.target.style.height = 'auto';
+        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
+    }
+
+    loadConversationHistory() {
+        const saved = localStorage.getItem('eeh_coach_conversation');
+        if (saved) {
+            this.messages = JSON.parse(saved);
+            this.renderMessages();
+        }
+    }
+
+    saveConversation() {
+        localStorage.setItem('eeh_coach_conversation', JSON.stringify(this.messages));
+    }
+
+    sendMessage() {
+        const messageInput = document.getElementById('messageInput');
+        const content = messageInput.value.trim();
+
+        if (!content || this.isTyping) return;
+
+        // Add user message
+        const userMessage = {
+            id: Date.now(),
+            type: 'user',
+            content: content,
+            timestamp: new Date()
+        };
+
+        this.messages.push(userMessage);
+        messageInput.value = '';
+        messageInput.style.height = 'auto';
+
+        this.renderMessages();
+        this.saveConversation();
+
+        // Show typing indicator and get AI response
+        this.showTypingIndicator();
+        setTimeout(() => {
+            this.getAIResponse(content);
+        }, 1500 + Math.random() * 2000); // Random delay 1.5-3.5s
+    }
+
+    renderMessages() {
+        const container = document.getElementById('chatMessages');
+        if (!container) return;
+
+        // Keep the welcome message and add conversation messages
+        const welcomeMessage = `
+            <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 80%;">
+                <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
+                    Welcome! I'm your AI Emotional Health Coach, specialized in helping entrepreneurs manage stress, build emotional intelligence, and achieve work-life balance. 
+                    
+                    How are you feeling today? What challenges would you like to work on?
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.875rem;">Just now</div>
+            </div>
+        `;
+
+        const conversationMessages = this.messages.map(message => {
+            if (message.type === 'user') {
+                return `
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 1.5rem;">
+                        <div class="message-content" style="background: var(--primary); color: white; padding: 1rem 1.5rem; border-radius: var(--radius-lg); max-width: 70%;">
+                            <div style="line-height: 1.6; margin-bottom: 0.5rem;">${this.escapeHtml(message.content)}</div>
+                            <div style="opacity: 0.8; font-size: 0.875rem;">${this.formatTimestamp(message.timestamp)}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
+                        <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); border-left: 3px solid var(--primary); max-width: 80%;">
+                            <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">${this.escapeHtml(message.content)}</div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem;">${this.formatTimestamp(message.timestamp)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+        }).join('');
+
+        container.innerHTML = welcomeMessage + conversationMessages;
+        container.scrollTop = container.scrollHeight;
+    }
+
+    showTypingIndicator() {
+        this.isTyping = true;
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) {
+            indicator.style.display = 'flex';
+        }
+    }
+
+    hideTypingIndicator() {
+        this.isTyping = false;
+        const indicator = document.getElementById('typingIndicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+
+    getAIResponse(userMessage) {
+        // Simulate AI response (in real app, this would call OpenAI API)
+        const responses = this.generateContextualResponse(userMessage);
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+        const aiMessage = {
+            id: Date.now(),
+            type: 'ai',
+            content: randomResponse,
+            timestamp: new Date()
+        };
+
+        this.messages.push(aiMessage);
+        this.hideTypingIndicator();
+        this.renderMessages();
+        this.saveConversation();
+    }
+
+    generateContextualResponse(userMessage) {
+        const message = userMessage.toLowerCase();
+        
+        if (message.includes('stress') || message.includes('overwhelm')) {
+            return [
+                "I understand that stress can feel overwhelming, especially as an entrepreneur. Let's work on some strategies to help you manage it. What specific situations trigger your stress the most?",
+                "Stress is a common challenge for entrepreneurs. One effective technique is the 4-7-8 breathing method. Would you like me to guide you through it?",
+                "It sounds like you're dealing with a lot right now. Remember that stress is often a signal that we need to pause and reassess. What's the most pressing thing on your mind today?"
+            ];
+        }
+        
+        if (message.includes('team') || message.includes('employee') || message.includes('leadership')) {
+            return [
+                "Leadership challenges are part of every entrepreneur's journey. What specific team dynamics are you finding difficult right now?",
+                "Building a strong team requires emotional intelligence and clear communication. Can you tell me more about what's happening with your team?",
+                "Great leaders know when to listen and when to act. What kind of leadership challenge are you facing?"
+            ];
+        }
+        
+        if (message.includes('goal') || message.includes('planning') || message.includes('future')) {
+            return [
+                "Setting meaningful goals is crucial for entrepreneurial success. What goals are you working toward right now?",
+                "I'd love to help you clarify your goals. What does success look like for you in the next 3-6 months?",
+                "Goal setting is both an art and a science. Let's break down what you want to achieve into manageable steps."
+            ];
+        }
+        
+        if (message.includes('balance') || message.includes('life') || message.includes('personal')) {
+            return [
+                "Work-life balance is especially challenging for entrepreneurs who are passionate about their vision. How are you currently managing the boundaries between work and personal time?",
+                "Finding balance doesn't mean perfect equality—it means being intentional about your energy and time. What areas of your life feel out of balance right now?",
+                "As an entrepreneur, you're likely used to putting your business first. But taking care of yourself is essential for long-term success. What does self-care look like for you?"
+            ];
+        }
+        
+        // Default responses
+        return [
+            "Thank you for sharing that with me. As an entrepreneur, you face unique challenges that require both emotional resilience and practical strategies. Can you tell me more about what's on your mind?",
+            "I appreciate you opening up. Every entrepreneur's journey is different, and it's important to acknowledge both the struggles and the growth. What would be most helpful to focus on right now?",
+            "What you're experiencing is very common among entrepreneurs. The combination of pressure, uncertainty, and responsibility can be intense. How can I best support you through this?",
+            "I'm here to help you navigate both the emotional and practical aspects of entrepreneurship. What feels like the biggest challenge you're facing today?"
+        ];
+    }
+
+    // Quick topic handlers
+    quickTopic(topic) {
+        const topicPrompts = {
+            stress: "I'd like to work on stress management techniques.",
+            leadership: "I need help with leadership and team management.",
+            burnout: "I'm concerned about preventing burnout.",
+            communication: "I want to improve my team communication skills.",
+            decision: "I need guidance on making difficult business decisions.",
+            confidence: "I'd like to work on building my confidence as a leader."
+        };
+
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput && topicPrompts[topic]) {
+            messageInput.value = topicPrompts[topic];
+            messageInput.focus();
+        }
+    }
+
+    // Settings functionality
+    toggleSettings() {
+        const modal = this.createSettingsModal();
+        document.body.appendChild(modal);
+    }
+
+    createSettingsModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>AI Coach Settings</h3>
+                    <button class="close-btn" onclick="this.closest('.modal').remove()">×</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${this.settings.longResponses ? 'checked' : ''}> 
+                            Detailed responses
+                        </label>
+                        <small>Get more comprehensive guidance and explanations</small>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${this.settings.emotionalFocus ? 'checked' : ''}> 
+                            Focus on emotional wellness
+                        </label>
+                        <small>Prioritize emotional intelligence and mental health topics</small>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" ${this.settings.businessFocus ? 'checked' : ''}> 
+                            Include business strategy
+                        </label>
+                        <small>Include practical business advice with emotional guidance</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                    <button class="btn btn-primary" onclick="window.aiCoach.saveSettings(this.closest('.modal'))">Save Settings</button>
+                </div>
+            </div>
+        `;
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
             }
         });
+
+        return modal;
+    }
+
+    saveSettings(modal) {
+        const checkboxes = modal.querySelectorAll('input[type="checkbox"]');
+        this.settings = {
+            longResponses: checkboxes[0].checked,
+            emotionalFocus: checkboxes[1].checked,
+            businessFocus: checkboxes[2].checked
+        };
         
-        if (response.ok) {
-            const history = await response.json();
-            chatHistory = history.messages || [];
-            displayChatHistory();
+        localStorage.setItem('eeh_coach_settings', JSON.stringify(this.settings));
+        modal.remove();
+        this.showToast('Settings saved successfully!');
+    }
+
+    loadSettings() {
+        const saved = localStorage.getItem('eeh_coach_settings');
+        return saved ? JSON.parse(saved) : {
+            longResponses: true,
+            emotionalFocus: true,
+            businessFocus: true
+        };
+    }
+
+    // Utility functions
+    formatTimestamp(date) {
+        return new Date(date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    showToast(message) {
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => toast.remove());
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
+    // Clear conversation
+    clearConversation() {
+        if (confirm('Clear all conversation history? This cannot be undone.')) {
+            this.messages = [];
+            localStorage.removeItem('eeh_coach_conversation');
+            this.renderMessages();
+            this.showToast('Conversation cleared');
         }
-    } catch (error) {
-        console.error('Error loading chat history:', error);
-        // Continue with empty history if loading fails
+    }
+
+    // Export chat
+    exportChat() {
+        const chatText = this.messages.map(msg => 
+            `[${this.formatTimestamp(msg.timestamp)}] ${msg.type === 'user' ? 'You' : 'AI Coach'}: ${msg.content}`
+        ).join('\n\n');
+        
+        const blob = new Blob([chatText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `eeh-coaching-session-${new Date().toISOString().split('T')[0]}.txt`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            window.location.href = 'login.html';
+        }
     }
 }
 
-// Display existing chat history
-function displayChatHistory() {
-    const messagesContainer = document.getElementById('chatMessages');
-    
-    // Clear existing messages (except welcome message)
-    const welcomeMessage = messagesContainer.querySelector('.coach-message');
-    messagesContainer.innerHTML = '';
-    if (welcomeMessage) {
-        messagesContainer.appendChild(welcomeMessage);
+// Global functions for HTML onclick handlers
+function sendMessage() {
+    if (window.aiCoach) {
+        window.aiCoach.sendMessage();
     }
-    
-    // Add historical messages
-    chatHistory.forEach(message => {
-        addMessageToChat(message.content, message.role, message.timestamp, false);
-    });
-    
-    scrollToBottom();
 }
 
-// Initialize chat functionality
-function initializeChat() {
-    const messageInput = document.getElementById('messageInput');
-    const sendButton = document.getElementById('sendButton');
-    
-    // Enable send button when there's text
-    messageInput.addEventListener('input', function() {
-        sendButton.disabled = !this.value.trim() || isWaitingForResponse;
-    });
-    
-    // Auto-resize textarea
-    messageInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-    });
-}
-
-// Handle enter key press
 function handleKeyPress(event) {
     if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
@@ -109,334 +391,82 @@ function handleKeyPress(event) {
     }
 }
 
-// Send message to AI coach
-async function sendMessage() {
-    const messageInput = document.getElementById('messageInput');
-    const message = messageInput.value.trim();
-    
-    if (!message || isWaitingForResponse) return;
-    
-    // Clear input and disable send button
-    messageInput.value = '';
-    messageInput.style.height = 'auto';
-    isWaitingForResponse = true;
-    updateSendButton();
-    
-    // Add user message to chat
-    addMessageToChat(message, 'user');
-    
-    // Show typing indicator
-    showTypingIndicator();
-    
-    try {
-        // Send to OpenAI API through your backend
-        const response = await fetch(`${API_BASE_URL}/api/chat/send`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            },
-            body: JSON.stringify({
-                message: message,
-                chatHistory: chatHistory
-            })
-        });
-        
-        if (!response.ok) {
-            throw new Error('Failed to get response from AI coach');
-        }
-        
-        const data = await response.json();
-        
-        // Add AI response to chat
-        addMessageToChat(data.response, 'assistant');
-        
-        // Save to chat history
-        saveChatHistory();
-        
-    } catch (error) {
-        console.error('Error sending message:', error);
-        addMessageToChat(
-            "I'm sorry, I'm having trouble connecting right now. Please try again in a moment.", 
-            'assistant'
-        );
-    } finally {
-        hideTypingIndicator();
-        isWaitingForResponse = false;
-        updateSendButton();
+function toggleSettings() {
+    if (window.aiCoach) {
+        window.aiCoach.toggleSettings();
     }
 }
 
-// Add message to chat display
-function addMessageToChat(content, role, timestamp = null, shouldSave = true) {
-    const messagesContainer = document.getElementById('chatMessages');
-    const messageDiv = document.createElement('div');
-    
-    const isUser = role === 'user';
-    const messageTime = timestamp || new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    
-    messageDiv.className = `message ${isUser ? 'user-message' : 'coach-message'}`;
-    messageDiv.innerHTML = `
-        <div class="message-avatar">${isUser ? '👤' : '🤖'}</div>
-        <div class="message-content">
-            <div class="message-text">${content}</div>
-            <div class="message-time">${messageTime}</div>
-        </div>
-    `;
-    
-    messagesContainer.appendChild(messageDiv);
-    scrollToBottom();
-    
-    // Add to chat history
-    if (shouldSave) {
-        chatHistory.push({
-            role: role,
-            content: content,
-            timestamp: messageTime
-        });
+function clearConversation() {
+    if (window.aiCoach) {
+        window.aiCoach.clearConversation();
     }
 }
 
-// Save chat history to backend
-async function saveChatHistory() {
-    try {
-        await fetch(`${API_BASE_URL}/api/chat/save`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            },
-            body: JSON.stringify({
-                messages: chatHistory
-            })
-        });
-    } catch (error) {
-        console.error('Error saving chat history:', error);
-    }
-}
-
-// Show typing indicator
-function showTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    indicator.style.display = 'flex';
-}
-
-// Hide typing indicator
-function hideTypingIndicator() {
-    const indicator = document.getElementById('typingIndicator');
-    indicator.style.display = 'none';
-}
-
-// Update send button state
-function updateSendButton() {
-    const sendButton = document.getElementById('sendButton');
-    const messageInput = document.getElementById('messageInput');
-    
-    sendButton.disabled = !messageInput.value.trim() || isWaitingForResponse;
-    sendButton.textContent = isWaitingForResponse ? 'Sending...' : 'Send Message';
-}
-
-// Scroll to bottom of chat
-function scrollToBottom() {
-    const messagesContainer = document.getElementById('chatMessages');
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-}
-
-// Clear chat history
-function clearChat() {
-    if (confirm('Are you sure you want to clear this chat? This action cannot be undone.')) {
-        chatHistory = [];
-        const messagesContainer = document.getElementById('chatMessages');
-        
-        // Keep only the welcome message
-        const welcomeMessage = messagesContainer.querySelector('.coach-message');
-        messagesContainer.innerHTML = '';
-        if (welcomeMessage) {
-            messagesContainer.appendChild(welcomeMessage);
-        }
-        
-        // Clear from backend
-        saveChatHistory();
-    }
-}
-
-// Export chat history
 function exportChat() {
-    const chatData = {
-        exportDate: new Date().toISOString(),
-        messages: chatHistory
-    };
-    
-    const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `ai-coach-chat-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
-
-// Select quick topic
-function selectTopic(topic) {
-    const topicPrompts = {
-        career: "I'd like to discuss my career growth and professional development.",
-        relationships: "I want to work on improving my relationships with others.",
-        health: "I'd like to focus on my health and wellness goals.",
-        personal: "I want to work on personal development and self-improvement.",
-        stress: "I need help managing stress and finding better work-life balance.",
-        goals: "I want to set clear goals and create a plan to achieve them."
-    };
-    
-    const messageInput = document.getElementById('messageInput');
-    messageInput.value = topicPrompts[topic] || '';
-    messageInput.focus();
-    
-    // Auto-resize textarea
-    messageInput.style.height = 'auto';
-    messageInput.style.height = Math.min(messageInput.scrollHeight, 120) + 'px';
-    
-    updateSendButton();
-}
-
-// Add new goal
-function addGoal() {
-    const goalText = prompt('What goal would you like to add for this session?');
-    if (goalText && goalText.trim()) {
-        const goalsList = document.getElementById('sessionGoals');
-        const goalId = 'goal' + Date.now();
-        
-        const goalDiv = document.createElement('div');
-        goalDiv.className = 'goal-item';
-        goalDiv.innerHTML = `
-            <input type="checkbox" id="${goalId}">
-            <label for="${goalId}">${goalText.trim()}</label>
-        `;
-        
-        goalsList.appendChild(goalDiv);
+    if (window.aiCoach) {
+        window.aiCoach.exportChat();
     }
 }
 
-// Logout function
+function quickTopic(topic) {
+    if (window.aiCoach) {
+        window.aiCoach.quickTopic(topic);
+    }
+}
+
 function logout() {
-    if (confirm('Are you sure you want to logout?')) {
-        localStorage.removeItem('authToken');
-        window.location.href = 'login.html';
+    if (window.aiCoach) {
+        window.aiCoach.logout();
     }
 }
 
-// Add notification badge update function
-function updateNotificationBadge() {
-    // This would typically fetch from your backend
-    fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
-        headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const badge = document.getElementById('notificationBadge');
-        if (badge && data.count > 0) {
-            badge.textContent = data.count;
-            badge.style.display = 'inline';
-        } else if (badge) {
-            badge.style.display = 'none';
-        }
-    })
-    .catch(error => console.error('Error updating notification badge:', error));
-}
-
-// Update notification badge on page load
-document.addEventListener('DOMContentLoaded', function() {
-    updateNotificationBadge();
-    
-    // Update every 30 seconds
-    setInterval(updateNotificationBadge, 30000);
-});
-
-// Handle window resize for responsive design
-window.addEventListener('resize', function() {
-    // Adjust chat container height on mobile
-    if (window.innerWidth <= 768) {
-        const chatContainer = document.querySelector('.chat-container');
-        if (chatContainer) {
-            chatContainer.style.height = 'calc(60vh - 2rem)';
-        }
-    }
-});
-
-// Auto-save drafts (optional feature)
-let draftTimer;
-function saveDraft() {
-    const messageInput = document.getElementById('messageInput');
-    const draft = messageInput.value.trim();
-    
-    if (draft) {
-        localStorage.setItem('chatDraft', draft);
-    } else {
-        localStorage.removeItem('chatDraft');
-    }
-}
-
-// Load draft on page load
-function loadDraft() {
-    const draft = localStorage.getItem('chatDraft');
-    if (draft) {
-        const messageInput = document.getElementById('messageInput');
-        messageInput.value = draft;
-        updateSendButton();
-    }
-}
-
-// Set up draft auto-save
-document.addEventListener('DOMContentLoaded', function() {
-    loadDraft();
+// Mood tracking
+function trackMood(mood) {
+    const moodPrompts = {
+        great: "I'm feeling great today! I'd like to maintain this positive energy.",
+        good: "I'm feeling good today. I'd like to make the most of this positive state.",
+        okay: "I'm feeling okay today, but could use some guidance to feel better.",
+        stressed: "I'm feeling stressed today and could use some help managing it."
+    };
     
     const messageInput = document.getElementById('messageInput');
-    if (messageInput) {
-        messageInput.addEventListener('input', function() {
-            clearTimeout(draftTimer);
-            draftTimer = setTimeout(saveDraft, 1000); // Save after 1 second of no typing
-        });
-        
-        // Clear draft when message is sent
-        const originalSendMessage = sendMessage;
-        sendMessage = function() {
-            localStorage.removeItem('chatDraft');
-            return originalSendMessage();
-        };
+    if (messageInput && moodPrompts[mood]) {
+        messageInput.value = moodPrompts[mood];
+        messageInput.focus();
     }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.aiCoach = new AICoach();
 });
 
-// Error handling for network issues
-function handleNetworkError(error) {
-    console.error('Network error:', error);
-    
-    // Show user-friendly error message
-    addMessageToChat(
-        "I'm having trouble connecting to the server. Please check your internet connection and try again.",
-        'assistant'
-    );
-    
-    // Re-enable input
-    isWaitingForResponse = false;
-    updateSendButton();
-    hideTypingIndicator();
-}
-
-// Retry mechanism for failed requests
-async function retryRequest(requestFn, maxRetries = 3) {
-    for (let i = 0; i < maxRetries; i++) {
-        try {
-            return await requestFn();
-        } catch (error) {
-            if (i === maxRetries - 1) {
-                throw error;
-            }
-            
-            // Wait before retrying (exponential backoff)
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000));
-        }
+// Add required CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
-}
+
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .modal {
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        animation: modalSlideIn 0.3s ease-out;
+    }
+
+    @keyframes modalSlideIn {
+        from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+`;
+
+document.head.appendChild(style);
