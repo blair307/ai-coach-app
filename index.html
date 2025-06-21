@@ -3,13 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Coach - Transform Your Life</title>
+    <title>Entrepreneur Emotional Health - Transform Your Business Journey</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* ONLY the specific fixes you requested */
+        
+        /* Fix 1: Logo integration */
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .nav-brand img {
+            height: 40px;
+            width: auto;
+        }
+        
+        /* Fix 2: Sign up button - WHITE FONT */
+        .nav-link.btn-primary {
+            color: white !important;
+        }
+        
+        .nav-link.btn-primary:hover {
+            color: white !important;
+        }
+        
+        /* Fix 3: Best Value badge positioning - COMPLETE FIX */
+        .pricing-card.featured {
+            position: relative;
+            overflow: visible;
+        }
+        
+        .badge {
+            position: absolute;
+            top: -12px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            z-index: 10;
+            white-space: nowrap;
+        }
+        
+        /* Ensure pricing cards container allows badge overflow */
+        .pricing-cards {
+            position: relative;
+            padding-top: 20px;
+        }
+        
+        /* Fix 4: CTA buttons white text */
+        .cta-section .btn-primary {
+            color: white !important;
+        }
+    </style>
 </head>
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">AI Coach</div>
+            <div class="nav-brand">
+                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDQwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHRleHQgeD0iMjAiIHk9IjQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMzMzMiPmVudHJlcHJlbmV1cjwvdGV4dD4KICA8dGV4dCB4PSIyMCIgeT0iNzAiIGZvbnQtZmFtaWx5PSJDdXJzaXZlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXN0eWxlPSJpdGFsaWMiIGZpbGw9IiM2NjdlZWEiPkVtb3Rpb25hbCBIZWFsdGg8L3RleHQ+Cjwvc3ZnPgo=" alt="Entrepreneur Emotional Health">
+                Entrepreneur Emotional Health
+            </div>
             <div class="nav-links">
                 <a href="login.html" class="nav-link">Login</a>
                 <a href="signup.html" class="nav-link btn-primary">Get Started</a>
@@ -86,7 +145,7 @@
     <footer class="footer">
         <div style="max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; text-align: left;">
             <div>
-                <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">AI Coach</h3>
+                <h3 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 700;">Entrepreneur Emotional Health</h3>
                 <p style="color: rgba(255,255,255,0.8); line-height: 1.6;">Transform your life with personalized AI coaching and supportive community connections.</p>
             </div>
             <div>
@@ -107,7 +166,7 @@
             </div>
         </div>
         <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2);">
-            <p>&copy; 2025 AI Coach. All rights reserved.</p>
+            <p>&copy; 2025 Entrepreneur Emotional Health. All rights reserved.</p>
         </div>
     </footer>
 
