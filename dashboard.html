@@ -30,7 +30,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
+                    <span class="notification-badge" id="notificationBadge">2</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -113,10 +113,18 @@
                 <div class="dashboard-card">
                     <h3>Time & Schedule</h3>
                     
-                    <!-- Timer Display -->
+                    <!-- Countdown Timer Display -->
                     <div class="timer-display">
-                        <div class="current-time" id="currentTime">--:--:-- --</div>
-                        <div class="current-date" id="currentDate">Loading...</div>
+                        <div class="countdown-container" id="countdownContainer">
+                            <div class="countdown-label">Next Meeting In:</div>
+                            <div class="countdown-timer" id="countdownTimer">--:--:--</div>
+                            <div class="countdown-date" id="countdownDate">Loading...</div>
+                        </div>
+                        <div class="no-meeting" id="noMeeting" style="display: none;">
+                            <div class="no-meeting-text">No upcoming meetings</div>
+                            <div class="current-time" id="currentTime">--:--:-- --</div>
+                            <div class="current-date" id="currentDate">Loading...</div>
+                        </div>
                         <div class="timezone">Central Time (CST/CDT)</div>
                     </div>
                     
@@ -263,21 +271,60 @@
     const EARLY_ACCESS = 10;
     const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
 
-    // Dynamic notification management
-    function updateNotificationBadge() {
-        // Count unread notifications (in this example, we have 2 unread)
-        const unreadNotifications = document.querySelectorAll('.notification-item.unread').length;
-        const badge = document.getElementById('notificationBadge');
+    function getNextMeeting() {
+        const now = new Date();
+        let nextMeeting = new Date(MEETING_START_DATE);
         
-        if (unreadNotifications > 0) {
-            badge.textContent = unreadNotifications;
-            badge.style.display = 'inline';
+        // Find the next meeting date
+        while (nextMeeting <= now) {
+            nextMeeting.setDate(nextMeeting.getDate() + 14); // Every 2 weeks
+        }
+        
+        return nextMeeting;
+    }
+
+    function updateCountdownTimer() {
+        const now = new Date();
+        const nextMeeting = getNextMeeting();
+        const timeDiff = nextMeeting - now;
+        
+        const countdownContainer = document.getElementById('countdownContainer');
+        const noMeetingContainer = document.getElementById('noMeeting');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownDate = document.getElementById('countdownDate');
+        
+        if (timeDiff > 0) {
+            // Show countdown
+            countdownContainer.style.display = 'block';
+            noMeetingContainer.style.display = 'none';
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            if (days > 0) {
+                countdownTimer.textContent = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                countdownTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            const dateString = nextMeeting.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            countdownDate.textContent = dateString + ' at 5:30 PM CST';
         } else {
-            badge.style.display = 'none';
+            // No upcoming meetings (shouldn't happen with our logic, but fallback)
+            countdownContainer.style.display = 'none';
+            noMeetingContainer.style.display = 'block';
+            updateCurrentTime();
         }
     }
 
-    function updateTimer() {
+    function updateCurrentTime() {
         const now = new Date();
         
         const timeOptions = {
@@ -449,12 +496,9 @@
 
     // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        // Update notification badge
-        updateNotificationBadge();
-        
-        // Start timer
-        updateTimer();
-        setInterval(updateTimer, 1000);
+        // Start countdown timer
+        updateCountdownTimer();
+        setInterval(updateCountdownTimer, 1000);
         
         // Generate initial calendar
         generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
