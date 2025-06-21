@@ -1,18 +1,18 @@
 /**
- * Fixed Permanent Sidebar Toggle - Works on all pages
+ * Updated Sidebar Toggle - Always shows hamburger button for desktop use
  * Replace entire sidebar-toggle.js file with this code
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing fixed sidebar toggle...');
+    console.log('🚀 Initializing sidebar toggle with always-visible hamburger...');
     
     // Find elements
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
     const sidebarHeader = document.querySelector('.sidebar-header');
     
-    // Find ALL toggle buttons (there are two with same ID - we'll fix this)
-    const toggleButtons = document.querySelectorAll('#sidebar-toggle, .sidebar-toggle');
+    // Find ALL toggle buttons (there should be one in sidebar header)
+    const toggleButtons = document.querySelectorAll('.sidebar-toggle');
     
     console.log('Found elements:', {
         sidebar: !!sidebar,
@@ -44,28 +44,24 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Created floating toggle button');
     }
     
-    // Set initial state based on screen size
-    let isOpen = window.innerWidth > 768; // Open on desktop, closed on mobile
+    // Always start with sidebar OPEN on all screen sizes
+    let isOpen = true;
     
-    // Apply initial state
+    // Apply initial state - sidebar always starts open
     function setInitialState() {
-        if (isOpen) {
-            // Sidebar open
-            sidebar.classList.remove('sidebar-closed');
-            sidebar.classList.add('sidebar-open');
-            floatingButton.style.display = 'none';
-            console.log('📱 Initial state: OPEN');
-        } else {
-            // Sidebar closed
-            sidebar.classList.remove('sidebar-open');
-            sidebar.classList.add('sidebar-closed');
-            floatingButton.style.display = 'flex';
-            console.log('📱 Initial state: CLOSED');
-        }
+        console.log('📱 Setting initial state: SIDEBAR OPEN');
+        sidebar.classList.remove('sidebar-closed');
+        sidebar.classList.add('sidebar-open');
+        floatingButton.style.display = 'none';
         
         // Update ARIA attributes
-        sidebar.setAttribute('aria-hidden', !isOpen);
-        floatingButton.setAttribute('aria-expanded', isOpen);
+        sidebar.setAttribute('aria-hidden', false);
+        floatingButton.setAttribute('aria-expanded', true);
+        
+        // Update all toggle buttons
+        toggleButtons.forEach(btn => {
+            btn.setAttribute('aria-expanded', true);
+        });
     }
     
     // Toggle function
@@ -102,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Attach click handlers to ALL toggle buttons
     toggleButtons.forEach((button, index) => {
-        console.log(`🎯 Attaching handler to button ${index + 1}`);
+        console.log(`🎯 Attaching handler to button ${index + 1}:`, button);
         button.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -119,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleSidebar();
     });
     
-    // Handle escape key
+    // Handle escape key (only close on mobile)
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && isOpen && window.innerWidth <= 768) {
             console.log('⌨️ Escape key pressed - closing sidebar');
@@ -127,17 +123,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Handle window resize
+    // Handle window resize - but keep desktop functionality
     let resizeTimeout;
     window.addEventListener('resize', function() {
         clearTimeout(resizeTimeout);
         resizeTimeout = setTimeout(() => {
-            const shouldBeOpen = window.innerWidth > 768;
-            if (shouldBeOpen !== isOpen) {
-                console.log(`📏 Screen size changed - ${shouldBeOpen ? 'opening' : 'closing'} sidebar`);
-                isOpen = !shouldBeOpen; // Flip it so toggle() will set it correctly
+            // Only auto-close on very small screens
+            if (window.innerWidth <= 600 && isOpen) {
+                console.log(`📏 Very small screen detected - closing sidebar`);
                 toggleSidebar();
             }
+            // On larger screens, let user control the sidebar
         }, 100);
     });
     
@@ -149,6 +145,13 @@ document.addEventListener('DOMContentLoaded', function() {
         isOpen,
         sidebarClasses: sidebar.className,
         floatingButtonDisplay: floatingButton.style.display,
-        screenWidth: window.innerWidth
+        screenWidth: window.innerWidth,
+        toggleButtonsFound: toggleButtons.length
     });
+    
+    // Extra debugging - let's see what's in the sidebar header
+    if (sidebarHeader) {
+        console.log('📋 Sidebar header contents:', sidebarHeader.innerHTML);
+        console.log('📋 Sidebar header children:', sidebarHeader.children);
+    }
 });
