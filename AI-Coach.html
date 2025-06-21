@@ -186,6 +186,112 @@
         </main>
     </div>
 
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>AI Coach Settings</h3>
+                <button class="close-btn" onclick="closeSettings()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Chat Preferences -->
+                <div class="settings-section">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Chat Preferences</h4>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="autoSave" checked>
+                            Auto-save conversations
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="typingIndicator" checked>
+                            Show typing indicator
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="soundNotifications">
+                            Sound notifications
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Coach Style -->
+                <div class="settings-section">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Coaching Style</h4>
+                    
+                    <div class="form-group">
+                        <label for="coachingTone">Response tone:</label>
+                        <select id="coachingTone" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border); border-radius: var(--radius); margin-top: 0.5rem;">
+                            <option value="supportive">Supportive & Encouraging</option>
+                            <option value="direct">Direct & Practical</option>
+                            <option value="analytical">Analytical & Detailed</option>
+                            <option value="gentle">Gentle & Patient</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="responseLength">Response length:</label>
+                        <select id="responseLength" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border); border-radius: var(--radius); margin-top: 0.5rem;">
+                            <option value="concise">Concise</option>
+                            <option value="moderate" selected>Moderate</option>
+                            <option value="detailed">Detailed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Privacy -->
+                <div class="settings-section">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Privacy & Data</h4>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="dataAnalytics" checked>
+                            Allow usage analytics for improvement
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                            <input type="checkbox" id="personalizedInsights" checked>
+                            Generate personalized insights
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Session Management -->
+                <div class="settings-section">
+                    <h4 style="margin-bottom: 1rem; color: var(--text-primary);">Session Management</h4>
+                    
+                    <div class="form-group">
+                        <label for="sessionReminder">Session reminders:</label>
+                        <select id="sessionReminder" style="width: 100%; padding: 0.5rem; border: 2px solid var(--border); border-radius: var(--radius); margin-top: 0.5rem;">
+                            <option value="none">None</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly" selected>Weekly</option>
+                            <option value="custom">Custom</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <button class="btn btn-outline" onclick="clearChatHistory()" style="width: 100%;">
+                            Clear Chat History
+                        </button>
+                        <small style="color: var(--text-muted); margin-top: 0.5rem; display: block;">This action cannot be undone</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Typing Indicator (Hidden by default) -->
     <div class="typing-indicator" id="typingIndicator" style="display: none;">
         <div class="typing-dots">
