@@ -6,21 +6,7 @@
     <title>Entrepreneur Emotional Health - Transform Your Business Journey</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* ONLY the specific fixes you requested */
-        
-        /* Fix 1: Logo integration */
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .nav-brand img {
-            height: 40px;
-            width: auto;
-        }
-        
-        /* Fix 2: Sign up button - WHITE FONT */
+        /* Fix sign up button white text */
         .nav-link.btn-primary {
             color: white !important;
         }
@@ -29,7 +15,7 @@
             color: white !important;
         }
         
-        /* Fix 3: Best Value badge positioning - COMPLETE FIX */
+        /* Fix Best Value badge positioning */
         .pricing-card.featured {
             position: relative;
             overflow: visible;
@@ -50,13 +36,24 @@
             white-space: nowrap;
         }
         
-        /* Ensure pricing cards container allows badge overflow */
         .pricing-cards {
             position: relative;
             padding-top: 20px;
         }
         
-        /* Fix 4: CTA buttons white text */
+        /* FIXED: Align pricing card buttons at bottom */
+        .pricing-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 350px;
+        }
+        
+        .pricing-card .btn {
+            margin-top: auto;
+        }
+        
+        /* Ensure CTA buttons have white text */
         .cta-section .btn-primary {
             color: white !important;
         }
@@ -65,10 +62,7 @@
 <body>
     <nav class="navbar">
         <div class="nav-container">
-            <div class="nav-brand">
-                <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDQwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHRleHQgeD0iMjAiIHk9IjQwIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiMzMzMiPmVudHJlcHJlbmV1cjwvdGV4dD4KICA8dGV4dCB4PSIyMCIgeT0iNzAiIGZvbnQtZmFtaWx5PSJDdXJzaXZlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjI4IiBmb250LXN0eWxlPSJpdGFsaWMiIGZpbGw9IiM2NjdlZWEiPkVtb3Rpb25hbCBIZWFsdGg8L3RleHQ+Cjwvc3ZnPgo=" alt="Entrepreneur Emotional Health">
-                Entrepreneur Emotional Health
-            </div>
+            <div class="nav-brand">Entrepreneur Emotional Health</div>
             <div class="nav-links">
                 <a href="login.html" class="nav-link">Login</a>
                 <a href="signup.html" class="nav-link btn-primary">Get Started</a>
@@ -83,17 +77,21 @@
                 <p>Get personalized guidance, connect with a supportive community, and transform your life with AI-powered coaching tailored to your unique journey.</p>
                 <div class="pricing-cards">
                     <div class="pricing-card">
-                        <h3>Monthly Plan</h3>
-                        <div class="price">$97<span>/month</span></div>
-                        <p>Perfect for getting started with your coaching journey</p>
+                        <div>
+                            <h3>Monthly Plan</h3>
+                            <div class="price">$97<span>/month</span></div>
+                            <p>Perfect for getting started with your coaching journey</p>
+                        </div>
                         <a href="signup.html?plan=monthly" class="btn btn-primary btn-full">Start Monthly</a>
                     </div>
                     <div class="pricing-card featured">
                         <div class="badge">Best Value</div>
-                        <h3>Yearly Plan</h3>
-                        <div class="price">$929<span>/year</span></div>
-                        <div class="savings">Save $235 annually</div>
-                        <p>Unlock your full potential with our most popular plan</p>
+                        <div>
+                            <h3>Yearly Plan</h3>
+                            <div class="price">$929<span>/year</span></div>
+                            <div class="savings">Save $235 annually</div>
+                            <p>Unlock your full potential with our most popular plan</p>
+                        </div>
                         <a href="signup.html?plan=yearly" class="btn btn-primary btn-full">Start Yearly</a>
                     </div>
                 </div>
