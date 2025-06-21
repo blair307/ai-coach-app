@@ -11,6 +11,70 @@ class AICoach {
         this.updateBranding();
         this.setupEventListeners();
         this.loadConversationHistory();
+        this.loadGoals(); // Load goals when page loads
+    }
+
+    loadGoals() {
+        const savedGoals = localStorage.getItem('eeh_user_goals');
+        const goals = savedGoals ? JSON.parse(savedGoals) : [];
+        this.updateGoalsDisplay(goals);
+    }
+
+    updateGoalsDisplay(goals) {
+        const goalsList = document.querySelector('.goals-list');
+        if (goalsList) {
+            if (goals.length === 0) {
+                goalsList.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                        <p>No goals yet. Add your first goal!</p>
+                    </div>
+                `;
+            } else {
+                goalsList.innerHTML = goals.map((goal, index) => `
+                    <div class="goal-item">
+                        <input type="checkbox" ${goal.completed ? 'checked' : ''} id="coach_goal${index}" onchange="window.aiCoach.toggleGoal(${index})">
+                        <label for="coach_goal${index}">${goal.text}</label>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    toggleGoal(index) {
+        const savedGoals = localStorage.getItem('eeh_user_goals');
+        if (savedGoals) {
+            const goals = JSON.parse(savedGoals);
+            goals[index].completed = !goals[index].completed;
+            localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+            
+            // Update display
+            this.updateGoalsDisplay(goals);
+            
+            // Show feedback
+            this.showToast(goals[index].completed ? 'Goal completed!' : 'Goal marked as incomplete');
+            
+            // Record activity
+            this.recordActivity();
+        }
+    }
+
+    addGoal() {
+        const newGoal = prompt('Enter your new goal:');
+        if (newGoal && newGoal.trim()) {
+            const savedGoals = localStorage.getItem('eeh_user_goals');
+            const goals = savedGoals ? JSON.parse(savedGoals) : [];
+            
+            goals.push({
+                text: newGoal.trim(),
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            
+            localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+            this.updateGoalsDisplay(goals);
+            this.showToast('New goal added successfully!');
+            this.recordActivity();
+        }
     }
 
     updateBranding() {
@@ -166,6 +230,91 @@ class AICoach {
         this.hideTypingIndicator();
         this.renderMessages();
         this.saveConversation();
+        
+        // Generate and save insights from this conversation
+        this.generateInsightFromConversation(userMessage, randomResponse);
+    }
+
+    generateInsightFromConversation(userMessage, aiResponse) {
+        const insights = JSON.parse(localStorage.getItem('eeh_user_insights') || '[]');
+        const message = userMessage.toLowerCase();
+        
+        let newInsight = null;
+        
+        // Generate insights based on conversation topics
+        if (message.includes('stress') || message.includes('overwhelm')) {
+            newInsight = {
+                text: "You're actively working on stress management - a key skill for entrepreneurial success.",
+                source: "From recent coaching conversation",
+                timestamp: new Date().toISOString(),
+                category: "stress"
+            };
+        } else if (message.includes('team') || message.includes('employee') || message.includes('leadership')) {
+            newInsight = {
+                text: "Your focus on team dynamics shows strong leadership awareness and emotional intelligence.",
+                source: "Based on leadership discussion",
+                timestamp: new Date().toISOString(),
+                category: "leadership"
+            };
+        } else if (message.includes('goal') || message.includes('achieve') || message.includes('objective')) {
+            newInsight = {
+                text: "Your goal-oriented mindset is a strong foundation for entrepreneurial growth.",
+                source: "From goal-setting conversation",
+                timestamp: new Date().toISOString(),
+                category: "goals"
+            };
+        } else if (message.includes('balance') || message.includes('life') || message.includes('personal')) {
+            newInsight = {
+                text: "Seeking work-life balance demonstrates mature self-awareness and sustainable thinking.",
+                source: "From wellness discussion",
+                timestamp: new Date().toISOString(),
+                category: "balance"
+            };
+        } else if (message.includes('decision') || message.includes('choice') || message.includes('difficult')) {
+            newInsight = {
+                text: "You're developing better decision-making processes through structured reflection.",
+                source: "From decision-making conversation",
+                timestamp: new Date().toISOString(),
+                category: "decisions"
+            };
+        }
+        
+        // Add insight if it's new and unique
+        if (newInsight) {
+            // Check if we already have a similar insight recently
+            const recentSimilar = insights.filter(insight => 
+                insight.category === newInsight.category &&
+                new Date(insight.timestamp) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) // Within last week
+            );
+            
+            if (recentSimilar.length === 0) {
+                insights.unshift(newInsight); // Add to beginning
+                
+                // Keep only the most recent 10 insights
+                if (insights.length > 10) {
+                    insights.splice(10);
+                }
+                
+                localStorage.setItem('eeh_user_insights', JSON.stringify(insights));
+                
+                // Update recent insights on coach page
+                this.updateRecentInsights();
+            }
+        }
+    }
+
+    updateRecentInsights() {
+        const insights = JSON.parse(localStorage.getItem('eeh_user_insights') || '[]');
+        const insightsContainer = document.querySelector('.insights-list');
+        
+        if (insightsContainer && insights.length > 0) {
+            insightsContainer.innerHTML = insights.slice(0, 3).map(insight => `
+                <div class="insight-item">
+                    <p>"${insight.text}"</p>
+                    <small>${insight.source}</small>
+                </div>
+            `).join('');
+        }
     }
 
     generateContextualResponse(userMessage) {
