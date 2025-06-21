@@ -1,275 +1,532 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifications - Entrepreneur Emotional Health</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>EEH</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">
-                    Dashboard
-                </a></li>
-                <li><a href="ai-coach.html" class="menu-item">
-                    AI Coach
-                </a></li>
-                <li><a href="community.html" class="menu-item">
-                    Community
-                </a></li>
-                <li><a href="notifications.html" class="menu-item active">
-                    Notifications
-                    <span class="notification-badge" id="notificationBadge">3</span>
-                </a></li>
-                <li><a href="billing.html" class="menu-item">
-                    Billing
-                </a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">
-                    Logout
-                </a></li>
-            </ul>
-        </nav>
+// Fixed Notifications JavaScript - Actually Working
+class NotificationManager {
+    constructor() {
+        this.currentFilter = 'all';
+        this.notifications = [];
+        this.settings = this.loadSettings();
+        this.init();
+    }
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="content-header">
-                <h1>Notifications</h1>
-                <div class="header-actions">
-                    <button class="btn btn-secondary" onclick="markAllRead()" id="markAllReadBtn">
-                        Mark All Read
-                    </button>
-                    <button class="btn btn-outline" onclick="clearAll()">
-                        Clear All
-                    </button>
+    init() {
+        this.checkAuth();
+        this.loadNotifications();
+        this.updateAllCounts();
+        this.setupEventListeners();
+        this.updateBranding();
+    }
+
+    updateBranding() {
+        document.title = 'Notifications - Entrepreneur Emotional Health';
+        const brandElements = document.querySelectorAll('.sidebar-header h2');
+        brandElements.forEach(el => {
+            if (el.textContent === 'AI Coach') {
+                el.textContent = 'EEH';
+            }
+        });
+    }
+
+    setupEventListeners() {
+        // Handle clicks outside modals
+        document.addEventListener('click', (e) => {
+            const settingsModal = document.getElementById('settingsModal');
+            if (e.target === settingsModal) {
+                this.closeSettingsModal();
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case 'a':
+                        e.preventDefault();
+                        this.markAllRead();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        this.loadNotifications();
+                        break;
+                }
+            }
+        });
+    }
+
+    checkAuth() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            window.location.href = 'login.html';
+            return false;
+        }
+        return true;
+    }
+
+    loadNotifications() {
+        const savedNotifications = localStorage.getItem('eeh_notifications');
+        if (savedNotifications) {
+            this.notifications = JSON.parse(savedNotifications);
+        } else {
+            this.notifications = this.getSampleNotifications();
+            this.saveNotifications();
+        }
+
+        this.renderNotifications();
+        this.updateAllCounts();
+    }
+
+    getSampleNotifications() {
+        return [
+            {
+                id: '1',
+                type: 'coaching',
+                title: 'New Coaching Insights Available',
+                message: 'Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.',
+                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
+                read: false
+            },
+            {
+                id: '2',
+                type: 'community',
+                title: 'New Messages in Business Growth',
+                message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.',
+                timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
+                read: false
+            },
+            {
+                id: '3',
+                type: 'system',
+                title: 'Weekly Progress Report Ready',
+                message: 'Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.',
+                timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
+                read: false
+            },
+            {
+                id: '4',
+                type: 'coaching',
+                title: 'Goal Achievement Milestone',
+                message: 'Congratulations! You\'ve completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.',
+                timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+                read: true
+            },
+            {
+                id: '5',
+                type: 'community',
+                title: 'Someone Mentioned You',
+                message: 'Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.',
+                timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+                read: true
+            },
+            {
+                id: '6',
+                type: 'system',
+                title: 'Platform Update: New Features',
+                message: 'We\'ve added new emotional intelligence tracking features and enhanced AI coaching capabilities.',
+                timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                read: true
+            },
+            {
+                id: '7',
+                type: 'billing',
+                title: 'Payment Successful',
+                message: 'Your yearly subscription payment of $929 has been processed successfully.',
+                timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                read: true
+            }
+        ];
+    }
+
+    renderNotifications() {
+        const container = document.getElementById('notificationsList');
+        const emptyState = document.getElementById('emptyState');
+        
+        if (!container) return;
+
+        const filteredNotifications = this.getFilteredNotifications();
+        
+        if (filteredNotifications.length === 0) {
+            container.style.display = 'none';
+            emptyState.style.display = 'block';
+            return;
+        }
+
+        container.style.display = 'block';
+        emptyState.style.display = 'none';
+        
+        container.innerHTML = filteredNotifications.map(notification => 
+            this.createNotificationHTML(notification)
+        ).join('');
+    }
+
+    createNotificationHTML(notification) {
+        const iconMap = {
+            coaching: 'AI',
+            community: 'CM',
+            system: 'SY',
+            billing: 'BI'
+        };
+
+        const markAsReadButton = !notification.read ? 
+            `<button class="btn-link" onclick="window.notificationManager.markAsRead('${notification.id}')">Mark as Read</button>` : '';
+
+        const actionButton = this.getActionButton(notification);
+
+        return `
+            <div class="notification-item ${notification.read ? 'read' : 'unread'}" data-type="${notification.type}" data-id="${notification.id}">
+                <div class="notification-icon ${notification.type}">
+                    <div class="icon-text">${iconMap[notification.type] || 'NT'}</div>
                 </div>
-            </header>
-
-            <div class="notifications-container">
-                <!-- Notification Filters -->
-                <div class="notification-filters">
-                    <button class="filter-btn active" onclick="filterNotifications('all')">
-                        All Notifications
-                        <span class="count" id="allCount">8</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('unread')">
-                        Unread
-                        <span class="count" id="unreadCount">3</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('coaching')">
-                        AI Coach
-                        <span class="count" id="coachingCount">2</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('community')">
-                        Community
-                        <span class="count" id="communityCount">3</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('system')">
-                        System
-                        <span class="count" id="systemCount">2</span>
-                    </button>
-                    <button class="filter-btn" onclick="filterNotifications('billing')">
-                        Billing
-                        <span class="count" id="billingCount">1</span>
-                    </button>
-                </div>
-
-                <!-- Notifications List -->
-                <div class="notifications-list" id="notificationsList">
-                    <!-- Unread Coaching Notification -->
-                    <div class="notification-item unread" data-type="coaching" data-id="1">
-                        <div class="notification-icon coaching">
-                            <div class="icon-text">AI</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>New Coaching Insights Available</h3>
-                                <span class="notification-time">2 hours ago</span>
-                            </div>
-                            <p>Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCoach()">View Insights</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
-                            </div>
-                        </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h3>${notification.title}</h3>
+                        <span class="notification-time">${this.formatTimestamp(notification.timestamp)}</span>
                     </div>
-
-                    <!-- Unread Community Notification -->
-                    <div class="notification-item unread" data-type="community" data-id="2">
-                        <div class="notification-icon community">
-                            <div class="icon-text">CM</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>New Messages in Business Growth</h3>
-                                <span class="notification-time">4 hours ago</span>
-                            </div>
-                            <p>Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">Join Conversation</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
-                            </div>
-                        </div>
+                    <p>${notification.message}</p>
+                    <div class="notification-actions">
+                        ${actionButton}
+                        ${markAsReadButton}
                     </div>
-
-                    <!-- Unread System Notification -->
-                    <div class="notification-item unread" data-type="system" data-id="3">
-                        <div class="notification-icon system">
-                            <div class="icon-text">SY</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Weekly Progress Report Ready</h3>
-                                <span class="notification-time">1 day ago</span>
-                            </div>
-                            <p>Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToDashboard()">View Report</button>
-                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read Coaching Notification -->
-                    <div class="notification-item read" data-type="coaching" data-id="4">
-                        <div class="notification-icon coaching">
-                            <div class="icon-text">AI</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Goal Achievement Milestone</h3>
-                                <span class="notification-time">2 days ago</span>
-                            </div>
-                            <p>Congratulations! You've completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCoach()">View Progress</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read Community Notification -->
-                    <div class="notification-item read" data-type="community" data-id="5">
-                        <div class="notification-icon community">
-                            <div class="icon-text">CM</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Someone Mentioned You</h3>
-                                <span class="notification-time">3 days ago</span>
-                            </div>
-                            <p>Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">View Message</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read Community Notification -->
-                    <div class="notification-item read" data-type="community" data-id="6">
-                        <div class="notification-icon community">
-                            <div class="icon-text">CM</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>New Room Created: Mindfulness</h3>
-                                <span class="notification-time">4 days ago</span>
-                            </div>
-                            <p>A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToCommunity()">Explore Room</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read System Notification -->
-                    <div class="notification-item read" data-type="system" data-id="7">
-                        <div class="notification-icon system">
-                            <div class="icon-text">SY</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Platform Update: New Features</h3>
-                                <span class="notification-time">1 week ago</span>
-                            </div>
-                            <p>We've added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToDashboard()">See What's New</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Read Billing Notification -->
-                    <div class="notification-item read" data-type="billing" data-id="8">
-                        <div class="notification-icon billing">
-                            <div class="icon-text">BI</div>
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h3>Payment Successful</h3>
-                                <span class="notification-time">1 week ago</span>
-                            </div>
-                            <p>Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.</p>
-                            <div class="notification-actions">
-                                <button class="btn-link" onclick="goToBilling()">View Receipt</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Empty State (Hidden by default) -->
-                <div class="empty-state" id="emptyState" style="display: none;">
-                    <h3>No notifications found</h3>
-                    <p>You're all caught up! Check back later for updates on your emotional health journey.</p>
                 </div>
             </div>
-        </main>
-    </div>
+        `;
+    }
 
-    <!-- Notification Settings Modal -->
-    <div class="modal" id="settingsModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Notification Settings</h3>
-                <button class="close-btn" onclick="closeSettingsModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> AI Coach Insights
-                    </label>
-                    <small>Get notified when new coaching insights are available</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Community Messages
-                    </label>
-                    <small>Receive notifications for community activity</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Weekly Reports
-                    </label>
-                    <small>Get your weekly progress summaries</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Billing Updates
-                    </label>
-                    <small>Payment confirmations and billing reminders</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            </div>
-        </div>
-    </div>
+    getActionButton(notification) {
+        switch(notification.type) {
+            case 'coaching':
+                return `<button class="btn-link" onclick="window.notificationManager.goToCoach('${notification.id}')">View Insights</button>`;
+            case 'community':
+                return `<button class="btn-link" onclick="window.notificationManager.goToCommunity('${notification.id}')">Join Conversation</button>`;
+            case 'system':
+                return `<button class="btn-link" onclick="window.notificationManager.goToDashboard('${notification.id}')">View Details</button>`;
+            case 'billing':
+                return `<button class="btn-link" onclick="window.notificationManager.goToBilling('${notification.id}')">View Receipt</button>`;
+            default:
+                return '';
+        }
+    }
 
-    <script src="notifications.js"></script>
-</body>
-</html>
+    getFilteredNotifications() {
+        return this.notifications.filter(notification => {
+            switch(this.currentFilter) {
+                case 'all':
+                    return true;
+                case 'unread':
+                    return !notification.read;
+                default:
+                    return notification.type === this.currentFilter;
+            }
+        }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    }
+
+    filterNotifications(type) {
+        this.currentFilter = type;
+        
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        
+        // Find and activate the correct button
+        const targetButton = Array.from(document.querySelectorAll('.filter-btn')).find(btn => 
+            btn.textContent.toLowerCase().includes(type.toLowerCase()) || 
+            (type === 'all' && btn.textContent.includes('All'))
+        );
+        
+        if (targetButton) {
+            targetButton.classList.add('active');
+        }
+        
+        this.renderNotifications();
+    }
+
+    markAsRead(notificationId) {
+        console.log('Marking as read:', notificationId);
+        const notification = this.notifications.find(n => n.id === notificationId);
+        if (notification && !notification.read) {
+            notification.read = true;
+            this.saveNotifications();
+            this.renderNotifications();
+            this.updateAllCounts();
+            this.showToast('Notification marked as read');
+        }
+    }
+
+    markAllRead() {
+        const unreadNotifications = this.notifications.filter(n => !n.read);
+        const unreadCount = unreadNotifications.length;
+        
+        if (unreadCount === 0) {
+            this.showToast('No unread notifications');
+            return;
+        }
+
+        if (confirm(`Mark all ${unreadCount} unread notifications as read?`)) {
+            unreadNotifications.forEach(notification => {
+                notification.read = true;
+            });
+            
+            this.saveNotifications();
+            this.renderNotifications();
+            this.updateAllCounts();
+            this.showToast(`${unreadCount} notifications marked as read`);
+        }
+    }
+
+    clearAll() {
+        const notificationCount = this.notifications.length;
+        
+        if (notificationCount === 0) {
+            this.showToast('No notifications to clear');
+            return;
+        }
+
+        if (confirm(`Clear all ${notificationCount} notifications? This cannot be undone.`)) {
+            this.notifications = [];
+            this.saveNotifications();
+            this.renderNotifications();
+            this.updateAllCounts();
+            this.showToast('All notifications cleared');
+        }
+    }
+
+    updateAllCounts() {
+        const counts = {
+            all: this.notifications.length,
+            unread: this.notifications.filter(n => !n.read).length,
+            coaching: this.notifications.filter(n => n.type === 'coaching').length,
+            community: this.notifications.filter(n => n.type === 'community').length,
+            system: this.notifications.filter(n => n.type === 'system').length,
+            billing: this.notifications.filter(n => n.type === 'billing').length
+        };
+
+        // Update count badges
+        Object.entries(counts).forEach(([type, count]) => {
+            const element = document.getElementById(`${type}Count`);
+            if (element) {
+                element.textContent = count;
+                element.style.display = count > 0 ? 'inline' : 'none';
+            }
+        });
+
+        // Update sidebar notification badge
+        const sidebarBadge = document.getElementById('notificationBadge');
+        if (sidebarBadge) {
+            const unreadCount = counts.unread;
+            sidebarBadge.textContent = unreadCount;
+            sidebarBadge.style.display = unreadCount > 0 ? 'inline' : 'none';
+        }
+
+        // Update mark all read button state
+        const markAllBtn = document.getElementById('markAllReadBtn');
+        if (markAllBtn) {
+            markAllBtn.disabled = counts.unread === 0;
+            markAllBtn.style.opacity = counts.unread === 0 ? '0.5' : '1';
+        }
+    }
+
+    // Navigation functions that auto-mark as read
+    goToCoach(notificationId) {
+        if (notificationId) {
+            this.markAsRead(notificationId);
+        }
+        window.location.href = 'ai-coach.html';
+    }
+
+    goToCommunity(notificationId) {
+        if (notificationId) {
+            this.markAsRead(notificationId);
+        }
+        window.location.href = 'community.html';
+    }
+
+    goToDashboard(notificationId) {
+        if (notificationId) {
+            this.markAsRead(notificationId);
+        }
+        window.location.href = 'dashboard.html';
+    }
+
+    goToBilling(notificationId) {
+        if (notificationId) {
+            this.markAsRead(notificationId);
+        }
+        window.location.href = 'billing.html';
+    }
+
+    // Utility functions
+    saveNotifications() {
+        localStorage.setItem('eeh_notifications', JSON.stringify(this.notifications));
+    }
+
+    loadSettings() {
+        const saved = localStorage.getItem('eeh_notificationSettings');
+        return saved ? JSON.parse(saved) : {
+            coachingInsights: true,
+            communityMessages: true,
+            weeklyReports: true,
+            billingUpdates: true
+        };
+    }
+
+    formatTimestamp(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - new Date(date)) / 1000);
+        
+        if (diffInSeconds < 60) {
+            return 'Just now';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+        } else if (diffInSeconds < 604800) {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} day${days !== 1 ? 's' : ''} ago`;
+        } else {
+            return new Date(date).toLocaleDateString();
+        }
+    }
+
+    showToast(message) {
+        // Remove any existing toasts
+        const existingToasts = document.querySelectorAll('.toast-notification');
+        existingToasts.forEach(toast => toast.remove());
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            animation: slideIn 0.3s ease-out;
+        `;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'slideOut 0.3s ease-in';
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    logout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            window.location.href = 'login.html';
+        }
+    }
+}
+
+// Global functions for HTML onclick handlers
+function filterNotifications(type) {
+    if (window.notificationManager) {
+        window.notificationManager.filterNotifications(type);
+    }
+}
+
+function markAsRead(notificationId) {
+    if (window.notificationManager) {
+        window.notificationManager.markAsRead(notificationId);
+    }
+}
+
+function markAllRead() {
+    if (window.notificationManager) {
+        window.notificationManager.markAllRead();
+    }
+}
+
+function clearAll() {
+    if (window.notificationManager) {
+        window.notificationManager.clearAll();
+    }
+}
+
+function logout() {
+    if (window.notificationManager) {
+        window.notificationManager.logout();
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    window.notificationManager = new NotificationManager();
+});
+
+// Add required CSS
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .notification-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .notification-icon.coaching {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+    }
+
+    .notification-icon.community {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: white;
+    }
+
+    .notification-icon.system {
+        background: linear-gradient(135deg, var(--text-secondary) 0%, var(--text-primary) 100%);
+        color: white;
+    }
+
+    .notification-icon.billing {
+        background: linear-gradient(135deg, var(--warning) 0%, #f97316 100%);
+        color: white;
+    }
+
+    .btn-link {
+        background: none;
+        border: none;
+        color: var(--primary);
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 0;
+        text-decoration: underline;
+        transition: color 0.2s;
+        font-weight: 500;
+        margin-right: 1rem;
+    }
+
+    .btn-link:hover {
+        color: var(--primary-dark);
+        text-decoration: none;
+    }
+`;
+
+document.head.appendChild(style);
