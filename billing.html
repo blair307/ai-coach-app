@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Billing - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- ADD THIS: Notification Manager -->
+    <script src="notification-manager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.notificationManager) {
+                window.notificationManager.init();
+                setTimeout(() => window.notificationManager.updateBadge(), 100);
+            }
+        });
+    </script>
 </head>
 <body>
     <div class="app-container">
@@ -30,7 +41,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge">3</span>
+                    <span class="notification-badge" id="notificationBadge">0</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item active">
                     Billing
@@ -152,6 +163,17 @@
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
                                     <td style="padding: 1rem;">
+                                        <button class="btn-link" onclick="downloadInvoice('INV-2025-001')">Download</button>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2024</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
+                                    <td style="padding: 1rem;">
+                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
+                                    </td>
+                                    <td style="padding: 1rem;">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2024-001')">Download</button>
                                     </td>
                                 </tr>
@@ -176,16 +198,16 @@
 
     <script src="sidebar-toggle.js"></script>
     <script src="billing.js"></script>
-</body>
-</html>--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
-                                    </td>
-                                    <td style="padding: 1rem;">
-                                        <button class="btn-link" onclick="downloadInvoice('INV-2025-001')">Download</button>
-                                    </td>
-                                </tr>
-                                <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2024</td>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
-                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
-                                    <td style="padding: 1rem;">
-                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(
+    
+    <script>
+    // Common logout function
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('eeh_notifications');
+        localStorage.removeItem('eeh_rooms');
+        window.location.href = 'login.html';
+    }
+
+    // Placeholder
