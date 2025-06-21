@@ -214,25 +214,103 @@ class AICoach {
         }
     }
 
-    getAIResponse(userMessage) {
-        // Simulate AI response (in real app, this would call OpenAI API)
-        const responses = this.generateContextualResponse(userMessage);
-        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    async getAIResponse(userMessage) {
+        try {
+            // Call the real OpenAI API
+            const aiResponse = await this.callOpenAI(userMessage);
+            
+            const aiMessage = {
+                id: Date.now(),
+                type: 'ai',
+                content: aiResponse,
+                timestamp: new Date()
+            };
 
-        const aiMessage = {
-            id: Date.now(),
-            type: 'ai',
-            content: randomResponse,
-            timestamp: new Date()
-        };
+            this.messages.push(aiMessage);
+            this.hideTypingIndicator();
+            this.renderMessages();
+            this.saveConversation();
+            
+            // Generate and save insights from this conversation
+            this.generateInsightFromConversation(userMessage, aiResponse);
+            
+        } catch (error) {
+            console.error('Error getting AI response:', error);
+            
+            // Fallback to a generic response if API fails
+            const fallbackMessage = {
+                id: Date.now(),
+                type: 'ai',
+                content: "I'm having trouble connecting right now. Please try again in a moment, or let me know if you'd like to discuss anything specific about your entrepreneurial journey.",
+                timestamp: new Date()
+            };
+            
+            this.messages.push(fallbackMessage);
+            this.hideTypingIndicator();
+            this.renderMessages();
+            this.saveConversation();
+        }
+    }
 
-        this.messages.push(aiMessage);
-        this.hideTypingIndicator();
-        this.renderMessages();
-        this.saveConversation();
+    async callOpenAI(userMessage) {
+        // This is where we'll integrate with your OpenAI API
+        // We need to see your current API setup to implement this properly
         
-        // Generate and save insights from this conversation
-        this.generateInsightFromConversation(userMessage, randomResponse);
+        const API_URL = 'YOUR_API_ENDPOINT_HERE'; // Replace with your actual endpoint
+        const API_KEY = 'YOUR_API_KEY_HERE'; // Replace with your API key setup
+        
+        // Build conversation context for OpenAI
+        const conversationHistory = this.messages.map(msg => ({
+            role: msg.type === 'user' ? 'user' : 'assistant',
+            content: msg.content
+        }));
+        
+        // Add system prompt for entrepreneurial emotional health coaching
+        const systemPrompt = {
+            role: 'system',
+            content: `You are an AI emotional health coach specifically designed for entrepreneurs. Your role is to help entrepreneurs manage stress, build emotional intelligence, improve leadership skills, achieve work-life balance, and navigate the unique psychological challenges of running a business.
+
+Key guidelines:
+- Be empathetic, understanding, and supportive
+- Focus on practical strategies that work for busy entrepreneurs
+- Address both emotional and business aspects of their challenges
+- Ask thoughtful follow-up questions to understand their situation better
+- Provide actionable advice while being encouraging
+- Recognize the unique pressures entrepreneurs face (financial stress, isolation, decision fatigue, etc.)
+- Keep responses conversational and personal, not clinical
+- Encourage self-reflection and emotional awareness
+
+Remember: This person is an entrepreneur dealing with real business and emotional challenges. Provide meaningful, personalized guidance.`
+        };
+        
+        const messages = [systemPrompt, ...conversationHistory, {
+            role: 'user',
+            content: userMessage
+        }];
+
+        // Example API call structure - adjust based on your setup
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_KEY}`
+            },
+            body: JSON.stringify({
+                model: 'gpt-4', // or gpt-3.5-turbo
+                messages: messages,
+                max_tokens: 500,
+                temperature: 0.7,
+                presence_penalty: 0.1,
+                frequency_penalty: 0.1
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        return data.choices[0].message.content;
     }
 
     generateInsightFromConversation(userMessage, aiResponse) {
