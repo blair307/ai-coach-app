@@ -187,19 +187,14 @@
 
                 <!-- Weekly Insights -->
                 <div class="dashboard-card">
-                    <h3>This Week's Insights</h3>
-                    <div class="insights-list">
-                        <div class="insight-item">
-                            <p>"Your stress levels decrease by 40% when you take regular breaks during work sessions."</p>
-                            <small>Based on 12 coaching sessions</small>
-                        </div>
-                        <div class="insight-item">
-                            <p>"You're most productive and emotionally balanced on days when you start with meditation."</p>
-                            <small>Pattern observed over 3 weeks</small>
-                        </div>
-                        <div class="insight-item">
-                            <p>"Team communication improves significantly when you use active listening techniques."</p>
-                            <small>Feedback from 8 team interactions</small>
+                    <h3>Recent Insights</h3>
+                    <div class="insights-list" id="insightsList">
+                        <!-- Insights will be populated by JavaScript based on user data -->
+                        <div class="empty-insights" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Start chatting with your AI coach to generate personalized insights!</p>
+                            <button class="btn btn-primary btn-small" onclick="startCoachingSession()" style="margin-top: 1rem;">
+                                Start Your First Session
+                            </button>
                         </div>
                     </div>
                 </div>
