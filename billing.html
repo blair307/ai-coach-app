@@ -128,82 +128,52 @@
                         </button>
                     </div>
                     <div style="overflow-x: auto;">
-                        <table style="width: 100%; border-collapse: collapse;">
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
                             <thead>
                                 <tr style="border-bottom: 1px solid var(--border);">
-                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Date</th>
-                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Description</th>
-                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Amount</th>
-                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Status</th>
-                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Invoice</th>
+                                    <th style="text-align: left; padding: 1rem; color: var(--text-secondary); font-weight: 600;">Date</th>
+                                    <th style="text-align: left; padding: 1rem; color: var(--text-secondary); font-weight: 600;">Description</th>
+                                    <th style="text-align: left; padding: 1rem; color: var(--text-secondary); font-weight: 600;">Amount</th>
+                                    <th style="text-align: left; padding: 1rem; color: var(--text-secondary); font-weight: 600;">Status</th>
+                                    <th style="text-align: left; padding: 1rem; color: var(--text-secondary); font-weight: 600;">Invoice</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Mar 15, 2025</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Yearly Subscription</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$929.00</td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2025</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
+                                    <td style="padding: 1rem;">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem;">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2025-001')">Download</button>
                                     </td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Mar 15, 2024</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Yearly Subscription</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$929.00</td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2024</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
+                                    <td style="padding: 1rem;">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem;">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2024-001')">Download</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Feb 10, 2024</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary);">Setup Fee</td>
-                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$0.00</td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem; color: var(--text-primary);">Feb 10, 2024</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);">Setup Fee</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$0.00</td>
+                                    <td style="padding: 1rem;">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem 0;">
+                                    <td style="padding: 1rem;">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2024-000')">Download</button>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                <!-- Usage Statistics -->
-                <div class="billing-card">
-                    <div class="card-header">
-                        <h2>Usage This Month</h2>
-                    </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">42</div>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Coaching Sessions</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">127</div>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Community Messages</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">15</div>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Reports Generated</div>
-                        </div>
-                        <div style="text-align: center;">
-                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">98%</div>
-                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Goal Progress</div>
-                        </div>
-                    </div>
-                    <div style="padding: 0 1.5rem 1.5rem;">
-                        <small style="color: var(--text-muted); display: block; text-align: center;">
-                            All features included in your plan with unlimited usage
-                        </small>
                     </div>
                 </div>
             </div>
