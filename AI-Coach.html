@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- ADD THIS: Notification Manager -->
+    <script src="notification-manager.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.notificationManager) {
+                window.notificationManager.init();
+                setTimeout(() => window.notificationManager.updateBadge(), 100);
+            }
+        });
+    </script>
+    
     <style>
         /* Override problematic card styles directly */
         .feature::before,
@@ -57,7 +69,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge">3</span>
+                    <span class="notification-badge" id="notificationBadge">0</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -369,5 +381,122 @@
 
     <script src="sidebar-toggle.js"></script>
     <script src="ai-coach.js"></script>
+    
+    <script>
+    // Common logout function
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('eeh_notifications');
+        localStorage.removeItem('eeh_rooms');
+        window.location.href = 'login.html';
+    }
+
+    // Placeholder functions for AI Coach functionality
+    function clearConversation() {
+        // Clear conversation functionality
+        document.getElementById('chatMessages').innerHTML = `
+            <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 80%;">
+                <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
+                    Welcome! I'm your AI Emotional Health Coach, specialized in helping entrepreneurs manage stress, build emotional intelligence, and achieve work-life balance. 
+                    
+                    How are you feeling today? What challenges would you like to work on?
+                </div>
+                <div style="color: var(--text-muted); font-size: 0.875rem;">Just now</div>
+            </div>
+        `;
+    }
+
+    function exportChat() {
+        alert('Export chat functionality would be implemented here');
+    }
+
+    function handleKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendMessage();
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (message) {
+            // Add user message to chat
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML += `
+                <div class="message user-message" style="align-self: flex-end; max-width: 80%; margin-bottom: 1.5rem;">
+                    <div class="message-content" style="background: var(--primary); color: white; padding: 1rem; border-radius: var(--radius-lg);">
+                        <div style="margin-bottom: 0.5rem;">${message}</div>
+                        <div style="font-size: 0.875rem; opacity: 0.8;">Just now</div>
+                    </div>
+                </div>
+            `;
+            
+            // Clear input
+            input.value = '';
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simulate AI response (in real app, this would call your AI backend)
+            setTimeout(() => {
+                chatMessages.innerHTML += `
+                    <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 80%;">
+                        <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
+                            Thank you for sharing that with me. I understand you're dealing with ${message.toLowerCase()}. This is a common challenge for entrepreneurs, and there are several effective strategies we can explore together...
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 0.875rem;">Just now</div>
+                    </div>
+                `;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 2000);
+        }
+    }
+
+    function quickTopic(topic) {
+        const topics = {
+            'stress': 'I\'d like to learn about stress management techniques for entrepreneurs.',
+            'leadership': 'Can you help me develop better leadership skills?',
+            'burnout': 'I\'m concerned about preventing burnout. What strategies do you recommend?',
+            'communication': 'How can I improve communication with my team?',
+            'decision': 'I struggle with making difficult business decisions. Can you help?',
+            'confidence': 'I want to work on building my confidence as a leader.'
+        };
+        
+        document.getElementById('messageInput').value = topics[topic];
+        sendMessage();
+    }
+
+    function addGoal() {
+        alert('Add goal functionality would be implemented here');
+    }
+
+    function trackMood(mood) {
+        alert(`Mood "${mood}" tracked! This would be saved to your progress.`);
+    }
+
+    function toggleSettings() {
+        document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function closeSettings() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    function saveSettings() {
+        alert('Settings saved!');
+        closeSettings();
+    }
+
+    function clearChatHistory() {
+        if (confirm('Are you sure you want to clear all chat history? This action cannot be undone.')) {
+            clearConversation();
+            closeSettings();
+        }
+    }
+    </script>
 </body>
 </html>
