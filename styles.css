@@ -2073,3 +2073,32 @@ select:focus-visible,
 }
 
 .message-content {
+
+    /* Add this to the end of your styles.css file to fix the weird top lines */
+
+/* Remove the colored top lines on dashboard cards */
+.dashboard-card::before {
+    display: none !important;
+}
+
+/* Remove the colored top lines on feature cards */
+.feature::before {
+    display: none !important;
+}
+
+/* Keep the nice hover effects but remove the top lines */
+.dashboard-card:hover,
+.feature:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+/* Optional: If you want a subtle shadow instead of the line */
+.dashboard-card:hover {
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
+
+.feature:hover {
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
