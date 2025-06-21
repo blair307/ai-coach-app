@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Billing - AI Coach</title>
+    <title>Billing - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,27 +11,27 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2>AI Coach</h2>
+                <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">
-                    <span class="icon">🏠</span>Dashboard
+                    Dashboard
                 </a></li>
                 <li><a href="ai-coach.html" class="menu-item">
-                    <span class="icon">🤖</span>AI Coach
+                    AI Coach
                 </a></li>
                 <li><a href="community.html" class="menu-item">
-                    <span class="icon">👥</span>Community
+                    Community
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
-                    <span class="icon">🔔</span>Notifications
+                    Notifications
                     <span class="notification-badge" id="notificationBadge">3</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item active">
-                    <span class="icon">💳</span>Billing
+                    Billing
                 </a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">
-                    <span class="icon">🚪</span>Logout
+                    Logout
                 </a></li>
             </ul>
         </nav>
@@ -42,7 +42,10 @@
                 <h1>Billing & Subscription</h1>
                 <div class="header-actions">
                     <button class="btn btn-secondary" onclick="downloadInvoice()">
-                        Download Receipt
+                        Download Invoice
+                    </button>
+                    <button class="btn btn-outline" onclick="updatePayment()">
+                        Update Payment
                     </button>
                 </div>
             </header>
@@ -52,37 +55,35 @@
                 <div class="billing-card">
                     <div class="card-header">
                         <h2>Current Plan</h2>
-                        <div class="plan-status active">Active</div>
+                        <span class="plan-status active">Active</span>
                     </div>
                     <div class="plan-details">
                         <div class="plan-info">
                             <h3>Yearly Plan</h3>
-                            <div class="plan-price">$929 <span>/year</span></div>
-                            <p>Full access to AI Coach and Community features</p>
+                            <div class="plan-price">$929<span>/year</span></div>
+                            <p>Full access to AI coaching, community, and all features</p>
                         </div>
                         <div class="plan-actions">
-                            <button class="btn btn-secondary" onclick="changePlan()">
+                            <button class="btn btn-outline" onclick="changePlan()">
                                 Change Plan
                             </button>
-                            <button class="btn btn-outline" onclick="cancelSubscription()">
-                                Cancel Subscription
+                            <button class="btn btn-secondary" onclick="cancelSubscription()">
+                                Cancel Plan
                             </button>
                         </div>
                     </div>
-                    
                     <div class="billing-info">
                         <div class="info-row">
-                            <span>Next billing date:</span>
-                            <strong>June 20, 2026</strong>
+                            <span>Next billing date</span>
+                            <strong>March 15, 2026</strong>
                         </div>
                         <div class="info-row">
-                            <span>Payment method:</span>
-                            <strong>•••• •••• •••• 4242</strong>
-                            <button class="btn-link" onclick="updatePayment()">Update</button>
+                            <span>Payment method</span>
+                            <strong>Visa ending in 4242</strong>
                         </div>
                         <div class="info-row">
-                            <span>Plan started:</span>
-                            <strong>June 20, 2025</strong>
+                            <span>Billing email</span>
+                            <strong>user@example.com</strong>
                         </div>
                     </div>
                 </div>
@@ -91,17 +92,29 @@
                 <div class="billing-card">
                     <div class="card-header">
                         <h2>Payment Method</h2>
+                        <button class="btn btn-small btn-primary" onclick="updatePayment()">
+                            Update
+                        </button>
                     </div>
-                    <div class="payment-method">
-                        <div class="card-info">
-                            <div class="card-icon">💳</div>
-                            <div class="card-details">
-                                <h4>Visa ending in 4242</h4>
-                                <p>Expires 12/2028</p>
+                    <div class="plan-details">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="width: 60px; height: 40px; background: linear-gradient(135deg, #1a365d 0%, #2d3748 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.875rem;">
+                                VISA
                             </div>
-                            <button class="btn btn-secondary btn-small" onclick="updatePayment()">
-                                Update Card
-                            </button>
+                            <div>
+                                <p style="margin: 0; font-weight: 600; color: var(--text-primary);">•••• •••• •••• 4242</p>
+                                <small style="color: var(--text-secondary);">Expires 12/26</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="billing-info">
+                        <div class="info-row">
+                            <span>Billing address</span>
+                            <strong>123 Business St, San Francisco, CA 94105</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Security</span>
+                            <strong>All payments are encrypted and secure</strong>
                         </div>
                     </div>
                 </div>
@@ -110,71 +123,57 @@
                 <div class="billing-card">
                     <div class="card-header">
                         <h2>Billing History</h2>
+                        <button class="btn btn-small btn-secondary" onclick="downloadAllInvoices()">
+                            Download All
+                        </button>
                     </div>
-                    <div class="billing-history">
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-date">June 20, 2025</div>
-                                <div class="history-description">Yearly Plan - Annual Subscription</div>
-                            </div>
-                            <div class="history-amount">$929.00</div>
-                            <div class="history-status paid">Paid</div>
-                            <div class="history-actions">
-                                <button class="btn-link" onclick="downloadInvoice('inv_001')">
-                                    Download
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-date">May 15, 2025</div>
-                                <div class="history-description">Monthly Plan - Subscription</div>
-                            </div>
-                            <div class="history-amount">$97.00</div>
-                            <div class="history-status paid">Paid</div>
-                            <div class="history-actions">
-                                <button class="btn-link" onclick="downloadInvoice('inv_002')">
-                                    Download
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="history-item">
-                            <div class="history-info">
-                                <div class="history-date">April 15, 2025</div>
-                                <div class="history-description">Monthly Plan - Subscription</div>
-                            </div>
-                            <div class="history-amount">$97.00</div>
-                            <div class="history-status paid">Paid</div>
-                            <div class="history-actions">
-                                <button class="btn-link" onclick="downloadInvoice('inv_003')">
-                                    Download
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Plan Options -->
-                <div class="billing-card">
-                    <div class="card-header">
-                        <h2>Available Plans</h2>
-                    </div>
-                    <div class="plans-grid">
-                        <div class="plan-option">
-                            <h3>Monthly Plan</h3>
-                            <div class="price">$97<span>/month</span></div>
-                            <ul class="plan-features">
-                                <li>✅ Unlimited AI Coach sessions</li>
-                                <li>✅ Community access</li>
-                                <li>✅ Progress tracking</li>
-                                <li>✅ Email support</li>
-                            </ul>
-                            <button class="btn btn-primary" disabled>
-                                Current Plan
-                            </button>
-                        </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Date</th>
+                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Description</th>
+                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Amount</th>
+                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Status</th>
+                                    <th style="text-align: left; padding: 1rem 0; color: var(--text-secondary); font-weight: 600;">Invoice</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Mar 15, 2025</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Yearly Subscription</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$929.00</td>
+                                    <td style="padding: 1rem 0;">
+                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
+                                    </td>
+                                    <td style="padding: 1rem 0;">
+                                        <button class="btn-link" onclick="downloadInvoice('INV-2025-001')">Download</button>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid var(--border);">
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Mar 15, 2024</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Yearly Subscription</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$929.00</td>
+                                    <td style="padding: 1rem 0;">
+                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
+                                    </td>
+                                    <td style="padding: 1rem 0;">
+                                        <button class="btn-link" onclick="downloadInvoice('INV-2024-001')">Download</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Feb 10, 2024</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary);">Setup Fee</td>
+                                    <td style="padding: 1rem 0; color: var(--text-primary); font-weight: 600;">$0.00</td>
+                                    <td style="padding: 1rem 0;">
+                                        <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
+                                    </td>
+                                    <td style="padding: 1rem 0;">
+                                        <button class="btn-link" onclick="downloadInvoice('INV-2024-000')">Download</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
@@ -183,47 +182,32 @@
                     <div class="card-header">
                         <h2>Usage This Month</h2>
                     </div>
-                    <div class="usage-stats">
-                        <div class="usage-item">
-                            <div class="usage-label">AI Coach Sessions</div>
-                            <div class="usage-value">42 sessions</div>
-                            <div class="usage-limit">Unlimited</div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; padding: 1.5rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">42</div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Coaching Sessions</div>
                         </div>
-                        <div class="usage-item">
-                            <div class="usage-label">Community Messages</div>
-                            <div class="usage-value">156 messages</div>
-                            <div class="usage-limit">Unlimited</div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">127</div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Community Messages</div>
                         </div>
-                        <div class="usage-item">
-                            <div class="usage-label">Data Export</div>
-                            <div class="usage-value">3 exports</div>
-                            <div class="usage-limit">Unlimited</div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">15</div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Reports Generated</div>
                         </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">98%</div>
+                            <div style="color: var(--text-secondary); font-size: 0.875rem;">Goal Progress</div>
+                        </div>
+                    </div>
+                    <div style="padding: 0 1.5rem 1.5rem;">
+                        <small style="color: var(--text-muted); display: block; text-align: center;">
+                            All features included in your plan with unlimited usage
+                        </small>
                     </div>
                 </div>
             </div>
         </main>
-    </div>
-
-    <!-- Update Payment Modal -->
-    <div class="modal" id="updatePaymentModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Update Payment Method</h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p>Update your payment information securely.</p>
-                <div id="card-element-update">
-                    <!-- Stripe Elements will create form elements here -->
-                </div>
-                <div id="card-errors-update" role="alert"></div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="savePaymentMethod()">Save Payment Method</button>
-            </div>
-        </div>
     </div>
 
     <script src="billing.js"></script>
