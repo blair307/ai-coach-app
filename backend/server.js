@@ -175,6 +175,20 @@ app.get('/', (req, res) => {
   res.json({ message: 'AI Coach Backend is running!' });
 });
 
+// Health check
+app.get('/', (req, res) => {
+  res.json({ message: 'AI Coach Backend is running!' });
+});
+
+// Test route - ADD THIS
+app.get('/test', (req, res) => {
+  res.json({ message: 'New code deployed!', timestamp: new Date() });
+});
+
+// Register new user with payment
+app.post('/api/auth/register', async (req, res) => {
+  // ... rest of code
+  
 // Register new user with payment
 app.post('/api/auth/register', async (req, res) => {
   try {
