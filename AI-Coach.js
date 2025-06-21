@@ -81,6 +81,9 @@ class AICoach {
 
         this.renderMessages();
         this.saveConversation();
+        
+        // Record activity for streak tracking
+        this.recordActivity();
 
         // Show typing indicator and get AI response
         this.showTypingIndicator();
@@ -373,6 +376,17 @@ class AICoach {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
             window.location.href = 'login.html';
+        }
+    }
+
+    // Record activity for streak tracking
+    recordActivity() {
+        const today = new Date().toDateString();
+        const activityLog = JSON.parse(localStorage.getItem('eeh_activity_log') || '[]');
+        
+        if (!activityLog.includes(today)) {
+            activityLog.push(today);
+            localStorage.setItem('eeh_activity_log', JSON.stringify(activityLog));
         }
     }
 }
