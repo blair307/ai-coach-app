@@ -5,25 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    <script src="sidebar-toggle.js"></script>
 </head>
 <body>
     <div class="app-container">
-        <!-- Floating Toggle Button - Always Visible -->
-        <button id="sidebar-toggle" class="sidebar-toggle floating-toggle" aria-label="Toggle navigation menu">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-
-        <!-- Sidebar Overlay -->
-        <div class="sidebar-overlay" id="sidebar-overlay"></div>
-
         <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>EEH</h2>
-                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation menu">
+                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
                     <span class="hamburger-line"></span>
                     <span class="hamburger-line"></span>
                     <span class="hamburger-line"></span>
@@ -218,6 +207,7 @@
         </main>
     </div>
 
+    <script src="sidebar-toggle.js"></script>
     <script src="dashboard.js"></script>
  
 </body>
