@@ -1,4 +1,4 @@
-// Authentication JavaScript
+// Fixed Authentication JavaScript - Uses Real Backend
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const signupForm = document.getElementById('signupForm');
@@ -10,12 +10,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Handle signup form
     if (signupForm) {
-        loginForm.addEventListener('submit', handleSignup);
+        signupForm.addEventListener('submit', handleSignup);
     }
 
     // Update branding
     updateBranding();
 });
+
+// Your backend URL
+const BACKEND_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 function updateBranding() {
     // Update page titles
@@ -48,21 +51,48 @@ async function handleLogin(e) {
     submitButton.textContent = 'Signing In...';
     
     try {
-        // Simulate login API call
-        await simulateLogin(email, password);
+        console.log('🔐 Logging in to backend...');
         
-        // Store auth token
-        const authToken = generateAuthToken();
-        localStorage.setItem('authToken', authToken);
+        // REAL LOGIN - Call your backend instead of simulation
+        const response = await fetch(`${BACKEND_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password
+            })
+        });
         
-        // Store user data
+        console.log('📡 Login response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Login failed');
+        }
+        
+        const data = await response.json();
+        console.log('✅ Login successful!');
+        
+        // Store REAL JWT token from backend
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('eeh_token', data.token);
+        
+        // Store user data from backend response
         const userData = {
-            email: email,
-            name: getNameFromEmail(email),
+            id: data.user.id,
+            email: data.user.email,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            name: `${data.user.firstName} ${data.user.lastName}`,
             loginTime: new Date().toISOString(),
-            remember: remember
+            remember: remember,
+            streakData: data.streakData
         };
         localStorage.setItem('userData', JSON.stringify(userData));
+        
+        console.log('💾 Stored real user data and JWT token');
         
         // Show success message
         showSuccess('Login successful! Redirecting...');
@@ -73,7 +103,8 @@ async function handleLogin(e) {
         }, 1000);
         
     } catch (error) {
-        showError(error.message || 'Login failed. Please try again.');
+        console.error('❌ Login error:', error);
+        showError(error.message || 'Login failed. Please check your credentials and try again.');
         submitButton.disabled = false;
         submitButton.textContent = originalText;
     }
@@ -86,7 +117,7 @@ async function handleSignup(e) {
     const lastName = document.getElementById('lastName').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
-    const plan = document.querySelector('input[name="plan"]:checked').value;
+    const plan = document.querySelector('input[name="plan"]:checked')?.value || 'basic';
     const terms = document.getElementById('terms').checked;
     
     if (!firstName || !lastName || !email || !password) {
@@ -116,21 +147,54 @@ async function handleSignup(e) {
     submitButton.textContent = 'Creating Account...';
     
     try {
-        // Simulate signup API call
-        await simulateSignup({firstName, lastName, email, password, plan});
+        console.log('📝 Creating account on backend...');
         
-        // Store auth token
-        const authToken = generateAuthToken();
-        localStorage.setItem('authToken', authToken);
+        // REAL SIGNUP - Call your backend
+        const response = await fetch(`${BACKEND_URL}/api/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                password: password,
+                plan: plan,
+                // Add payment fields if needed
+                stripeCustomerId: 'temp_customer_id',
+                paymentIntentId: 'temp_payment_id'
+            })
+        });
         
-        // Store user data
+        console.log('📡 Signup response status:', response.status);
+        
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Signup failed');
+        }
+        
+        const data = await response.json();
+        console.log('✅ Signup successful!');
+        
+        // Store REAL JWT token from backend
+        localStorage.setItem('authToken', data.token);
+        localStorage.setItem('eeh_token', data.token);
+        
+        // Store user data from backend response
         const userData = {
-            email: email,
-            name: `${firstName} ${lastName}`,
+            id: data.user.id,
+            email: data.user.email,
+            firstName: data.user.firstName,
+            lastName: data.user.lastName,
+            name: `${data.user.firstName} ${data.user.lastName}`,
             plan: plan,
-            signupTime: new Date().toISOString()
+            signupTime: new Date().toISOString(),
+            streakData: data.streakData
         };
         localStorage.setItem('userData', JSON.stringify(userData));
+        
+        console.log('💾 Stored real user data and JWT token');
         
         // Show success message
         showSuccess('Account created successfully! Redirecting...');
@@ -141,45 +205,14 @@ async function handleSignup(e) {
         }, 1500);
         
     } catch (error) {
+        console.error('❌ Signup error:', error);
         showError(error.message || 'Signup failed. Please try again.');
         submitButton.disabled = false;
         submitButton.textContent = originalText;
     }
 }
 
-// Simulate login API call
-async function simulateLogin(email, password) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Simple validation - in real app this would be server-side
-            if (email.includes('@') && password.length >= 6) {
-                resolve({ success: true });
-            } else {
-                reject(new Error('Invalid email or password'));
-            }
-        }, 1000);
-    });
-}
-
-// Simulate signup API call
-async function simulateSignup(userData) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            // Check if email already exists (simulated)
-            const existingUser = localStorage.getItem(`user_${userData.email}`);
-            if (existingUser) {
-                reject(new Error('An account with this email already exists'));
-                return;
-            }
-            
-            // Store user (simulated)
-            localStorage.setItem(`user_${userData.email}`, JSON.stringify(userData));
-            resolve({ success: true });
-        }, 1500);
-    });
-}
-
-// Utility functions
+// Utility functions (keep these the same)
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -191,16 +224,12 @@ function isValidPassword(password) {
     return passwordRegex.test(password);
 }
 
-function generateAuthToken() {
-    return 'eeh_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
-}
-
 function getNameFromEmail(email) {
     const username = email.split('@')[0];
     return username.charAt(0).toUpperCase() + username.slice(1);
 }
 
-// Message display functions
+// Message display functions (keep these the same)
 function showError(message) {
     showMessage(message, 'error');
 }
@@ -274,14 +303,22 @@ function selectPlan(planType) {
     }
 }
 
-// Check if user is already logged in
+// Check if user is already logged in with VALID token
 function checkExistingAuth() {
-    const authToken = localStorage.getItem('authToken');
+    const authToken = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
     const userData = localStorage.getItem('userData');
     
-    if (authToken && userData) {
+    // Check if token exists and looks like a JWT (starts with eyJ)
+    if (authToken && authToken.startsWith('eyJ') && userData) {
+        console.log('✅ User already logged in with valid JWT token');
         // User is already logged in, redirect to dashboard
         window.location.href = 'dashboard.html';
+    } else if (authToken || userData) {
+        console.log('🧹 Clearing invalid tokens');
+        // Clear invalid tokens
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
     }
 }
 
@@ -293,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Add required CSS for animations
+// Add required CSS for animations (keep this the same)
 const style = document.createElement('style');
 style.textContent = `
     @keyframes fadeIn {
