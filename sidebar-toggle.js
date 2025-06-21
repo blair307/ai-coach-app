@@ -296,3 +296,176 @@ window.debugSidebar = function() {
 };
 
 console.log('Sidebar toggle script loaded. Use window.debugSidebar() to debug.');
+
+// Replace the existing toggle functionality in sidebar-toggle.js with this:
+
+class SidebarToggle {
+    constructor() {
+        this.sidebar = null;
+        this.toggleButton = null;
+        this.overlay = null;
+        this.mainContent = null;
+        this.isOpen = true; // Start open on desktop
+        this.init();
+    }
+
+    init() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.setup());
+        } else {
+            this.setup();
+        }
+    }
+
+    setup() {
+        console.log('Setting up sidebar toggle...');
+        
+        this.sidebar = document.querySelector('#sidebar');
+        this.toggleButton = document.querySelector('#sidebar-toggle');
+        this.overlay = document.querySelector('#sidebar-overlay');
+        this.mainContent = document.querySelector('.main-content');
+
+        if (!this.sidebar || !this.toggleButton) {
+            console.error('Sidebar or toggle button not found');
+            return;
+        }
+
+        // Set initial state based on screen size
+        this.setInitialState();
+        this.attachEventListeners();
+        
+        console.log('Sidebar toggle initialized successfully');
+    }
+
+    setInitialState() {
+        if (window.innerWidth <= 768) {
+            // Mobile: start closed
+            this.isOpen = false;
+            this.sidebar.classList.remove('sidebar-open', 'active');
+        } else {
+            // Desktop: start open
+            this.isOpen = true;
+            this.sidebar.classList.add('sidebar-open');
+        }
+    }
+
+    attachEventListeners() {
+        // Toggle button click
+        this.toggleButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        });
+
+        // Overlay click to close (mobile)
+        if (this.overlay) {
+            this.overlay.addEventListener('click', () => {
+                this.close();
+            });
+        }
+
+        // Close on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                this.close();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            this.handleResize();
+        });
+
+        // Mobile: close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && 
+                this.isOpen && 
+                !this.sidebar.contains(e.target)) {
+                this.close();
+            }
+        });
+    }
+
+    toggle() {
+        if (this.isOpen) {
+            this.close();
+        } else {
+            this.open();
+        }
+    }
+
+    open() {
+        console.log('Opening sidebar...');
+        this.isOpen = true;
+        
+        this.sidebar.classList.add('sidebar-open', 'active');
+        
+        if (this.overlay) {
+            this.overlay.classList.add('active');
+        }
+
+        // Update ARIA
+        this.sidebar.setAttribute('aria-hidden', 'false');
+        this.toggleButton.setAttribute('aria-expanded', 'true');
+
+        this.dispatchEvent('sidebar:opened');
+    }
+
+    close() {
+        console.log('Closing sidebar...');
+        this.isOpen = false;
+        
+        this.sidebar.classList.remove('sidebar-open', 'active');
+        
+        if (this.overlay) {
+            this.overlay.classList.remove('active');
+        }
+
+        // Update ARIA
+        this.sidebar.setAttribute('aria-hidden', 'true');
+        this.toggleButton.setAttribute('aria-expanded', 'false');
+
+        this.dispatchEvent('sidebar:closed');
+    }
+
+    handleResize() {
+        if (window.innerWidth > 768) {
+            // Desktop: ensure sidebar is open and remove mobile overlay
+            if (!this.isOpen) {
+                this.open();
+            }
+            if (this.overlay) {
+                this.overlay.classList.remove('active');
+            }
+        } else {
+            // Mobile: close sidebar if it's open
+            if (this.isOpen) {
+                this.close();
+            }
+        }
+    }
+
+    dispatchEvent(eventName) {
+        const event = new CustomEvent(eventName, {
+            detail: { sidebar: this.sidebar, isOpen: this.isOpen }
+        });
+        document.dispatchEvent(event);
+    }
+}
+
+// Initialize
+let sidebarToggle;
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        sidebarToggle = new SidebarToggle();
+    });
+} else {
+    sidebarToggle = new SidebarToggle();
+}
+
+// Make available globally
+window.SidebarToggle = SidebarToggle;
+window.sidebarToggle = sidebarToggle;
+
+console.log('Sidebar toggle script loaded.');
