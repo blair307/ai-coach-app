@@ -1,10 +1,31 @@
-// Dashboard JavaScript
+// Dashboard JavaScript - Real Notification Integration
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize real notification system
+    if (!window.realNotificationSystem) {
+        // Import the notification system (ensure it's loaded first)
+        const script = document.createElement('script');
+        script.src = 'real-notification-system.js';
+        document.head.appendChild(script);
+        
+        script.onload = function() {
+            window.realNotificationSystem = new RealNotificationSystem();
+            initializeDashboard();
+        };
+    } else {
+        initializeDashboard();
+    }
+});
+
+function initializeDashboard() {
     updateBranding();
     loadGoals();
     updateStats();
+    loadRealNotifications(); // Use real notification system
     updateNotificationBadge();
-});
+    
+    // Record user visit for activity tracking
+    recordActivity();
+}
 
 function updateBranding() {
     document.title = 'Dashboard - Entrepreneur Emotional Health';
@@ -16,10 +37,59 @@ function updateBranding() {
     });
 }
 
+// Load real notifications generated from user activity
+function loadRealNotifications() {
+    const notificationsPreview = document.querySelector('.notifications-preview');
+    if (!notificationsPreview) return;
+
+    // Get real notifications from the notification system
+    const notificationSystem = window.realNotificationSystem;
+    if (!notificationSystem) {
+        // Fallback if system not loaded
+        notificationsPreview.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                <p>Loading notifications...</p>
+            </div>
+        `;
+        return;
+    }
+
+    const notifications = notificationSystem.getNotifications();
+    const unreadNotifications = notifications
+        .filter(n => !n.read)
+        .slice(0, 3); // Show only first 3 unread
+
+    if (unreadNotifications.length === 0) {
+        notificationsPreview.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                <p>No unread notifications</p>
+                <small>Keep using the platform to get personalized updates!</small>
+            </div>
+        `;
+    } else {
+        notificationsPreview.innerHTML = unreadNotifications.map(notification => `
+            <div class="notification-item unread" onclick="goToNotification('${notification.id}')">
+                <div class="notification-content">
+                    <p>${notification.title}</p>
+                    <small>${formatTimestamp(notification.timestamp)}</small>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Navigate to notification and mark as read
+function goToNotification(notificationId) {
+    if (window.realNotificationSystem) {
+        window.realNotificationSystem.markAsRead(notificationId);
+    }
+    window.location.href = 'notifications.html';
+}
+
 function updateNotificationBadge() {
     const badge = document.getElementById('notificationBadge');
-    if (badge) {
-        const unreadCount = localStorage.getItem('eeh_unread_count') || '3';
+    if (badge && window.realNotificationSystem) {
+        const unreadCount = window.realNotificationSystem.getUnreadCount();
         badge.textContent = unreadCount;
         badge.style.display = unreadCount > 0 ? 'inline' : 'none';
     }
@@ -69,6 +139,11 @@ function calculateDayStreak() {
     if (hasActivity && !activityLog.includes(today)) {
         activityLog.push(today);
         localStorage.setItem('eeh_activity_log', JSON.stringify(activityLog));
+        
+        // Trigger notification system update when activity changes
+        if (window.realNotificationSystem) {
+            window.realNotificationSystem.generateNotificationsFromActivity();
+        }
     }
     
     // Calculate streak
@@ -183,8 +258,18 @@ function toggleGoal(index) {
         // Show feedback
         showToast(goals[index].completed ? 'Goal marked as complete!' : 'Goal marked as incomplete');
         
-        // Record activity for streak
+        // Record activity for streak and trigger notifications
         recordActivity();
+        
+        // Trigger notification system update
+        if (window.realNotificationSystem) {
+            window.realNotificationSystem.generateNotificationsFromActivity();
+            // Refresh notification display
+            setTimeout(() => {
+                loadRealNotifications();
+                updateNotificationBadge();
+            }, 100);
+        }
     }
 }
 
@@ -204,6 +289,15 @@ function addGoal() {
         updateGoalDisplay(goals);
         showToast('New goal added successfully!');
         recordActivity();
+        
+        // Trigger notification system update
+        if (window.realNotificationSystem) {
+            window.realNotificationSystem.generateNotificationsFromActivity();
+            setTimeout(() => {
+                loadRealNotifications();
+                updateNotificationBadge();
+            }, 100);
+        }
     }
 }
 
@@ -218,6 +312,33 @@ function recordActivity() {
     }
 }
 
+function startCoachingSession() {
+    recordActivity();
+    window.location.href = 'ai-coach.html?new_session=true';
+}
+
+// Format timestamp (same as notification system)
+function formatTimestamp(date) {
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - new Date(date)) / 1000);
+    
+    if (diffInSeconds < 60) {
+        return 'Just now';
+    } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    } else if (diffInSeconds < 604800) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} day${days !== 1 ? 's' : ''} ago`;
+    } else {
+        return new Date(date).toLocaleDateString();
+    }
+}
+
+// (Keep all the existing modal and goal management functions exactly as they were)
 function manageGoals() {
     const currentGoals = getActiveGoals();
     
@@ -301,6 +422,15 @@ function addGoalFromModal() {
         
         // Update the modal display
         updateModalGoalsList();
+        
+        // Trigger notification system update
+        if (window.realNotificationSystem) {
+            window.realNotificationSystem.generateNotificationsFromActivity();
+            setTimeout(() => {
+                loadRealNotifications();
+                updateNotificationBadge();
+            }, 100);
+        }
     }
 }
 
@@ -320,6 +450,15 @@ function toggleGoalInModal(index) {
         // Update modal
         updateModalGoalsList();
         showToast(goals[index].completed ? 'Goal completed!' : 'Goal marked as incomplete');
+        
+        // Trigger notification system update
+        if (window.realNotificationSystem) {
+            window.realNotificationSystem.generateNotificationsFromActivity();
+            setTimeout(() => {
+                loadRealNotifications();
+                updateNotificationBadge();
+            }, 100);
+        }
     }
 }
 
@@ -358,11 +497,6 @@ function updateModalGoalsList() {
                 </div>
             `).join('');
     }
-}
-
-function startCoachingSession() {
-    recordActivity();
-    window.location.href = 'ai-coach.html?new_session=true';
 }
 
 function showToast(message) {
@@ -432,21 +566,6 @@ function initializeDefaultGoals() {
     }
     return JSON.parse(savedGoals);
 }
-
-// Initialize goals and activity tracking on page load
-document.addEventListener('DOMContentLoaded', function() {
-    const goals = initializeDefaultGoals();
-    updateGoalDisplay(goals);
-    
-    // Initialize activity tracking
-    recordActivity();
-    
-    // Update all stats
-    updateStats();
-    
-    // Load and display insights
-    updateInsights();
-});
 
 // Generate insights from user data
 function updateInsights() {
