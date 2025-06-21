@@ -2160,7 +2160,8 @@ select:focus-visible,
     background-clip: text;
     margin-bottom: 0.5rem;
     letter-spacing: -0.02em;
-    font-family: 'Courier New', monospace;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 .current-date {
@@ -2383,6 +2384,57 @@ select:focus-visible,
     color: var(--text-primary);
 }
 
+.meeting-status {
+    padding: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius);
+    text-align: center;
+    font-weight: 500;
+    border: 1px solid var(--border);
+}
+
+.meeting-status.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.meeting-status.waiting {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+    border-color: var(--warning);
+    color: var(--warning);
+}
+
+.meeting-actions {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    background: var(--surface);
+}
+
+#joinMeetingBtn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+#joinMeetingBtn:disabled:hover {
+    background: var(--text-muted);
+    transform: none;
+    box-shadow: none;
+}
+
+#joinMeetingBtn.active {
+    background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3); }
+    50% { box-shadow: 0 8px 20px rgba(16, 185, 129, 0.5); }
+}
 .meeting-status {
     padding: 1rem;
     background: var(--surface);
