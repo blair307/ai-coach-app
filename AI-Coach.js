@@ -1,18 +1,22 @@
-// Complete ai-coach.js file with all functions and error fixes
+// Corrected ai-coach.js with the right element IDs from your HTML
 
 // Wait for page to load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 AI Coach page loaded');
-    
-    // Initialize the page
     initializePage();
     loadChatHistory();
 });
 
 // Initialize page elements and event listeners
 function initializePage() {
-    const sendButton = document.getElementById('send-btn');
-    const userInput = document.getElementById('user-input');
+    console.log('🔍 Looking for page elements...');
+    
+    // Use the correct IDs from your HTML
+    const sendButton = document.getElementById('sendButton');
+    const userInput = document.getElementById('messageInput');
+    
+    console.log('📝 Input field (messageInput):', userInput ? 'Found ✅' : 'Not found ❌');
+    console.log('🔘 Send button (sendButton):', sendButton ? 'Found ✅' : 'Not found ❌');
     
     if (sendButton) {
         sendButton.addEventListener('click', sendMessage);
@@ -41,9 +45,10 @@ function handleKeyPress(event) {
 async function sendMessage() {
     console.log('📤 Send message function called');
     
-    const userInput = document.getElementById('user-input');
+    // Use the correct ID from your HTML
+    const userInput = document.getElementById('messageInput');
     if (!userInput) {
-        console.error('❌ User input element not found');
+        console.error('❌ User input element (messageInput) not found');
         return;
     }
     
@@ -79,14 +84,6 @@ async function sendMessage() {
         
         // Save conversation history
         saveConversationHistory(message, response);
-        
-        // Update stats if functions exist
-        if (typeof updateInsights === 'function') {
-            updateInsights(response);
-        }
-        if (typeof incrementSessionCount === 'function') {
-            incrementSessionCount();
-        }
         
         console.log('✅ Message sent successfully');
         
@@ -166,9 +163,16 @@ async function callOpenAI(message, conversationHistory = []) {
 
 // Add message to chat display
 function addMessage(message, type) {
-    const chatContainer = document.getElementById('chat-container') || document.querySelector('.chat-container');
+    // Look for your chat container - from the HTML I saw it might be 'chatMessages'
+    const chatContainer = document.getElementById('chatMessages') || 
+                         document.getElementById('chat-container') || 
+                         document.querySelector('.chat-messages') ||
+                         document.querySelector('.chat-container');
+    
     if (!chatContainer) {
         console.error('❌ Chat container not found');
+        console.log('🔍 Looking for these containers:', 
+                   'chatMessages, chat-container, .chat-messages, .chat-container');
         return;
     }
     
@@ -200,7 +204,11 @@ function showTypingIndicator() {
         return; // Already showing
     }
     
-    const chatContainer = document.getElementById('chat-container') || document.querySelector('.chat-container');
+    const chatContainer = document.getElementById('chatMessages') || 
+                         document.getElementById('chat-container') || 
+                         document.querySelector('.chat-messages') ||
+                         document.querySelector('.chat-container');
+    
     if (!chatContainer) return;
     
     const typingDiv = document.createElement('div');
@@ -278,40 +286,4 @@ function loadChatHistory() {
     }
 }
 
-// Helper functions for stats (if they don't exist elsewhere)
-function updateInsights(response) {
-    try {
-        // Simple insight generation based on AI response
-        const insights = JSON.parse(localStorage.getItem('eeh_insights') || '[]');
-        
-        // Add basic insight
-        if (response.toLowerCase().includes('stress') || response.toLowerCase().includes('overwhelm')) {
-            insights.push({
-                type: 'stress_management',
-                content: 'Focus on stress management techniques',
-                timestamp: new Date().toISOString()
-            });
-        }
-        
-        // Keep only recent insights
-        const recentInsights = insights.slice(-10);
-        localStorage.setItem('eeh_insights', JSON.stringify(recentInsights));
-        
-        console.log('📊 Updated insights');
-    } catch (error) {
-        console.error('❌ Error updating insights:', error);
-    }
-}
-
-function incrementSessionCount() {
-    try {
-        const currentCount = parseInt(localStorage.getItem('eeh_session_count') || '0');
-        const newCount = currentCount + 1;
-        localStorage.setItem('eeh_session_count', newCount.toString());
-        console.log('📈 Session count updated to:', newCount);
-    } catch (error) {
-        console.error('❌ Error updating session count:', error);
-    }
-}
-
-console.log('📝 AI Coach JavaScript loaded successfully');
+console.log('📝 AI Coach JavaScript loaded successfully with correct element IDs');
