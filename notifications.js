@@ -1,18 +1,37 @@
-// Fixed Notifications JavaScript - Actually Working
+// Updated Notifications JavaScript - Real System Integration
 class NotificationManager {
     constructor() {
         this.currentFilter = 'all';
-        this.notifications = [];
-        this.settings = this.loadSettings();
+        this.realNotificationSystem = null;
         this.init();
     }
 
     init() {
         this.checkAuth();
-        this.loadNotifications();
-        this.updateAllCounts();
+        this.initializeRealNotificationSystem();
         this.setupEventListeners();
         this.updateBranding();
+    }
+
+    initializeRealNotificationSystem() {
+        // Initialize or get existing real notification system
+        if (!window.realNotificationSystem) {
+            // Import the notification system if not loaded
+            const script = document.createElement('script');
+            script.src = 'real-notification-system.js';
+            document.head.appendChild(script);
+            
+            script.onload = () => {
+                window.realNotificationSystem = new RealNotificationSystem();
+                this.realNotificationSystem = window.realNotificationSystem;
+                this.loadNotifications();
+                this.updateAllCounts();
+            };
+        } else {
+            this.realNotificationSystem = window.realNotificationSystem;
+            this.loadNotifications();
+            this.updateAllCounts();
+        }
     }
 
     updateBranding() {
@@ -49,6 +68,15 @@ class NotificationManager {
                 }
             }
         });
+
+        // Auto-refresh notifications every 30 seconds
+        setInterval(() => {
+            if (this.realNotificationSystem) {
+                this.realNotificationSystem.generateNotificationsFromActivity();
+                this.loadNotifications();
+                this.updateAllCounts();
+            }
+        }, 30000);
     }
 
     checkAuth() {
@@ -61,90 +89,45 @@ class NotificationManager {
     }
 
     loadNotifications() {
-        const savedNotifications = localStorage.getItem('eeh_notifications');
-        if (savedNotifications) {
-            this.notifications = JSON.parse(savedNotifications);
-        } else {
-            this.notifications = this.getSampleNotifications();
-            this.saveNotifications();
+        if (!this.realNotificationSystem) {
+            // Show loading state
+            const container = document.getElementById('notificationsList');
+            if (container) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <p>Loading notifications...</p>
+                    </div>
+                `;
+            }
+            return;
         }
 
+        // Generate fresh notifications based on current activity
+        this.realNotificationSystem.generateNotificationsFromActivity();
+        
         this.renderNotifications();
         this.updateAllCounts();
-    }
-
-    getSampleNotifications() {
-        return [
-            {
-                id: '1',
-                type: 'coaching',
-                title: 'New Coaching Insights Available',
-                message: 'Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.',
-                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-                read: false
-            },
-            {
-                id: '2',
-                type: 'community',
-                title: 'New Messages in Business Growth',
-                message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.',
-                timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000),
-                read: false
-            },
-            {
-                id: '3',
-                type: 'system',
-                title: 'Weekly Progress Report Ready',
-                message: 'Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.',
-                timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000),
-                read: false
-            },
-            {
-                id: '4',
-                type: 'coaching',
-                title: 'Goal Achievement Milestone',
-                message: 'Congratulations! You\'ve completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.',
-                timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-                read: true
-            },
-            {
-                id: '5',
-                type: 'community',
-                title: 'Someone Mentioned You',
-                message: 'Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.',
-                timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-                read: true
-            },
-            {
-                id: '6',
-                type: 'system',
-                title: 'Platform Update: New Features',
-                message: 'We\'ve added new emotional intelligence tracking features and enhanced AI coaching capabilities.',
-                timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-                read: true
-            },
-            {
-                id: '7',
-                type: 'billing',
-                title: 'Payment Successful',
-                message: 'Your yearly subscription payment of $929 has been processed successfully.',
-                timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-                read: true
-            }
-        ];
     }
 
     renderNotifications() {
         const container = document.getElementById('notificationsList');
         const emptyState = document.getElementById('emptyState');
         
-        if (!container) return;
+        if (!container || !this.realNotificationSystem) return;
 
-        const filteredNotifications = this.getFilteredNotifications();
+        const notifications = this.realNotificationSystem.getNotifications();
+        const filteredNotifications = this.getFilteredNotifications(notifications);
         
         if (filteredNotifications.length === 0) {
             container.style.display = 'none';
             emptyState.style.display = 'block';
+            
+            // Show different empty messages based on filter
+            const emptyMessage = this.getEmptyStateMessage();
+            emptyState.innerHTML = `
+                <h3>No ${this.currentFilter === 'all' ? '' : this.currentFilter + ' '}notifications found</h3>
+                <p>${emptyMessage}</p>
+            `;
             return;
         }
 
@@ -154,6 +137,23 @@ class NotificationManager {
         container.innerHTML = filteredNotifications.map(notification => 
             this.createNotificationHTML(notification)
         ).join('');
+    }
+
+    getEmptyStateMessage() {
+        switch(this.currentFilter) {
+            case 'unread':
+                return "You're all caught up! No unread notifications at the moment.";
+            case 'coaching':
+                return "Start chatting with your AI coach to receive personalized insights and progress updates.";
+            case 'community':
+                return "Join community discussions to receive notifications about new messages and mentions.";
+            case 'system':
+                return "Complete goals and maintain activity streaks to receive system notifications.";
+            case 'billing':
+                return "Billing notifications will appear here for payment confirmations and subscription updates.";
+            default:
+                return "Keep using the platform to receive personalized notifications based on your activity!";
+        }
     }
 
     createNotificationHTML(notification) {
@@ -204,8 +204,8 @@ class NotificationManager {
         }
     }
 
-    getFilteredNotifications() {
-        return this.notifications.filter(notification => {
+    getFilteredNotifications(notifications) {
+        return notifications.filter(notification => {
             switch(this.currentFilter) {
                 case 'all':
                     return true;
@@ -239,19 +239,24 @@ class NotificationManager {
     }
 
     markAsRead(notificationId) {
-        console.log('Marking as read:', notificationId);
-        const notification = this.notifications.find(n => n.id === notificationId);
-        if (notification && !notification.read) {
-            notification.read = true;
-            this.saveNotifications();
-            this.renderNotifications();
-            this.updateAllCounts();
-            this.showToast('Notification marked as read');
+        if (this.realNotificationSystem) {
+            const success = this.realNotificationSystem.markAsRead(notificationId);
+            if (success) {
+                this.renderNotifications();
+                this.updateAllCounts();
+                this.showToast('Notification marked as read');
+            }
         }
     }
 
     markAllRead() {
-        const unreadNotifications = this.notifications.filter(n => !n.read);
+        if (!this.realNotificationSystem) {
+            this.showToast('Notification system not ready');
+            return;
+        }
+
+        const notifications = this.realNotificationSystem.getNotifications();
+        const unreadNotifications = notifications.filter(n => !n.read);
         const unreadCount = unreadNotifications.length;
         
         if (unreadCount === 0) {
@@ -260,11 +265,7 @@ class NotificationManager {
         }
 
         if (confirm(`Mark all ${unreadCount} unread notifications as read?`)) {
-            unreadNotifications.forEach(notification => {
-                notification.read = true;
-            });
-            
-            this.saveNotifications();
+            this.realNotificationSystem.markAllAsRead();
             this.renderNotifications();
             this.updateAllCounts();
             this.showToast(`${unreadCount} notifications marked as read`);
@@ -272,7 +273,13 @@ class NotificationManager {
     }
 
     clearAll() {
-        const notificationCount = this.notifications.length;
+        if (!this.realNotificationSystem) {
+            this.showToast('Notification system not ready');
+            return;
+        }
+
+        const notifications = this.realNotificationSystem.getNotifications();
+        const notificationCount = notifications.length;
         
         if (notificationCount === 0) {
             this.showToast('No notifications to clear');
@@ -280,8 +287,7 @@ class NotificationManager {
         }
 
         if (confirm(`Clear all ${notificationCount} notifications? This cannot be undone.`)) {
-            this.notifications = [];
-            this.saveNotifications();
+            this.realNotificationSystem.clearAll();
             this.renderNotifications();
             this.updateAllCounts();
             this.showToast('All notifications cleared');
@@ -289,13 +295,17 @@ class NotificationManager {
     }
 
     updateAllCounts() {
+        if (!this.realNotificationSystem) return;
+
+        const notifications = this.realNotificationSystem.getNotifications();
+        
         const counts = {
-            all: this.notifications.length,
-            unread: this.notifications.filter(n => !n.read).length,
-            coaching: this.notifications.filter(n => n.type === 'coaching').length,
-            community: this.notifications.filter(n => n.type === 'community').length,
-            system: this.notifications.filter(n => n.type === 'system').length,
-            billing: this.notifications.filter(n => n.type === 'billing').length
+            all: notifications.length,
+            unread: notifications.filter(n => !n.read).length,
+            coaching: notifications.filter(n => n.type === 'coaching').length,
+            community: notifications.filter(n => n.type === 'community').length,
+            system: notifications.filter(n => n.type === 'system').length,
+            billing: notifications.filter(n => n.type === 'billing').length
         };
 
         // Update count badges
@@ -325,48 +335,34 @@ class NotificationManager {
 
     // Navigation functions that auto-mark as read
     goToCoach(notificationId) {
-        if (notificationId) {
-            this.markAsRead(notificationId);
+        if (notificationId && this.realNotificationSystem) {
+            this.realNotificationSystem.markAsRead(notificationId);
         }
         window.location.href = 'ai-coach.html';
     }
 
     goToCommunity(notificationId) {
-        if (notificationId) {
-            this.markAsRead(notificationId);
+        if (notificationId && this.realNotificationSystem) {
+            this.realNotificationSystem.markAsRead(notificationId);
         }
         window.location.href = 'community.html';
     }
 
     goToDashboard(notificationId) {
-        if (notificationId) {
-            this.markAsRead(notificationId);
+        if (notificationId && this.realNotificationSystem) {
+            this.realNotificationSystem.markAsRead(notificationId);
         }
         window.location.href = 'dashboard.html';
     }
 
     goToBilling(notificationId) {
-        if (notificationId) {
-            this.markAsRead(notificationId);
+        if (notificationId && this.realNotificationSystem) {
+            this.realNotificationSystem.markAsRead(notificationId);
         }
         window.location.href = 'billing.html';
     }
 
     // Utility functions
-    saveNotifications() {
-        localStorage.setItem('eeh_notifications', JSON.stringify(this.notifications));
-    }
-
-    loadSettings() {
-        const saved = localStorage.getItem('eeh_notificationSettings');
-        return saved ? JSON.parse(saved) : {
-            coachingInsights: true,
-            communityMessages: true,
-            weeklyReports: true,
-            billingUpdates: true
-        };
-    }
-
     formatTimestamp(date) {
         const now = new Date();
         const diffInSeconds = Math.floor((now - new Date(date)) / 1000);
