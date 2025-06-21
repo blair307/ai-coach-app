@@ -30,7 +30,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge">3</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -257,16 +257,29 @@
     let currentDate = new Date();
     let selectedMeetingDate = null;
 
-    // UPDATED: Meeting schedule starting July 8th, 2025
-    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00'); // July 8, 2025, 5:30 PM CST
-    const MEETING_DURATION = 80; // 80 minutes
-    const EARLY_ACCESS = 10; // 10 minutes before
+    // Meeting schedule starting July 8th, 2025
+    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00');
+    const MEETING_DURATION = 80;
+    const EARLY_ACCESS = 10;
     const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
+
+    // Dynamic notification management
+    function updateNotificationBadge() {
+        // Count unread notifications (in this example, we have 2 unread)
+        const unreadNotifications = document.querySelectorAll('.notification-item.unread').length;
+        const badge = document.getElementById('notificationBadge');
+        
+        if (unreadNotifications > 0) {
+            badge.textContent = unreadNotifications;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
 
     function updateTimer() {
         const now = new Date();
         
-        // Format time with CST timezone
         const timeOptions = {
             timeZone: 'America/Chicago',
             hour12: true,
@@ -294,12 +307,11 @@
         const meetings = [];
         let currentMeeting = new Date(MEETING_START_DATE);
         
-        // Generate meetings for the year
         while (currentMeeting.getFullYear() <= year + 1) {
             if (currentMeeting.getFullYear() === year && currentMeeting.getMonth() === month) {
                 meetings.push(new Date(currentMeeting));
             }
-            currentMeeting.setDate(currentMeeting.getDate() + 14); // Every 2 weeks
+            currentMeeting.setDate(currentMeeting.getDate() + 14);
         }
         
         return meetings;
@@ -325,7 +337,6 @@
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Generate 6 weeks (42 days) for compact view
         for (let i = 0; i < 42; i++) {
             const cellDate = new Date(startDate);
             cellDate.setDate(startDate.getDate() + i);
@@ -334,7 +345,6 @@
             dayElement.className = 'calendar-day';
             dayElement.textContent = cellDate.getDate();
             
-            // Add classes for styling
             if (cellDate.getMonth() !== month) {
                 dayElement.classList.add('other-month');
             }
@@ -351,7 +361,6 @@
             calendarDays.appendChild(dayElement);
         }
         
-        // Update month header
         const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'];
         document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
@@ -359,7 +368,7 @@
 
     function showMeetingCard(date) {
         selectedMeetingDate = new Date(date);
-        selectedMeetingDate.setHours(17, 30, 0, 0); // 5:30 PM
+        selectedMeetingDate.setHours(17, 30, 0, 0);
         
         const dateString = selectedMeetingDate.toLocaleDateString('en-US', {
             weekday: 'long',
@@ -388,7 +397,6 @@
         const statusDiv = document.getElementById('meetingStatus');
         
         if (now >= earlyAccess && now <= meetingEnd) {
-            // Meeting is active or starting soon
             joinBtn.disabled = false;
             joinBtn.classList.add('active');
             
@@ -402,7 +410,6 @@
                 statusDiv.className = 'meeting-status active';
             }
         } else {
-            // Meeting not available
             joinBtn.disabled = true;
             joinBtn.classList.remove('active');
             statusDiv.className = 'meeting-status';
@@ -442,6 +449,9 @@
 
     // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        // Update notification badge
+        updateNotificationBadge();
+        
         // Start timer
         updateTimer();
         setInterval(updateTimer, 1000);
