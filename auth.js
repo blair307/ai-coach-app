@@ -1,6 +1,6 @@
 // Authentication JavaScript
 
-const API_BASE_URL = 'https://your-render-url-here.onrender.com';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 // Handle login form submission
 document.addEventListener('DOMContentLoaded', function() {
