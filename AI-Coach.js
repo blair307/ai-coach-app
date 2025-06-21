@@ -1,31 +1,31 @@
-// Foolproof AI Coach JavaScript - Will work with any element names
+// Complete Fixed AI Coach JavaScript - Backend URL + Token Fix
 
 console.log('🚀 Starting EEH AI Coach...');
+
+// Your Render backend URL
+const BACKEND_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 // Wait for page to fully load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
-    setTimeout(setupChat, 1000); // Wait 1 second to make sure everything is loaded
+    setTimeout(setupChat, 1000);
 });
 
-// Setup function that finds elements no matter what they're called
+// Setup function that finds elements
 function setupChat() {
     console.log('🔍 Looking for chat elements...');
     
-    // Find the input field - try every possible way
     const inputField = findInputField();
     const sendButton = findSendButton();
     
     if (inputField && sendButton) {
         console.log('✅ Found both input and button!');
         
-        // Add click event to button
         sendButton.onclick = function() {
             console.log('🔘 Button clicked!');
             sendMessageNow();
         };
         
-        // Add Enter key event to input
         inputField.onkeypress = function(event) {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
@@ -37,43 +37,33 @@ function setupChat() {
         console.log('✅ Chat is ready to use!');
     } else {
         console.error('❌ Could not find chat elements');
-        if (!inputField) console.error('❌ Input field not found');
-        if (!sendButton) console.error('❌ Send button not found');
     }
 }
 
 // Smart function to find input field
 function findInputField() {
-    // Try all possible ways to find the input
     const possibilities = [
         document.getElementById('messageInput'),
         document.getElementById('user-input'),
         document.getElementById('chat-input'),
-        document.getElementById('message-input'),
         document.querySelector('textarea'),
-        document.querySelector('input[type="text"]'),
-        document.querySelector('.chat-input'),
-        document.querySelector('.message-input')
+        document.querySelector('input[type="text"]')
     ];
     
     for (let element of possibilities) {
         if (element) {
-            console.log('✅ Found input field:', element.id || element.className || 'no ID/class');
+            console.log('✅ Found input field:', element.id || element.className);
             return element;
         }
     }
-    
-    console.log('❌ Could not find input field anywhere');
     return null;
 }
 
 // Smart function to find send button
 function findSendButton() {
-    // Try all possible ways to find the button
     const possibilities = [
         document.getElementById('sendButton'),
         document.getElementById('send-btn'),
-        document.getElementById('send-button'),
         document.querySelector('button[onclick*="sendMessage"]'),
         document.querySelector('.btn-primary'),
         document.querySelector('button')
@@ -81,12 +71,32 @@ function findSendButton() {
     
     for (let element of possibilities) {
         if (element) {
-            console.log('✅ Found send button:', element.id || element.className || 'no ID/class');
+            console.log('✅ Found send button:', element.id || element.className);
             return element;
         }
     }
+    return null;
+}
+
+// Get proper auth token
+function getAuthToken() {
+    // Try different token storage methods
+    const possibleTokens = [
+        localStorage.getItem('eeh_token'),
+        localStorage.getItem('authToken'), 
+        localStorage.getItem('auth_token'),
+        localStorage.getItem('token')
+    ];
     
-    console.log('❌ Could not find send button anywhere');
+    // Find the first non-null token
+    for (let token of possibleTokens) {
+        if (token && token !== 'null' && token !== 'undefined') {
+            console.log('🔑 Found valid token:', token.substring(0, 20) + '...');
+            return token;
+        }
+    }
+    
+    console.log('❌ No valid token found');
     return null;
 }
 
@@ -125,14 +135,12 @@ function sendMessageNow() {
 function addMessageToChat(message, type, isTemporary = false) {
     console.log(`💬 Adding ${type} message: ${message}`);
     
-    // Find chat container
     const chatContainer = findChatContainer();
     if (!chatContainer) {
         console.error('❌ Cannot find chat container');
         return;
     }
     
-    // Create message element
     const messageDiv = document.createElement('div');
     messageDiv.className = `message ${type}-message`;
     if (isTemporary) messageDiv.id = 'thinking-message';
@@ -162,31 +170,31 @@ function findChatContainer() {
             return element;
         }
     }
-    
-    console.log('❌ Could not find chat container');
     return null;
 }
 
-// Call your AI backend
+// Call your AI backend with token fix
 async function callAI(message) {
-    console.log('🤖 Calling AI backend...');
+    console.log('🤖 Calling Render backend...');
     
     try {
-        // Get auth token
-        const token = localStorage.getItem('eeh_token') || 
-                     localStorage.getItem('auth_token') || 
-                     localStorage.getItem('token');
-        
-        console.log('🔑 Token found:', token ? 'Yes' : 'No');
+        // Get auth token with enhanced checking
+        const token = getAuthToken();
         
         if (!token) {
             removeThinkingMessage();
-            addMessageToChat('Please log in to continue.', 'ai');
+            addMessageToChat('Please log in to continue. No valid authentication token found.', 'ai');
+            // Redirect to login after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
             return;
         }
         
-        // Call your backend
-        const response = await fetch('/api/chat/send', {
+        console.log('📡 Calling:', `${BACKEND_URL}/api/chat/send`);
+        console.log('🔑 Using token:', token.substring(0, 20) + '...');
+        
+        const response = await fetch(`${BACKEND_URL}/api/chat/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -205,17 +213,46 @@ async function callAI(message) {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Got AI response!');
+            console.log('✅ Got AI response from your custom Assistant!');
+            console.log('🤖 Response preview:', data.response.substring(0, 100) + '...');
             addMessageToChat(data.response, 'ai');
+            
+        } else if (response.status === 401 || response.status === 403) {
+            // Token is invalid/expired
+            console.log('🔒 Authentication failed - token invalid or expired');
+            
+            // Try to get error details
+            const errorData = await response.json().catch(() => ({}));
+            console.log('❌ Auth error details:', errorData);
+            
+            // Clear all tokens and redirect to login
+            localStorage.removeItem('eeh_token');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('token');
+            
+            addMessageToChat('Your session has expired. Please log in again.', 'ai');
+            
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+            
         } else {
-            console.log('❌ Backend error:', response.status);
-            addMessageToChat('Sorry, I\'m having trouble right now. Please try again.', 'ai');
+            // Other backend error
+            const errorData = await response.text().catch(() => 'Unknown error');
+            console.log('❌ Backend error:', response.status, errorData);
+            addMessageToChat(`Backend error (${response.status}). Please try again or contact support.`, 'ai');
         }
         
     } catch (error) {
-        console.error('❌ Error calling AI:', error);
+        console.error('❌ Error calling backend:', error);
         removeThinkingMessage();
-        addMessageToChat('I\'m experiencing technical difficulties. Please try again.', 'ai');
+        
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+            addMessageToChat('Cannot connect to backend. Please check your internet connection.', 'ai');
+        } else {
+            addMessageToChat('Technical error: ' + error.message, 'ai');
+        }
     }
 }
 
@@ -227,4 +264,4 @@ function removeThinkingMessage() {
     }
 }
 
-console.log('✅ AI Coach script loaded!');
+console.log('✅ AI Coach script loaded with Render backend and token fixes!');
