@@ -66,7 +66,6 @@ const userSchema = new mongoose.Schema({
     lastLoginDate: { type: Date, default: null },
     longestStreak: { type: Number, default: 0 }
   },
-  // Password reset fields
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   createdAt: { type: Date, default: Date.now }
@@ -77,7 +76,7 @@ const User = mongoose.model('User', userSchema);
 // Chat History Schema with Conversation Memory
 const chatSchema = new mongoose.Schema({
   userId: String,
-  threadId: String, // OpenAI thread ID for conversation memory
+  threadId: String,
   messages: [{
     role: String,
     content: String,
@@ -106,14 +105,13 @@ async function updateUserStreak(userId) {
     if (!user) return { currentStreak: 0, longestStreak: 0 };
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
+    today.setHours(0, 0, 0, 0);
     
     const lastLogin = user.streakData.lastLoginDate;
     let currentStreak = user.streakData.currentStreak || 0;
     let longestStreak = user.streakData.longestStreak || 0;
 
     if (!lastLogin) {
-      // First time login
       currentStreak = 1;
     } else {
       const lastLoginDate = new Date(lastLogin);
@@ -122,21 +120,16 @@ async function updateUserStreak(userId) {
       const daysDifference = (today - lastLoginDate) / (1000 * 60 * 60 * 24);
       
       if (daysDifference === 1) {
-        // Consecutive day login
         currentStreak += 1;
       } else if (daysDifference > 1) {
-        // Streak broken
         currentStreak = 1;
       }
-      // If daysDifference === 0, same day login, don't change streak
     }
 
-    // Update longest streak if current is higher
     if (currentStreak > longestStreak) {
       longestStreak = currentStreak;
     }
 
-    // Update user in database
     await User.findByIdAndUpdate(userId, {
       'streakData.currentStreak': currentStreak,
       'streakData.lastLoginDate': today,
@@ -175,35 +168,23 @@ app.get('/', (req, res) => {
   res.json({ message: 'AI Coach Backend is running!' });
 });
 
-// Health check
-app.get('/', (req, res) => {
-  res.json({ message: 'AI Coach Backend is running!' });
-});
-
-// Test route - ADD THIS
+// Test route
 app.get('/test', (req, res) => {
   res.json({ message: 'New code deployed!', timestamp: new Date() });
 });
 
 // Register new user with payment
 app.post('/api/auth/register', async (req, res) => {
-  // ... rest of code
-  
-// Register new user with payment
-app.post('/api/auth/register', async (req, res) => {
   try {
     const { firstName, lastName, email, password, plan, stripeCustomerId, paymentIntentId } = req.body;
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
     const user = new User({
       firstName,
       lastName,
@@ -224,7 +205,6 @@ app.post('/api/auth/register', async (req, res) => {
 
     await user.save();
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -256,22 +236,18 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Find user
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Update streak on login
     const streakData = await updateUserStreak(user._id);
 
-    // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
@@ -315,25 +291,20 @@ app.post('/api/auth/forgot-password', async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      // Don't reveal if user exists or not for security
       return res.status(200).json({ 
         message: 'If an account with that email exists, a password reset link has been sent.' 
       });
     }
 
-    // Generate reset token
     const resetToken = crypto.randomBytes(32).toString('hex');
     
-    // Hash token and set to user
     user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+    user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
     
     await user.save();
 
-    // Create reset URL
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
 
-    // Email content
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -379,10 +350,8 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Password must be at least 6 characters long' });
     }
 
-    // Hash the token to compare with stored hash
     const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
     
-    // Find user with valid reset token
     const user = await User.findOne({
       resetPasswordToken: hashedToken,
       resetPasswordExpires: { $gt: Date.now() }
@@ -392,11 +361,9 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    // Update password
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(newPassword, salt);
     
-    // Clear reset token fields
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     
@@ -415,13 +382,11 @@ app.post('/api/payments/create-subscription', async (req, res) => {
   try {
     const { email, planAmount, plan } = req.body;
 
-    // Create customer
     const customer = await stripe.customers.create({
       email: email,
       metadata: { plan }
     });
 
-    // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
       amount: planAmount,
       currency: 'usd',
@@ -451,19 +416,15 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     const { message } = req.body;
     const userId = req.user.userId;
 
-    // Your Custom Assistant ID
     const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
 
-    // Get or create conversation thread for this user
     let chat = await Chat.findOne({ userId });
     let threadId;
 
     if (!chat || !chat.threadId) {
-      // Create a new thread for this user
       const thread = await openai.beta.threads.create();
       threadId = thread.id;
       
-      // Save or update chat record with threadId
       if (chat) {
         chat.threadId = threadId;
         await chat.save();
@@ -479,24 +440,20 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       threadId = chat.threadId;
     }
 
-    // Add the user's message to the thread
     await openai.beta.threads.messages.create(threadId, {
       role: "user",
       content: message
     });
 
-    // Run the assistant
     const run = await openai.beta.threads.runs.create(threadId, {
       assistant_id: ASSISTANT_ID
     });
 
-    // Wait for the assistant to complete (simple polling)
     let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
     
-    // Keep checking until the assistant is done (max 30 seconds)
     let attempts = 0;
     while (runStatus.status !== 'completed' && attempts < 30) {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      await new Promise(resolve => setTimeout(resolve, 1000));
       runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
       attempts++;
     }
@@ -505,7 +462,6 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       throw new Error('Assistant took too long to respond');
     }
 
-    // Get the assistant's response
     const messages = await openai.beta.threads.messages.list(threadId);
     const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
     
@@ -515,7 +471,6 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 
     const response = assistantMessage.content[0].text.value;
 
-    // Save the conversation to our database for backup
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
       { role: 'assistant', content: response, timestamp: new Date() }
@@ -528,7 +483,6 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Assistant error:', error);
     
-    // Entrepreneur-focused fallback messages
     const fallbacks = [
       "I'm experiencing technical difficulties right now. As an entrepreneur, you know that setbacks are temporary. While I get back online, remember that seeking support shows leadership strength, not weakness.",
       "I'm having connection issues at the moment. In the meantime, consider this: the stress you're feeling as an entrepreneur is valid. Take a deep breath and remember that even the most successful founders face similar challenges.",
@@ -596,17 +550,13 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     
-    // Get user with streak data
     const user = await User.findById(userId);
     
-    // Get chat history count
     const chat = await Chat.findOne({ userId });
     const totalSessions = chat ? chat.messages.filter(m => m.role === 'user').length : 0;
     
-    // Get community messages count
     const communityMessages = await Message.countDocuments({ userId });
     
-    // Get current streak
     const currentStreak = user?.streakData?.currentStreak || 0;
     
     res.json({
@@ -650,12 +600,10 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
 
 // Notifications endpoints
 app.get('/api/notifications/unread-count', authenticateToken, (req, res) => {
-  // For now, return a random number. In a real app, you'd query your notifications database
   res.json({ count: Math.floor(Math.random() * 5) });
 });
 
 app.get('/api/notifications/recent', authenticateToken, (req, res) => {
-  // For now, return empty array. In a real app, you'd return actual notifications
   res.json([]);
 });
 
@@ -685,11 +633,9 @@ app.post('/api/community/send', authenticateToken, async (req, res) => {
     const { room, message } = req.body;
     const userId = req.user.userId;
     
-    // Get user info for username
     const user = await User.findById(userId);
     const username = `${user.firstName} ${user.lastName}`;
     
-    // Create new message
     const newMessage = new Message({
       room,
       username,
