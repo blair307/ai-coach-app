@@ -1,238 +1,157 @@
-// Simple Dashboard JavaScript
-
-const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
-
-// Initialize dashboard when page loads
+// Dashboard JavaScript
 document.addEventListener('DOMContentLoaded', function() {
-    checkAuth();
-    loadUserData();
-    loadDashboardStats();
+    updateBranding();
+    loadGoals();
     updateNotificationBadge();
 });
 
-// Check authentication
-function checkAuth() {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-}
-
-// Load and display user data
-function loadUserData() {
-    const userData = localStorage.getItem('userData');
-    if (userData) {
-        const user = JSON.parse(userData);
-        const userNameElement = document.getElementById('userName');
-        if (userNameElement) {
-            userNameElement.textContent = user.firstName || 'User';
-        }
-    }
-}
-
-// Load dashboard statistics
-async function loadDashboardStats() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const stats = await response.json();
-            updateStatsDisplay(stats);
-        } else {
-            // Use default stats if API call fails
-            updateStatsDisplay({
-                totalSessions: 8,
-                streak: 5,
-                communityMessages: 23
-            });
-        }
-    } catch (error) {
-        console.error('Error loading dashboard stats:', error);
-        // Show default stats
-        updateStatsDisplay({
-            totalSessions: 8,
-            streak: 5,
-            communityMessages: 23
-        });
-    }
-}
-
-// Update statistics display
-function updateStatsDisplay(stats) {
-    const elements = {
-        totalSessions: document.getElementById('totalSessions'),
-        streak: document.getElementById('streak'),
-        communityMessages: document.getElementById('communityMessages')
-    };
-    
-    // Animate the numbers counting up
-    Object.keys(stats).forEach(key => {
-        const element = elements[key];
-        if (element) {
-            animateNumber(element, 0, stats[key], 1000);
+function updateBranding() {
+    document.title = 'Dashboard - Entrepreneur Emotional Health';
+    const brandElements = document.querySelectorAll('.sidebar-header h2');
+    brandElements.forEach(el => {
+        if (el.textContent === 'AI Coach') {
+            el.textContent = 'EEH';
         }
     });
 }
 
-// Animate number counting up
-function animateNumber(element, start, end, duration) {
-    const range = end - start;
-    const startTime = performance.now();
-    
-    function update(currentTime) {
-        const elapsed = currentTime - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for smooth animation
-        const easeOut = 1 - Math.pow(1 - progress, 3);
-        const current = Math.floor(start + (range * easeOut));
-        
-        element.textContent = current;
-        
-        if (progress < 1) {
-            requestAnimationFrame(update);
-        } else {
-            element.textContent = end; // Ensure we end with exact number
-        }
-    }
-    
-    requestAnimationFrame(update);
-}
-
-// Load recent activity
-async function loadRecentActivity() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/dashboard/activity`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const activities = await response.json();
-            updateActivityDisplay(activities);
-        }
-    } catch (error) {
-        console.error('Error loading recent activity:', error);
-        // Keep the default activity items
+function updateNotificationBadge() {
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        const unreadCount = localStorage.getItem('eeh_unread_count') || '3';
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'inline' : 'none';
     }
 }
 
-// Update activity display
-function updateActivityDisplay(activities) {
-    const activityContainer = document.getElementById('recentActivity');
-    if (!activityContainer || !activities.length) return;
-    
-    activityContainer.innerHTML = '';
-    
-    activities.forEach(activity => {
-        const activityDiv = document.createElement('div');
-        activityDiv.className = 'activity-item';
-        activityDiv.innerHTML = `
-            <div class="activity-icon">${activity.icon}</div>
-            <div class="activity-content">
-                <p>${activity.description}</p>
-                <small>${formatTimeAgo(activity.timestamp)}</small>
+function loadGoals() {
+    // Load user goals from localStorage
+    const savedGoals = localStorage.getItem('eeh_user_goals');
+    if (savedGoals) {
+        const goals = JSON.parse(savedGoals);
+        updateGoalDisplay(goals);
+    }
+}
+
+function updateGoalDisplay(goals) {
+    const goalsList = document.querySelector('.goals-list');
+    if (goalsList && goals) {
+        goalsList.innerHTML = goals.map((goal, index) => `
+            <div class="goal-item">
+                <input type="checkbox" ${goal.completed ? 'checked' : ''} id="goal${index}" onchange="toggleGoal(${index})">
+                <label for="goal${index}">${goal.text}</label>
             </div>
-        `;
-        activityContainer.appendChild(activityDiv);
-    });
+        `).join('');
+    }
 }
 
-// Format time ago (e.g., "2 hours ago")
-function formatTimeAgo(timestamp) {
-    const now = new Date();
-    const time = new Date(timestamp);
-    const diffInSeconds = Math.floor((now - time) / 1000);
-    
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
-    return `${Math.floor(diffInSeconds / 86400)} days ago`;
+function toggleGoal(index) {
+    const savedGoals = localStorage.getItem('eeh_user_goals');
+    if (savedGoals) {
+        const goals = JSON.parse(savedGoals);
+        goals[index].completed = !goals[index].completed;
+        localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+        
+        // Show feedback
+        showToast(goals[index].completed ? 'Goal marked as complete!' : 'Goal marked as incomplete');
+    }
 }
 
-// Update notification badge
-async function updateNotificationBadge() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
+function addGoal() {
+    const newGoal = prompt('Enter your new goal:');
+    if (newGoal && newGoal.trim()) {
+        const savedGoals = localStorage.getItem('eeh_user_goals');
+        const goals = savedGoals ? JSON.parse(savedGoals) : [];
+        
+        goals.push({
+            text: newGoal.trim(),
+            completed: false,
+            createdAt: new Date().toISOString()
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            const badge = document.getElementById('notificationBadge');
-            if (badge) {
-                if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline';
-                } else {
-                    badge.style.display = 'none';
-                }
-            }
-        }
-    } catch (error) {
-        console.error('Error updating notification badge:', error);
-        // Keep default badge if API fails
+        localStorage.setItem('eeh_user_goals', JSON.stringify(goals));
+        updateGoalDisplay(goals);
+        showToast('New goal added successfully!');
     }
 }
 
-// Load notifications preview
-async function loadNotificationsPreview() {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/notifications/recent`, {
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-            }
-        });
-        
-        if (response.ok) {
-            const notifications = await response.json();
-            updateNotificationsPreview(notifications);
-        }
-    } catch (error) {
-        console.error('Error loading notifications preview:', error);
-        // Keep default notifications
-    }
-}
-
-// Update notifications preview
-function updateNotificationsPreview(notifications) {
-    const previewContainer = document.getElementById('notificationsPreview');
-    if (!previewContainer || !notifications.length) return;
+function manageGoals() {
+    // Simple goal management modal
+    const currentGoals = localStorage.getItem('eeh_user_goals');
+    const goals = currentGoals ? JSON.parse(currentGoals) : [];
     
-    previewContainer.innerHTML = '';
-    
-    // Show up to 3 recent notifications
-    notifications.slice(0, 3).forEach(notification => {
-        const notificationDiv = document.createElement('div');
-        notificationDiv.className = `notification-item ${notification.read ? '' : 'unread'}`;
-        notificationDiv.innerHTML = `
-            <div class="notification-content">
-                <p>${notification.message}</p>
-                <small>${formatTimeAgo(notification.timestamp)}</small>
-            </div>
-        `;
-        previewContainer.appendChild(notificationDiv);
+    let goalText = "Current Goals:\n\n";
+    goals.forEach((goal, index) => {
+        goalText += `${index + 1}. ${goal.completed ? '✓' : '○'} ${goal.text}\n`;
     });
     
-    // Add view all link if not already present
-    if (!previewContainer.nextElementSibling || !previewContainer.nextElementSibling.classList.contains('view-all-link')) {
-        const viewAllLink = document.createElement('a');
-        viewAllLink.href = 'notifications.html';
-        viewAllLink.className = 'view-all-link';
-        viewAllLink.textContent = 'View all notifications';
-        previewContainer.parentNode.appendChild(viewAllLink);
+    goalText += "\nWhat would you like to do?\n";
+    goalText += "• Add a new goal\n";
+    goalText += "• Edit existing goals in the sidebar\n";
+    goalText += "• Visit the AI Coach for goal guidance";
+    
+    const action = prompt(goalText + "\n\nEnter 'add' to add a new goal, or press Cancel:");
+    
+    if (action && action.toLowerCase() === 'add') {
+        addGoal();
     }
 }
 
-// Logout function
+function startCoachingSession() {
+    // Redirect to AI Coach with a session parameter
+    window.location.href = 'ai-coach.html?new_session=true';
+}
+
+function showToast(message) {
+    // Remove any existing toasts
+    const existingToasts = document.querySelectorAll('.toast-notification');
+    existingToasts.forEach(toast => toast.remove());
+
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    toast.style.cssText = `
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        background: var(--primary);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+        animation: slideIn 0.3s ease-out;
+    `;
+
+    // Add animation CSS if not already present
+    if (!document.querySelector('#toast-styles')) {
+        const style = document.createElement('style');
+        style.id = 'toast-styles';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => {
+            if (document.body.contains(toast)) {
+                document.body.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
 function logout() {
     if (confirm('Are you sure you want to logout?')) {
         localStorage.removeItem('authToken');
@@ -241,9 +160,24 @@ function logout() {
     }
 }
 
-// Auto-refresh dashboard data every 5 minutes
-setInterval(() => {
-    loadDashboardStats();
-    updateNotificationBadge();
-    loadNotificationsPreview();
-}, 300000); // 5 minutes
+// Initialize default goals if none exist
+function initializeDefaultGoals() {
+    const savedGoals = localStorage.getItem('eeh_user_goals');
+    if (!savedGoals) {
+        const defaultGoals = [
+            { text: 'Improve work-life balance', completed: true, createdAt: new Date().toISOString() },
+            { text: 'Increase emotional intelligence', completed: false, createdAt: new Date().toISOString() },
+            { text: 'Build stronger team relationships', completed: true, createdAt: new Date().toISOString() },
+            { text: 'Develop stress management skills', completed: false, createdAt: new Date().toISOString() }
+        ];
+        localStorage.setItem('eeh_user_goals', JSON.stringify(defaultGoals));
+        return defaultGoals;
+    }
+    return JSON.parse(savedGoals);
+}
+
+// Initialize goals on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const goals = initializeDefaultGoals();
+    updateGoalDisplay(goals);
+});
