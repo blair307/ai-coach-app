@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Your backend URL
-const BACKEND_URL = 'https://ai-coach-backend-mytn.onrender.com';
+const BACKEND_URL = 'https://ai-coach-backend-pbse.onrender.com';
 
 function updateBranding() {
     // Update page titles
