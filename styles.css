@@ -2355,101 +2355,157 @@ select:focus-visible,
 }
 
 /* =================================
-   COMPLETE SIDEBAR TOGGLE SYSTEM
+   FINAL SIDEBAR TOGGLE SOLUTION
+   Replace all toggle CSS with this
    ================================= */
 
-/* Toggle button positioned in sidebar area, right side */
+/* Updated sidebar header to include button */
+.sidebar-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Space between EEH and button */
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+/* Toggle button in sidebar header */
 #sidebar-toggle {
-    position: fixed !important;
-    top: 30px !important;
-    right: 30px !important;
-    background: #6366f1 !important;
-    color: white !important;
+    background: none !important;
     border: none !important;
-    border-radius: 8px !important;
-    width: 44px !important;
-    height: 44px !important;
     cursor: pointer !important;
-    z-index: 99999 !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    transition: all 0.3s ease !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 3px !important;
-    align-items: center !important;
+    width: 32px !important;
+    height: 32px !important;
     justify-content: center !important;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
-    transition: all 0.3s ease !important;
+    align-items: center !important;
+    position: relative !important;
+    z-index: 1001 !important;
 }
 
 #sidebar-toggle:hover {
-    background: #4f46e5 !important;
+    background: var(--surface) !important;
     transform: scale(1.05) !important;
-    box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
 }
 
 /* Hamburger lines */
 .hamburger-line {
     width: 18px !important;
     height: 2px !important;
-    background: white !important;
+    background: var(--text-secondary) !important;
     border-radius: 2px !important;
     transition: all 0.3s ease !important;
 }
 
-/* Animate hamburger to X when sidebar is open */
-.sidebar.sidebar-open ~ #sidebar-toggle .hamburger-line:nth-child(1),
-.sidebar.active ~ #sidebar-toggle .hamburger-line:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px) !important;
+#sidebar-toggle:hover .hamburger-line {
+    background: var(--primary) !important;
 }
 
-.sidebar.sidebar-open ~ #sidebar-toggle .hamburger-line:nth-child(2),
-.sidebar.active ~ #sidebar-toggle .hamburger-line:nth-child(2) {
+/* Animate hamburger to X when sidebar is open */
+.sidebar.sidebar-open #sidebar-toggle .hamburger-line:nth-child(1),
+.sidebar.active #sidebar-toggle .hamburger-line:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px) !important;
+    background: var(--error) !important;
+}
+
+.sidebar.sidebar-open #sidebar-toggle .hamburger-line:nth-child(2),
+.sidebar.active #sidebar-toggle .hamburger-line:nth-child(2) {
     opacity: 0 !important;
 }
 
-.sidebar.sidebar-open ~ #sidebar-toggle .hamburger-line:nth-child(3),
-.sidebar.active ~ #sidebar-toggle .hamburger-line:nth-child(3) {
+.sidebar.sidebar-open #sidebar-toggle .hamburger-line:nth-child(3),
+.sidebar.active #sidebar-toggle .hamburger-line:nth-child(3) {
     transform: rotate(-45deg) translate(7px, -6px) !important;
+    background: var(--error) !important;
 }
 
-/* Change button color when sidebar is open */
-.sidebar.sidebar-open ~ #sidebar-toggle,
-.sidebar.active ~ #sidebar-toggle {
-    background: #ef4444 !important;
-}
-
-/* Sidebar behavior - starts hidden */
+/* Sidebar behavior */
 .sidebar {
     position: fixed !important;
     left: 0 !important;
     top: 0 !important;
     width: 280px !important;
     height: 100vh !important;
-    transform: translateX(-280px) !important;
-    transition: transform 0.3s ease-in-out !important;
-    z-index: 1000 !important;
     background: var(--background) !important;
     border-right: 1px solid var(--border) !important;
+    transform: translateX(0) !important; /* Start open on desktop */
+    transition: transform 0.3s ease-in-out !important;
+    z-index: 1000 !important;
     overflow-y: auto !important;
 }
 
-/* Show sidebar when active */
-.sidebar.sidebar-open,
-.sidebar.active {
-    transform: translateX(0) !important;
+/* Hide sidebar when closed */
+.sidebar:not(.sidebar-open):not(.active) {
+    transform: translateX(-280px) !important;
 }
 
-/* Main content starts full width */
+/* Main content adjusts to sidebar */
 .main-content {
-    margin-left: 0 !important;
+    margin-left: 280px !important; /* Start with sidebar space */
     transition: margin-left 0.3s ease !important;
     padding: 2rem !important;
     background: var(--surface) !important;
 }
 
-/* Adjust main content when sidebar is open */
-.sidebar.sidebar-open ~ .main-content,
-.sidebar.active ~ .main-content {
-    margin-left: 280px !important;
+/* Main content expands when sidebar is closed */
+.sidebar:not(.sidebar-open):not(.active) ~ .main-content {
+    margin-left: 0 !important;
+}
+
+/* Mobile floating button (only shows when sidebar is closed on mobile) */
+@media (max-width: 768px) {
+    /* Sidebar starts closed on mobile */
+    .sidebar {
+        transform: translateX(-280px) !important;
+    }
+    
+    /* Main content always full width on mobile */
+    .main-content {
+        margin-left: 0 !important;
+        padding: 1rem !important;
+    }
+    
+    /* Sidebar stays full width on mobile when open */
+    .sidebar.sidebar-open,
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+    
+    /* Add mobile floating button when sidebar is closed */
+    .sidebar:not(.sidebar-open):not(.active)::before {
+        content: '☰';
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 99999;
+        font-size: 18px;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
 }
 
 /* Sidebar overlay for mobile */
@@ -2469,48 +2525,4 @@ select:focus-visible,
 .sidebar-overlay.active {
     opacity: 1 !important;
     visibility: visible !important;
-}
-
-/* Prevent body scroll when sidebar is open */
-body.sidebar-active {
-    overflow: hidden !important;
-}
-
-/* Mobile responsive behavior */
-@media (max-width: 768px) {
-    /* On mobile, main content doesn't shift */
-    .sidebar.sidebar-open ~ .main-content,
-    .sidebar.active ~ .main-content {
-        margin-left: 0 !important;
-    }
-    
-    /* Show overlay on mobile when sidebar is open */
-    .sidebar.sidebar-open ~ .sidebar-overlay,
-    .sidebar.active ~ .sidebar-overlay {
-        opacity: 1 !important;
-        visibility: visible !important;
-    }
-    
-    /* Adjust main content padding on mobile */
-    .main-content {
-        padding: 1rem !important;
-    }
-}
-
-/* Desktop behavior - larger screens */
-@media (min-width: 1200px) {
-    /* On very large screens, maybe start with sidebar open */
-    /* Uncomment these lines if you want sidebar open by default on large screens
-    .sidebar {
-        transform: translateX(0) !important;
-    }
-    
-    .main-content {
-        margin-left: 280px !important;
-    }
-    
-    #sidebar-toggle {
-        background: #ef4444 !important;
-    }
-    */
 }
