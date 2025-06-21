@@ -1,4 +1,4 @@
-// Simple AI Coach Backend Server
+// Complete AI Coach Backend Server with Streak Tracking
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -17,16 +17,22 @@ app.use(express.json());
 
 // Initialize services
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+} else {
+  console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
+}
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// User Schema
+// Updated User Schema with Streak Tracking
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -37,6 +43,11 @@ const userSchema = new mongoose.Schema({
     plan: String,
     status: String,
     stripeSubscriptionId: String
+  },
+  streakData: {
+    currentStreak: { type: Number, default: 0 },
+    lastLoginDate: { type: Date, default: null },
+    longestStreak: { type: Number, default: 0 }
   },
   createdAt: { type: Date, default: Date.now }
 });
@@ -66,6 +77,57 @@ const messageSchema = new mongoose.Schema({
 });
 
 const Message = mongoose.model('Message', messageSchema);
+
+// Function to update user streak
+async function updateUserStreak(userId) {
+  try {
+    const user = await User.findById(userId);
+    if (!user) return { currentStreak: 0, longestStreak: 0 };
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+    
+    const lastLogin = user.streakData.lastLoginDate;
+    let currentStreak = user.streakData.currentStreak || 0;
+    let longestStreak = user.streakData.longestStreak || 0;
+
+    if (!lastLogin) {
+      // First time login
+      currentStreak = 1;
+    } else {
+      const lastLoginDate = new Date(lastLogin);
+      lastLoginDate.setHours(0, 0, 0, 0);
+      
+      const daysDifference = (today - lastLoginDate) / (1000 * 60 * 60 * 24);
+      
+      if (daysDifference === 1) {
+        // Consecutive day login
+        currentStreak += 1;
+      } else if (daysDifference > 1) {
+        // Streak broken
+        currentStreak = 1;
+      }
+      // If daysDifference === 0, same day login, don't change streak
+    }
+
+    // Update longest streak if current is higher
+    if (currentStreak > longestStreak) {
+      longestStreak = currentStreak;
+    }
+
+    // Update user in database
+    await User.findByIdAndUpdate(userId, {
+      'streakData.currentStreak': currentStreak,
+      'streakData.lastLoginDate': today,
+      'streakData.longestStreak': longestStreak
+    });
+
+    return { currentStreak, longestStreak };
+  } catch (error) {
+    console.error('Error updating streak:', error);
+    return { currentStreak: 0, longestStreak: 0 };
+  }
+}
 
 // JWT Middleware
 const authenticateToken = (req, res, next) => {
@@ -117,6 +179,11 @@ app.post('/api/auth/register', async (req, res) => {
         plan,
         status: 'active',
         stripeSubscriptionId: paymentIntentId
+      },
+      streakData: {
+        currentStreak: 1,
+        lastLoginDate: new Date(),
+        longestStreak: 1
       }
     });
 
@@ -137,6 +204,10 @@ app.post('/api/auth/register', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email
+      },
+      streakData: {
+        currentStreak: 1,
+        longestStreak: 1
       }
     });
   } catch (error) {
@@ -145,7 +216,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login user
+// Login user with streak tracking
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -162,6 +233,9 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Update streak on login
+    const streakData = await updateUserStreak(user._id);
+
     // Generate JWT token
     const token = jwt.sign(
       { userId: user._id, email: user.email },
@@ -177,7 +251,8 @@ app.post('/api/auth/login', async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email
-      }
+      },
+      streakData
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -222,6 +297,12 @@ app.post('/api/payments/create-subscription', async (req, res) => {
 // Send message to AI
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
+    if (!openai) {
+      return res.json({ 
+        response: "AI chat is temporarily unavailable. Your other app features are working!" 
+      });
+    }
+
     const { message, chatHistory } = req.body;
     const userId = req.user.userId;
 
@@ -307,10 +388,13 @@ app.get('/api/community/messages/:room', authenticateToken, async (req, res) => 
   }
 });
 
-// Dashboard stats
+// Dashboard stats with real streak tracking
 app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
+    
+    // Get user with streak data
+    const user = await User.findById(userId);
     
     // Get chat history count
     const chat = await Chat.findOne({ userId });
@@ -319,13 +403,14 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
     // Get community messages count
     const communityMessages = await Message.countDocuments({ userId });
     
-    // Calculate streak (simplified)
-    const streak = Math.floor(Math.random() * 10) + 1; // Placeholder
+    // Get current streak
+    const currentStreak = user?.streakData?.currentStreak || 0;
     
     res.json({
       totalSessions,
-      streak,
-      communityMessages
+      streak: currentStreak,
+      communityMessages,
+      longestStreak: user?.streakData?.longestStreak || 0
     });
   } catch (error) {
     console.error('Dashboard stats error:', error);
@@ -333,13 +418,42 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user profile with streak data
+app.get('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        subscription: user.subscription,
+        streakData: user.streakData,
+        createdAt: user.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Profile error:', error);
+    res.status(500).json({ message: 'Failed to get profile' });
+  }
+});
+
 // Notifications endpoints
 app.get('/api/notifications/unread-count', authenticateToken, (req, res) => {
-  res.json({ count: Math.floor(Math.random() * 5) }); // Placeholder
+  // For now, return a random number. In a real app, you'd query your notifications database
+  res.json({ count: Math.floor(Math.random() * 5) });
 });
 
 app.get('/api/notifications/recent', authenticateToken, (req, res) => {
-  res.json([]); // Placeholder
+  // For now, return empty array. In a real app, you'd return actual notifications
+  res.json([]);
 });
 
 // Billing endpoints
@@ -347,6 +461,10 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
     
     res.json({
       subscription: user.subscription,
@@ -358,7 +476,69 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   }
 });
 
+// Community - Save message
+app.post('/api/community/send', authenticateToken, async (req, res) => {
+  try {
+    const { room, message } = req.body;
+    const userId = req.user.userId;
+    
+    // Get user info for username
+    const user = await User.findById(userId);
+    const username = `${user.firstName} ${user.lastName}`;
+    
+    // Create new message
+    const newMessage = new Message({
+      room,
+      username,
+      userId,
+      message,
+      timestamp: new Date()
+    });
+    
+    await newMessage.save();
+    
+    res.json({ 
+      message: 'Message sent successfully',
+      messageData: newMessage
+    });
+  } catch (error) {
+    console.error('Send message error:', error);
+    res.status(500).json({ message: 'Failed to send message' });
+  }
+});
+
+// Health check endpoint for monitoring
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      openai: openai ? 'available' : 'unavailable',
+      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured'
+    }
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    message: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { error: error.message })
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found' });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
+  console.log(`🎨 OpenAI: ${openai ? 'ready' : 'disabled'}`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
 });
