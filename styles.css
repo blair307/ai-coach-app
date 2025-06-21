@@ -2521,136 +2521,106 @@ select:focus-visible,
 }
 
 /* =================================
-   ENHANCED HAMBURGER BUTTON CSS
-   Add this to the END of styles.css
+   DIRECT HAMBURGER BUTTON FIX
+   Add this to the very END of styles.css
    ================================= */
 
-/* Make sure sidebar header has proper layout */
-.sidebar-header {
-    padding: 1.5rem 2rem !important;
-    border-bottom: 1px solid var(--border) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-    background: var(--background) !important;
-}
-
-/* Enhanced hamburger button styling */
+/* Force the hamburger button to be visible and properly styled */
+button.sidebar-toggle,
 .sidebar-toggle {
-    background: rgba(99, 102, 241, 0.1) !important;
-    border: 2px solid rgba(99, 102, 241, 0.2) !important;
-    cursor: pointer !important;
-    padding: 8px !important;
-    border-radius: 8px !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: 3px !important;
-    width: 36px !important;
-    height: 36px !important;
     justify-content: center !important;
     align-items: center !important;
-    transition: all 0.3s ease !important;
+    width: 40px !important;
+    height: 40px !important;
+    background: #f1f5f9 !important;
+    border: 2px solid #6366f1 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    gap: 3px !important;
+    transition: all 0.2s ease !important;
     flex-shrink: 0 !important;
+    margin-left: auto !important;
 }
 
+button.sidebar-toggle:hover,
 .sidebar-toggle:hover {
-    background: rgba(99, 102, 241, 0.2) !important;
-    border-color: rgba(99, 102, 241, 0.4) !important;
+    background: #e2e8f0 !important;
+    border-color: #4f46e5 !important;
     transform: scale(1.05) !important;
 }
 
-/* Enhanced hamburger lines */
-.hamburger-line {
-    width: 18px !important;
-    height: 2px !important;
-    background: var(--primary) !important;
-    border-radius: 2px !important;
-    transition: all 0.3s ease !important;
+/* Force the hamburger lines to be visible */
+.sidebar-toggle .hamburger-line,
+button.sidebar-toggle .hamburger-line {
     display: block !important;
+    width: 20px !important;
+    height: 3px !important;
+    background: #6366f1 !important;
+    border-radius: 2px !important;
+    transition: all 0.2s ease !important;
 }
 
-.sidebar-toggle:hover .hamburger-line {
-    background: var(--primary-dark) !important;
+.sidebar-toggle:hover .hamburger-line,
+button.sidebar-toggle:hover .hamburger-line {
+    background: #4f46e5 !important;
 }
 
-/* Floating toggle button */
+/* Make sure sidebar header layout is correct */
+.sidebar .sidebar-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 1.5rem 2rem !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: var(--background) !important;
+}
+
+.sidebar-header h2 {
+    margin: 0 !important;
+    flex-grow: 1 !important;
+}
+
+/* Floating button for when sidebar is closed */
+#floating-toggle,
 .floating-toggle {
     position: fixed !important;
     top: 20px !important;
     left: 20px !important;
-    background: var(--primary) !important;
-    color: white !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: #6366f1 !important;
     border: none !important;
     border-radius: 8px !important;
-    width: 48px !important;
-    height: 48px !important;
     cursor: pointer !important;
     z-index: 99999 !important;
     display: none !important;
     flex-direction: column !important;
-    gap: 3px !important;
     justify-content: center !important;
     align-items: center !important;
+    gap: 3px !important;
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
     transition: all 0.3s ease !important;
 }
 
+#floating-toggle:hover,
 .floating-toggle:hover {
-    background: var(--primary-dark) !important;
+    background: #4f46e5 !important;
     transform: scale(1.1) !important;
     box-shadow: 0 6px 16px rgba(99, 102, 241, 0.4) !important;
 }
 
 .floating-toggle .hamburger-line {
     background: white !important;
-    width: 20px !important;
+    width: 18px !important;
+    height: 2px !important;
 }
 
-/* Debug styles - remove after testing */
-.sidebar-header {
-    border: 2px solid red !important; /* TEMPORARY - remove this */
-}
-
-.sidebar-toggle {
-    border: 3px solid lime !important; /* TEMPORARY - remove this */
-    background: yellow !important; /* TEMPORARY - remove this */
-}
-
-/* Sidebar states */
-.sidebar {
-    position: fixed !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 280px !important;
-    height: 100vh !important;
-    transform: translateX(0) !important;
-    transition: transform 0.3s ease-in-out !important;
-    z-index: 1000 !important;
-    background: var(--background) !important;
-    border-right: 1px solid var(--border) !important;
-    overflow-y: auto !important;
-}
-
-/* Closed sidebar */
-.sidebar.sidebar-closed {
-    transform: translateX(-280px) !important;
-}
-
-/* Open sidebar */
-.sidebar.sidebar-open,
-.sidebar.active {
-    transform: translateX(0) !important;
-}
-
-/* Main content adjustments */
-.main-content {
-    margin-left: 280px !important;
-    transition: margin-left 0.3s ease !important;
-    padding: 2rem !important;
-    background: var(--surface) !important;
-}
-
-/* Main content when sidebar is closed */
-.sidebar.sidebar-closed ~ .main-content {
-    margin-left: 0 !important;
+/* Remove that weird dot you mentioned */
+.sidebar-header::before,
+.sidebar-header::after {
+    display: none !important;
+    content: none !important;
 }
