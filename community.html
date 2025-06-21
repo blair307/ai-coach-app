@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community - AI Coach</title>
+    <title>Community - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,27 +11,27 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2>AI Coach</h2>
+                <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">
-                    <span class="icon">🏠</span>Dashboard
+                    Dashboard
                 </a></li>
                 <li><a href="ai-coach.html" class="menu-item">
-                    <span class="icon">🤖</span>AI Coach
+                    AI Coach
                 </a></li>
                 <li><a href="community.html" class="menu-item active">
-                    <span class="icon">👥</span>Community
+                    Community
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
-                    <span class="icon">🔔</span>Notifications
+                    Notifications
                     <span class="notification-badge" id="notificationBadge">3</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
-                    <span class="icon">💳</span>Billing
+                    Billing
                 </a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">
-                    <span class="icon">🚪</span>Logout
+                    Logout
                 </a></li>
             </ul>
         </nav>
@@ -54,14 +54,14 @@
                     <div class="rooms-header">
                         <h3>Chat Rooms</h3>
                         <button class="btn btn-small btn-primary" onclick="createRoom()">
-                            + New Room
+                            New Room
                         </button>
                     </div>
                     
-                    <div class="rooms-list">
+                    <div class="rooms-list" id="roomsList">
                         <div class="room-item active" data-room="general" onclick="switchRoom('general')">
                             <div class="room-info">
-                                <h4># General Discussion</h4>
+                                <h4>General Discussion</h4>
                                 <p>Open chat for everyone</p>
                             </div>
                             <div class="room-stats">
@@ -70,20 +70,20 @@
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="goals" onclick="switchRoom('goals')">
+                        <div class="room-item" data-room="emotional-wellness" onclick="switchRoom('emotional-wellness')">
                             <div class="room-info">
-                                <h4># Goal Setting</h4>
-                                <p>Share and discuss your goals</p>
+                                <h4>Emotional Wellness</h4>
+                                <p>Mental health & emotional intelligence</p>
                             </div>
                             <div class="room-stats">
                                 <span class="member-count">18</span>
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="motivation" onclick="switchRoom('motivation')">
+                        <div class="room-item" data-room="business-growth" onclick="switchRoom('business-growth')">
                             <div class="room-info">
-                                <h4># Daily Motivation</h4>
-                                <p>Inspire and be inspired</p>
+                                <h4>Business Growth</h4>
+                                <p>Scaling strategies & challenges</p>
                             </div>
                             <div class="room-stats">
                                 <span class="member-count">31</span>
@@ -91,13 +91,23 @@
                             </div>
                         </div>
                         
-                        <div class="room-item" data-room="success" onclick="switchRoom('success')">
+                        <div class="room-item" data-room="success-stories" onclick="switchRoom('success-stories')">
                             <div class="room-info">
-                                <h4># Success Stories</h4>
-                                <p>Celebrate your wins</p>
+                                <h4>Success Stories</h4>
+                                <p>Celebrate your wins & breakthroughs</p>
                             </div>
                             <div class="room-stats">
                                 <span class="member-count">15</span>
+                            </div>
+                        </div>
+
+                        <div class="room-item" data-room="work-life-balance" onclick="switchRoom('work-life-balance')">
+                            <div class="room-info">
+                                <h4>Work-Life Balance</h4>
+                                <p>Managing entrepreneurial stress</p>
+                            </div>
+                            <div class="room-stats">
+                                <span class="member-count">22</span>
                             </div>
                         </div>
                     </div>
@@ -107,7 +117,7 @@
                 <div class="chat-area">
                     <div class="chat-header">
                         <div class="room-title">
-                            <h2># <span id="currentRoomName">General Discussion</span></h2>
+                            <h2><span id="currentRoomName">General Discussion</span></h2>
                             <p id="currentRoomDescription">Open chat for everyone to discuss anything</p>
                         </div>
                         <div class="chat-controls">
@@ -119,39 +129,7 @@
 
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Sample messages -->
-                            <div class="message-group">
-                                <div class="message-header">
-                                    <div class="user-avatar">👤</div>
-                                    <span class="username">Sarah Johnson</span>
-                                    <span class="message-timestamp">Today at 2:30 PM</span>
-                                </div>
-                                <div class="message-content">
-                                    Just finished my first week with the AI coach! Feeling so motivated and clear about my goals. 🎯
-                                </div>
-                            </div>
-
-                            <div class="message-group">
-                                <div class="message-header">
-                                    <div class="user-avatar">👤</div>
-                                    <span class="username">Mike Chen</span>
-                                    <span class="message-timestamp">Today at 2:45 PM</span>
-                                </div>
-                                <div class="message-content">
-                                    That's awesome Sarah! What was your biggest breakthrough?
-                                </div>
-                            </div>
-
-                            <div class="message-group">
-                                <div class="message-header">
-                                    <div class="user-avatar">👤</div>
-                                    <span class="username">Sarah Johnson</span>
-                                    <span class="message-timestamp">Today at 2:47 PM</span>
-                                </div>
-                                <div class="message-content">
-                                    Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer! 💡
-                                </div>
-                            </div>
+                            <!-- Messages will be populated by JavaScript -->
                         </div>
 
                         <!-- Members List (Hidden by default) -->
@@ -162,21 +140,21 @@
                             </div>
                             <div class="members-content">
                                 <div class="member-item online">
-                                    <div class="member-avatar">👤</div>
+                                    <div class="member-avatar">SJ</div>
                                     <div class="member-info">
                                         <span class="member-name">Sarah Johnson</span>
                                         <span class="member-status">Online</span>
                                     </div>
                                 </div>
                                 <div class="member-item online">
-                                    <div class="member-avatar">👤</div>
+                                    <div class="member-avatar">MC</div>
                                     <div class="member-info">
                                         <span class="member-name">Mike Chen</span>
                                         <span class="member-status">Online</span>
                                     </div>
                                 </div>
                                 <div class="member-item">
-                                    <div class="member-avatar">👤</div>
+                                    <div class="member-avatar">AR</div>
                                     <div class="member-info">
                                         <span class="member-name">Alex Rivera</span>
                                         <span class="member-status">Last seen 2h ago</span>
@@ -197,7 +175,7 @@
                             ></textarea>
                             <div class="input-actions">
                                 <button class="btn btn-secondary btn-small" onclick="addEmoji()">
-                                    😊
+                                    Add Emoji
                                 </button>
                                 <button class="btn btn-primary" onclick="sendCommunityMessage()" id="sendCommunityButton">
                                     Send
