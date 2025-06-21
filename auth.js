@@ -1,6 +1,6 @@
 // Authentication JavaScript
 
-const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
+const API_BASE_URL = 'https://your-render-url-here.onrender.com';
 
 // Handle login form submission
 document.addEventListener('DOMContentLoaded', function() {
