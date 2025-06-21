@@ -1,6 +1,7 @@
 // Community Chat JavaScript
 
-const API_BASE_URL = 'https://ai-coach-app-production.up.railway.app';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
+
 let socket; // For WebSocket connection
 let currentRoom = 'general';
 let currentUser = null;
