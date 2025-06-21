@@ -30,7 +30,7 @@
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
                     Notifications
-                    <span class="notification-badge" id="notificationBadge">3</span>
+                    <span class="notification-badge" id="notificationBadge" style="display: none;">0</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
                     Billing
@@ -46,10 +46,7 @@
             <header class="content-header">
                 <h1>Community Chat</h1>
                 <div class="header-actions">
-                    <div class="online-count">
-                        <span class="status-dot online"></span>
-                        <span id="onlineCount">12</span> members online
-                    </div>
+                    <!-- Removed online member count -->
                 </div>
             </header>
 
@@ -70,8 +67,7 @@
                                 <p>Open chat for everyone</p>
                             </div>
                             <div class="room-stats">
-                                <span class="member-count">24</span>
-                                <span class="unread-count">3</span>
+                                <span class="message-count">24</span>
                             </div>
                         </div>
                         
@@ -81,7 +77,7 @@
                                 <p>Mental health & emotional intelligence</p>
                             </div>
                             <div class="room-stats">
-                                <span class="member-count">18</span>
+                                <span class="message-count">18</span>
                             </div>
                         </div>
                         
@@ -91,8 +87,7 @@
                                 <p>Scaling strategies & challenges</p>
                             </div>
                             <div class="room-stats">
-                                <span class="member-count">31</span>
-                                <span class="unread-count">1</span>
+                                <span class="message-count">31</span>
                             </div>
                         </div>
                         
@@ -102,7 +97,7 @@
                                 <p>Celebrate your wins & breakthroughs</p>
                             </div>
                             <div class="room-stats">
-                                <span class="member-count">15</span>
+                                <span class="message-count">15</span>
                             </div>
                         </div>
 
@@ -112,7 +107,7 @@
                                 <p>Managing entrepreneurial stress</p>
                             </div>
                             <div class="room-stats">
-                                <span class="member-count">22</span>
+                                <span class="message-count">22</span>
                             </div>
                         </div>
                     </div>
@@ -126,45 +121,89 @@
                             <p id="currentRoomDescription">Open chat for everyone to discuss anything</p>
                         </div>
                         <div class="chat-controls">
-                            <button class="btn btn-secondary btn-small" onclick="toggleMembersList()">
-                                Members (<span id="roomMemberCount">24</span>)
-                            </button>
+                            <!-- Search Bar instead of Members button -->
+                            <div class="search-container">
+                                <input 
+                                    type="text" 
+                                    id="messageSearch" 
+                                    placeholder="Search messages..." 
+                                    class="search-input"
+                                    onkeyup="searchMessages(this.value)"
+                                >
+                                <button class="search-btn" onclick="performSearch()">
+                                    Search
+                                </button>
+                            </div>
                         </div>
                     </div>
 
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Messages will be populated by JavaScript -->
+                            <!-- Sample Messages -->
+                            <div class="message-group" data-searchable="mike chen biggest breakthrough sarah">
+                                <div class="message-header">
+                                    <div class="user-avatar">MC</div>
+                                    <span class="username">Mike Chen</span>
+                                    <span class="message-timestamp">2:30 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    That's awesome Sarah! What was your biggest breakthrough?
+                                </div>
+                            </div>
+
+                            <div class="message-group" data-searchable="sarah johnson goals prioritize ai game changer">
+                                <div class="message-header">
+                                    <div class="user-avatar" style="background: #10b981;">SJ</div>
+                                    <span class="username">Sarah Johnson</span>
+                                    <span class="message-timestamp">2:32 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer!
+                                </div>
+                            </div>
+
+                            <div class="message-group" data-searchable="alex rivera focus quality productivity">
+                                <div class="message-header">
+                                    <div class="user-avatar" style="background: #f59e0b;">AR</div>
+                                    <span class="username">Alex Rivera</span>
+                                    <span class="message-timestamp">2:35 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    Love that! I've been struggling with the same thing. Quality over quantity when it comes to goals really does make a difference in productivity.
+                                </div>
+                            </div>
+
+                            <div class="message-group" data-searchable="mike chen coaching session stress management">
+                                <div class="message-header">
+                                    <div class="user-avatar">MC</div>
+                                    <span class="username">Mike Chen</span>
+                                    <span class="message-timestamp">2:38 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    Has anyone tried the new stress management exercises from the latest coaching session? Curious about your experiences.
+                                </div>
+                            </div>
+
+                            <div class="message-group" data-searchable="sarah johnson meditation breathing technique">
+                                <div class="message-header">
+                                    <div class="user-avatar" style="background: #10b981;">SJ</div>
+                                    <span class="username">Sarah Johnson</span>
+                                    <span class="message-timestamp">2:40 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    @Mike the breathing technique has been really helpful! I use it before important meetings now.
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Members List (Hidden by default) -->
-                        <div class="members-list" id="membersList" style="display: none;">
-                            <div class="members-header">
-                                <h3>Room Members</h3>
-                                <button class="close-btn" onclick="toggleMembersList()">×</button>
+                        <!-- Search Results Panel -->
+                        <div class="search-results" id="searchResults" style="display: none;">
+                            <div class="search-results-header">
+                                <h3>Search Results</h3>
+                                <button class="close-search" onclick="clearSearch()">×</button>
                             </div>
-                            <div class="members-content">
-                                <div class="member-item online">
-                                    <div class="member-avatar">SJ</div>
-                                    <div class="member-info">
-                                        <span class="member-name">Sarah Johnson</span>
-                                        <span class="member-status">Online</span>
-                                    </div>
-                                </div>
-                                <div class="member-item online">
-                                    <div class="member-avatar">MC</div>
-                                    <div class="member-info">
-                                        <span class="member-name">Mike Chen</span>
-                                        <span class="member-status">Online</span>
-                                    </div>
-                                </div>
-                                <div class="member-item">
-                                    <div class="member-avatar">AR</div>
-                                    <div class="member-info">
-                                        <span class="member-name">Alex Rivera</span>
-                                        <span class="member-status">Last seen 2h ago</span>
-                                    </div>
-                                </div>
+                            <div class="search-results-content" id="searchResultsContent">
+                                <!-- Search results will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -213,5 +252,359 @@
 
     <script src="sidebar-toggle.js"></script>
     <script src="community.js"></script>
+    <script>
+    // Community Search Functionality
+    function searchMessages(query) {
+        const searchResults = document.getElementById('searchResults');
+        const searchResultsContent = document.getElementById('searchResultsContent');
+        const chatMessages = document.getElementById('communityMessages');
+        
+        if (query.length < 2) {
+            clearSearch();
+            return;
+        }
+        
+        // Search through messages
+        const messages = document.querySelectorAll('.message-group');
+        const results = [];
+        
+        messages.forEach(message => {
+            const searchableText = message.getAttribute('data-searchable') || '';
+            const messageText = message.querySelector('.message-content').textContent;
+            const username = message.querySelector('.username').textContent;
+            const timestamp = message.querySelector('.message-timestamp').textContent;
+            
+            if (searchableText.toLowerCase().includes(query.toLowerCase()) || 
+                messageText.toLowerCase().includes(query.toLowerCase()) ||
+                username.toLowerCase().includes(query.toLowerCase())) {
+                
+                results.push({
+                    username: username,
+                    content: messageText,
+                    timestamp: timestamp,
+                    avatar: message.querySelector('.user-avatar').textContent,
+                    avatarColor: message.querySelector('.user-avatar').style.background || '#6366f1'
+                });
+            }
+        });
+        
+        // Display results
+        if (results.length > 0) {
+            searchResultsContent.innerHTML = results.map(result => `
+                <div class="search-result-item">
+                    <div class="result-header">
+                        <div class="user-avatar" style="background: ${result.avatarColor};">${result.avatar}</div>
+                        <span class="username">${result.username}</span>
+                        <span class="timestamp">${result.timestamp}</span>
+                    </div>
+                    <div class="result-content">${highlightQuery(result.content, query)}</div>
+                </div>
+            `).join('');
+            
+            searchResults.style.display = 'block';
+            chatMessages.style.display = 'none';
+        } else {
+            searchResultsContent.innerHTML = '<div class="no-results">No messages found for "' + query + '"</div>';
+            searchResults.style.display = 'block';
+            chatMessages.style.display = 'none';
+        }
+    }
+    
+    function highlightQuery(text, query) {
+        const regex = new RegExp(`(${query})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+    }
+    
+    function performSearch() {
+        const query = document.getElementById('messageSearch').value;
+        searchMessages(query);
+    }
+    
+    function clearSearch() {
+        document.getElementById('searchResults').style.display = 'none';
+        document.getElementById('communityMessages').style.display = 'block';
+        document.getElementById('messageSearch').value = '';
+    }
+    
+    // Room switching functionality
+    function switchRoom(roomName) {
+        // Update active room
+        document.querySelectorAll('.room-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-room="${roomName}"]`).classList.add('active');
+        
+        // Update room title and description
+        const roomTitles = {
+            'general': 'General Discussion',
+            'emotional-wellness': 'Emotional Wellness',
+            'business-growth': 'Business Growth', 
+            'success-stories': 'Success Stories',
+            'work-life-balance': 'Work-Life Balance'
+        };
+        
+        const roomDescriptions = {
+            'general': 'Open chat for everyone to discuss anything',
+            'emotional-wellness': 'Mental health & emotional intelligence discussions',
+            'business-growth': 'Scaling strategies & business challenges',
+            'success-stories': 'Celebrate your wins & breakthroughs',
+            'work-life-balance': 'Managing entrepreneurial stress and balance'
+        };
+        
+        document.getElementById('currentRoomName').textContent = roomTitles[roomName];
+        document.getElementById('currentRoomDescription').textContent = roomDescriptions[roomName];
+        
+        // Clear any active search when switching rooms
+        clearSearch();
+        
+        // In a real app, you would load messages for the selected room here
+        console.log('Switched to room:', roomName);
+    }
+    
+    // Dynamic notification badge management
+    function updateNotificationBadge() {
+        // This would normally check for actual notifications
+        const unreadCount = 2; // Example: 2 unread notifications
+        const badge = document.getElementById('notificationBadge');
+        
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.style.display = 'inline';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+    
+    // Message input handling
+    function handleCommunityKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendCommunityMessage();
+        }
+    }
+    
+    function sendCommunityMessage() {
+        const input = document.getElementById('communityMessageInput');
+        const message = input.value.trim();
+        
+        if (message) {
+            // In a real app, you would send the message to the server
+            console.log('Sending message:', message);
+            input.value = '';
+            
+            // Update message count for current room
+            updateMessageCount();
+        }
+    }
+    
+    function updateMessageCount() {
+        // Increment message count for active room
+        const activeRoom = document.querySelector('.room-item.active');
+        const countElement = activeRoom.querySelector('.message-count');
+        const currentCount = parseInt(countElement.textContent);
+        countElement.textContent = currentCount + 1;
+    }
+    
+    function addEmoji() {
+        const emojiModal = document.getElementById('emojiModal');
+        emojiModal.style.display = emojiModal.style.display === 'block' ? 'none' : 'block';
+    }
+    
+    function insertEmoji(emoji) {
+        const input = document.getElementById('communityMessageInput');
+        input.value += emoji;
+        document.getElementById('emojiModal').style.display = 'none';
+        input.focus();
+    }
+    
+    function createRoom() {
+        // Placeholder for create room functionality
+        alert('Create new room functionality would be implemented here');
+    }
+    
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNotificationBadge();
+        
+        // Close emoji modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const emojiModal = document.getElementById('emojiModal');
+            if (!e.target.closest('.emoji-modal') && !e.target.closest('[onclick*="addEmoji"]')) {
+                emojiModal.style.display = 'none';
+            }
+        });
+        
+        // Enter key search
+        document.getElementById('messageSearch').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    });
+    </script>
+
+    <style>
+    /* Search Container Styles */
+    .search-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--surface);
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        padding: 0.5rem;
+        transition: border-color 0.2s ease;
+    }
+    
+    .search-container:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .search-input {
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 0.875rem;
+        color: var(--text-primary);
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .search-input::placeholder {
+        color: var(--text-muted);
+    }
+    
+    .search-btn {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius);
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .search-btn:hover {
+        background: var(--primary-dark);
+    }
+    
+    /* Updated Room Stats */
+    .room-stats {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .message-count {
+        background: var(--text-muted);
+        color: white;
+        border-radius: 50%;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        min-width: 24px;
+        text-align: center;
+    }
+    
+    .room-item.active .message-count {
+        background: rgba(255,255,255,0.9);
+        color: var(--primary);
+    }
+    
+    /* Search Results Styles */
+    .search-results {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--background);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .search-results-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--surface);
+    }
+    
+    .search-results-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+    
+    .close-search {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius);
+        transition: all 0.2s ease;
+    }
+    
+    .close-search:hover {
+        color: var(--text-primary);
+        background: var(--surface);
+    }
+    
+    .search-results-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    .search-result-item {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        transition: background-color 0.2s ease;
+    }
+    
+    .search-result-item:hover {
+        background: var(--surface);
+    }
+    
+    .result-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .result-content {
+        margin-left: 2.5rem;
+        color: var(--text-primary);
+        line-height: 1.5;
+    }
+    
+    .result-content mark {
+        background: rgba(99, 102, 241, 0.2);
+        color: var(--primary);
+        padding: 0.1rem 0.2rem;
+        border-radius: 3px;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 2rem;
+        color: var(--text-muted);
+        font-style: italic;
+    }
+    </style>
+
 </body>
 </html>
