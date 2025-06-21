@@ -109,34 +109,45 @@
                     <a href="#" class="view-all-link">View All Activity</a>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Timer and Calendar Section - Replaces Quick Actions -->
                 <div class="dashboard-card">
-                    <h3>Quick Actions</h3>
-                    <div class="quick-actions">
-                        <a href="ai-coach.html" class="quick-action">
-                            <div class="action-text">
-                                <h4>Chat with AI Coach</h4>
-                                <p>Get personalized guidance</p>
-                            </div>
-                        </a>
-                        <a href="community.html" class="quick-action">
-                            <div class="action-text">
-                                <h4>Join Community</h4>
-                                <p>Connect with entrepreneurs</p>
-                            </div>
-                        </a>
-                        <a href="#" class="quick-action" onclick="manageGoals()">
-                            <div class="action-text">
-                                <h4>Manage Goals</h4>
-                                <p>Add, edit, or review your goals</p>
-                            </div>
-                        </a>
-                        <a href="billing.html" class="quick-action">
-                            <div class="action-text">
-                                <h4>View Billing</h4>
-                                <p>Check subscription & usage</p>
-                            </div>
-                        </a>
+                    <h3>Current Time</h3>
+                    <div class="timer-display">
+                        <div class="current-time" id="currentTime">--:--:-- --</div>
+                        <div class="current-date" id="currentDate">Loading...</div>
+                        <div class="timezone">Central Time (CST/CDT)</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-card">
+                    <h3>Meeting Calendar</h3>
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="prevMonth">‹</button>
+                            <h4 id="currentMonth">June 2025</h4>
+                            <button class="calendar-nav" id="nextMonth">›</button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-day-header">Sun</div>
+                            <div class="calendar-day-header">Mon</div>
+                            <div class="calendar-day-header">Tue</div>
+                            <div class="calendar-day-header">Wed</div>
+                            <div class="calendar-day-header">Thu</div>
+                            <div class="calendar-day-header">Fri</div>
+                            <div class="calendar-day-header">Sat</div>
+                            <!-- Calendar days will be populated by JavaScript -->
+                            <div id="calendarDays"></div>
+                        </div>
+                        <div class="meeting-legend">
+                            <span class="legend-item">
+                                <span class="legend-dot meeting-day"></span>
+                                Meeting Day
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot today"></span>
+                                Today
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -207,8 +218,249 @@
         </main>
     </div>
 
+    <!-- Meeting Card Modal -->
+    <div class="meeting-modal" id="meetingModal" style="display: none;">
+        <div class="meeting-card">
+            <div class="meeting-header">
+                <h3>Weekly Group Meeting</h3>
+                <button class="close-btn" onclick="closeMeetingCard()">×</button>
+            </div>
+            <div class="meeting-details">
+                <div class="meeting-time">
+                    <strong>Time:</strong> <span id="meetingTime">5:30 PM CST</span>
+                </div>
+                <div class="meeting-date">
+                    <strong>Date:</strong> <span id="meetingDate">--</span>
+                </div>
+                <div class="meeting-status" id="meetingStatus">
+                    Click to view meeting details
+                </div>
+            </div>
+            <div class="meeting-actions">
+                <button class="btn btn-primary" id="joinMeetingBtn" onclick="joinMeeting()">
+                    Join Meeting
+                </button>
+                <button class="btn btn-secondary" onclick="closeMeetingCard()">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="sidebar-toggle.js"></script>
     <script src="dashboard.js"></script>
+    <script>
+    // Timer and Calendar Functionality
+    let currentDate = new Date();
+    let selectedMeetingDate = null;
+
+    // Meeting schedule: Every two weeks on Tuesday, 5:30 PM CST, starting June 8th, 2025
+    const MEETING_START_DATE = new Date('2025-06-08T17:30:00-05:00'); // June 8, 2025, 5:30 PM CST
+    const MEETING_DURATION = 80; // 80 minutes
+    const EARLY_ACCESS = 10; // 10 minutes before
+    const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
+
+    function updateTimer() {
+        const now = new Date();
+        
+        // Format time with CST timezone
+        const timeOptions = {
+            timeZone: 'America/Chicago',
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        
+        const dateOptions = {
+            timeZone: 'America/Chicago',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+        
+        const timeString = now.toLocaleTimeString('en-US', timeOptions);
+        const dateString = now.toLocaleDateString('en-US', dateOptions);
+        
+        document.getElementById('currentTime').textContent = timeString;
+        document.getElementById('currentDate').textContent = dateString;
+    }
+
+    function getMeetingDates(year, month) {
+        const meetings = [];
+        let currentMeeting = new Date(MEETING_START_DATE);
+        
+        // Generate meetings for the year
+        while (currentMeeting.getFullYear() <= year + 1) {
+            if (currentMeeting.getFullYear() === year && currentMeeting.getMonth() === month) {
+                meetings.push(new Date(currentMeeting));
+            }
+            currentMeeting.setDate(currentMeeting.getDate() + 14); // Every 2 weeks
+        }
+        
+        return meetings;
+    }
+
+    function isMeetingDay(date) {
+        const meetings = getMeetingDates(date.getFullYear(), date.getMonth());
+        return meetings.some(meeting => 
+            meeting.getDate() === date.getDate() &&
+            meeting.getMonth() === date.getMonth() &&
+            meeting.getFullYear() === date.getFullYear()
+        );
+    }
+
+    function generateCalendar(year, month) {
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        const calendarDays = document.getElementById('calendarDays');
+        calendarDays.innerHTML = '';
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        for (let i = 0; i < 42; i++) {
+            const cellDate = new Date(startDate);
+            cellDate.setDate(startDate.getDate() + i);
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = cellDate.getDate();
+            
+            // Add classes for styling
+            if (cellDate.getMonth() !== month) {
+                dayElement.classList.add('other-month');
+            }
+            
+            if (cellDate.getTime() === today.getTime()) {
+                dayElement.classList.add('today');
+            }
+            
+            if (isMeetingDay(cellDate)) {
+                dayElement.classList.add('meeting-day');
+                dayElement.addEventListener('click', () => showMeetingCard(cellDate));
+            }
+            
+            calendarDays.appendChild(dayElement);
+        }
+        
+        // Update month header
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+    }
+
+    function showMeetingCard(date) {
+        selectedMeetingDate = new Date(date);
+        selectedMeetingDate.setHours(17, 30, 0, 0); // 5:30 PM
+        
+        const dateString = selectedMeetingDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        document.getElementById('meetingDate').textContent = dateString;
+        document.getElementById('meetingModal').style.display = 'flex';
+        
+        updateMeetingStatus();
+    }
+
+    function updateMeetingStatus() {
+        if (!selectedMeetingDate) return;
+        
+        const now = new Date();
+        const meetingStart = new Date(selectedMeetingDate);
+        const meetingEnd = new Date(meetingStart);
+        meetingEnd.setMinutes(meetingEnd.getMinutes() + MEETING_DURATION);
+        const earlyAccess = new Date(meetingStart);
+        earlyAccess.setMinutes(earlyAccess.getMinutes() - EARLY_ACCESS);
+        
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        const statusDiv = document.getElementById('meetingStatus');
+        
+        if (now >= earlyAccess && now <= meetingEnd) {
+            // Meeting is active or starting soon
+            joinBtn.disabled = false;
+            joinBtn.classList.add('active');
+            
+            if (now < meetingStart) {
+                const minutesToStart = Math.ceil((meetingStart - now) / (1000 * 60));
+                statusDiv.textContent = `Meeting starts in ${minutesToStart} minute${minutesToStart !== 1 ? 's' : ''}`;
+                statusDiv.className = 'meeting-status waiting';
+            } else {
+                const minutesLeft = Math.ceil((meetingEnd - now) / (1000 * 60));
+                statusDiv.textContent = `Meeting in progress (${minutesLeft} minutes remaining)`;
+                statusDiv.className = 'meeting-status active';
+            }
+        } else {
+            // Meeting not available
+            joinBtn.disabled = true;
+            joinBtn.classList.remove('active');
+            statusDiv.className = 'meeting-status';
+            
+            if (now < earlyAccess) {
+                const timeToMeeting = earlyAccess - now;
+                const hours = Math.floor(timeToMeeting / (1000 * 60 * 60));
+                const minutes = Math.floor((timeToMeeting % (1000 * 60 * 60)) / (1000 * 60));
+                
+                if (hours > 0) {
+                    statusDiv.textContent = `Meeting available in ${hours}h ${minutes}m`;
+                } else {
+                    statusDiv.textContent = `Meeting available in ${minutes} minutes`;
+                }
+            } else {
+                statusDiv.textContent = 'Meeting has ended';
+            }
+        }
+    }
+
+    function closeMeetingCard() {
+        document.getElementById('meetingModal').style.display = 'none';
+        selectedMeetingDate = null;
+    }
+
+    function joinMeeting() {
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        if (!joinBtn.disabled) {
+            window.open(ZOOM_LINK, '_blank');
+        }
+    }
+
+    function navigateMonth(direction) {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Start timer
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        
+        // Generate initial calendar
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+        
+        // Add navigation event listeners
+        document.getElementById('prevMonth').addEventListener('click', () => navigateMonth(-1));
+        document.getElementById('nextMonth').addEventListener('click', () => navigateMonth(1));
+        
+        // Update meeting status every minute
+        setInterval(updateMeetingStatus, 60000);
+        
+        // Close modal when clicking outside
+        document.getElementById('meetingModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeMeetingCard();
+            }
+        });
+    });
+    </script>
  
 </body>
 </html>
