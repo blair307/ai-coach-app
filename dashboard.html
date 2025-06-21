@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AI Coach</title>
+    <title>Dashboard - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,27 +11,27 @@
         <!-- Sidebar Navigation -->
         <nav class="sidebar">
             <div class="sidebar-header">
-                <h2>AI Coach</h2>
+                <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item active">
-                    <span class="icon">🏠</span>Dashboard
+                    Dashboard
                 </a></li>
                 <li><a href="ai-coach.html" class="menu-item">
-                    <span class="icon">🤖</span>AI Coach
+                    AI Coach
                 </a></li>
                 <li><a href="community.html" class="menu-item">
-                    <span class="icon">👥</span>Community
+                    Community
                 </a></li>
                 <li><a href="notifications.html" class="menu-item">
-                    <span class="icon">🔔</span>Notifications
+                    Notifications
                     <span class="notification-badge" id="notificationBadge">3</span>
                 </a></li>
                 <li><a href="billing.html" class="menu-item">
-                    <span class="icon">💳</span>Billing
+                    Billing
                 </a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">
-                    <span class="icon">🚪</span>Logout
+                    Logout
                 </a></li>
             </ul>
         </nav>
@@ -39,30 +39,35 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h1>Welcome back, <span id="userName">Loading...</span>!</h1>
+                <h1>Dashboard</h1>
                 <div class="header-actions">
-                    <button class="btn btn-primary" onclick="window.location.href='ai-coach.html'">
+                    <button class="btn btn-primary" onclick="startCoachingSession()">
                         Start Coaching Session
                     </button>
                 </div>
             </header>
 
+            <!-- Dashboard Grid -->
             <div class="dashboard-grid">
-                <!-- Quick Stats -->
+                <!-- Progress Overview -->
                 <div class="dashboard-card">
                     <h3>Your Progress</h3>
                     <div class="stats-grid">
                         <div class="stat">
-                            <div class="stat-number" id="totalSessions">0</div>
+                            <div class="stat-number">127</div>
                             <div class="stat-label">Coaching Sessions</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-number" id="streak">0</div>
-                            <div class="stat-label">Day Streak</div>
+                            <div class="stat-number">85%</div>
+                            <div class="stat-label">Goal Completion</div>
                         </div>
                         <div class="stat">
-                            <div class="stat-number" id="communityMessages">0</div>
-                            <div class="stat-label">Community Messages</div>
+                            <div class="stat-number">42</div>
+                            <div class="stat-label">Days Active</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">9.2</div>
+                            <div class="stat-label">Wellness Score</div>
                         </div>
                     </div>
                 </div>
@@ -70,22 +75,33 @@
                 <!-- Recent Activity -->
                 <div class="dashboard-card">
                     <h3>Recent Activity</h3>
-                    <div class="activity-list" id="recentActivity">
+                    <div class="activity-list">
                         <div class="activity-item">
-                            <div class="activity-icon">🤖</div>
                             <div class="activity-content">
-                                <p>Completed coaching session on goal setting</p>
+                                <p>Completed emotional intelligence assessment</p>
                                 <small>2 hours ago</small>
                             </div>
                         </div>
                         <div class="activity-item">
-                            <div class="activity-icon">👥</div>
                             <div class="activity-content">
-                                <p>Shared an insight in the community</p>
-                                <small>1 day ago</small>
+                                <p>Joined discussion in Business Growth room</p>
+                                <small>4 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Set new quarterly business goals</p>
+                                <small>Yesterday</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Completed stress management workshop</p>
+                                <small>2 days ago</small>
                             </div>
                         </div>
                     </div>
+                    <a href="#" class="view-all-link">View All Activity</a>
                 </div>
 
                 <!-- Quick Actions -->
@@ -93,17 +109,27 @@
                     <h3>Quick Actions</h3>
                     <div class="quick-actions">
                         <a href="ai-coach.html" class="quick-action">
-                            <div class="action-icon">🤖</div>
                             <div class="action-text">
-                                <h4>Start AI Session</h4>
-                                <p>Continue your coaching journey</p>
+                                <h4>Chat with AI Coach</h4>
+                                <p>Get personalized guidance</p>
                             </div>
                         </a>
                         <a href="community.html" class="quick-action">
-                            <div class="action-icon">👥</div>
                             <div class="action-text">
                                 <h4>Join Community</h4>
-                                <p>Connect with others</p>
+                                <p>Connect with entrepreneurs</p>
+                            </div>
+                        </a>
+                        <a href="#" class="quick-action" onclick="takeAssessment()">
+                            <div class="action-text">
+                                <h4>Take Assessment</h4>
+                                <p>Measure your progress</p>
+                            </div>
+                        </a>
+                        <a href="#" class="quick-action" onclick="viewGoals()">
+                            <div class="action-text">
+                                <h4>Review Goals</h4>
+                                <p>Track your objectives</p>
                             </div>
                         </a>
                     </div>
@@ -112,21 +138,70 @@
                 <!-- Notifications Preview -->
                 <div class="dashboard-card">
                     <h3>Recent Notifications</h3>
-                    <div class="notifications-preview" id="notificationsPreview">
+                    <div class="notifications-preview">
                         <div class="notification-item unread">
                             <div class="notification-content">
-                                <p>New community message from Sarah</p>
-                                <small>30 minutes ago</small>
+                                <p>New coaching insights available</p>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-content">
+                                <p>Sarah mentioned you in Business Growth</p>
+                                <small>4 hours ago</small>
                             </div>
                         </div>
                         <div class="notification-item">
                             <div class="notification-content">
-                                <p>Your weekly progress report is ready</p>
+                                <p>Weekly progress report ready</p>
                                 <small>1 day ago</small>
                             </div>
                         </div>
                     </div>
-                    <a href="notifications.html" class="view-all-link">View all notifications</a>
+                    <a href="notifications.html" class="view-all-link">View All Notifications</a>
+                </div>
+
+                <!-- Current Goals -->
+                <div class="dashboard-card">
+                    <h3>Current Goals</h3>
+                    <div class="goals-list">
+                        <div class="goal-item">
+                            <input type="checkbox" checked id="goal1">
+                            <label for="goal1">Improve work-life balance</label>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" id="goal2">
+                            <label for="goal2">Increase emotional intelligence</label>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" checked id="goal3">
+                            <label for="goal3">Build stronger team relationships</label>
+                        </div>
+                        <div class="goal-item">
+                            <input type="checkbox" id="goal4">
+                            <label for="goal4">Develop stress management skills</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-outline btn-small" onclick="addGoal()">Add New Goal</button>
+                </div>
+
+                <!-- Weekly Insights -->
+                <div class="dashboard-card">
+                    <h3>This Week's Insights</h3>
+                    <div class="insights-list">
+                        <div class="insight-item">
+                            <p>"Your stress levels decrease by 40% when you take regular breaks during work sessions."</p>
+                            <small>Based on 12 coaching sessions</small>
+                        </div>
+                        <div class="insight-item">
+                            <p>"You're most productive and emotionally balanced on days when you start with meditation."</p>
+                            <small>Pattern observed over 3 weeks</small>
+                        </div>
+                        <div class="insight-item">
+                            <p>"Team communication improves significantly when you use active listening techniques."</p>
+                            <small>Feedback from 8 team interactions</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </main>
