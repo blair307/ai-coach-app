@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with Streak Tracking
+// Complete AI Coach Backend Server with OpenAI Assistant Integration
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -294,7 +294,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
   }
 });
 
-// Send message to AI
+// Send message to AI Assistant - UPDATED TO USE YOUR CUSTOM ASSISTANT
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
@@ -303,39 +303,67 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       });
     }
 
-    const { message, chatHistory } = req.body;
+    const { message } = req.body;
     const userId = req.user.userId;
 
-    // Prepare messages for OpenAI
-    const messages = [
-      {
-        role: 'system',
-        content: 'You are a helpful life coach. Provide supportive, encouraging, and practical advice to help users achieve their goals and overcome challenges. Keep responses conversational and empathetic.'
-      },
-      ...chatHistory.map(msg => ({
-        role: msg.role === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      })),
-      { role: 'user', content: message }
-    ];
+    // Your Custom Assistant ID
+    const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
 
-    // Call OpenAI
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: messages,
-      max_tokens: 500,
-      temperature: 0.7
+    // Create a new thread for this conversation
+    const thread = await openai.beta.threads.create();
+
+    // Add the user's message to the thread
+    await openai.beta.threads.messages.create(thread.id, {
+      role: "user",
+      content: message
     });
 
-    const response = completion.choices[0].message.content;
+    // Run the assistant
+    const run = await openai.beta.threads.runs.create(thread.id, {
+      assistant_id: ASSISTANT_ID
+    });
+
+    // Wait for the assistant to complete (simple polling)
+    let runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+    
+    // Keep checking until the assistant is done (max 30 seconds)
+    let attempts = 0;
+    while (runStatus.status !== 'completed' && attempts < 30) {
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+      runStatus = await openai.beta.threads.runs.retrieve(thread.id, run.id);
+      attempts++;
+    }
+
+    if (runStatus.status !== 'completed') {
+      throw new Error('Assistant took too long to respond');
+    }
+
+    // Get the assistant's response
+    const messages = await openai.beta.threads.messages.list(thread.id);
+    const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
+    
+    if (!assistantMessage) {
+      throw new Error('No response from assistant');
+    }
+
+    const response = assistantMessage.content[0].text.value;
 
     res.json({ response });
+
   } catch (error) {
-    console.error('Chat error:', error);
+    console.error('Assistant error:', error);
+    
+    // Entrepreneur-focused fallback messages
+    const fallbacks = [
+      "I'm experiencing technical difficulties right now. As an entrepreneur, you know that setbacks are temporary. While I get back online, remember that seeking support shows leadership strength, not weakness.",
+      "I'm having connection issues at the moment. In the meantime, consider this: the stress you're feeling as an entrepreneur is valid. Take a deep breath and remember that even the most successful founders face similar challenges.",
+      "Technical problems on my end right now. Here's a quick reminder while I reconnect: entrepreneurship is inherently stressful, but you're building something meaningful. That pressure you feel? It's often proportional to the impact you're creating."
+    ];
+    
     res.status(500).json({ 
       message: 'Failed to get AI response', 
       error: error.message,
-      response: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment."
+      response: fallbacks[Math.floor(Math.random() * fallbacks.length)]
     });
   }
 });
@@ -539,6 +567,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-  console.log(`🎨 OpenAI: ${openai ? 'ready' : 'disabled'}`);
+  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
 });
