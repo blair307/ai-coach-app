@@ -321,4 +321,125 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Update all stats
     updateStats();
+    
+    // Load and display insights
+    updateInsights();
 });
+
+// Generate insights from user data
+function updateInsights() {
+    const insightsList = document.getElementById('insightsList');
+    if (!insightsList) return;
+    
+    const insights = generateInsightsFromUserData();
+    
+    if (insights.length === 0) {
+        // Show empty state for new users
+        insightsList.innerHTML = `
+            <div class="empty-insights" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                <p>Start chatting with your AI coach to generate personalized insights!</p>
+                <button class="btn btn-primary btn-small" onclick="startCoachingSession()" style="margin-top: 1rem;">
+                    Start Your First Session
+                </button>
+            </div>
+        `;
+    } else {
+        // Show real insights
+        insightsList.innerHTML = insights.map(insight => `
+            <div class="insight-item">
+                <p>"${insight.text}"</p>
+                <small>${insight.source}</small>
+            </div>
+        `).join('');
+    }
+}
+
+function generateInsightsFromUserData() {
+    const insights = [];
+    
+    // Get user's conversation history
+    const coachHistory = localStorage.getItem('eeh_coach_conversation');
+    const conversations = coachHistory ? JSON.parse(coachHistory) : [];
+    
+    // Get user's goals
+    const goals = getActiveGoals();
+    
+    // Get activity log
+    const activityLog = JSON.parse(localStorage.getItem('eeh_activity_log') || '[]');
+    
+    // Generate insights based on actual user data
+    if (conversations.length > 5) {
+        const userMessages = conversations.filter(msg => msg.type === 'user');
+        const stressCount = userMessages.filter(msg => 
+            msg.content.toLowerCase().includes('stress') || 
+            msg.content.toLowerCase().includes('overwhelm')
+        ).length;
+        
+        if (stressCount > 2) {
+            insights.push({
+                text: "You've mentioned stress multiple times. Consider implementing daily stress management techniques.",
+                source: `Based on ${userMessages.length} coaching conversations`
+            });
+        }
+        
+        const goalMessages = userMessages.filter(msg => 
+            msg.content.toLowerCase().includes('goal') || 
+            msg.content.toLowerCase().includes('objective')
+        ).length;
+        
+        if (goalMessages > 1) {
+            insights.push({
+                text: "You frequently discuss goals, which shows strong self-awareness and growth mindset.",
+                source: `Observed in ${goalMessages} conversations`
+            });
+        }
+        
+        const teamMessages = userMessages.filter(msg => 
+            msg.content.toLowerCase().includes('team') || 
+            msg.content.toLowerCase().includes('employee')
+        ).length;
+        
+        if (teamMessages > 1) {
+            insights.push({
+                text: "Leadership and team dynamics are important to you. Focus on emotional intelligence skills.",
+                source: `Pattern from ${teamMessages} team-related discussions`
+            });
+        }
+    }
+    
+    // Goal-based insights
+    if (goals.length > 3) {
+        const completedGoals = goals.filter(goal => goal.completed).length;
+        const completionRate = Math.round((completedGoals / goals.length) * 100);
+        
+        if (completionRate > 50) {
+            insights.push({
+                text: `You have a ${completionRate}% goal completion rate, showing strong follow-through on commitments.`,
+                source: `Based on ${goals.length} personal goals`
+            });
+        }
+    }
+    
+    // Activity-based insights
+    if (activityLog.length > 7) {
+        insights.push({
+            text: "You're building a consistent habit of self-reflection and growth through regular platform use.",
+            source: `Active for ${activityLog.length} days total`
+        });
+    }
+    
+    // Community insights (if available)
+    const communityHistory = localStorage.getItem('eeh_community_messages');
+    if (communityHistory) {
+        const communityMessages = JSON.parse(communityHistory);
+        if (communityMessages.length > 5) {
+            insights.push({
+                text: "Your active participation in the community shows you value peer support and collaboration.",
+                source: `From ${communityMessages.length} community interactions`
+            });
+        }
+    }
+    
+    // Return most recent insights (max 3)
+    return insights.slice(0, 3);
+}
