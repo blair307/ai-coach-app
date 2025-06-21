@@ -1,6 +1,6 @@
 // Simple Dashboard JavaScript
 
-const API_BASE_URL = 'https://your-render-url-here.onrender.com';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 // Initialize dashboard when page loads
 document.addEventListener('DOMContentLoaded', function() {
