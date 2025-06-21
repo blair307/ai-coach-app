@@ -1,7 +1,7 @@
 // General App JavaScript - Used on Landing Page
 
 // Configuration
-const API_BASE_URL = 'https://your-render-url-here.onrender.com';
+const API_BASE_URL = 'https://ai-coach-backend-mytn.onrender.com';
 
 // Initialize app when page loads
 document.addEventListener('DOMContentLoaded', function() {
