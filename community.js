@@ -1,5 +1,5 @@
-// Community.js - Backend Connected Version with Simple Working Search
-// This version fixes all the errors and makes search work properly
+// Community.js - Complete Backend Connected Version with Working Search
+// This is the complete file with all functionality
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -7,11 +7,14 @@ let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
 let currentMessages = []; // Store current messages for search
+let searchResults = [];
+let currentSearchTerm = '';
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Community page loading...');
     initializeCommunity();
+    setupSearchListeners();
 });
 
 // Initialize the community system
@@ -176,7 +179,7 @@ async function switchRoom(roomId) {
         if (roomDescElement) roomDescElement.textContent = room.description;
 
         // Clear any existing search
-        clearSimpleSearch();
+        clearCompleteSearch();
 
         // Load messages for this room
         await loadMessages(roomId);
@@ -461,144 +464,326 @@ async function deleteRoom(roomId) {
 }
 
 // =================================
-// SIMPLE SEARCH FUNCTIONALITY - FIXED
+// WORKING SEARCH SYSTEM
 // =================================
 
-// Simple search function that highlights text in current messages
-function performSimpleSearch() {
+// Real-time search function that actually works
+function performRealTimeSearch() {
     const searchInput = document.getElementById('simpleSearchInput');
-    if (!searchInput) {
-        console.error('Search input not found');
+    if (!searchInput) return;
+    
+    const searchTerm = searchInput.value.trim().toLowerCase();
+    currentSearchTerm = searchTerm;
+    
+    // Clear previous results
+    clearAllHighlights();
+    searchResults = [];
+    
+    if (searchTerm.length < 2) {
+        hideSearchResults();
         return;
     }
     
-    const searchQuery = searchInput.value.trim();
+    // Search in messages
+    searchInMessages(searchTerm);
     
-    if (!searchQuery || searchQuery.length < 2) {
-        clearSimpleSearch();
-        if (searchQuery.length > 0 && searchQuery.length < 2) {
-            showErrorMessage('Please enter at least 2 characters to search');
-        }
-        return;
-    }
+    // Search in room names and descriptions
+    searchInRooms(searchTerm);
+    
+    // Display results
+    displaySearchResults();
+}
 
-    // Clear any existing highlights
-    clearSearchHighlights();
-    
-    // Search and highlight in current messages
-    let foundMatches = 0;
+// Search through current room messages
+function searchInMessages(searchTerm) {
     const messagesContainer = document.getElementById('communityMessages');
+    if (!messagesContainer) return;
     
-    if (messagesContainer && currentMessages.length > 0) {
-        const messageElements = messagesContainer.querySelectorAll('.message-content');
+    const messageElements = messagesContainer.querySelectorAll('.message-group');
+    
+    messageElements.forEach((messageElement, index) => {
+        const messageContent = messageElement.querySelector('.message-content');
+        const username = messageElement.querySelector('.username');
         
-        messageElements.forEach((element) => {
-            const originalText = element.textContent;
-            const searchTerm = searchQuery.toLowerCase();
+        if (messageContent && username) {
+            const messageText = messageContent.textContent.toLowerCase();
+            const userText = username.textContent.toLowerCase();
             
-            if (originalText.toLowerCase().includes(searchTerm)) {
-                // Highlight the search term
-                const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
-                const highlightedText = originalText.replace(regex, '<span class="search-highlight">$1</span>');
-                element.innerHTML = highlightedText;
-                foundMatches++;
+            // Check if search term is in message or username
+            if (messageText.includes(searchTerm) || userText.includes(searchTerm)) {
+                // Highlight the text
+                highlightTextInElement(messageContent, searchTerm);
+                highlightTextInElement(username, searchTerm);
                 
-                // Scroll to first match
-                if (foundMatches === 1) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
+                // Add to results
+                searchResults.push({
+                    type: 'message',
+                    element: messageElement,
+                    text: messageContent.textContent.substring(0, 100) + '...',
+                    username: username.textContent,
+                    index: index
+                });
+                
+                // Add visual indicator
+                messageElement.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                messageElement.style.border = '2px solid var(--primary)';
+                messageElement.style.borderRadius = 'var(--radius)';
+                messageElement.style.marginBottom = '1rem';
             }
-        });
-    }
-    
-    // Show results
-    if (foundMatches > 0) {
-        showSearchStatus(`Found ${foundMatches} match${foundMatches === 1 ? '' : 'es'} for "${searchQuery}"`);
-        const clearBtn = document.getElementById('simpleSearchClear');
-        if (clearBtn) clearBtn.style.display = 'inline-block';
-    } else {
-        showSearchStatus(`No matches found for "${searchQuery}"`);
-        const clearBtn = document.getElementById('simpleSearchClear');
-        if (clearBtn) clearBtn.style.display = 'inline-block';
-    }
-}
-
-// Clear search highlights and reset
-function clearSimpleSearch() {
-    // Clear the search input
-    const searchInput = document.getElementById('simpleSearchInput');
-    if (searchInput) {
-        searchInput.value = '';
-    }
-    
-    // Clear highlights
-    clearSearchHighlights();
-    
-    // Hide clear button
-    const clearBtn = document.getElementById('simpleSearchClear');
-    if (clearBtn) {
-        clearBtn.style.display = 'none';
-    }
-    
-    // Clear status
-    clearSearchStatus();
-}
-
-// Clear search highlights from messages
-function clearSearchHighlights() {
-    const highlights = document.querySelectorAll('.search-highlight');
-    highlights.forEach(highlight => {
-        const parent = highlight.parentNode;
-        if (parent) {
-            parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
-            parent.normalize();
         }
     });
 }
 
-// Escape regex special characters
-function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Search through room names and descriptions
+function searchInRooms(searchTerm) {
+    rooms.forEach(room => {
+        const roomName = room.name.toLowerCase();
+        const roomDesc = room.description.toLowerCase();
+        
+        if (roomName.includes(searchTerm) || roomDesc.includes(searchTerm)) {
+            searchResults.push({
+                type: 'room',
+                text: room.name,
+                description: room.description,
+                roomId: room._id,
+                room: room
+            });
+        }
+    });
 }
 
-// Show search status message
-function showSearchStatus(message) {
-    // Remove any existing status
-    clearSearchStatus();
+// Highlight text within an element
+function highlightTextInElement(element, searchTerm) {
+    if (!element || !searchTerm) return;
     
-    // Create status element
-    const statusElement = document.createElement('div');
-    statusElement.id = 'searchStatus';
-    statusElement.style.cssText = `
+    const originalText = element.textContent;
+    const regex = new RegExp(`(${escapeRegexChars(searchTerm)})`, 'gi');
+    
+    if (regex.test(originalText)) {
+        const highlightedText = originalText.replace(regex, '<mark class="search-highlight-mark">$1</mark>');
+        element.innerHTML = highlightedText;
+    }
+}
+
+// Escape regex special characters
+function escapeRegexChars(text) {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Display search results in a popup
+function displaySearchResults() {
+    const resultsCount = searchResults.length;
+    
+    if (resultsCount === 0) {
+        showSearchPopup(`No results found for "${currentSearchTerm}"`);
+        return;
+    }
+    
+    // Show results count
+    showSearchPopup(`Found ${resultsCount} result${resultsCount === 1 ? '' : 's'} for "${currentSearchTerm}"`);
+    
+    // Scroll to first message result if any
+    const firstMessageResult = searchResults.find(r => r.type === 'message');
+    if (firstMessageResult && firstMessageResult.element) {
+        firstMessageResult.element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center' 
+        });
+    }
+    
+    // Show clear button
+    const clearBtn = document.getElementById('simpleSearchClear');
+    if (clearBtn) {
+        clearBtn.style.display = 'inline-block';
+    }
+}
+
+// Show search results popup
+function showSearchPopup(message) {
+    // Remove existing popup
+    const existingPopup = document.getElementById('searchResultsPopup');
+    if (existingPopup) {
+        existingPopup.remove();
+    }
+    
+    // Create new popup
+    const popup = document.createElement('div');
+    popup.id = 'searchResultsPopup';
+    popup.style.cssText = `
         position: fixed;
         top: 80px;
         right: 20px;
         background: var(--primary);
         color: white;
-        padding: 0.75rem 1rem;
+        padding: 1rem 1.5rem;
         border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        z-index: 1000;
-        font-size: 0.875rem;
+        box-shadow: var(--shadow-lg);
+        z-index: 10000;
+        font-size: 0.9rem;
         max-width: 300px;
+        border: 1px solid var(--primary-dark);
     `;
-    statusElement.textContent = message;
     
-    document.body.appendChild(statusElement);
+    popup.innerHTML = `
+        <div>${message}</div>
+        ${searchResults.length > 0 ? createResultsList() : ''}
+    `;
     
-    // Auto-remove after 3 seconds
+    document.body.appendChild(popup);
+    
+    // Auto-hide after 5 seconds
     setTimeout(() => {
-        clearSearchStatus();
-    }, 3000);
+        if (popup.parentNode) {
+            popup.remove();
+        }
+    }, 5000);
 }
 
-// Clear search status message
-function clearSearchStatus() {
-    const existingStatus = document.getElementById('searchStatus');
-    if (existingStatus) {
-        existingStatus.remove();
+// Create clickable results list
+function createResultsList() {
+    if (searchResults.length === 0) return '';
+    
+    let html = '<div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1rem;">';
+    
+    // Show room results
+    const roomResults = searchResults.filter(r => r.type === 'room').slice(0, 3);
+    if (roomResults.length > 0) {
+        html += '<div style="margin-bottom: 0.5rem; font-weight: 600; font-size: 0.8rem;">ROOMS:</div>';
+        roomResults.forEach(result => {
+            html += `
+                <div onclick="switchToRoom('${result.roomId}')" style="
+                    cursor: pointer; 
+                    padding: 0.5rem; 
+                    margin: 0.25rem 0; 
+                    background: rgba(255,255,255,0.1); 
+                    border-radius: 4px;
+                    font-size: 0.8rem;
+                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+                    <strong>${result.text}</strong><br>
+                    <small style="opacity: 0.8;">${result.description}</small>
+                </div>
+            `;
+        });
+    }
+    
+    // Show message count
+    const messageResults = searchResults.filter(r => r.type === 'message');
+    if (messageResults.length > 0) {
+        html += `<div style="margin-top: 0.5rem; font-weight: 600; font-size: 0.8rem;">MESSAGES: ${messageResults.length} found in current room</div>`;
+    }
+    
+    html += '</div>';
+    return html;
+}
+
+// Switch to a room from search results
+function switchToRoom(roomId) {
+    // Hide popup
+    const popup = document.getElementById('searchResultsPopup');
+    if (popup) popup.remove();
+    
+    // Switch room
+    switchRoom(roomId);
+    
+    // Perform search again in new room after a delay
+    setTimeout(() => {
+        if (currentSearchTerm) {
+            performRealTimeSearch();
+        }
+    }, 500);
+}
+
+// Hide search results
+function hideSearchResults() {
+    const popup = document.getElementById('searchResultsPopup');
+    if (popup) {
+        popup.remove();
+    }
+    
+    const clearBtn = document.getElementById('simpleSearchClear');
+    if (clearBtn) {
+        clearBtn.style.display = 'none';
     }
 }
+
+// Clear all search highlights and results
+function clearAllHighlights() {
+    // Remove all highlight marks
+    const highlights = document.querySelectorAll('.search-highlight-mark');
+    highlights.forEach(mark => {
+        const parent = mark.parentNode;
+        if (parent) {
+            parent.replaceChild(document.createTextNode(mark.textContent), mark);
+            parent.normalize();
+        }
+    });
+    
+    // Remove message highlighting
+    const messageElements = document.querySelectorAll('.message-group');
+    messageElements.forEach(element => {
+        element.style.backgroundColor = '';
+        element.style.border = '';
+        element.style.borderRadius = '';
+        element.style.marginBottom = '';
+    });
+    
+    // Clear results
+    searchResults = [];
+}
+
+// Clear search completely
+function clearCompleteSearch() {
+    const searchInput = document.getElementById('simpleSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    currentSearchTerm = '';
+    clearAllHighlights();
+    hideSearchResults();
+}
+
+// Main search functions (called by buttons)
+function performSimpleSearch() {
+    performRealTimeSearch();
+}
+
+function clearSimpleSearch() {
+    clearCompleteSearch();
+}
+
+// Setup search event listeners
+function setupSearchListeners() {
+    const searchInput = document.getElementById('simpleSearchInput');
+    if (searchInput) {
+        // Search as user types (with debounce)
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                performRealTimeSearch();
+            }, 300); // Wait 300ms after user stops typing
+        });
+        
+        // Search on Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performRealTimeSearch();
+            }
+        });
+        
+        // Clear on empty
+        searchInput.addEventListener('input', function(e) {
+            if (!e.target.value.trim()) {
+                clearCompleteSearch();
+            }
+        });
+    }
+}
+
+// =================================
+// EMOJI AND UTILITY FUNCTIONS
+// =================================
 
 // Add emoji functionality
 function addEmoji() {
