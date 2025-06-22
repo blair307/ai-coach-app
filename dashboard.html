@@ -5,17 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- ADD THIS: Notification Manager -->
-    <script src="notification-manager.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.notificationManager) {
-                window.notificationManager.init();
-                setTimeout(() => window.notificationManager.updateBadge(), 100);
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="app-container">
@@ -271,7 +260,102 @@
 
     <script src="sidebar-toggle.js"></script>
     <script src="dashboard.js"></script>
+    
     <script>
+    // ===== NOTIFICATION MANAGER - INLINE =====
+    class NotificationManager {
+        constructor() {
+            this.unreadCount = 0;
+            this.notifications = [];
+            this.initialized = false;
+        }
+
+        init() {
+            if (this.initialized) return;
+            this.loadNotifications();
+            this.updateBadge();
+            this.initialized = true;
+            console.log('Notification Manager initialized with', this.unreadCount, 'unread notifications');
+        }
+
+        loadNotifications() {
+            const saved = localStorage.getItem('eeh_notifications');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    this.notifications = data.notifications || [];
+                    this.unreadCount = this.notifications.filter(n => n.unread).length;
+                    return;
+                } catch (e) {
+                    console.log('Error loading saved notifications:', e);
+                }
+            }
+
+            // Default notifications - same as other pages
+            this.notifications = [
+                {
+                    id: 1, type: 'coaching', title: 'New Coaching Insights Available',
+                    message: 'Your AI coach has generated new insights based on your recent conversations.',
+                    time: '2 hours ago', unread: true, timestamp: Date.now() - (2 * 60 * 60 * 1000)
+                },
+                {
+                    id: 2, type: 'community', title: 'New Messages in Business Growth',
+                    message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
+                    time: '4 hours ago', unread: true, timestamp: Date.now() - (4 * 60 * 60 * 1000)
+                },
+                {
+                    id: 3, type: 'system', title: 'Weekly Progress Report Ready',
+                    message: 'Your weekly emotional health and business progress report is now available.',
+                    time: '1 day ago', unread: true, timestamp: Date.now() - (24 * 60 * 60 * 1000)
+                }
+            ];
+
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            this.saveNotifications();
+        }
+
+        saveNotifications() {
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            const data = {
+                notifications: this.notifications,
+                unreadCount: this.unreadCount,
+                lastUpdated: Date.now()
+            };
+            localStorage.setItem('eeh_notifications', JSON.stringify(data));
+        }
+
+        updateBadge() {
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            const badges = document.querySelectorAll('#notificationBadge, .notification-badge');
+            badges.forEach(badge => {
+                if (this.unreadCount > 0) {
+                    badge.textContent = this.unreadCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
+        addNotification(notification) {
+            const newNotification = {
+                id: Date.now(),
+                unread: true,
+                timestamp: Date.now(),
+                ...notification
+            };
+            this.notifications.unshift(newNotification);
+            this.saveNotifications();
+            this.updateBadge();
+        }
+
+        getNotifications() { return this.notifications; }
+        getUnreadCount() { return this.unreadCount; }
+    }
+
+    // Initialize notification manager
+    window.notificationManager = new NotificationManager();
+
     // Common logout function
     function logout() {
         localStorage.removeItem('authToken');
@@ -287,7 +371,6 @@
     }
 
     function addGoal() {
-        // Goal functionality would be implemented here
         alert('Add new goal functionality would be implemented here');
     }
 
@@ -295,7 +378,6 @@
     let currentDate = new Date();
     let selectedMeetingDate = null;
 
-    // Meeting schedule starting July 8th, 2025
     const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00');
     const MEETING_DURATION = 80;
     const EARLY_ACCESS = 10;
@@ -305,9 +387,8 @@
         const now = new Date();
         let nextMeeting = new Date(MEETING_START_DATE);
         
-        // Find the next meeting date
         while (nextMeeting <= now) {
-            nextMeeting.setDate(nextMeeting.getDate() + 14); // Every 2 weeks
+            nextMeeting.setDate(nextMeeting.getDate() + 14);
         }
         
         return nextMeeting;
@@ -324,7 +405,6 @@
         const countdownDate = document.getElementById('countdownDate');
         
         if (timeDiff > 0) {
-            // Show countdown
             countdownContainer.style.display = 'block';
             noMeetingContainer.style.display = 'none';
             
@@ -347,7 +427,6 @@
             });
             countdownDate.textContent = dateString + ' at 5:30 PM CST';
         } else {
-            // No upcoming meetings (shouldn't happen with our logic, but fallback)
             countdownContainer.style.display = 'none';
             noMeetingContainer.style.display = 'block';
             updateCurrentTime();
@@ -526,6 +605,13 @@
 
     // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize notification manager
+        window.notificationManager.init();
+        
+        setTimeout(() => {
+            window.notificationManager.updateBadge();
+        }, 100);
+        
         // Start countdown timer
         updateCountdownTimer();
         setInterval(updateCountdownTimer, 1000);
