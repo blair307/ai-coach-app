@@ -12,7 +12,10 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (window.notificationManager) {
                 window.notificationManager.init();
-                setTimeout(() => window.notificationManager.updateBadge(), 100);
+                setTimeout(() => {
+                    window.notificationManager.updateBadge();
+                    loadNotifications(); // Load notifications immediately
+                }, 100);
             }
         });
     </script>
@@ -68,30 +71,30 @@
 
             <div class="notifications-container">
                 <!-- Notification Filters -->
-                <div class="notification-filters">
+                <div class="notification-filters" id="notificationFilters">
                     <button class="filter-btn active" onclick="filterNotifications('all')">
                         All Notifications
-                        <span class="count" id="allCount">8</span>
+                        <span class="count" id="allCount">0</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('unread')">
                         Unread
-                        <span class="count" id="unreadCount">3</span>
+                        <span class="count" id="unreadCount">0</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('coaching')">
                         AI Coach
-                        <span class="count" id="coachingCount">2</span>
+                        <span class="count" id="coachingCount">0</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('community')">
                         Community
-                        <span class="count" id="communityCount">3</span>
+                        <span class="count" id="communityCount">0</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('system')">
                         System
-                        <span class="count" id="systemCount">2</span>
+                        <span class="count" id="systemCount">0</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('billing')">
                         Billing
-                        <span class="count" id="billingCount">1</span>
+                        <span class="count" id="billingCount">0</span>
                     </button>
                 </div>
 
@@ -153,6 +156,9 @@
     <script src="notifications.js"></script>
     
     <script>
+    // Global variables
+    let currentFilter = 'all';
+
     // Common logout function
     function logout() {
         localStorage.removeItem('authToken');
@@ -163,22 +169,19 @@
         window.location.href = 'login.html';
     }
 
-    // Notification management functions that work with notification manager
+    // FIXED: Notification management functions that work with notification manager
     function markAllRead() {
         if (window.notificationManager) {
             window.notificationManager.markAllAsRead();
-            loadNotifications(); // Refresh display
+            // Refresh will happen automatically via event listener
         }
     }
 
     function clearAll() {
         if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
             if (window.notificationManager) {
-                window.notificationManager.notifications = [];
-                window.notificationManager.unreadCount = 0;
-                window.notificationManager.saveNotifications();
-                window.notificationManager.updateBadge();
-                loadNotifications();
+                window.notificationManager.clearAllNotifications();
+                // Refresh will happen automatically via event listener
             }
         }
     }
@@ -189,11 +192,7 @@
         
         if (window.notificationManager) {
             window.notificationManager.markAsRead(notificationId);
-            notificationItem.classList.remove('unread');
-            notificationItem.classList.add('read');
-            
-            // Remove the "Mark as Read" button
-            element.remove();
+            // Refresh will happen automatically via event listener
         }
     }
 
@@ -214,28 +213,46 @@
     }
 
     function filterNotifications(type) {
+        currentFilter = type;
+        
         // Update active filter button
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
         
         // Filter notifications
         const notifications = document.querySelectorAll('.notification-item');
+        let visibleCount = 0;
+        
         notifications.forEach(notification => {
             const notificationType = notification.getAttribute('data-type');
-            if (type === 'all' || type === 'unread' && notification.classList.contains('unread') || type === notificationType) {
+            const isUnread = notification.classList.contains('unread');
+            
+            let shouldShow = false;
+            if (type === 'all') {
+                shouldShow = true;
+            } else if (type === 'unread') {
+                shouldShow = isUnread;
+            } else {
+                shouldShow = (type === notificationType);
+            }
+            
+            if (shouldShow) {
                 notification.style.display = 'flex';
+                visibleCount++;
             } else {
                 notification.style.display = 'none';
             }
         });
         
         // Show/hide empty state
-        const visibleNotifications = Array.from(notifications).filter(n => n.style.display !== 'none');
         const emptyState = document.getElementById('emptyState');
-        if (visibleNotifications.length === 0) {
+        const notificationsList = document.getElementById('notificationsList');
+        if (visibleCount === 0) {
             emptyState.style.display = 'block';
+            notificationsList.style.display = 'none';
         } else {
             emptyState.style.display = 'none';
+            notificationsList.style.display = 'block';
         }
     }
 
@@ -248,19 +265,29 @@
         closeSettingsModal();
     }
 
-    // Load notifications from notification manager
+    // FIXED: Load notifications from notification manager
     function loadNotifications() {
-        if (!window.notificationManager) return;
+        if (!window.notificationManager) {
+            console.log('Notification manager not ready yet');
+            return;
+        }
         
         const notifications = window.notificationManager.getNotifications();
         const notificationsList = document.getElementById('notificationsList');
         
+        console.log('Loading', notifications.length, 'notifications');
+        
         if (notifications.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
+            notificationsList.style.display = 'none';
+            updateFilterCounts();
             return;
         }
         
-        notificationsList.innerHTML = notifications.map(notification => `
+        // Sort notifications by timestamp (newest first)
+        const sortedNotifications = notifications.sort((a, b) => b.timestamp - a.timestamp);
+        
+        notificationsList.innerHTML = sortedNotifications.map(notification => `
             <div class="notification-item ${notification.unread ? 'unread' : 'read'}" data-type="${notification.type}" data-id="${notification.id}">
                 <div class="notification-icon ${notification.type}">
                     <div class="icon-text">${getIconText(notification.type)}</div>
@@ -279,7 +306,23 @@
             </div>
         `).join('');
         
+        // Update filter counts
         updateFilterCounts();
+        
+        // Apply current filter
+        if (currentFilter !== 'all') {
+            // Re-trigger the current filter
+            const activeButton = document.querySelector('.filter-btn.active');
+            if (activeButton) {
+                filterNotifications(currentFilter);
+            }
+        }
+        
+        // Show notifications list
+        notificationsList.style.display = 'block';
+        document.getElementById('emptyState').style.display = 'none';
+        
+        console.log('Loaded notifications successfully');
     }
 
     function getIconText(type) {
@@ -315,6 +358,8 @@
             billing: notifications.filter(n => n.type === 'billing').length
         };
         
+        console.log('Filter counts:', counts);
+        
         Object.keys(counts).forEach(type => {
             const countElement = document.getElementById(`${type}Count`);
             if (countElement) {
@@ -323,13 +368,118 @@
         });
     }
 
+    // Listen for notification updates from the manager
+    window.addEventListener('notificationsUpdated', function() {
+        console.log('Notifications updated event received');
+        loadNotifications();
+    });
+
     // Initialize notifications when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        // Wait a bit for notification manager to initialize
+        // Wait a bit longer for notification manager to fully initialize
         setTimeout(() => {
-            loadNotifications();
+            if (window.notificationManager && window.notificationManager.initialized) {
+                loadNotifications();
+            } else {
+                // Try again after another delay
+                setTimeout(() => {
+                    loadNotifications();
+                }, 500);
+            }
         }, 200);
     });
+
+    // Debug function - you can call this in console to check status
+    function debugNotifications() {
+        console.log('Notification Manager:', window.notificationManager);
+        console.log('Initialized:', window.notificationManager?.initialized);
+        console.log('Notifications:', window.notificationManager?.getNotifications());
+        console.log('Unread count:', window.notificationManager?.getUnreadCount());
+    }
+    
+    // Add to window for debugging
+    window.debugNotifications = debugNotifications;
     </script>
+
+    <style>
+    /* Add notification icon styling */
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 0.75rem;
+    }
+    
+    .notification-icon.coaching {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+    }
+    
+    .notification-icon.community {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        color: white;
+    }
+    
+    .notification-icon.system {
+        background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        color: white;
+    }
+    
+    .notification-icon.billing {
+        background: linear-gradient(135deg, var(--accent) 0%, #0284c7 100%);
+        color: white;
+    }
+    
+    .notification-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    
+    .notification-content {
+        flex: 1;
+    }
+    
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .notification-header h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+    
+    .notification-time {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        flex-shrink: 0;
+        margin-left: 1rem;
+    }
+    
+    .notification-content p {
+        color: var(--text-secondary);
+        margin: 0 0 1rem 0;
+        line-height: 1.5;
+    }
+    
+    .notification-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    </style>
 </body>
 </html>
