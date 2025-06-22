@@ -1,482 +1,475 @@
-// Community Chat Functionality
-class CommunityChat {
+/**
+ * Fixed Community.js - Properly integrates with backend API
+ * Replace your existing community.js with this
+ */
+
+class RoomManager {
     constructor() {
+        this.rooms = [];
         this.currentRoom = 'general';
-        this.currentUser = this.getCurrentUser();
-        this.messages = this.loadMessages();
-        this.rooms = this.getRooms();
-        this.members = this.getMembers();
-        this.init();
-    }
-
-    init() {
-        this.setupEventListeners();
-        this.loadRoom(this.currentRoom);
-        this.updateOnlineCount();
-        this.updateBranding();
-    }
-
-    updateBranding() {
-        // Update all instances of "AI Coach" to "EEH"
-        const brandElements = document.querySelectorAll('.sidebar-header h2');
-        brandElements.forEach(el => {
-            if (el.textContent === 'AI Coach') {
-                el.textContent = 'EEH';
-            }
-        });
-
-        // Update page title
-        document.title = 'Community - Entrepreneur Emotional Health';
-    }
-
-    setupEventListeners() {
-        // Message input handling
-        const messageInput = document.getElementById('communityMessageInput');
-        if (messageInput) {
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
-        }
-
-        // Send button
-        const sendButton = document.getElementById('sendCommunityButton');
-        if (sendButton) {
-            sendButton.addEventListener('click', () => this.sendMessage());
-        }
-
-        // Auto-resize textarea
-        if (messageInput) {
-            messageInput.addEventListener('input', this.autoResizeTextarea);
-        }
-    }
-
-    autoResizeTextarea(e) {
-        e.target.style.height = 'auto';
-        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-    }
-
-    getCurrentUser() {
-        // In a real app, this would come from authentication
-        return {
-            id: 'user_' + Math.random().toString(36).substr(2, 9),
-            name: 'Current User',
-            avatar: this.generateAvatar('Current User'),
-            online: true
-        };
-    }
-
-    generateAvatar(name) {
-        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
-        return initials.substring(0, 2);
-    }
-
-    getRooms() {
-        return {
-            'general': {
-                name: 'General Discussion',
-                description: 'Open chat for everyone to discuss anything',
-                members: 24,
-                unread: 3
-            },
-            'emotional-wellness': {
-                name: 'Emotional Wellness',
-                description: 'Mental health & emotional intelligence',
-                members: 18,
-                unread: 0
-            },
-            'business-growth': {
-                name: 'Business Growth',
-                description: 'Scaling strategies & challenges',
-                members: 31,
-                unread: 1
-            },
-            'success-stories': {
-                name: 'Success Stories',
-                description: 'Celebrate your wins & breakthroughs',
-                members: 15,
-                unread: 0
-            },
-            'work-life-balance': {
-                name: 'Work-Life Balance',
-                description: 'Managing entrepreneurial stress',
-                members: 22,
-                unread: 0
-            }
-        };
-    }
-
-    getMembers() {
-        return {
-            'general': [
-                { id: '1', name: 'Sarah Johnson', avatar: 'SJ', online: true },
-                { id: '2', name: 'Mike Chen', avatar: 'MC', online: true },
-                { id: '3', name: 'Alex Rivera', avatar: 'AR', online: false, lastSeen: '2h ago' },
-                { id: '4', name: 'Emma Davis', avatar: 'ED', online: true },
-                { id: '5', name: 'James Wilson', avatar: 'JW', online: false, lastSeen: '1d ago' }
-            ]
-        };
-    }
-
-    loadMessages() {
-        // Sample messages for different rooms
-        return {
-            'general': [
-                {
-                    id: '1',
-                    user: { name: 'Sarah Johnson', avatar: 'SJ' },
-                    content: 'Just finished my first week with the AI coach! Feeling so motivated and clear about my goals.',
-                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
-                },
-                {
-                    id: '2',
-                    user: { name: 'Mike Chen', avatar: 'MC' },
-                    content: 'That\'s awesome Sarah! What was your biggest breakthrough?',
-                    timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000) // 1.5 hours ago
-                },
-                {
-                    id: '3',
-                    user: { name: 'Sarah Johnson', avatar: 'SJ' },
-                    content: 'Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer!',
-                    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000) // 1 hour ago
-                }
-            ],
-            'emotional-wellness': [
-                {
-                    id: '1',
-                    user: { name: 'Emma Davis', avatar: 'ED' },
-                    content: 'Been working on emotional regulation techniques. Meditation has been a game changer for managing stress.',
-                    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000)
-                }
-            ],
-            'business-growth': [
-                {
-                    id: '1',
-                    user: { name: 'James Wilson', avatar: 'JW' },
-                    content: 'Anyone else struggling with scaling their team? Looking for advice on hiring practices.',
-                    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000)
-                }
-            ]
-        };
-    }
-
-    switchRoom(roomId) {
-        // Remove active class from all room items
-        document.querySelectorAll('.room-item').forEach(item => {
-            item.classList.remove('active');
-        });
-
-        // Add active class to selected room
-        const roomElement = document.querySelector(`[data-room="${roomId}"]`);
-        if (roomElement) {
-            roomElement.classList.add('active');
-        }
-
-        this.currentRoom = roomId;
-        this.loadRoom(roomId);
-    }
-
-    loadRoom(roomId) {
-        const room = this.rooms[roomId];
-        if (!room) return;
-
-        // Update room header
-        document.getElementById('currentRoomName').textContent = room.name;
-        document.getElementById('currentRoomDescription').textContent = room.description;
-        document.getElementById('roomMemberCount').textContent = room.members;
-
-        // Load messages for this room
-        this.displayMessages(roomId);
-
-        // Clear unread count for this room
-        const roomElement = document.querySelector(`[data-room="${roomId}"]`);
-        const unreadBadge = roomElement?.querySelector('.unread-count');
-        if (unreadBadge) {
-            unreadBadge.remove();
-        }
-
-        // Update room object
-        this.rooms[roomId].unread = 0;
-    }
-
-    displayMessages(roomId) {
-        const messagesContainer = document.getElementById('communityMessages');
-        if (!messagesContainer) return;
-
-        const roomMessages = this.messages[roomId] || [];
+        this.baseURL = 'https://ai-coach-backend-mytn.onrender.com/api';
+        this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         
-        messagesContainer.innerHTML = '';
-
-        roomMessages.forEach(message => {
-            const messageElement = this.createMessageElement(message);
-            messagesContainer.appendChild(messageElement);
-        });
-
-        // Scroll to bottom
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    createMessageElement(message) {
-        const messageGroup = document.createElement('div');
-        messageGroup.className = 'message-group';
-
-        const timestamp = this.formatTimestamp(message.timestamp);
-        
-        messageGroup.innerHTML = `
-            <div class="message-header">
-                <div class="user-avatar">${message.user.avatar}</div>
-                <span class="username">${message.user.name}</span>
-                <span class="message-timestamp">${timestamp}</span>
-            </div>
-            <div class="message-content">
-                ${this.escapeHtml(message.content)}
-            </div>
-        `;
-
-        return messageGroup;
-    }
-
-    sendMessage() {
-        const messageInput = document.getElementById('communityMessageInput');
-        const content = messageInput.value.trim();
-
-        if (!content) return;
-
-        const message = {
-            id: Date.now().toString(),
-            user: this.currentUser,
-            content: content,
-            timestamp: new Date()
-        };
-
-        // Add message to current room
-        if (!this.messages[this.currentRoom]) {
-            this.messages[this.currentRoom] = [];
-        }
-        this.messages[this.currentRoom].push(message);
-
-        // Clear input
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
-
-        // Refresh display
-        this.displayMessages(this.currentRoom);
-
-        // In a real app, you would send this to the server
-        console.log('Message sent:', message);
-    }
-
-    toggleMembersList() {
-        const membersList = document.getElementById('membersList');
-        if (membersList) {
-            const isVisible = membersList.style.display !== 'none';
-            membersList.style.display = isVisible ? 'none' : 'block';
-        }
-    }
-
-    addEmoji() {
-        const emojiModal = document.getElementById('emojiModal');
-        if (emojiModal) {
-            const isVisible = emojiModal.style.display !== 'none';
-            emojiModal.style.display = isVisible ? 'none' : 'block';
-        }
-    }
-
-    insertEmoji(emoji) {
-        const messageInput = document.getElementById('communityMessageInput');
-        if (messageInput) {
-            const cursorPos = messageInput.selectionStart;
-            const textBefore = messageInput.value.substring(0, cursorPos);
-            const textAfter = messageInput.value.substring(cursorPos);
-            
-            messageInput.value = textBefore + emoji + textAfter;
-            messageInput.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
-            messageInput.focus();
-        }
-
-        // Hide emoji modal
-        const emojiModal = document.getElementById('emojiModal');
-        if (emojiModal) {
-            emojiModal.style.display = 'none';
-        }
-    }
-
-    createRoom() {
-        const roomName = prompt('Enter room name:');
-        if (!roomName) return;
-
-        const roomId = roomName.toLowerCase().replace(/\s+/g, '-');
-        
-        // Check if room already exists
-        if (this.rooms[roomId]) {
-            alert('Room already exists!');
+        if (!this.token) {
+            console.error('No auth token found');
+            window.location.href = 'login.html';
             return;
         }
-
-        // Create new room
-        this.rooms[roomId] = {
-            name: roomName,
-            description: 'User created room',
-            members: 1,
-            unread: 0
-        };
-
-        this.messages[roomId] = [];
-
-        // Add room to sidebar
-        this.updateRoomsList();
-
-        // Switch to new room
-        this.switchRoom(roomId);
+        
+        this.init();
     }
-
-    updateRoomsList() {
-        const roomsList = document.getElementById('roomsList');
-        if (!roomsList) return;
-
-        roomsList.innerHTML = '';
-
-        Object.entries(this.rooms).forEach(([roomId, room]) => {
-            const roomElement = document.createElement('div');
-            roomElement.className = 'room-item';
-            roomElement.setAttribute('data-room', roomId);
-            roomElement.onclick = () => this.switchRoom(roomId);
-
-            if (roomId === this.currentRoom) {
-                roomElement.classList.add('active');
+    
+    async init() {
+        console.log('🚀 Initializing RoomManager with backend...');
+        await this.loadRooms();
+        await this.loadMessages(this.currentRoom);
+    }
+    
+    // Get authorization headers
+    getHeaders() {
+        return {
+            'Authorization': `Bearer ${this.token}`,
+            'Content-Type': 'application/json'
+        };
+    }
+    
+    // Load rooms from backend
+    async loadRooms() {
+        try {
+            console.log('📡 Loading rooms from backend...');
+            const response = await fetch(`${this.baseURL}/rooms`, {
+                headers: this.getHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
             }
-
-            const unreadBadge = room.unread > 0 ? 
-                `<span class="unread-count">${room.unread}</span>` : '';
-
-            roomElement.innerHTML = `
+            
+            this.rooms = await response.json();
+            console.log('✅ Loaded rooms:', this.rooms.length);
+            
+            // Set default room if available
+            if (this.rooms.length > 0 && !this.rooms.find(r => r.name.toLowerCase().includes('general'))) {
+                this.currentRoom = this.rooms[0]._id;
+            } else {
+                const generalRoom = this.rooms.find(r => r.name.toLowerCase().includes('general'));
+                if (generalRoom) {
+                    this.currentRoom = generalRoom._id;
+                }
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading rooms:', error);
+            // Fallback to create basic rooms
+            await this.createDefaultRooms();
+        }
+    }
+    
+    // Create default rooms if none exist
+    async createDefaultRooms() {
+        console.log('🏗️ Creating default rooms...');
+        const defaultRooms = [
+            { name: 'General Discussion', description: 'Open chat for everyone' },
+            { name: 'Business Growth', description: 'Discuss scaling strategies' },
+            { name: 'Work-Life Balance', description: 'Managing business and personal life' },
+            { name: 'Success Stories', description: 'Share your wins and achievements' }
+        ];
+        
+        for (const roomData of defaultRooms) {
+            try {
+                await this.createRoom(roomData.name, roomData.description);
+            } catch (error) {
+                console.error('Error creating default room:', error);
+            }
+        }
+        
+        await this.loadRooms();
+    }
+    
+    // Load messages for a specific room
+    async loadMessages(roomId) {
+        try {
+            console.log('📡 Loading messages for room:', roomId);
+            const response = await fetch(`${this.baseURL}/rooms/${roomId}/messages`, {
+                headers: this.getHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const messages = await response.json();
+            console.log('✅ Loaded messages:', messages.length);
+            
+            // Find the room and update its messages
+            const room = this.rooms.find(r => r._id === roomId);
+            if (room) {
+                room.messages = messages.map(msg => ({
+                    id: msg._id,
+                    username: msg.username || 'User',
+                    avatar: msg.avatar || 'U',
+                    content: msg.content || msg.message,
+                    time: new Date(msg.createdAt || msg.timestamp).toLocaleTimeString(),
+                    avatarColor: msg.avatarColor || '#6366f1',
+                    searchable: `${msg.username} ${msg.content || msg.message}`
+                }));
+            }
+            
+            return messages;
+            
+        } catch (error) {
+            console.error('❌ Error loading messages:', error);
+            return [];
+        }
+    }
+    
+    // Create a new room
+    async createRoom(name, description) {
+        try {
+            console.log('🏗️ Creating room:', name);
+            const response = await fetch(`${this.baseURL}/rooms`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({ name, description })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const newRoom = await response.json();
+            console.log('✅ Room created:', newRoom);
+            
+            // Add to local rooms array
+            newRoom.messages = [];
+            newRoom.messageCount = 0;
+            this.rooms.push(newRoom);
+            
+            return newRoom;
+            
+        } catch (error) {
+            console.error('❌ Error creating room:', error);
+            throw error;
+        }
+    }
+    
+    // Send message to room
+    async addMessage(roomId, messageData) {
+        try {
+            console.log('📤 Sending message to room:', roomId);
+            const response = await fetch(`${this.baseURL}/rooms/${roomId}/messages`, {
+                method: 'POST',
+                headers: this.getHeaders(),
+                body: JSON.stringify({
+                    content: messageData.content || messageData.message,
+                    avatar: messageData.avatar || 'U',
+                    avatarColor: messageData.avatarColor || '#6366f1'
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const savedMessage = await response.json();
+            console.log('✅ Message sent:', savedMessage);
+            
+            // Add to local room messages
+            const room = this.rooms.find(r => r._id === roomId);
+            if (room) {
+                if (!room.messages) room.messages = [];
+                room.messages.push({
+                    id: savedMessage._id,
+                    username: savedMessage.username,
+                    avatar: savedMessage.avatar,
+                    content: savedMessage.content,
+                    time: new Date(savedMessage.createdAt).toLocaleTimeString(),
+                    avatarColor: savedMessage.avatarColor,
+                    searchable: `${savedMessage.username} ${savedMessage.content}`
+                });
+                room.messageCount = (room.messageCount || 0) + 1;
+            }
+            
+            return savedMessage;
+            
+        } catch (error) {
+            console.error('❌ Error sending message:', error);
+            throw error;
+        }
+    }
+    
+    // Delete a room
+    async deleteRoom(roomId) {
+        try {
+            console.log('🗑️ Deleting room:', roomId);
+            const response = await fetch(`${this.baseURL}/rooms/${roomId}`, {
+                method: 'DELETE',
+                headers: this.getHeaders()
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            console.log('✅ Room deleted');
+            
+            // Remove from local array
+            this.rooms = this.rooms.filter(r => r._id !== roomId);
+            
+            // Switch to first available room if current room was deleted
+            if (this.currentRoom === roomId && this.rooms.length > 0) {
+                this.currentRoom = this.rooms[0]._id;
+            }
+            
+        } catch (error) {
+            console.error('❌ Error deleting room:', error);
+            throw error;
+        }
+    }
+    
+    // Get room by ID
+    getRoom(roomId) {
+        return this.rooms.find(r => r._id === roomId) || this.rooms[0];
+    }
+    
+    // Render rooms list in UI
+    renderRoomsList(containerId, activeRoomId) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.error('Rooms container not found');
+            return;
+        }
+        
+        if (this.rooms.length === 0) {
+            container.innerHTML = '<div class="no-rooms">No rooms available</div>';
+            return;
+        }
+        
+        container.innerHTML = this.rooms.map(room => `
+            <div class="room-item ${room._id === activeRoomId ? 'active' : ''}" 
+                 data-room="${room._id}" 
+                 onclick="switchRoom('${room._id}')">
                 <div class="room-info">
                     <h4>${room.name}</h4>
                     <p>${room.description}</p>
                 </div>
                 <div class="room-stats">
-                    <span class="member-count">${room.members}</span>
-                    ${unreadBadge}
+                    <div class="message-count">${room.messageCount || 0}</div>
+                    ${!room.isDefault ? `<button class="delete-room-btn" onclick="event.stopPropagation(); deleteRoom('${room._id}')">×</button>` : ''}
                 </div>
-            `;
-
-            roomsList.appendChild(roomElement);
-        });
-    }
-
-    updateOnlineCount() {
-        const onlineCount = Math.floor(Math.random() * 20) + 5; // Simulate online users
-        const onlineCountElement = document.getElementById('onlineCount');
-        if (onlineCountElement) {
-            onlineCountElement.textContent = onlineCount;
-        }
-    }
-
-    formatTimestamp(date) {
-        const now = new Date();
-        const diffInHours = (now - date) / (1000 * 60 * 60);
-
-        if (diffInHours < 1) {
-            const minutes = Math.floor(diffInHours * 60);
-            return `${minutes}m ago`;
-        } else if (diffInHours < 24) {
-            const hours = Math.floor(diffInHours);
-            return `${hours}h ago`;
-        } else {
-            return date.toLocaleDateString();
-        }
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            // In a real app, this would clear session and redirect
-            window.location.href = 'index.html';
-        }
+            </div>
+        `).join('');
     }
 }
+
+// Initialize room manager when page loads
+let roomManager;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Community page initializing...');
+    
+    // Initialize room manager
+    roomManager = new RoomManager();
+    
+    // Export to global scope for HTML onclick handlers
+    window.roomManager = roomManager;
+    
+    console.log('✅ Community page ready');
+});
 
 // Global functions for HTML onclick handlers
-function switchRoom(roomId) {
-    if (window.communityChat) {
-        window.communityChat.switchRoom(roomId);
+window.switchRoom = async function(roomId) {
+    console.log('🔄 Switching to room:', roomId);
+    
+    if (!roomManager) {
+        console.error('RoomManager not initialized');
+        return;
     }
-}
-
-function toggleMembersList() {
-    if (window.communityChat) {
-        window.communityChat.toggleMembersList();
-    }
-}
-
-function addEmoji() {
-    if (window.communityChat) {
-        window.communityChat.addEmoji();
-    }
-}
-
-function insertEmoji(emoji) {
-    if (window.communityChat) {
-        window.communityChat.insertEmoji(emoji);
-    }
-}
-
-function createRoom() {
-    if (window.communityChat) {
-        window.communityChat.createRoom();
-    }
-}
-
-function logout() {
-    if (window.communityChat) {
-        window.communityChat.logout();
-    }
-}
-
-function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        if (window.communityChat) {
-            window.communityChat.sendMessage();
+    
+    // Load messages for the new room
+    await roomManager.loadMessages(roomId);
+    
+    // Update current room
+    roomManager.currentRoom = roomId;
+    window.currentRoom = roomId; // For compatibility
+    
+    // Update UI
+    const room = roomManager.getRoom(roomId);
+    if (room) {
+        document.getElementById('currentRoomName').textContent = room.name;
+        document.getElementById('currentRoomDescription').textContent = room.description;
+        
+        // Update active room styling
+        document.querySelectorAll('.room-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const roomElement = document.querySelector(`[data-room="${roomId}"]`);
+        if (roomElement) {
+            roomElement.classList.add('active');
+        }
+        
+        // Load room messages
+        loadRoomMessages(roomId);
+        
+        // Clear any active search
+        if (window.clearSearch) {
+            window.clearSearch();
         }
     }
-}
+};
 
-function sendCommunityMessage() {
-    if (window.communityChat) {
-        window.communityChat.sendMessage();
-    }
-}
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    window.communityChat = new CommunityChat();
-});
-
-// Close emoji modal when clicking outside
-document.addEventListener('click', function(event) {
-    const emojiModal = document.getElementById('emojiModal');
-    const emojiButton = event.target.closest('[onclick*="addEmoji"]');
+window.createRoom = async function() {
+    const name = prompt('Enter room name:');
+    if (!name || !name.trim()) return;
     
-    if (emojiModal && !emojiModal.contains(event.target) && !emojiButton) {
-        emojiModal.style.display = 'none';
-    }
-});
-
-// Close members list when clicking outside
-document.addEventListener('click', function(event) {
-    const membersList = document.getElementById('membersList');
-    const membersButton = event.target.closest('[onclick*="toggleMembersList"]');
+    const description = prompt('Enter room description:') || 'Custom chat room';
     
-    if (membersList && membersList.style.display !== 'none' && 
-        !membersList.contains(event.target) && !membersButton) {
-        membersList.style.display = 'none';
+    if (!roomManager) {
+        console.error('RoomManager not initialized');
+        return;
     }
-});
+    
+    try {
+        await roomManager.createRoom(name.trim(), description.trim());
+        roomManager.renderRoomsList('roomsList', roomManager.currentRoom);
+        showToast('Room created successfully!', 'success');
+    } catch (error) {
+        console.error('Error creating room:', error);
+        showToast('Error creating room: ' + error.message, 'error');
+    }
+};
+
+window.deleteRoom = async function(roomId) {
+    if (!confirm('Are you sure you want to delete this room? All messages will be lost.')) {
+        return;
+    }
+    
+    if (!roomManager) {
+        console.error('RoomManager not initialized');
+        return;
+    }
+    
+    try {
+        await roomManager.deleteRoom(roomId);
+        roomManager.renderRoomsList('roomsList', roomManager.currentRoom);
+        
+        // If we deleted the current room, switch to the first available room
+        if (roomId === roomManager.currentRoom && roomManager.rooms.length > 0) {
+            await window.switchRoom(roomManager.rooms[0]._id);
+        }
+        
+        showToast('Room deleted successfully!', 'success');
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        showToast('Error deleting room: ' + error.message, 'error');
+    }
+};
+
+window.sendCommunityMessage = async function() {
+    const input = document.getElementById('communityMessageInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+    
+    if (!roomManager) {
+        console.error('RoomManager not initialized');
+        return;
+    }
+    
+    try {
+        await roomManager.addMessage(roomManager.currentRoom, {
+            content: message
+        });
+        
+        // Reload messages to show new message
+        loadRoomMessages(roomManager.currentRoom);
+        
+        // Update rooms list to show new message count
+        roomManager.renderRoomsList('roomsList', roomManager.currentRoom);
+        
+        // Clear input
+        input.value = '';
+        
+        console.log('✅ Message sent successfully');
+        
+    } catch (error) {
+        console.error('❌ Error sending message:', error);
+        showToast('Error sending message: ' + error.message, 'error');
+    }
+};
+
+window.loadRoomMessages = function(roomId) {
+    const chatMessages = document.getElementById('communityMessages');
+    if (!chatMessages) return;
+    
+    const room = roomManager ? roomManager.getRoom(roomId) : null;
+    
+    if (!room) {
+        chatMessages.innerHTML = '<div class="empty-room"><p>Room not found.</p></div>';
+        return;
+    }
+    
+    if (room.messages && room.messages.length > 0) {
+        chatMessages.innerHTML = room.messages.map(message => `
+            <div class="message-group" data-searchable="${message.searchable}">
+                <div class="message-header">
+                    <div class="user-avatar" style="background: ${message.avatarColor || '#6366f1'};">${message.avatar}</div>
+                    <span class="username">${message.username}</span>
+                    <span class="message-timestamp">${message.time}</span>
+                </div>
+                <div class="message-content">${message.content}</div>
+            </div>
+        `).join('');
+    } else {
+        chatMessages.innerHTML = `
+            <div class="empty-room">
+                <p>This room is ready for conversation!</p>
+                <p>Be the first to share something with the ${room.name.toLowerCase()} community.</p>
+            </div>
+        `;
+    }
+    
+    // Scroll to bottom
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+};
+
+// Toast notification helper
+window.showToast = function(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        info: '#6366f1'
+    };
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${colors[type] || colors.info};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+};
+
+// Handle message input keypress
+window.handleCommunityKeyPress = function(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        window.sendCommunityMessage();
+    }
+};
