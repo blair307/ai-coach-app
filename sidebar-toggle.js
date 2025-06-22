@@ -140,15 +140,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🎉 Fixed sidebar toggle ready!');
     
-    // Test the floating button visibility after 5 seconds
-    setTimeout(() => {
-        console.log('🧪 TEST: Showing floating button for 3 seconds...');
-        const originalDisplay = floatingButton.style.display;
-        floatingButton.style.display = 'flex';
-        
-        setTimeout(() => {
-            floatingButton.style.display = originalDisplay;
-            console.log('🧪 TEST: Floating button test complete');
-        }, 3000);
-    }, 5000);
-});
+  
