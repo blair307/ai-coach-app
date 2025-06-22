@@ -1,859 +1,470 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community - Entrepreneur Emotional Health</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <div class="app-container">
-        <!-- Sidebar Navigation -->
-        <nav class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <h2>EEH</h2>
-                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
+// Updated community.js - Replace localStorage with database API calls
+
+// Global variables
+let currentRooms = [];
+let currentRoom = null;
+let currentMessages = [];
+
+// Load rooms from database on page load
+async function loadRooms() {
+    try {
+        currentRooms = await window.roomsAPI.getAll();
+        renderRoomsList();
+        
+        // Load first room or default room
+        if (currentRooms.length > 0) {
+            const defaultRoom = currentRooms.find(r => r.name === 'General Discussion') || currentRooms[0];
+            switchRoom(defaultRoom._id, defaultRoom.name, defaultRoom.description);
+        }
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        window.handleAPIError(error);
+        // Fallback to empty state
+        currentRooms = [];
+        renderRoomsList();
+    }
+}
+
+// Render rooms list in sidebar
+function renderRoomsList() {
+    const roomsList = document.getElementById('roomsList');
+    
+    if (currentRooms.length === 0) {
+        roomsList.innerHTML = `
+            <div class="no-rooms">
+                <p>No chat rooms yet</p>
+                <button class="btn btn-small btn-primary" onclick="createRoom()">Create First Room</button>
             </div>
-           <ul class="sidebar-menu">
-    <li><a href="dashboard.html" class="menu-item">
-        Dashboard
-    </a></li>
-    <li><a href="ai-coach.html" class="menu-item">
-        AI Coach
-    </a></li>
-    <li><a href="community.html" class="menu-item active">
-        Community
-    </a></li>
-    <li><a href="goals.html" class="menu-item">
-        Goals
-    </a></li>
-    <li><a href="notifications.html" class="menu-item">
-        Notifications
-        <span class="notification-badge" id="notificationBadge">2</span>
-    </a></li>
-    <li><a href="billing.html" class="menu-item">
-        Billing
-    </a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">
-                    Logout
-                </a></li>
-            </ul>
-        </nav>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="content-header">
-                <h1>Community Chat</h1>
-                <div class="header-actions">
-                    <!-- Removed online member count -->
-                </div>
-            </header>
-
-            <div class="community-container">
-                <!-- Chat Rooms List -->
-                <div class="rooms-sidebar">
-                    <div class="rooms-header">
-                        <h3>Chat Rooms</h3>
-                        <button class="btn btn-small btn-primary" onclick="createRoom()">
-                            New Room
-                        </button>
-                    </div>
-                    
-                    <div class="rooms-list" id="roomsList">
-                        <!-- Rooms will be populated by JavaScript -->
-                    </div>
-                </div>
-
-                <!-- Chat Area -->
-                <div class="chat-area">
-                    <div class="chat-header">
-                        <div class="room-title">
-                            <h2><span id="currentRoomName">General Discussion</span></h2>
-                            <p id="currentRoomDescription">Open chat for everyone to discuss anything</p>
-                        </div>
-                        <div class="chat-controls">
-                            <div class="search-container">
-                                <input 
-                                    type="text" 
-                                    id="messageSearch" 
-                                    placeholder="Search messages..." 
-                                    class="search-input"
-                                    onkeyup="searchMessages(this.value)"
-                                >
-                                <button class="search-btn" onclick="performSearch()">
-                                    Search
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="chat-messages-container">
-                        <div class="chat-messages" id="communityMessages">
-                            <!-- Messages will be populated by JavaScript -->
-                        </div>
-
-                        <div class="search-results" id="searchResults" style="display: none;">
-                            <div class="search-results-header">
-                                <h3>Search Results</h3>
-                                <button class="close-search" onclick="clearSearch()">×</button>
-                            </div>
-                            <div class="search-results-content" id="searchResultsContent">
-                                <!-- Search results will be populated here -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Message Input -->
-                    <div class="chat-input-area">
-                        <div class="chat-input">
-                            <textarea 
-                                id="communityMessageInput" 
-                                placeholder="Share your thoughts with the community..."
-                                rows="2"
-                                onkeypress="handleCommunityKeyPress(event)"
-                            ></textarea>
-                            <div class="input-actions">
-                                <button class="btn btn-secondary btn-small" onclick="addEmoji()">
-                                    Add Emoji
-                                </button>
-                                <button class="btn btn-primary" onclick="sendCommunityMessage()" id="sendCommunityButton">
-                                    Send
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        `;
+        return;
+    }
+    
+    roomsList.innerHTML = currentRooms.map(room => `
+        <div class="room-item ${currentRoom && currentRoom._id === room._id ? 'active' : ''}" 
+             data-room-id="${room._id}" 
+             onclick="switchRoom('${room._id}', '${room.name}', '${room.description}')">
+            <div class="room-info">
+                <h4>${room.name}</h4>
+                <p>${room.description}</p>
             </div>
-        </main>
-    </div>
-
-    <!-- Emoji Picker Modal -->
-    <div class="emoji-modal" id="emojiModal" style="display: none;">
-        <div class="emoji-grid">
-            <span onclick="insertEmoji('😊')">😊</span>
-            <span onclick="insertEmoji('😄')">😄</span>
-            <span onclick="insertEmoji('🎉')">🎉</span>
-            <span onclick="insertEmoji('💪')">💪</span>
-            <span onclick="insertEmoji('🔥')">🔥</span>
-            <span onclick="insertEmoji('⭐')">⭐</span>
-            <span onclick="insertEmoji('❤️')">❤️</span>
-            <span onclick="insertEmoji('👏')">👏</span>
-            <span onclick="insertEmoji('🚀')">🚀</span>
-            <span onclick="insertEmoji('💡')">💡</span>
-            <span onclick="insertEmoji('🎯')">🎯</span>
-            <span onclick="insertEmoji('🌟')">🌟</span>
+            <div class="room-stats">
+                <span class="message-count">${room.messageCount || 0}</span>
+                ${!room.isDefault ? `<button class="delete-room-btn" onclick="deleteRoom(event, '${room._id}')" title="Delete Room">×</button>` : ''}
+            </div>
         </div>
-    </div>
+    `).join('');
+}
 
-    <script src="api-service.js"></script>
-    <script src="sidebar-toggle.js"></script>
-    <script src="community.js"></script>
+// Switch to a different room
+async function switchRoom(roomId, roomName, roomDescription) {
+    try {
+        currentRoom = { _id: roomId, name: roomName, description: roomDescription };
+        
+        // Update UI
+        document.getElementById('currentRoomName').textContent = roomName;
+        document.getElementById('currentRoomDescription').textContent = roomDescription;
+        
+        // Update active room in sidebar
+        document.querySelectorAll('.room-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        document.querySelector(`[data-room-id="${roomId}"]`)?.classList.add('active');
+        
+        // Load messages for this room
+        await loadRoomMessages(roomId);
+        
+        // Clear any active search
+        clearSearch();
+        
+    } catch (error) {
+        console.error('Error switching room:', error);
+        window.handleAPIError(error);
+    }
+}
+
+// Load messages for a specific room
+async function loadRoomMessages(roomId) {
+    try {
+        showMessagesLoading();
+        currentMessages = await window.roomsAPI.getMessages(roomId);
+        renderMessages();
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        window.handleAPIError(error);
+        // Fallback to empty state
+        currentMessages = [];
+        renderMessages();
+    }
+}
+
+// Render messages in chat area
+function renderMessages() {
+    const messagesContainer = document.getElementById('communityMessages');
     
-    <script>
-    // ===== NOTIFICATION MANAGER - INLINE =====
-    class NotificationManager {
-        constructor() {
-            this.unreadCount = 0;
-            this.notifications = [];
-            this.initialized = false;
-        }
-
-        init() {
-            if (this.initialized) return;
-            this.loadNotifications();
-            this.updateBadge();
-            this.initialized = true;
-            console.log('Notification Manager initialized with', this.unreadCount, 'unread notifications');
-        }
-
-        loadNotifications() {
-            const saved = localStorage.getItem('eeh_notifications');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    this.notifications = data.notifications || [];
-                    this.unreadCount = this.notifications.filter(n => n.unread).length;
-                    return;
-                } catch (e) {
-                    console.log('Error loading saved notifications:', e);
-                }
-            }
-
-            this.notifications = [
-                {
-                    id: 1, type: 'coaching', title: 'New Coaching Insights Available',
-                    message: 'Your AI coach has generated new insights based on your recent conversations.',
-                    time: '2 hours ago', unread: true, timestamp: Date.now() - (2 * 60 * 60 * 1000)
-                },
-                {
-                    id: 2, type: 'community', title: 'New Messages in Business Growth',
-                    message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
-                    time: '4 hours ago', unread: true, timestamp: Date.now() - (4 * 60 * 60 * 1000)
-                },
-                {
-                    id: 3, type: 'system', title: 'Weekly Progress Report Ready',
-                    message: 'Your weekly emotional health and business progress report is now available.',
-                    time: '1 day ago', unread: true, timestamp: Date.now() - (24 * 60 * 60 * 1000)
-                }
-            ];
-
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            this.saveNotifications();
-        }
-
-        saveNotifications() {
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            const data = {
-                notifications: this.notifications,
-                unreadCount: this.unreadCount,
-                lastUpdated: Date.now()
-            };
-            localStorage.setItem('eeh_notifications', JSON.stringify(data));
-        }
-
-        updateBadge() {
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            const badges = document.querySelectorAll('#notificationBadge, .notification-badge');
-            badges.forEach(badge => {
-                if (this.unreadCount > 0) {
-                    badge.textContent = this.unreadCount;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            });
-        }
-
-        addNotification(notification) {
-            const newNotification = {
-                id: Date.now(),
-                unread: true,
-                timestamp: Date.now(),
-                ...notification
-            };
-            this.notifications.unshift(newNotification);
-            this.saveNotifications();
-            this.updateBadge();
-            console.log('New notification added:', newNotification.title);
-        }
-    }
-
-    // ===== ROOM MANAGER - INLINE =====
-    class RoomManager {
-        constructor() {
-            this.rooms = {};
-            this.currentRoom = 'general';
-            this.initialized = false;
-        }
-
-        init() {
-            if (this.initialized) return;
-            this.loadRooms();
-            this.initialized = true;
-            console.log('Room Manager initialized with', Object.keys(this.rooms).length, 'rooms');
-        }
-
-        loadRooms() {
-            const saved = localStorage.getItem('eeh_rooms');
-            if (saved) {
-                try {
-                    this.rooms = JSON.parse(saved);
-                    return;
-                } catch (e) {
-                    console.log('Error loading saved rooms:', e);
-                }
-            }
-
-            this.rooms = {
-                'general': {
-                    id: 'general', name: 'General Discussion',
-                    description: 'Open chat for everyone to discuss anything',
-                    created: Date.now() - (30 * 24 * 60 * 60 * 1000), createdBy: 'System',
-                    messageCount: 5, isDefault: true,
-                    messages: [
-                        {username: 'Mike Chen', avatar: 'MC', time: '2:30 PM', content: "That's awesome Sarah! What was your biggest breakthrough?", searchable: 'mike chen biggest breakthrough sarah'},
-                        {username: 'Sarah Johnson', avatar: 'SJ', time: '2:32 PM', content: 'Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer!', searchable: 'sarah johnson goals prioritize ai game changer', avatarColor: '#10b981'}
-                    ]
-                },
-                'emotional-wellness': {
-                    id: 'emotional-wellness', name: 'Emotional Wellness',
-                    description: 'Mental health & emotional intelligence discussions',
-                    created: Date.now() - (25 * 24 * 60 * 60 * 1000), createdBy: 'System',
-                    messageCount: 12, isDefault: true, messages: []
-                },
-                'business-growth': {
-                    id: 'business-growth', name: 'Business Growth',
-                    description: 'Scaling strategies & business challenges',
-                    created: Date.now() - (20 * 24 * 60 * 60 * 1000), createdBy: 'System',
-                    messageCount: 8, isDefault: true, messages: []
-                },
-                'success-stories': {
-                    id: 'success-stories', name: 'Success Stories',
-                    description: 'Celebrate your wins & breakthroughs',
-                    created: Date.now() - (15 * 24 * 60 * 60 * 1000), createdBy: 'System',
-                    messageCount: 3, isDefault: true, messages: []
-                },
-                'work-life-balance': {
-                    id: 'work-life-balance', name: 'Work-Life Balance',
-                    description: 'Managing entrepreneurial stress and balance',
-                    created: Date.now() - (10 * 24 * 60 * 60 * 1000), createdBy: 'System',
-                    messageCount: 7, isDefault: true, messages: []
-                }
-            };
-
-            this.saveRooms();
-        }
-
-        saveRooms() {
-            localStorage.setItem('eeh_rooms', JSON.stringify(this.rooms));
-        }
-
-        createRoom(name, description, createdBy = 'You') {
-            if (!name || name.trim().length < 3) {
-                throw new Error('Room name must be at least 3 characters long');
-            }
-            if (!description || description.trim().length < 10) {
-                throw new Error('Room description must be at least 10 characters long');
-            }
-
-            const roomId = name.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '-').substring(0, 30);
-
-            if (this.rooms[roomId]) {
-                throw new Error('A room with this name already exists');
-            }
-
-            const newRoom = {
-                id: roomId, name: name.trim(), description: description.trim(),
-                created: Date.now(), createdBy: createdBy, messageCount: 0,
-                isDefault: false, messages: []
-            };
-
-            this.rooms[roomId] = newRoom;
-            this.saveRooms();
-
-            if (window.notificationManager) {
-                window.notificationManager.addNotification({
-                    type: 'community',
-                    title: `New Room Created: ${name}`,
-                    message: `"${name}" room has been created. Join the conversation!`,
-                    time: 'Just now'
-                });
-            }
-
-            console.log('New room created:', newRoom);
-            return newRoom;
-        }
-
-        getRooms() { return this.rooms; }
-        getRoom(roomId) { return this.rooms[roomId]; }
-
-        deleteRoom(roomId) {
-            const room = this.rooms[roomId];
-            if (!room) throw new Error('Room not found');
-            if (room.isDefault) throw new Error('Cannot delete default rooms');
-            delete this.rooms[roomId];
-            this.saveRooms();
-            return true;
-        }
-
-        addMessage(roomId, message) {
-            const room = this.rooms[roomId];
-            if (!room) throw new Error('Room not found');
-
-            const newMessage = {
-                id: Date.now(), username: message.username || 'You', avatar: message.avatar || 'YU',
-                time: new Date().toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit'}),
-                content: message.content, searchable: `${message.username || 'you'} ${message.content.toLowerCase()}`,
-                avatarColor: message.avatarColor || '#6366f1', timestamp: Date.now()
-            };
-
-            room.messages.push(newMessage);
-            room.messageCount++;
-            this.saveRooms();
-            return newMessage;
-        }
-
-        renderRoomsList(containerId, activeRoomId = 'general') {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-
-            const roomsArray = Object.values(this.rooms).sort((a, b) => {
-                if (a.isDefault && !b.isDefault) return -1;
-                if (!a.isDefault && b.isDefault) return 1;
-                return b.created - a.created;
-            });
-
-            container.innerHTML = roomsArray.map(room => `
-                <div class="room-item ${room.id === activeRoomId ? 'active' : ''}" 
-                     data-room="${room.id}" 
-                     onclick="switchRoom('${room.id}')">
-                    <div class="room-info">
-                        <h4>${room.name}</h4>
-                        <p>${room.description}</p>
-                        ${!room.isDefault ? '<small style="color: var(--text-muted); font-size: 0.75rem;">Created by ' + room.createdBy + '</small>' : ''}
-                    </div>
-                    <div class="room-stats">
-                        ${!room.isDefault ? '<button class="delete-room-btn" onclick="event.stopPropagation(); deleteRoom(\'' + room.id + '\')" title="Delete Room">×</button>' : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-    }
-
-    // ===== INITIALIZE MANAGERS =====
-    window.notificationManager = new NotificationManager();
-    window.roomManager = new RoomManager();
-
-    // ===== MAIN FUNCTIONALITY =====
-    let currentRoom = 'general';
-
-    function logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('eeh_token');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('eeh_notifications');
-        localStorage.removeItem('eeh_rooms');
-        window.location.href = 'login.html';
-    }
-
-    // NEW ROOM MODAL FUNCTIONS
-    function createRoom() {
-        showNewRoomModal();
-    }
-
-    function showNewRoomModal() {
-        const modalHTML = `
-            <div class="modal" id="newRoomModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
-                <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-                    <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
-                        <div style="background: #f8fafc; padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                            <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b;">Create New Room</h3>
-                            <button onclick="closeNewRoomModal()" style="background: #f1f5f9; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #64748b;">×</button>
-                        </div>
-                        <div style="padding: 2rem;">
-                            <form id="newRoomForm" onsubmit="handleCreateRoom(event)">
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label for="roomName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem;">Room Name *</label>
-                                    <input type="text" id="roomName" required maxlength="50" placeholder="e.g., Marketing Strategies" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.875rem;">
-                                    <small style="color: #6b7280; font-size: 0.75rem;">3-50 characters</small>
-                                </div>
-                                <div style="margin-bottom: 1.5rem;">
-                                    <label for="roomDescription" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem;">Room Description *</label>
-                                    <textarea id="roomDescription" required maxlength="200" rows="3" placeholder="Describe what this room is for..." style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 0.875rem;"></textarea>
-                                    <small style="color: #6b7280; font-size: 0.75rem;">10-200 characters</small>
-                                </div>
-                                <div id="roomError" style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
-                            </form>
-                        </div>
-                        <div style="background: #f8fafc; padding: 1rem 2rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem; justify-content: flex-end;">
-                            <button type="button" onclick="closeNewRoomModal()" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Cancel</button>
-                            <button type="submit" form="newRoomForm" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Create Room</button>
-                        </div>
-                    </div>
-                </div>
+    if (currentMessages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div class="empty-room">
+                <p>This room is ready for conversation!</p>
+                <p>Be the first to share something with the ${currentRoom?.name?.toLowerCase() || 'community'}.</p>
             </div>
         `;
-
-        const existing = document.getElementById('newRoomModal');
-        if (existing) existing.remove();
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        setTimeout(() => document.getElementById('roomName').focus(), 100);
-    }
-
-    function closeNewRoomModal() {
-        const modal = document.getElementById('newRoomModal');
-        if (modal) modal.remove();
-    }
-
-    function handleCreateRoom(event) {
-        event.preventDefault();
-        const roomName = document.getElementById('roomName').value.trim();
-        const roomDescription = document.getElementById('roomDescription').value.trim();
-        const errorDiv = document.getElementById('roomError');
-        
-        errorDiv.style.display = 'none';
-        
-        try {
-            const newRoom = window.roomManager.createRoom(roomName, roomDescription);
-            closeNewRoomModal();
-            window.roomManager.renderRoomsList('roomsList', newRoom.id);
-            switchRoom(newRoom.id);
-            showToast(`Room "${roomName}" created successfully!`, 'success');
-        } catch (error) {
-            errorDiv.textContent = error.message;
-            errorDiv.style.display = 'block';
-        }
-    }
-
-    function deleteRoom(roomId) {
-        const room = window.roomManager.getRoom(roomId);
-        if (!room) return;
-        
-        if (confirm(`Are you sure you want to delete the "${room.name}" room? This action cannot be undone.`)) {
-            try {
-                window.roomManager.deleteRoom(roomId);
-                window.roomManager.renderRoomsList('roomsList', 'general');
-                if (roomId === currentRoom) switchRoom('general');
-                showToast(`Room "${room.name}" deleted successfully!`, 'success');
-            } catch (error) {
-                showToast(error.message, 'error');
-            }
-        }
-    }
-
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.style.cssText = `
-            position: fixed; top: 20px; right: 20px;
-            background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'};
-            color: white; padding: 1rem 1.5rem; border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); z-index: 10000;
-            font-weight: 500; max-width: 300px; font-family: 'Inter', sans-serif;
-        `;
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-    }
-
-    // ROOM FUNCTIONALITY
-    function switchRoom(roomName) {
-        const room = window.roomManager.getRoom(roomName);
-        if (!room) return;
-        
-        currentRoom = roomName;
-        window.roomManager.currentRoom = roomName;
-        
-        document.querySelectorAll('.room-item').forEach(item => item.classList.remove('active'));
-        document.querySelector(`[data-room="${roomName}"]`)?.classList.add('active');
-        
-        document.getElementById('currentRoomName').textContent = room.name;
-        document.getElementById('currentRoomDescription').textContent = room.description;
-        
-        loadRoomMessages(roomName);
-        clearSearch();
+        return;
     }
     
-    function loadRoomMessages(roomName) {
-        const chatMessages = document.getElementById('communityMessages');
-        const room = window.roomManager.getRoom(roomName);
-        
-        if (!room) {
-            chatMessages.innerHTML = '<div class="empty-room"><p>Room not found.</p></div>';
-            return;
-        }
-        
-        if (room.messages.length > 0) {
-            chatMessages.innerHTML = room.messages.map(message => `
-                <div class="message-group">
-                    <div class="message-header">
-                        <div class="user-avatar" style="background: ${message.avatarColor || '#6366f1'};">${message.avatar}</div>
-                        <span class="username">${message.username}</span>
-                        <span class="message-timestamp">${message.time}</span>
-                    </div>
-                    <div class="message-content">${message.content}</div>
+    messagesContainer.innerHTML = currentMessages.map(message => `
+        <div class="message-group" data-searchable="${createSearchableText(message)}">
+            <div class="message-header">
+                <div class="user-avatar" style="background: ${message.avatarColor || '#6366f1'};">
+                    ${message.avatar || message.username?.charAt(0) || 'U'}
                 </div>
-            `).join('');
-        } else {
-            chatMessages.innerHTML = `
-                <div class="empty-room">
-                    <p>This room is ready for conversation!</p>
-                    <p>Be the first to share something with the ${room.name.toLowerCase()} community.</p>
-                </div>
-            `;
-        }
-        
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+                <span class="username">${message.username || 'User'}</span>
+                <span class="message-timestamp">${formatMessageTime(message.createdAt || message.timestamp)}</span>
+            </div>
+            <div class="message-content">${message.content || message.message || ''}</div>
+        </div>
+    `).join('');
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-    // MESSAGE FUNCTIONALITY
-    function handleCommunityKeyPress(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            sendCommunityMessage();
-        }
-    }
-    
-    function sendCommunityMessage() {
-        const input = document.getElementById('communityMessageInput');
-        const message = input.value.trim();
-        
-        if (message) {
-            try {
-                window.roomManager.addMessage(currentRoom, {
-                    username: 'You', avatar: 'YU', content: message, avatarColor: '#6366f1'
-                });
-                loadRoomMessages(currentRoom);
-                window.roomManager.renderRoomsList('roomsList', currentRoom);
-                input.value = '';
-            } catch (error) {
-                console.error('Error sending message:', error);
-            }
-        }
-    }
-    
-    function addEmoji() {
-        const emojiModal = document.getElementById('emojiModal');
-        emojiModal.style.display = emojiModal.style.display === 'block' ? 'none' : 'block';
-    }
-    
-    function insertEmoji(emoji) {
-        const input = document.getElementById('communityMessageInput');
-        input.value += emoji;
-        document.getElementById('emojiModal').style.display = 'none';
-        input.focus();
-    }
+// Create searchable text for message
+function createSearchableText(message) {
+    return `${message.username || ''} ${message.content || message.message || ''}`.toLowerCase();
+}
 
-    // SEARCH FUNCTIONALITY
-    function searchMessages(query) {
-        const searchResults = document.getElementById('searchResults');
-        const searchResultsContent = document.getElementById('searchResultsContent');
-        const chatMessages = document.getElementById('communityMessages');
-        
-        if (query.length < 2) {
-            clearSearch();
-            return;
-        }
-        
-        const room = window.roomManager.getRoom(currentRoom);
-        if (!room) return;
-        
-        const results = room.messages.filter(message => 
-            message.content.toLowerCase().includes(query.toLowerCase()) ||
-            message.username.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        if (results.length > 0) {
-            searchResultsContent.innerHTML = results.map(result => `
-                <div class="search-result-item">
-                    <div class="result-header">
-                        <div class="user-avatar" style="background: ${result.avatarColor || '#6366f1'};">${result.avatar}</div>
-                        <span class="username">${result.username}</span>
-                        <span class="timestamp">${result.time}</span>
-                    </div>
-                    <div class="result-content">${result.content}</div>
-                </div>
-            `).join('');
-            searchResults.style.display = 'block';
-            chatMessages.style.display = 'none';
-        } else {
-            searchResultsContent.innerHTML = '<div class="no-results">No messages found for "' + query + '"</div>';
-            searchResults.style.display = 'block';
-            chatMessages.style.display = 'none';
-        }
-    }
+// Format message time
+function formatMessageTime(dateString) {
+    if (!dateString) return 'Unknown time';
     
-    function performSearch() {
-        const query = document.getElementById('messageSearch').value;
-        searchMessages(query);
-    }
+    const date = new Date(dateString);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const messageDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     
-    function clearSearch() {
-        document.getElementById('searchResults').style.display = 'none';
-        document.getElementById('communityMessages').style.display = 'block';
-        document.getElementById('messageSearch').value = '';
-    }
-
-    // INITIALIZE
-    document.addEventListener('DOMContentLoaded', function() {
-        window.notificationManager.init();
-        window.roomManager.init();
-        
-        setTimeout(() => {
-            window.notificationManager.updateBadge();
-            window.roomManager.renderRoomsList('roomsList', currentRoom);
-            loadRoomMessages(currentRoom);
-        }, 100);
-        
-        document.addEventListener('click', function(e) {
-            const emojiModal = document.getElementById('emojiModal');
-            if (!e.target.closest('.emoji-modal') && !e.target.closest('[onclick*="addEmoji"]')) {
-                emojiModal.style.display = 'none';
-            }
-        });
-        
-        document.getElementById('messageSearch').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') performSearch();
-        });
+    const timeString = date.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        hour12: true 
     });
-    </script>
+    
+    if (messageDate.getTime() === today.getTime()) {
+        return timeString;
+    } else if (messageDate.getTime() === today.getTime() - 86400000) {
+        return `Yesterday ${timeString}`;
+    } else {
+        return `${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} ${timeString}`;
+    }
+}
 
-    <style>
-    /* All the necessary styles inline */
-    .search-container {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: var(--surface);
-        border: 2px solid var(--border);
-        border-radius: var(--radius);
-        padding: 0.5rem;
-        transition: border-color 0.2s ease;
+// Send message to current room
+async function sendCommunityMessage() {
+    const input = document.getElementById('communityMessageInput');
+    const message = input.value.trim();
+    
+    if (!message || !currentRoom) {
+        return;
     }
     
-    .search-container:focus-within {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    try {
+        showSendingState();
+        
+        const newMessage = await window.roomsAPI.sendMessage(currentRoom._id, {
+            content: message,
+            avatar: 'YU', // You can customize this
+            avatarColor: '#6366f1'
+        });
+        
+        // Add message to current messages
+        currentMessages.push(newMessage);
+        
+        // Re-render messages
+        renderMessages();
+        
+        // Clear input
+        input.value = '';
+        
+        // Update room message count
+        const room = currentRooms.find(r => r._id === currentRoom._id);
+        if (room) {
+            room.messageCount = (room.messageCount || 0) + 1;
+            renderRoomsList();
+        }
+        
+        console.log('Message sent successfully');
+        
+    } catch (error) {
+        console.error('Error sending message:', error);
+        window.handleAPIError(error);
+        showToast('Failed to send message. Please try again.', 'error');
+    } finally {
+        hideSendingState();
     }
-    
-    .search-input {
-        border: none;
-        outline: none;
-        background: transparent;
-        font-size: 0.875rem;
-        color: var(--text-primary);
-        flex: 1;
-        min-width: 200px;
-    }
-    
-    .search-input::placeholder {
-        color: var(--text-muted);
-    }
-    
-    .search-btn {
-        background: var(--primary);
-        color: white;
-        border: none;
-        padding: 0.25rem 0.75rem;
-        border-radius: var(--radius);
-        font-size: 0.75rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-    
-    .search-btn:hover {
-        background: var(--primary-dark);
-    }
-    
-    .room-stats {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .message-count {
-        display: none !important;
-    }
-    
-    .empty-room {
-        text-align: center;
-        padding: 3rem 2rem;
-        color: var(--text-muted);
-    }
-    
-    .empty-room p {
-        margin-bottom: 0.5rem;
-    }
-    
-    .search-results {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--background);
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .search-results-header {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--surface);
-    }
-    
-    .search-results-header h3 {
-        margin: 0;
-        color: var(--text-primary);
-        font-size: 1.1rem;
-    }
-    
-    .close-search {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--text-muted);
-        padding: 0;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--radius);
-        transition: all 0.2s ease;
-    }
-    
-    .close-search:hover {
-        color: var(--text-primary);
-        background: var(--surface);
-    }
-    
-    .search-results-content {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem;
-    }
-    
-    .search-result-item {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
-        transition: background-color 0.2s ease;
-    }
-    
-    .search-result-item:hover {
-        background: var(--surface);
-    }
-    
-    .result-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .result-content {
-        margin-left: 2.5rem;
-        color: var(--text-primary);
-        line-height: 1.5;
-    }
-    
-    .no-results {
-        text-align: center;
-        padding: 2rem;
-        color: var(--text-muted);
-        font-style: italic;
-    }
-    
-    .delete-room-btn {
-        background: var(--error);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        margin-left: 0.5rem;
-        transition: all 0.2s ease;
-    }
-    
-    .delete-room-btn:hover {
-        background: #dc2626;
-        transform: scale(1.1);
-    }
-    </style>
+}
 
-</body>
-</html>
+// Create new room
+async function createRoom() {
+    const name = prompt('Enter room name:');
+    if (!name || !name.trim()) return;
+    
+    const description = prompt('Enter room description:') || 'Custom chat room';
+    
+    try {
+        showToast('Creating room...', 'info');
+        
+        const newRoom = await window.roomsAPI.create({
+            name: name.trim(),
+            description: description.trim()
+        });
+        
+        // Add to current rooms
+        currentRooms.push({
+            ...newRoom,
+            messageCount: 0
+        });
+        
+        renderRoomsList();
+        showToast('Room created successfully!', 'success');
+        
+        // Switch to the new room
+        switchRoom(newRoom._id, newRoom.name, newRoom.description);
+        
+    } catch (error) {
+        console.error('Error creating room:', error);
+        window.handleAPIError(error);
+        showToast('Failed to create room. Please try again.', 'error');
+    }
+}
+
+// Delete room
+async function deleteRoom(event, roomId) {
+    event.stopPropagation(); // Prevent room switching
+    
+    const room = currentRooms.find(r => r._id === roomId);
+    if (!room) return;
+    
+    if (!confirm(`Are you sure you want to delete "${room.name}"? This will delete all messages in the room.`)) {
+        return;
+    }
+    
+    try {
+        await window.roomsAPI.delete(roomId);
+        
+        // Remove from current rooms
+        currentRooms = currentRooms.filter(r => r._id !== roomId);
+        
+        // If we're currently in this room, switch to another room
+        if (currentRoom && currentRoom._id === roomId) {
+            if (currentRooms.length > 0) {
+                const defaultRoom = currentRooms.find(r => r.name === 'General Discussion') || currentRooms[0];
+                switchRoom(defaultRoom._id, defaultRoom.name, defaultRoom.description);
+            } else {
+                currentRoom = null;
+                currentMessages = [];
+                renderMessages();
+            }
+        }
+        
+        renderRoomsList();
+        showToast('Room deleted successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        window.handleAPIError(error);
+        showToast('Failed to delete room. You might not have permission.', 'error');
+    }
+}
+
+// Search functionality
+function searchMessages(query) {
+    const searchResults = document.getElementById('searchResults');
+    const searchResultsContent = document.getElementById('searchResultsContent');
+    const chatMessages = document.getElementById('communityMessages');
+    
+    if (query.length < 2) {
+        clearSearch();
+        return;
+    }
+    
+    const results = currentMessages.filter(message => {
+        const searchableText = createSearchableText(message);
+        return searchableText.includes(query.toLowerCase());
+    });
+    
+    if (results.length > 0) {
+        searchResultsContent.innerHTML = results.map(result => `
+            <div class="search-result-item">
+                <div class="result-header">
+                    <div class="user-avatar" style="background: ${result.avatarColor || '#6366f1'};">
+                        ${result.avatar || result.username?.charAt(0) || 'U'}
+                    </div>
+                    <span class="username">${result.username || 'User'}</span>
+                    <span class="timestamp">${formatMessageTime(result.createdAt || result.timestamp)}</span>
+                </div>
+                <div class="result-content">${highlightQuery(result.content || result.message || '', query)}</div>
+            </div>
+        `).join('');
+        
+        searchResults.style.display = 'block';
+        chatMessages.style.display = 'none';
+    } else {
+        searchResultsContent.innerHTML = `<div class="no-results">No messages found for "${query}"</div>`;
+        searchResults.style.display = 'block';
+        chatMessages.style.display = 'none';
+    }
+}
+
+function highlightQuery(text, query) {
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+}
+
+function performSearch() {
+    const query = document.getElementById('messageSearch').value;
+    searchMessages(query);
+}
+
+function clearSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const chatMessages = document.getElementById('communityMessages');
+    const searchInput = document.getElementById('messageSearch');
+    
+    if (searchResults) searchResults.style.display = 'none';
+    if (chatMessages) chatMessages.style.display = 'block';
+    if (searchInput) searchInput.value = '';
+}
+
+// Message input handling
+function handleCommunityKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendCommunityMessage();
+    }
+}
+
+// Emoji functionality
+function addEmoji() {
+    const emojiModal = document.getElementById('emojiModal');
+    emojiModal.style.display = emojiModal.style.display === 'block' ? 'none' : 'block';
+}
+
+function insertEmoji(emoji) {
+    const input = document.getElementById('communityMessageInput');
+    input.value += emoji;
+    document.getElementById('emojiModal').style.display = 'none';
+    input.focus();
+}
+
+// Utility functions
+function showMessagesLoading() {
+    const messagesContainer = document.getElementById('communityMessages');
+    messagesContainer.innerHTML = '<div class="loading-spinner">Loading messages...</div>';
+}
+
+function showSendingState() {
+    const sendButton = document.getElementById('sendCommunityButton');
+    if (sendButton) {
+        sendButton.textContent = 'Sending...';
+        sendButton.disabled = true;
+    }
+}
+
+function hideSendingState() {
+    const sendButton = document.getElementById('sendCommunityButton');
+    if (sendButton) {
+        sendButton.textContent = 'Send';
+        sendButton.disabled = false;
+    }
+}
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        info: '#6366f1'
+    };
+    
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${colors[type] || colors.info};
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function logout() {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('eeh_token');
+    localStorage.removeItem('userData');
+    window.location.href = 'login.html';
+}
+
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication
+    const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+    if (!token) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Load rooms from database
+    loadRooms();
+    
+    // Add event listeners
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        messageInput.addEventListener('keypress', handleCommunityKeyPress);
+    }
+    
+    const searchInput = document.getElementById('messageSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            } else {
+                searchMessages(this.value);
+            }
+        });
+    }
+    
+    // Close emoji modal when clicking outside
+    document.addEventListener('click', function(e) {
+        const emojiModal = document.getElementById('emojiModal');
+        if (emojiModal && !e.target.closest('.emoji-modal') && !e.target.closest('[onclick*="addEmoji"]')) {
+            emojiModal.style.display = 'none';
+        }
+    });
+    
+    console.log('Community page initialized with database');
+});
+
+// Export functions for global access
+window.switchRoom = switchRoom;
+window.createRoom = createRoom;
+window.deleteRoom = deleteRoom;
+window.sendCommunityMessage = sendCommunityMessage;
+window.searchMessages = searchMessages;
+window.performSearch = performSearch;
+window.clearSearch = clearSearch;
+window.handleCommunityKeyPress = handleCommunityKeyPress;
+window.addEmoji = addEmoji;
+window.insertEmoji = insertEmoji;
+window.logout = logout;
