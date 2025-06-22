@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + Goals API
+// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -73,7 +73,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Goals Schema - NEW ADDITION
+// Goals Schema
 const goalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
@@ -85,6 +85,29 @@ const goalSchema = new mongoose.Schema({
 });
 
 const Goal = mongoose.model('Goal', goalSchema);
+
+// Notifications Schema - NEW ADDITION
+const notificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Notification = mongoose.model('Notification', notificationSchema);
+
+// Chat Rooms Schema - NEW ADDITION
+const roomSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  isDefault: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Room = mongoose.model('Room', roomSchema);
 
 // Chat History Schema with Conversation Memory
 const chatSchema = new mongoose.Schema({
@@ -100,13 +123,20 @@ const chatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model('Chat', chatSchema);
 
-// Community Message Schema
+// Updated Community Message Schema - Enhanced for room support
 const messageSchema = new mongoose.Schema({
+  // Legacy fields (keep for backward compatibility)
   room: String,
   username: String,
   userId: String,
   message: String,
-  timestamp: { type: Date, default: Date.now }
+  timestamp: { type: Date, default: Date.now },
+  // New fields for enhanced room support
+  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
+  content: String,
+  avatar: { type: String, default: 'U' },
+  avatarColor: { type: String, default: '#6366f1' },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
@@ -153,6 +183,29 @@ async function updateUserStreak(userId) {
   } catch (error) {
     console.error('Error updating streak:', error);
     return { currentStreak: 0, longestStreak: 0 };
+  }
+}
+
+// Create default rooms function
+async function createDefaultRooms() {
+  try {
+    const existingRooms = await Room.countDocuments();
+    if (existingRooms === 0) {
+      const defaultRooms = [
+        { name: 'General Discussion', description: 'Open chat for everyone', isDefault: true },
+        { name: 'Business Growth', description: 'Discuss scaling strategies', isDefault: true },
+        { name: 'Work-Life Balance', description: 'Managing business and personal life', isDefault: true },
+        { name: 'Success Stories', description: 'Share your wins and achievements', isDefault: true }
+      ];
+      
+      for (let roomData of defaultRooms) {
+        const room = new Room(roomData);
+        await room.save();
+      }
+      console.log('✅ Default chat rooms created');
+    }
+  } catch (error) {
+    console.error('Error creating default rooms:', error);
   }
 }
 
@@ -542,7 +595,7 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   }
 });
 
-// Get community messages
+// Get community messages (legacy support)
 app.get('/api/community/messages/:room', authenticateToken, async (req, res) => {
   try {
     const { room } = req.params;
@@ -611,15 +664,6 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Notifications endpoints
-app.get('/api/notifications/unread-count', authenticateToken, (req, res) => {
-  res.json({ count: Math.floor(Math.random() * 5) });
-});
-
-app.get('/api/notifications/recent', authenticateToken, (req, res) => {
-  res.json([]);
-});
-
 // Billing endpoints
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
   try {
@@ -640,7 +684,7 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   }
 });
 
-// Community - Save message
+// Community - Save message (legacy support)
 app.post('/api/community/send', authenticateToken, async (req, res) => {
   try {
     const { room, message } = req.body;
@@ -654,6 +698,7 @@ app.post('/api/community/send', authenticateToken, async (req, res) => {
       username,
       userId,
       message,
+      content: message, // For compatibility
       timestamp: new Date()
     });
     
@@ -670,7 +715,7 @@ app.post('/api/community/send', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// GOALS API ROUTES - NEW ADDITION
+// GOALS API ROUTES
 // ==========================================
 
 app.get('/api/goals', authenticateToken, async (req, res) => {
@@ -727,6 +772,151 @@ app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ==========================================
+// NOTIFICATIONS API ROUTES - NEW ADDITION
+// ==========================================
+
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.user.userId })
+      .sort({ createdAt: -1 });
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      { read: true },
+      { new: true }
+    );
+    res.json(notification);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
+  try {
+    await Notification.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    res.json({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete notification' });
+  }
+});
+
+// Updated notifications endpoints
+app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
+  try {
+    const count = await Notification.countDocuments({ 
+      userId: req.user.userId, 
+      read: false 
+    });
+    res.json({ count });
+  } catch (error) {
+    res.json({ count: 0 });
+  }
+});
+
+app.get('/api/notifications/recent', authenticateToken, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.user.userId })
+      .sort({ createdAt: -1 })
+      .limit(5);
+    res.json(notifications);
+  } catch (error) {
+    res.json([]);
+  }
+});
+
+// ==========================================
+// CHAT ROOMS API ROUTES - NEW ADDITION
+// ==========================================
+
+app.get('/api/rooms', authenticateToken, async (req, res) => {
+  try {
+    const rooms = await Room.find().populate('createdBy', 'firstName lastName');
+    
+    const roomsWithCounts = await Promise.all(rooms.map(async (room) => {
+      const messageCount = await Message.countDocuments({ roomId: room._id });
+      return {
+        ...room.toObject(),
+        messageCount
+      };
+    }));
+    
+    res.json(roomsWithCounts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch rooms' });
+  }
+});
+
+app.post('/api/rooms', authenticateToken, async (req, res) => {
+  try {
+    const room = new Room({
+      name: req.body.name,
+      description: req.body.description,
+      createdBy: req.user.userId
+    });
+    await room.save();
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create room' });
+  }
+});
+
+app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const messages = await Message.find({ roomId: req.params.id })
+      .sort({ createdAt: 1 })
+      .limit(100);
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    const message = new Message({
+      roomId: req.params.id,
+      userId: req.user.userId,
+      username: user ? `${user.firstName} ${user.lastName}` : 'User',
+      avatar: req.body.avatar || 'U',
+      content: req.body.content,
+      message: req.body.content, // For compatibility
+      avatarColor: req.body.avatarColor || '#6366f1'
+    });
+    await message.save();
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
+  try {
+    const room = await Room.findOne({ _id: req.params.id, createdBy: req.user.userId });
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found or you do not have permission to delete it' });
+    }
+    
+    // Delete all messages in the room
+    await Message.deleteMany({ roomId: req.params.id });
+    
+    // Delete the room
+    await Room.findByIdAndDelete(req.params.id);
+    
+    res.json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete room' });
+  }
+});
+
 // Health check endpoint for monitoring
 app.get('/health', (req, res) => {
   res.json({
@@ -755,6 +945,11 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
+// Initialize default rooms after MongoDB connection
+mongoose.connection.once('open', () => {
+  createDefaultRooms();
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
@@ -763,4 +958,5 @@ app.listen(PORT, () => {
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
+  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
 });
