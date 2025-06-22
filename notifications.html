@@ -1,357 +1,403 @@
-// Updated notifications.js - Replace localStorage with database API calls
-
-// Global variables
-let currentNotifications = [];
-let currentFilter = 'all';
-
-// Load notifications from database on page load
-async function loadNotifications() {
-    try {
-        showLoading();
-        currentNotifications = await window.notificationsAPI.getAll();
-        renderNotifications();
-        updateFilterCounts();
-    } catch (error) {
-        console.error('Error loading notifications:', error);
-        window.handleAPIError(error);
-        // Fallback to empty state
-        currentNotifications = [];
-        renderNotifications();
-    } finally {
-        hideLoading();
-    }
-}
-
-// Filter notifications by type
-function filterNotifications(type) {
-    currentFilter = type;
-    
-    // Update active filter button
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    event.target.classList.add('active');
-    
-    renderNotifications();
-}
-
-// Render notifications based on current filter
-function renderNotifications() {
-    const notificationsList = document.getElementById('notificationsList');
-    const emptyState = document.getElementById('emptyState');
-    
-    // Filter notifications based on current filter
-    let filteredNotifications = currentNotifications;
-    
-    if (currentFilter !== 'all') {
-        if (currentFilter === 'unread') {
-            filteredNotifications = currentNotifications.filter(n => !n.read);
-        } else {
-            filteredNotifications = currentNotifications.filter(n => n.type === currentFilter);
-        }
-    }
-    
-    if (filteredNotifications.length === 0) {
-        notificationsList.style.display = 'none';
-        emptyState.style.display = 'block';
-        return;
-    }
-    
-    notificationsList.style.display = 'block';
-    emptyState.style.display = 'none';
-    
-    notificationsList.innerHTML = filteredNotifications.map(notification => `
-        <div class="notification-item ${notification.read ? 'read' : 'unread'}" data-type="${notification.type}" data-id="${notification._id}">
-            <div class="notification-icon ${notification.type}">
-                <div class="icon-text">${getNotificationIcon(notification.type)}</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Entrepreneur Emotional Health</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
-            <div class="notification-content">
-                <div class="notification-header">
-                    <h3>${notification.title}</h3>
-                    <span class="notification-time">${formatTime(notification.createdAt)}</span>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+                <li><a href="goals.html" class="menu-item">
+                    Goals
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Notifications</h1>
+                <div class="header-actions">
+                    <!-- Notification Icon (on notifications page, just show without count) -->
+                    <div class="notification-icon-container" style="opacity: 0.5;">
+                        <div class="notification-bell">
+                            <span class="bell-text">🔔</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-secondary" onclick="markAllRead()" id="markAllReadBtn">
+                        Mark All Read
+                    </button>
+                    <button class="btn btn-outline" onclick="clearAll()">
+                        Clear All
+                    </button>
                 </div>
-                <p>${notification.content}</p>
-                <div class="notification-actions">
-                    ${getNotificationActions(notification)}
-                    ${!notification.read ? `<button class="btn-link" onclick="markAsRead('${notification._id}')">Mark as Read</button>` : ''}
-                    <button class="btn-link" onclick="deleteNotification('${notification._id}')">Delete</button>
+            </header>
+
+            <div class="notifications-container">
+                <!-- Notification Filters -->
+                <div class="notification-filters">
+                    <button class="filter-btn active" onclick="filterNotifications('all')">
+                        All Notifications
+                        <span class="count" id="allCount">8</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('unread')">
+                        Unread
+                        <span class="count" id="unreadCount">3</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('coaching')">
+                        AI Coach
+                        <span class="count" id="coachingCount">2</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('community')">
+                        Community
+                        <span class="count" id="communityCount">3</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('system')">
+                        System
+                        <span class="count" id="systemCount">2</span>
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('billing')">
+                        Billing
+                        <span class="count" id="billingCount">1</span>
+                    </button>
                 </div>
+
+                <!-- Notifications List -->
+                <div class="notifications-list" id="notificationsList">
+                    <!-- Unread Coaching Notification -->
+                    <div class="notification-item unread" data-type="coaching" data-id="1">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Coaching Insights Available</h3>
+                                <span class="notification-time">2 hours ago</span>
+                            </div>
+                            <p>Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCoach()">View Insights</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unread Community Notification -->
+                    <div class="notification-item unread" data-type="community" data-id="2">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Messages in Business Growth</h3>
+                                <span class="notification-time">4 hours ago</span>
+                            </div>
+                            <p>Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Join Conversation</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Unread System Notification -->
+                    <div class="notification-item unread" data-type="system" data-id="3">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Weekly Progress Report Ready</h3>
+                                <span class="notification-time">1 day ago</span>
+                            </div>
+                            <p>Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">View Report</button>
+                                <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Coaching Notification -->
+                    <div class="notification-item read" data-type="coaching" data-id="4">
+                        <div class="notification-icon coaching">
+                            <div class="icon-text">AI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Goal Achievement Milestone</h3>
+                                <span class="notification-time">2 days ago</span>
+                            </div>
+                            <p>Congratulations! You've completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCoach()">View Progress</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="5">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Someone Mentioned You</h3>
+                                <span class="notification-time">3 days ago</span>
+                            </div>
+                            <p>Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">View Message</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Community Notification -->
+                    <div class="notification-item read" data-type="community" data-id="6">
+                        <div class="notification-icon community">
+                            <div class="icon-text">CM</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>New Room Created: Mindfulness</h3>
+                                <span class="notification-time">4 days ago</span>
+                            </div>
+                            <p>A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToCommunity()">Explore Room</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read System Notification -->
+                    <div class="notification-item read" data-type="system" data-id="7">
+                        <div class="notification-icon system">
+                            <div class="icon-text">SY</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Platform Update: New Features</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>We've added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToDashboard()">See What's New</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Read Billing Notification -->
+                    <div class="notification-item read" data-type="billing" data-id="8">
+                        <div class="notification-icon billing">
+                            <div class="icon-text">BI</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>Payment Successful</h3>
+                                <span class="notification-time">1 week ago</span>
+                            </div>
+                            <p>Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToBilling()">View Receipt</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State (Hidden by default) -->
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h3>No notifications found</h3>
+                    <p>You're all caught up! Check back later for updates on your emotional health journey.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Settings Modal -->
+    <div class="modal" id="settingsModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Notification Settings</h3>
+                <button class="close-btn" onclick="closeSettingsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> AI Coach Insights
+                    </label>
+                    <small>Get notified when new coaching insights are available</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Community Messages
+                    </label>
+                    <small>Receive notifications for community activity</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Weekly Reports
+                    </label>
+                    <small>Get your weekly progress summaries</small>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" checked> Billing Updates
+                    </label>
+                    <small>Payment confirmations and billing reminders</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
             </div>
         </div>
-    `).join('');
-}
+    </div>
 
-// Get icon text for notification type
-function getNotificationIcon(type) {
-    const icons = {
-        coaching: 'AI',
-        community: 'CM',
-        system: 'SY',
-        billing: 'BI'
-    };
-    return icons[type] || 'NO';
-}
-
-// Get actions based on notification type
-function getNotificationActions(notification) {
-    const actions = {
-        coaching: '<button class="btn-link" onclick="goToCoach()">View Insights</button>',
-        community: '<button class="btn-link" onclick="goToCommunity()">Join Conversation</button>',
-        system: '<button class="btn-link" onclick="goToDashboard()">View Report</button>',
-        billing: '<button class="btn-link" onclick="goToBilling()">View Receipt</button>'
-    };
-    return actions[notification.type] || '';
-}
-
-// Format time for display
-function formatTime(dateString) {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = (now - date) / (1000 * 60 * 60);
+    <script src="api-service.js"></script>
+    <script src="notifications.js"></script>
+    <script src="sidebar-toggle.js"></script>
     
-    if (diffInHours < 1) {
-        const diffInMinutes = Math.floor((now - date) / (1000 * 60));
-        return `${diffInMinutes} minute${diffInMinutes !== 1 ? 's' : ''} ago`;
-    } else if (diffInHours < 24) {
-        const hours = Math.floor(diffInHours);
-        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
-    } else {
-        const days = Math.floor(diffInHours / 24);
-        return `${days} day${days !== 1 ? 's' : ''} ago`;
+    <script>
+    // Navigation functions for placeholder notifications
+    function goToCoach() {
+        window.location.href = 'ai-coach.html';
     }
-}
 
-// Mark notification as read
-async function markAsRead(notificationId) {
-    try {
-        await window.notificationsAPI.markAsRead(notificationId);
-        
-        // Update local array
-        const notification = currentNotifications.find(n => n._id === notificationId);
-        if (notification) {
-            notification.read = true;
-        }
-        
-        renderNotifications();
-        updateFilterCounts();
-        showToast('Notification marked as read');
-        
-    } catch (error) {
-        console.error('Error marking notification as read:', error);
-        window.handleAPIError(error);
+    function goToCommunity() {
+        window.location.href = 'community.html';
     }
-}
 
-// Delete notification
-async function deleteNotification(notificationId) {
-    if (!confirm('Are you sure you want to delete this notification?')) {
-        return;
+    function goToDashboard() {
+        window.location.href = 'dashboard.html';
     }
-    
-    try {
-        await window.notificationsAPI.delete(notificationId);
-        
-        // Remove from local array
-        currentNotifications = currentNotifications.filter(n => n._id !== notificationId);
-        
-        renderNotifications();
-        updateFilterCounts();
-        showToast('Notification deleted');
-        
-    } catch (error) {
-        console.error('Error deleting notification:', error);
-        window.handleAPIError(error);
-    }
-}
 
-// Mark all notifications as read
-async function markAllRead() {
-    const unreadNotifications = currentNotifications.filter(n => !n.read);
-    
-    if (unreadNotifications.length === 0) {
-        showToast('No unread notifications');
-        return;
+    function goToBilling() {
+        window.location.href = 'billing.html';
     }
-    
-    try {
-        showButtonLoading('Marking all read...');
-        
-        // Mark all unread notifications as read
-        await Promise.all(
-            unreadNotifications.map(notification => 
-                window.notificationsAPI.markAsRead(notification._id)
-            )
-        );
-        
-        // Update local array
-        currentNotifications.forEach(notification => {
-            notification.read = true;
+
+    // Placeholder functions for existing notifications
+    function markAsRead(element) {
+        const notificationItem = element.closest('.notification-item');
+        notificationItem.classList.remove('unread');
+        notificationItem.classList.add('read');
+        element.remove(); // Remove the "Mark as Read" button
+    }
+
+    function markAllRead() {
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+            item.classList.remove('unread');
+            item.classList.add('read');
+            const markAsReadBtn = item.querySelector('button[onclick*="markAsRead"]');
+            if (markAsReadBtn) {
+                markAsReadBtn.remove();
+            }
         });
-        
-        renderNotifications();
         updateFilterCounts();
-        showToast('All notifications marked as read');
-        
-    } catch (error) {
-        console.error('Error marking all as read:', error);
-        window.handleAPIError(error);
-    } finally {
-        hideButtonLoading();
     }
-}
 
-// Clear all notifications
-async function clearAll() {
-    if (!confirm('Are you sure you want to delete ALL notifications? This cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        showButtonLoading('Clearing all...');
-        
-        // Delete all notifications
-        await Promise.all(
-            currentNotifications.map(notification => 
-                window.notificationsAPI.delete(notification._id)
-            )
-        );
-        
-        currentNotifications = [];
-        renderNotifications();
-        updateFilterCounts();
-        showToast('All notifications cleared');
-        
-    } catch (error) {
-        console.error('Error clearing all notifications:', error);
-        window.handleAPIError(error);
-    } finally {
-        hideButtonLoading();
-    }
-}
-
-// Update filter counts
-function updateFilterCounts() {
-    const counts = {
-        all: currentNotifications.length,
-        unread: currentNotifications.filter(n => !n.read).length,
-        coaching: currentNotifications.filter(n => n.type === 'coaching').length,
-        community: currentNotifications.filter(n => n.type === 'community').length,
-        system: currentNotifications.filter(n => n.type === 'system').length,
-        billing: currentNotifications.filter(n => n.type === 'billing').length
-    };
-    
-    Object.keys(counts).forEach(type => {
-        const countElement = document.getElementById(`${type}Count`);
-        if (countElement) {
-            countElement.textContent = counts[type];
+    function clearAll() {
+        if (confirm('Are you sure you want to clear all notifications?')) {
+            document.getElementById('notificationsList').innerHTML = '';
+            document.getElementById('emptyState').style.display = 'block';
+            updateFilterCounts();
         }
-    });
-    
-    // Update notification badge in sidebar
-    const badge = document.getElementById('notificationBadge');
-    if (badge) {
-        badge.textContent = counts.unread;
-        badge.style.display = counts.unread > 0 ? 'inline' : 'none';
     }
-}
 
-// Navigation functions
-function goToCoach() {
-    window.location.href = 'ai-coach.html';
-}
+    function filterNotifications(type) {
+        // Update active filter
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
 
-function goToCommunity() {
-    window.location.href = 'community.html';
-}
+        // Show/hide notifications based on type
+        const notifications = document.querySelectorAll('.notification-item');
+        let visibleCount = 0;
 
-function goToDashboard() {
-    window.location.href = 'dashboard.html';
-}
+        notifications.forEach(notification => {
+            const shouldShow = type === 'all' || 
+                              (type === 'unread' && notification.classList.contains('unread')) ||
+                              notification.dataset.type === type;
+            
+            notification.style.display = shouldShow ? 'flex' : 'none';
+            if (shouldShow) visibleCount++;
+        });
 
-function goToBilling() {
-    window.location.href = 'billing.html';
-}
-
-// Utility functions
-function showLoading() {
-    const notificationsList = document.getElementById('notificationsList');
-    notificationsList.innerHTML = '<div class="loading-spinner">Loading notifications...</div>';
-}
-
-function hideLoading() {
-    // Loading state is cleared by renderNotifications()
-}
-
-function showButtonLoading(text) {
-    const markAllBtn = document.getElementById('markAllReadBtn');
-    if (markAllBtn) {
-        markAllBtn.textContent = text;
-        markAllBtn.disabled = true;
+        // Show empty state if no notifications visible
+        const emptyState = document.getElementById('emptyState');
+        const notificationsList = document.getElementById('notificationsList');
+        
+        if (visibleCount === 0) {
+            notificationsList.style.display = 'none';
+            emptyState.style.display = 'block';
+        } else {
+            notificationsList.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
     }
-}
 
-function hideButtonLoading() {
-    const markAllBtn = document.getElementById('markAllReadBtn');
-    if (markAllBtn) {
-        markAllBtn.textContent = 'Mark All Read';
-        markAllBtn.disabled = false;
+    function updateFilterCounts() {
+        const all = document.querySelectorAll('.notification-item').length;
+        const unread = document.querySelectorAll('.notification-item.unread').length;
+        const coaching = document.querySelectorAll('.notification-item[data-type="coaching"]').length;
+        const community = document.querySelectorAll('.notification-item[data-type="community"]').length;
+        const system = document.querySelectorAll('.notification-item[data-type="system"]').length;
+        const billing = document.querySelectorAll('.notification-item[data-type="billing"]').length;
+
+        document.getElementById('allCount').textContent = all;
+        document.getElementById('unreadCount').textContent = unread;
+        document.getElementById('coachingCount').textContent = coaching;
+        document.getElementById('communityCount').textContent = community;
+        document.getElementById('systemCount').textContent = system;
+        document.getElementById('billingCount').textContent = billing;
     }
-}
 
-function showToast(message) {
-    // Simple toast implementation
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.textContent = message;
-    toast.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #10b981;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        z-index: 10000;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
+    function closeSettingsModal() {
+        document.getElementById('settingsModal').style.display = 'none';
+    }
 
-function logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('eeh_token');
-    localStorage.removeItem('userData');
-    window.location.href = 'login.html';
-}
+    function saveSettings() {
+        alert('Settings saved!');
+        closeSettingsModal();
+    }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user is logged in
-    const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-    if (!token) {
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
         window.location.href = 'login.html';
-        return;
     }
-    
-    // Load notifications from database
-    loadNotifications();
-    
-    console.log('Notifications page initialized with database');
-});
 
-// Export functions for global access
-window.filterNotifications = filterNotifications;
-window.markAsRead = markAsRead;
-window.deleteNotification = deleteNotification;
-window.markAllRead = markAllRead;
-window.clearAll = clearAll;
-window.goToCoach = goToCoach;
-window.goToCommunity = goToCommunity;
-window.goToDashboard = goToDashboard;
-window.goToBilling = goToBilling;
-window.logout = logout;
+    // Initialize filter counts
+    document.addEventListener('DOMContentLoaded', function() {
+        updateFilterCounts();
+    });
+    </script>
+</body>
+</html>
