@@ -1,5 +1,5 @@
-// Community.js - Backend Connected Version with Simple Search
-// This replaces the localStorage version with real database storage
+// Community.js - Backend Connected Version with Simple Working Search
+// This version fixes all the errors and makes search work properly
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -38,7 +38,6 @@ async function initializeCommunity() {
         console.log('Community initialized successfully');
     } catch (error) {
         console.error('Error initializing community:', error);
-        // Fallback to show basic interface
         showErrorMessage('Unable to load community. Please refresh the page.');
     }
 }
@@ -176,6 +175,9 @@ async function switchRoom(roomId) {
         if (roomNameElement) roomNameElement.textContent = room.name;
         if (roomDescElement) roomDescElement.textContent = room.description;
 
+        // Clear any existing search
+        clearSimpleSearch();
+
         // Load messages for this room
         await loadMessages(roomId);
 
@@ -215,7 +217,6 @@ async function loadMessages(roomId) {
         
     } catch (error) {
         console.error('Error loading messages:', error);
-        // Show empty state or cached messages
         currentMessages = [];
         displayMessages([]);
     }
@@ -460,13 +461,18 @@ async function deleteRoom(roomId) {
 }
 
 // =================================
-// SIMPLE SEARCH FUNCTIONALITY
+// SIMPLE SEARCH FUNCTIONALITY - FIXED
 // =================================
 
 // Simple search function that highlights text in current messages
 function performSimpleSearch() {
     const searchInput = document.getElementById('simpleSearchInput');
-    const searchQuery = searchInput?.value?.trim();
+    if (!searchInput) {
+        console.error('Search input not found');
+        return;
+    }
+    
+    const searchQuery = searchInput.value.trim();
     
     if (!searchQuery || searchQuery.length < 2) {
         clearSimpleSearch();
@@ -486,15 +492,14 @@ function performSimpleSearch() {
     if (messagesContainer && currentMessages.length > 0) {
         const messageElements = messagesContainer.querySelectorAll('.message-content');
         
-        messageElements.forEach((element, index) => {
-            const originalMessage = currentMessages[index];
-            const messageText = (originalMessage?.content || originalMessage?.message || '').toLowerCase();
+        messageElements.forEach((element) => {
+            const originalText = element.textContent;
             const searchTerm = searchQuery.toLowerCase();
             
-            if (messageText.includes(searchTerm)) {
+            if (originalText.toLowerCase().includes(searchTerm)) {
                 // Highlight the search term
                 const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
-                const highlightedText = element.textContent.replace(regex, '<span class="search-highlight">$1</span>');
+                const highlightedText = originalText.replace(regex, '<span class="search-highlight">$1</span>');
                 element.innerHTML = highlightedText;
                 foundMatches++;
                 
@@ -509,10 +514,12 @@ function performSimpleSearch() {
     // Show results
     if (foundMatches > 0) {
         showSearchStatus(`Found ${foundMatches} match${foundMatches === 1 ? '' : 'es'} for "${searchQuery}"`);
-        document.getElementById('simpleSearchClear').style.display = 'inline-block';
+        const clearBtn = document.getElementById('simpleSearchClear');
+        if (clearBtn) clearBtn.style.display = 'inline-block';
     } else {
         showSearchStatus(`No matches found for "${searchQuery}"`);
-        document.getElementById('simpleSearchClear').style.display = 'inline-block';
+        const clearBtn = document.getElementById('simpleSearchClear');
+        if (clearBtn) clearBtn.style.display = 'inline-block';
     }
 }
 
@@ -542,14 +549,16 @@ function clearSearchHighlights() {
     const highlights = document.querySelectorAll('.search-highlight');
     highlights.forEach(highlight => {
         const parent = highlight.parentNode;
-        parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
-        parent.normalize();
+        if (parent) {
+            parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+            parent.normalize();
+        }
     });
 }
 
 // Escape regex special characters
 function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\        // Re-enable');
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Show search status message
@@ -562,7 +571,7 @@ function showSearchStatus(message) {
     statusElement.id = 'searchStatus';
     statusElement.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 80px;
         right: 20px;
         background: var(--primary);
         color: white;
@@ -590,25 +599,6 @@ function clearSearchStatus() {
         existingStatus.remove();
     }
 }
-
-// Add search on Enter key
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('simpleSearchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSimpleSearch();
-            }
-        });
-        
-        // Clear search when input is empty
-        searchInput.addEventListener('input', function(e) {
-            if (!e.target.value.trim()) {
-                clearSimpleSearch();
-            }
-        });
-    }
-});
 
 // Add emoji functionality
 function addEmoji() {
