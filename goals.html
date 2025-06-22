@@ -35,9 +35,7 @@
         </div>
       </header>
 
-      <div id="goalCategories" class="goal-categories">
-        <!-- Dynamically populated -->
-      </div>
+      <div id="goalCategories" class="goal-categories"></div>
 
       <!-- Modal -->
       <div class="modal-overlay" id="goalModal" style="display: none;">
@@ -50,21 +48,21 @@
             <form id="goalForm" onsubmit="addGoal(event)">
               <div class="form-group">
                 <label for="goalTitle">Goal Title</label>
-                <input type="text" id="goalTitle" placeholder="e.g., Meditate 5 mins" required />
+                <input type="text" id="goalTitle" required />
               </div>
               <div class="form-group">
                 <label for="goalFrequency">Frequency</label>
                 <select id="goalFrequency" required>
-                  <option value="">Select Frequency</option>
+                  <option value="">Select</option>
                   <option value="daily">Daily</option>
                   <option value="weekly">Weekly</option>
                   <option value="monthly">Monthly</option>
                 </select>
               </div>
               <div class="form-group">
-                <label for="goalType">Goal Type</label>
+                <label for="goalType">Type</label>
                 <select id="goalType" required>
-                  <option value="">Choose Type</option>
+                  <option value="">Select</option>
                   <option value="Breakthrough">Breakthrough</option>
                   <option value="Micro Win">Micro Win</option>
                 </select>
@@ -73,7 +71,7 @@
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" onclick="closeAddGoal()">Cancel</button>
-            <button type="submit" form="goalForm" class="btn btn-primary">Save Goal</button>
+            <button type="submit" form="goalForm" class="btn btn-primary">Save</button>
           </div>
         </div>
       </div>
