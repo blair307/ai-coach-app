@@ -1,482 +1,486 @@
-// Community Chat Functionality
-class CommunityChat {
-    constructor() {
-        this.currentRoom = 'general';
-        this.currentUser = this.getCurrentUser();
-        this.messages = this.loadMessages();
-        this.rooms = this.getRooms();
-        this.members = this.getMembers();
-        this.init();
-    }
+// Community.js - Backend Connected Version for Persistent Storage
+// This replaces the localStorage version with real database storage
 
-    init() {
-        this.setupEventListeners();
-        this.loadRoom(this.currentRoom);
-        this.updateOnlineCount();
-        this.updateBranding();
-    }
+const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+let currentRoomId = null;
+let currentRoomName = 'General Discussion';
+let currentUser = null;
+let rooms = [];
 
-    updateBranding() {
-        // Update all instances of "AI Coach" to "EEH"
-        const brandElements = document.querySelectorAll('.sidebar-header h2');
-        brandElements.forEach(el => {
-            if (el.textContent === 'AI Coach') {
-                el.textContent = 'EEH';
+// Initialize community when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Community page loading...');
+    initializeCommunity();
+});
+
+// Initialize the community system
+async function initializeCommunity() {
+    try {
+        // Get current user info
+        currentUser = getCurrentUser();
+        if (!currentUser) {
+            console.error('No user found');
+            return;
+        }
+
+        // Load all rooms from backend
+        await loadRooms();
+        
+        // Set default room (General Discussion)
+        const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+        if (generalRoom) {
+            currentRoomId = generalRoom._id;
+            currentRoomName = generalRoom.name;
+            switchRoom(generalRoom._id);
+        }
+        
+        console.log('Community initialized successfully');
+    } catch (error) {
+        console.error('Error initializing community:', error);
+        // Fallback to show basic interface
+        showErrorMessage('Unable to load community. Please refresh the page.');
+    }
+}
+
+// Get current user info from token or localStorage
+function getCurrentUser() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) return null;
+        
+        // Decode JWT token to get user info (simple decode, not verification)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return {
+            id: payload.userId,
+            email: payload.email,
+            name: localStorage.getItem('userName') || 'User'
+        };
+    } catch (error) {
+        console.error('Error getting current user:', error);
+        return null;
+    }
+}
+
+// Load all rooms from backend
+async function loadRooms() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
 
-        // Update page title
-        document.title = 'Community - Entrepreneur Emotional Health';
-    }
-
-    setupEventListeners() {
-        // Message input handling
-        const messageInput = document.getElementById('communityMessageInput');
-        if (messageInput) {
-            messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
+        if (!response.ok) {
+            throw new Error('Failed to load rooms');
         }
 
-        // Send button
-        const sendButton = document.getElementById('sendCommunityButton');
-        if (sendButton) {
-            sendButton.addEventListener('click', () => this.sendMessage());
+        rooms = await response.json();
+        console.log('Loaded rooms:', rooms);
+        
+        // Update the rooms list in the UI
+        updateRoomsList();
+        
+    } catch (error) {
+        console.error('Error loading rooms:', error);
+        // Use fallback default rooms if backend fails
+        rooms = [
+            { _id: 'general', name: 'General Discussion', description: 'Open chat for everyone' },
+            { _id: 'emotional-wellness', name: 'Emotional Wellness', description: 'Mental health & emotional intelligence' },
+            { _id: 'business-growth', name: 'Business Growth', description: 'Scaling strategies & challenges' },
+            { _id: 'success-stories', name: 'Success Stories', description: 'Celebrate your wins & breakthroughs' },
+            { _id: 'work-life-balance', name: 'Work-Life Balance', description: 'Managing entrepreneurial stress' }
+        ];
+        updateRoomsList();
+    }
+}
+
+// Update the rooms list in the UI
+function updateRoomsList() {
+    const roomsList = document.getElementById('roomsList');
+    if (!roomsList) return;
+
+    roomsList.innerHTML = '';
+
+    rooms.forEach(room => {
+        const roomElement = document.createElement('div');
+        roomElement.className = 'room-item';
+        roomElement.setAttribute('data-room', room._id);
+        roomElement.onclick = () => switchRoom(room._id);
+
+        // Check if this is the current room
+        if (room._id === currentRoomId) {
+            roomElement.classList.add('active');
         }
 
-        // Auto-resize textarea
-        if (messageInput) {
-            messageInput.addEventListener('input', this.autoResizeTextarea);
+        roomElement.innerHTML = `
+            <div class="room-info">
+                <h4>${room.name}</h4>
+                <p>${room.description}</p>
+            </div>
+            <div class="room-stats">
+                <span class="member-count">${room.messageCount || 0}</span>
+            </div>
+        `;
+
+        roomsList.appendChild(roomElement);
+    });
+}
+
+// Switch to a different room
+async function switchRoom(roomId) {
+    try {
+        // Find the room data
+        const room = rooms.find(r => r._id === roomId);
+        if (!room) {
+            console.error('Room not found:', roomId);
+            return;
         }
-    }
 
-    autoResizeTextarea(e) {
-        e.target.style.height = 'auto';
-        e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
-    }
+        // Update current room
+        currentRoomId = roomId;
+        currentRoomName = room.name;
 
-    getCurrentUser() {
-        // In a real app, this would come from authentication
-        return {
-            id: 'user_' + Math.random().toString(36).substr(2, 9),
-            name: 'Current User',
-            avatar: this.generateAvatar('Current User'),
-            online: true
-        };
-    }
-
-    generateAvatar(name) {
-        const initials = name.split(' ').map(n => n[0]).join('').toUpperCase();
-        return initials.substring(0, 2);
-    }
-
-    getRooms() {
-        return {
-            'general': {
-                name: 'General Discussion',
-                description: 'Open chat for everyone to discuss anything',
-                members: 24,
-                unread: 3
-            },
-            'emotional-wellness': {
-                name: 'Emotional Wellness',
-                description: 'Mental health & emotional intelligence',
-                members: 18,
-                unread: 0
-            },
-            'business-growth': {
-                name: 'Business Growth',
-                description: 'Scaling strategies & challenges',
-                members: 31,
-                unread: 1
-            },
-            'success-stories': {
-                name: 'Success Stories',
-                description: 'Celebrate your wins & breakthroughs',
-                members: 15,
-                unread: 0
-            },
-            'work-life-balance': {
-                name: 'Work-Life Balance',
-                description: 'Managing entrepreneurial stress',
-                members: 22,
-                unread: 0
-            }
-        };
-    }
-
-    getMembers() {
-        return {
-            'general': [
-                { id: '1', name: 'Sarah Johnson', avatar: 'SJ', online: true },
-                { id: '2', name: 'Mike Chen', avatar: 'MC', online: true },
-                { id: '3', name: 'Alex Rivera', avatar: 'AR', online: false, lastSeen: '2h ago' },
-                { id: '4', name: 'Emma Davis', avatar: 'ED', online: true },
-                { id: '5', name: 'James Wilson', avatar: 'JW', online: false, lastSeen: '1d ago' }
-            ]
-        };
-    }
-
-    loadMessages() {
-        // Sample messages for different rooms
-        return {
-            'general': [
-                {
-                    id: '1',
-                    user: { name: 'Sarah Johnson', avatar: 'SJ' },
-                    content: 'Just finished my first week with the AI coach! Feeling so motivated and clear about my goals.',
-                    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
-                },
-                {
-                    id: '2',
-                    user: { name: 'Mike Chen', avatar: 'MC' },
-                    content: 'That\'s awesome Sarah! What was your biggest breakthrough?',
-                    timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000) // 1.5 hours ago
-                },
-                {
-                    id: '3',
-                    user: { name: 'Sarah Johnson', avatar: 'SJ' },
-                    content: 'Realizing that I was setting too many goals at once. The AI helped me prioritize and focus on just 2-3 key areas. Game changer!',
-                    timestamp: new Date(Date.now() - 1 * 60 * 60 * 1000) // 1 hour ago
-                }
-            ],
-            'emotional-wellness': [
-                {
-                    id: '1',
-                    user: { name: 'Emma Davis', avatar: 'ED' },
-                    content: 'Been working on emotional regulation techniques. Meditation has been a game changer for managing stress.',
-                    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000)
-                }
-            ],
-            'business-growth': [
-                {
-                    id: '1',
-                    user: { name: 'James Wilson', avatar: 'JW' },
-                    content: 'Anyone else struggling with scaling their team? Looking for advice on hiring practices.',
-                    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000)
-                }
-            ]
-        };
-    }
-
-    switchRoom(roomId) {
-        // Remove active class from all room items
+        // Update UI - remove active class from all rooms
         document.querySelectorAll('.room-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Add active class to selected room
-        const roomElement = document.querySelector(`[data-room="${roomId}"]`);
-        if (roomElement) {
-            roomElement.classList.add('active');
+        // Add active class to current room
+        const currentRoomElement = document.querySelector(`[data-room="${roomId}"]`);
+        if (currentRoomElement) {
+            currentRoomElement.classList.add('active');
         }
 
-        this.currentRoom = roomId;
-        this.loadRoom(roomId);
-    }
-
-    loadRoom(roomId) {
-        const room = this.rooms[roomId];
-        if (!room) return;
-
-        // Update room header
-        document.getElementById('currentRoomName').textContent = room.name;
-        document.getElementById('currentRoomDescription').textContent = room.description;
-        document.getElementById('roomMemberCount').textContent = room.members;
+        // Update room title
+        const roomNameElement = document.getElementById('currentRoomName');
+        const roomDescElement = document.getElementById('currentRoomDescription');
+        if (roomNameElement) roomNameElement.textContent = room.name;
+        if (roomDescElement) roomDescElement.textContent = room.description;
 
         // Load messages for this room
-        this.displayMessages(roomId);
+        await loadMessages(roomId);
 
-        // Clear unread count for this room
-        const roomElement = document.querySelector(`[data-room="${roomId}"]`);
-        const unreadBadge = roomElement?.querySelector('.unread-count');
-        if (unreadBadge) {
-            unreadBadge.remove();
+        console.log('Switched to room:', room.name);
+    } catch (error) {
+        console.error('Error switching rooms:', error);
+        showErrorMessage('Failed to switch rooms. Please try again.');
+    }
+}
+
+// Load messages for a specific room
+async function loadMessages(roomId) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
         }
 
-        // Update room object
-        this.rooms[roomId].unread = 0;
-    }
-
-    displayMessages(roomId) {
-        const messagesContainer = document.getElementById('communityMessages');
-        if (!messagesContainer) return;
-
-        const roomMessages = this.messages[roomId] || [];
-        
-        messagesContainer.innerHTML = '';
-
-        roomMessages.forEach(message => {
-            const messageElement = this.createMessageElement(message);
-            messagesContainer.appendChild(messageElement);
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
         });
 
-        // Scroll to bottom
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
+        if (!response.ok) {
+            throw new Error('Failed to load messages');
+        }
 
-    createMessageElement(message) {
-        const messageGroup = document.createElement('div');
-        messageGroup.className = 'message-group';
-
-        const timestamp = this.formatTimestamp(message.timestamp);
+        const messages = await response.json();
+        console.log('Loaded messages for room:', roomId, messages);
         
-        messageGroup.innerHTML = `
-            <div class="message-header">
-                <div class="user-avatar">${message.user.avatar}</div>
-                <span class="username">${message.user.name}</span>
-                <span class="message-timestamp">${timestamp}</span>
-            </div>
-            <div class="message-content">
-                ${this.escapeHtml(message.content)}
+        displayMessages(messages);
+        
+    } catch (error) {
+        console.error('Error loading messages:', error);
+        // Show empty state or cached messages
+        displayMessages([]);
+    }
+}
+
+// Display messages in the chat area
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('communityMessages');
+    if (!messagesContainer) return;
+
+    messagesContainer.innerHTML = '';
+
+    if (messages.length === 0) {
+        messagesContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                <p>No messages yet. Be the first to start the conversation!</p>
             </div>
         `;
-
-        return messageGroup;
+        return;
     }
 
-    sendMessage() {
+    messages.forEach(message => {
+        const messageElement = createMessageElement(message);
+        messagesContainer.appendChild(messageElement);
+    });
+
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+// Create a message element
+function createMessageElement(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message-group';
+
+    // Get user initials for avatar
+    const username = message.username || 'User';
+    const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    
+    // Format timestamp
+    const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+    
+    messageDiv.innerHTML = `
+        <div class="message-header">
+            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
+                ${userInitials}
+            </div>
+            <span class="username">${username}</span>
+            <span class="message-timestamp">${timestamp}</span>
+        </div>
+        <div class="message-content">
+            ${escapeHtml(message.content || message.message || '')}
+        </div>
+    `;
+
+    return messageDiv;
+}
+
+// Format message timestamp
+function formatMessageTime(timestamp) {
+    if (!timestamp) return 'Now';
+    
+    const messageDate = new Date(timestamp);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - messageDate) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    
+    return messageDate.toLocaleDateString();
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Send a message
+async function sendCommunityMessage() {
+    try {
         const messageInput = document.getElementById('communityMessageInput');
-        const content = messageInput.value.trim();
-
-        if (!content) return;
-
-        const message = {
-            id: Date.now().toString(),
-            user: this.currentUser,
-            content: content,
-            timestamp: new Date()
-        };
-
-        // Add message to current room
-        if (!this.messages[this.currentRoom]) {
-            this.messages[this.currentRoom] = [];
-        }
-        this.messages[this.currentRoom].push(message);
-
-        // Clear input
-        messageInput.value = '';
-        messageInput.style.height = 'auto';
-
-        // Refresh display
-        this.displayMessages(this.currentRoom);
-
-        // In a real app, you would send this to the server
-        console.log('Message sent:', message);
-    }
-
-    toggleMembersList() {
-        const membersList = document.getElementById('membersList');
-        if (membersList) {
-            const isVisible = membersList.style.display !== 'none';
-            membersList.style.display = isVisible ? 'none' : 'block';
-        }
-    }
-
-    addEmoji() {
-        const emojiModal = document.getElementById('emojiModal');
-        if (emojiModal) {
-            const isVisible = emojiModal.style.display !== 'none';
-            emojiModal.style.display = isVisible ? 'none' : 'block';
-        }
-    }
-
-    insertEmoji(emoji) {
-        const messageInput = document.getElementById('communityMessageInput');
-        if (messageInput) {
-            const cursorPos = messageInput.selectionStart;
-            const textBefore = messageInput.value.substring(0, cursorPos);
-            const textAfter = messageInput.value.substring(cursorPos);
-            
-            messageInput.value = textBefore + emoji + textAfter;
-            messageInput.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
-            messageInput.focus();
-        }
-
-        // Hide emoji modal
-        const emojiModal = document.getElementById('emojiModal');
-        if (emojiModal) {
-            emojiModal.style.display = 'none';
-        }
-    }
-
-    createRoom() {
-        const roomName = prompt('Enter room name:');
-        if (!roomName) return;
-
-        const roomId = roomName.toLowerCase().replace(/\s+/g, '-');
+        const sendButton = document.getElementById('sendCommunityButton');
         
-        // Check if room already exists
-        if (this.rooms[roomId]) {
-            alert('Room already exists!');
+        if (!messageInput || !currentRoomId) {
+            console.error('Missing required elements or room');
             return;
         }
 
-        // Create new room
-        this.rooms[roomId] = {
-            name: roomName,
-            description: 'User created room',
-            members: 1,
-            unread: 0
-        };
+        const messageText = messageInput.value.trim();
+        if (!messageText) {
+            return;
+        }
 
-        this.messages[roomId] = [];
+        // Disable send button
+        if (sendButton) {
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+        }
 
-        // Add room to sidebar
-        this.updateRoomsList();
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
 
-        // Switch to new room
-        this.switchRoom(roomId);
-    }
-
-    updateRoomsList() {
-        const roomsList = document.getElementById('roomsList');
-        if (!roomsList) return;
-
-        roomsList.innerHTML = '';
-
-        Object.entries(this.rooms).forEach(([roomId, room]) => {
-            const roomElement = document.createElement('div');
-            roomElement.className = 'room-item';
-            roomElement.setAttribute('data-room', roomId);
-            roomElement.onclick = () => this.switchRoom(roomId);
-
-            if (roomId === this.currentRoom) {
-                roomElement.classList.add('active');
-            }
-
-            const unreadBadge = room.unread > 0 ? 
-                `<span class="unread-count">${room.unread}</span>` : '';
-
-            roomElement.innerHTML = `
-                <div class="room-info">
-                    <h4>${room.name}</h4>
-                    <p>${room.description}</p>
-                </div>
-                <div class="room-stats">
-                    <span class="member-count">${room.members}</span>
-                    ${unreadBadge}
-                </div>
-            `;
-
-            roomsList.appendChild(roomElement);
+        // Send message to backend
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: messageText,
+                avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U',
+                avatarColor: '#6366f1'
+            })
         });
-    }
 
-    updateOnlineCount() {
-        const onlineCount = Math.floor(Math.random() * 20) + 5; // Simulate online users
-        const onlineCountElement = document.getElementById('onlineCount');
-        if (onlineCountElement) {
-            onlineCountElement.textContent = onlineCount;
+        if (!response.ok) {
+            throw new Error('Failed to send message');
         }
-    }
 
-    formatTimestamp(date) {
-        const now = new Date();
-        const diffInHours = (now - date) / (1000 * 60 * 60);
+        const newMessage = await response.json();
+        console.log('Message sent successfully:', newMessage);
 
-        if (diffInHours < 1) {
-            const minutes = Math.floor(diffInHours * 60);
-            return `${minutes}m ago`;
-        } else if (diffInHours < 24) {
-            const hours = Math.floor(diffInHours);
-            return `${hours}h ago`;
-        } else {
-            return date.toLocaleDateString();
-        }
-    }
+        // Clear input
+        messageInput.value = '';
 
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+        // Reload messages to show the new one
+        await loadMessages(currentRoomId);
 
-    logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            // In a real app, this would clear session and redirect
-            window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Error sending message:', error);
+        showErrorMessage('Failed to send message. Please try again.');
+    } finally {
+        // Re-enable send button
+        const sendButton = document.getElementById('sendCommunityButton');
+        if (sendButton) {
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send';
         }
     }
 }
 
-// Global functions for HTML onclick handlers
-function switchRoom(roomId) {
-    if (window.communityChat) {
-        window.communityChat.switchRoom(roomId);
+// Handle Enter key press in message input
+function handleCommunityKeyPress(event) {
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendCommunityMessage();
     }
 }
 
+// Create a new room
+async function createRoom() {
+    const roomName = prompt('Enter room name:');
+    if (!roomName || !roomName.trim()) return;
+
+    const roomDescription = prompt('Enter room description:');
+    if (!roomDescription || !roomDescription.trim()) return;
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: roomName.trim(),
+                description: roomDescription.trim()
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to create room');
+        }
+
+        const newRoom = await response.json();
+        console.log('Room created successfully:', newRoom);
+
+        // Reload rooms
+        await loadRooms();
+        
+        // Switch to the new room
+        switchRoom(newRoom._id);
+
+    } catch (error) {
+        console.error('Error creating room:', error);
+        showErrorMessage('Failed to create room. Please try again.');
+    }
+}
+
+// Toggle members list
 function toggleMembersList() {
-    if (window.communityChat) {
-        window.communityChat.toggleMembersList();
+    const membersList = document.getElementById('membersList');
+    if (membersList) {
+        membersList.style.display = membersList.style.display === 'none' ? 'block' : 'none';
     }
 }
 
+// Add emoji functionality
 function addEmoji() {
-    if (window.communityChat) {
-        window.communityChat.addEmoji();
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = emojiModal.style.display === 'none' ? 'block' : 'none';
     }
 }
 
 function insertEmoji(emoji) {
-    if (window.communityChat) {
-        window.communityChat.insertEmoji(emoji);
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const cursorPos = messageInput.selectionStart;
+        const textBefore = messageInput.value.substring(0, cursorPos);
+        const textAfter = messageInput.value.substring(messageInput.selectionEnd);
+        messageInput.value = textBefore + emoji + textAfter;
+        
+        // Set cursor position after emoji
+        messageInput.selectionStart = messageInput.selectionEnd = cursorPos + emoji.length;
+        messageInput.focus();
+    }
+    
+    // Hide emoji modal
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
     }
 }
 
-function createRoom() {
-    if (window.communityChat) {
-        window.communityChat.createRoom();
-    }
-}
-
-function logout() {
-    if (window.communityChat) {
-        window.communityChat.logout();
-    }
-}
-
-function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        if (window.communityChat) {
-            window.communityChat.sendMessage();
+// Show error message
+function showErrorMessage(message) {
+    // Create a simple toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #ef4444;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        max-width: 300px;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
         }
-    }
+    }, 5000);
 }
 
-function sendCommunityMessage() {
-    if (window.communityChat) {
-        window.communityChat.sendMessage();
-    }
+// Logout function (should exist globally)
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
 }
-
-// Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    window.communityChat = new CommunityChat();
-});
 
 // Close emoji modal when clicking outside
 document.addEventListener('click', function(event) {
     const emojiModal = document.getElementById('emojiModal');
-    const emojiButton = event.target.closest('[onclick*="addEmoji"]');
+    const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
     
-    if (emojiModal && !emojiModal.contains(event.target) && !emojiButton) {
+    if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
         emojiModal.style.display = 'none';
     }
 });
 
-// Close members list when clicking outside
-document.addEventListener('click', function(event) {
-    const membersList = document.getElementById('membersList');
-    const membersButton = event.target.closest('[onclick*="toggleMembersList"]');
-    
-    if (membersList && membersList.style.display !== 'none' && 
-        !membersList.contains(event.target) && !membersButton) {
-        membersList.style.display = 'none';
+// Auto-refresh messages every 30 seconds
+setInterval(async () => {
+    if (currentRoomId) {
+        await loadMessages(currentRoomId);
     }
-});
+}, 30000);
