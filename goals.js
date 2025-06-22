@@ -6,7 +6,7 @@
 class GoalsManager {
     constructor() {
         this.goals = [];
-        this.baseURL = 'https://ai-coach-backend-mytn.onrender.com/api';
+        this.baseURL = 'https://ai-coach-backend-PBSE.onrender.com/api';
         this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         
         if (!this.token) {
