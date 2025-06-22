@@ -1,5 +1,5 @@
 // room-manager.js
-// Community room management system
+// Fixed Community room management system - NO NUMBERS ON ROOM CARDS
 
 class RoomManager {
     constructor() {
@@ -202,7 +202,7 @@ class RoomManager {
         return newMessage;
     }
 
-    // Render rooms list
+    // FIXED: Render rooms list WITHOUT NUMBERS
     renderRoomsList(containerId, activeRoomId = 'general') {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -217,7 +217,6 @@ class RoomManager {
         container.innerHTML = roomsArray.map(room => `
             <div class="room-item ${room.id === activeRoomId ? 'active' : ''}" 
                  data-room="${room.id}" 
-                 data-message-count="${room.messageCount}" 
                  onclick="switchRoom('${room.id}')">
                 <div class="room-info">
                     <h4>${room.name}</h4>
@@ -225,7 +224,6 @@ class RoomManager {
                     ${!room.isDefault ? '<small style="color: var(--text-muted); font-size: 0.75rem;">Created by ' + room.createdBy + '</small>' : ''}
                 </div>
                 <div class="room-stats">
-                    <span class="message-count">${room.messageCount}</span>
                     ${!room.isDefault ? '<button class="delete-room-btn" onclick="event.stopPropagation(); deleteRoom(\'' + room.id + '\')" title="Delete Room">×</button>' : ''}
                 </div>
             </div>
@@ -241,41 +239,49 @@ document.addEventListener('DOMContentLoaded', function() {
     window.roomManager.init();
 });
 
-// New Room Modal Functions
+// FIXED: New Room Modal Functions
 function createRoom() {
     showNewRoomModal();
 }
 
 function showNewRoomModal() {
     const modalHTML = `
-        <div class="modal" id="newRoomModal" style="display: flex;">
-            <div class="modal-content" style="max-width: 500px;">
-                <div class="modal-header">
-                    <h3>Create New Room</h3>
-                    <button class="close-btn" onclick="closeNewRoomModal()">×</button>
-                </div>
-                <div class="modal-body">
-                    <form id="newRoomForm" onsubmit="handleCreateRoom(event)">
-                        <div class="form-group">
-                            <label for="roomName">Room Name *</label>
-                            <input type="text" id="roomName" required maxlength="50" 
-                                   placeholder="e.g., Marketing Strategies" 
-                                   style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: var(--radius); font-family: inherit;">
-                            <small>3-50 characters, will be used to create room URL</small>
-                        </div>
-                        <div class="form-group">
-                            <label for="roomDescription">Room Description *</label>
-                            <textarea id="roomDescription" required maxlength="200" rows="3"
-                                      placeholder="Describe what this room is for..." 
-                                      style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: var(--radius); font-family: inherit; resize: vertical;"></textarea>
-                            <small>10-200 characters describing the room's purpose</small>
-                        </div>
-                        <div id="roomError" style="color: var(--error); font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeNewRoomModal()">Cancel</button>
-                    <button type="submit" form="newRoomForm" class="btn btn-primary">Create Room</button>
+        <div class="modal" id="newRoomModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
+            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+                <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
+                    
+                    <!-- Header -->
+                    <div style="background: #f8fafc; padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b;">Create New Room</h3>
+                        <button onclick="closeNewRoomModal()" style="background: #f1f5f9; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #64748b;">×</button>
+                    </div>
+                    
+                    <!-- Body -->
+                    <div style="padding: 2rem;">
+                        <form id="newRoomForm" onsubmit="handleCreateRoom(event)">
+                            <div style="margin-bottom: 1.5rem;">
+                                <label for="roomName" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem;">Room Name *</label>
+                                <input type="text" id="roomName" required maxlength="50" 
+                                       placeholder="e.g., Marketing Strategies" 
+                                       style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-family: inherit; font-size: 0.875rem;">
+                                <small style="color: #6b7280; font-size: 0.75rem;">3-50 characters, will be used to create room URL</small>
+                            </div>
+                            <div style="margin-bottom: 1.5rem;">
+                                <label for="roomDescription" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151; font-size: 0.875rem;">Room Description *</label>
+                                <textarea id="roomDescription" required maxlength="200" rows="3"
+                                          placeholder="Describe what this room is for..." 
+                                          style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-family: inherit; resize: vertical; font-size: 0.875rem;"></textarea>
+                                <small style="color: #6b7280; font-size: 0.75rem;">10-200 characters describing the room's purpose</small>
+                            </div>
+                            <div id="roomError" style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+                        </form>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="background: #f8fafc; padding: 1rem 2rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                        <button type="button" onclick="closeNewRoomModal()" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Cancel</button>
+                        <button type="submit" form="newRoomForm" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Create Room</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -319,7 +325,9 @@ function handleCreateRoom(event) {
         window.roomManager.renderRoomsList('roomsList', newRoom.id);
         
         // Switch to new room
-        switchRoom(newRoom.id);
+        if (typeof switchRoom === 'function') {
+            switchRoom(newRoom.id);
+        }
         
         // Show success message
         showToast(`Room "${roomName}" created successfully!`, 'success');
@@ -343,7 +351,9 @@ function deleteRoom(roomId) {
             
             // Switch to general room if we're deleting the current room
             if (roomId === window.roomManager.currentRoom) {
-                switchRoom('general');
+                if (typeof switchRoom === 'function') {
+                    switchRoom('general');
+                }
             }
             
             showToast(`Room "${room.name}" deleted successfully!`, 'success');
@@ -360,14 +370,16 @@ function showToast(message, type = 'info') {
         position: fixed;
         top: 20px;
         right: 20px;
-        background: ${type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--error)' : 'var(--primary)'};
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#6366f1'};
         color: white;
         padding: 1rem 1.5rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         z-index: 10000;
         font-weight: 500;
         animation: slideInRight 0.3s ease-out;
+        font-family: 'Inter', sans-serif;
+        max-width: 300px;
     `;
     toast.textContent = message;
     
@@ -393,7 +405,7 @@ style.textContent = `
     }
     
     .delete-room-btn {
-        background: var(--error);
+        background: #ef4444;
         color: white;
         border: none;
         border-radius: 50%;
