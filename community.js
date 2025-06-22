@@ -111,7 +111,19 @@ function updateRoomsList() {
         const roomElement = document.createElement('div');
         roomElement.className = 'room-item';
         roomElement.setAttribute('data-room', room._id);
-        roomElement.onclick = () => switchRoom(room._id);
+        
+        // Mark default rooms so they can't be deleted
+        if (room.isDefault) {
+            roomElement.setAttribute('data-default', 'true');
+        }
+        
+        roomElement.onclick = (e) => {
+            // Don't switch room if clicking delete button
+            if (e.target.classList.contains('room-delete-btn')) {
+                return;
+            }
+            switchRoom(room._id);
+        };
 
         // Check if this is the current room
         if (room._id === currentRoomId) {
@@ -124,7 +136,7 @@ function updateRoomsList() {
                 <p>${room.description}</p>
             </div>
             <div class="room-stats">
-                <span class="member-count">${room.messageCount || 0}</span>
+                ${!room.isDefault ? `<button class="room-delete-btn" onclick="deleteRoom('${room._id}')" title="Delete room">×</button>` : ''}
             </div>
         `;
 
@@ -399,11 +411,210 @@ async function createRoom() {
     }
 }
 
-// Toggle members list
+// Delete a room
+async function deleteRoom(roomId) {
+    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete room');
+        }
+
+        console.log('Room deleted successfully');
+
+        // If we were in the deleted room, switch to General Discussion
+        if (currentRoomId === roomId) {
+            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+            if (generalRoom) {
+                switchRoom(generalRoom._id);
+            }
+        }
+
+        // Reload rooms
+        await loadRooms();
+
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
+    }
+}
+
+// Search functionality
+async function performSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchQuery = searchInput?.value?.trim();
+    
+    if (!searchQuery) {
+        closeSearch();
+        return;
+    }
+
+    try {
+        // Show search results panel
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.style.display = 'block';
+        }
+
+        const results = await searchMessagesAndRooms(searchQuery);
+        displaySearchResults(results);
+
+    } catch (error) {
+        console.error('Error performing search:', error);
+        showErrorMessage('Search failed. Please try again.');
+    }
+}
+
+// Search through messages and rooms
+async function searchMessagesAndRooms(query) {
+    const results = [];
+    
+    try {
+        // Search rooms by name and description
+        const roomResults = rooms.filter(room => 
+            room.name.toLowerCase().includes(query.toLowerCase()) ||
+            room.description.toLowerCase().includes(query.toLowerCase())
+        );
+
+        roomResults.forEach(room => {
+            results.push({
+                type: 'room',
+                title: room.name,
+                preview: room.description,
+                data: room
+            });
+        });
+
+        // Search messages in all rooms
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (token) {
+            for (const room of rooms) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/rooms/${room._id}/messages`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const messages = await response.json();
+                        const matchingMessages = messages.filter(message => 
+                            (message.content || message.message || '').toLowerCase().includes(query.toLowerCase())
+                        );
+
+                        matchingMessages.forEach(message => {
+                            results.push({
+                                type: 'message',
+                                title: `Message in ${room.name}`,
+                                preview: (message.content || message.message || '').substring(0, 100) + '...',
+                                data: { message, room }
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error searching messages in room:', room.name, error);
+                }
+            }
+        }
+
+    } catch (error) {
+        console.error('Error in search:', error);
+    }
+
+    return results;
+}
+
+// Display search results
+function displaySearchResults(results) {
+    const searchContent = document.getElementById('searchContent');
+    if (!searchContent) return;
+
+    if (results.length === 0) {
+        searchContent.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                <p>No results found</p>
+            </div>
+        `;
+        return;
+    }
+
+    searchContent.innerHTML = '';
+
+    results.forEach(result => {
+        const resultElement = document.createElement('div');
+        resultElement.className = 'search-result-item';
+        
+        if (result.type === 'room') {
+            resultElement.onclick = () => {
+                switchRoom(result.data._id);
+                closeSearch();
+            };
+        } else if (result.type === 'message') {
+            resultElement.onclick = () => {
+                switchRoom(result.data.room._id);
+                closeSearch();
+                // Optionally highlight the message
+            };
+        }
+
+        resultElement.innerHTML = `
+            <div class="search-result-type">${result.type}</div>
+            <div class="search-result-title">${escapeHtml(result.title)}</div>
+            <div class="search-result-preview">${escapeHtml(result.preview)}</div>
+        `;
+
+        searchContent.appendChild(resultElement);
+    });
+}
+
+// Close search results
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+}
+
+// Add search on Enter key
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+    }
+});
+
+// Toggle members list (keeping for compatibility but now used for search)
 function toggleMembersList() {
-    const membersList = document.getElementById('membersList');
-    if (membersList) {
-        membersList.style.display = membersList.style.display === 'none' ? 'block' : 'none';
+    // This function is kept for compatibility but now toggles search
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults) {
+        searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
     }
 }
 
