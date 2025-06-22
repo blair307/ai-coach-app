@@ -3688,3 +3688,524 @@ select:focus-visible,
         border-radius: 2px;
     }
 }
+
+/* =================================
+   CRITICAL FIXES - ADD TO END OF STYLES.CSS
+   ================================= */
+
+/* FIX 1: Force Mobile Community Layout */
+@media (max-width: 768px) {
+    /* Force community container to stack vertically */
+    .community-container {
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: calc(100vh - 6rem) !important;
+        overflow: visible !important;
+    }
+    
+    /* Fix rooms sidebar to be horizontal on mobile */
+    .rooms-sidebar {
+        width: 100% !important;
+        max-height: 200px !important;
+        min-height: 150px !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
+        overflow: visible !important;
+    }
+    
+    /* Make rooms list horizontal scroll */
+    .rooms-list {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+        height: auto !important;
+    }
+    
+    /* Fix individual room items */
+    .room-item {
+        min-width: 200px !important;
+        max-width: 250px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        height: auto !important;
+        position: relative !important;
+    }
+    
+    /* Fix chat area to take remaining space */
+    .chat-area {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: calc(100vh - 280px) !important;
+        width: 100% !important;
+        overflow: hidden !important;
+    }
+    
+    /* Stack chat header elements */
+    .chat-area .chat-header {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+        padding: 1rem !important;
+    }
+    
+    /* Center room title */
+    .room-title {
+        text-align: center !important;
+        order: 1 !important;
+    }
+    
+    /* Fix chat controls */
+    .chat-controls {
+        display: flex !important;
+        justify-content: center !important;
+        width: 100% !important;
+        order: 2 !important;
+    }
+    
+    /* Fix search to be full width */
+    .simple-search {
+        width: 100% !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .simple-search-input {
+        width: 100% !important;
+        text-align: center !important;
+        font-size: 16px !important; /* Prevent zoom on iOS */
+    }
+    
+    .simple-search-btn,
+    .simple-search-clear {
+        width: 100% !important;
+        padding: 0.75rem !important;
+    }
+    
+    /* Fix messages container */
+    .chat-messages-container {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    
+    /* Fix messages area */
+    .chat-messages {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        padding: 1rem !important;
+    }
+    
+    /* Fix input area */
+    .chat-input-area {
+        flex-shrink: 0 !important;
+        padding: 1rem !important;
+    }
+    
+    .chat-input-area .chat-input {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .input-actions {
+        display: flex !important;
+        gap: 0.75rem !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+    }
+}
+
+/* FIX 2: Calendar Layout Fix */
+.calendar-container {
+    padding: 0;
+    overflow: visible !important;
+}
+
+.compact-calendar {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.calendar-weekdays {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    background: var(--border);
+    width: 100% !important;
+}
+
+.calendar-days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 1px;
+    background: var(--border);
+    width: 100% !important;
+}
+
+.calendar-day {
+    background: var(--background);
+    padding: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 32px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    aspect-ratio: 1 !important; /* Keep square shape */
+}
+
+@media (max-width: 768px) {
+    .calendar-day {
+        min-height: 28px;
+        padding: 0.25rem;
+        font-size: 0.75rem;
+        aspect-ratio: 1 !important;
+    }
+    
+    .weekday {
+        padding: 0.375rem 0.25rem;
+        font-size: 0.7rem;
+    }
+}
+
+/* FIX 3: Room Delete Button Mobile Fix */
+@media (max-width: 768px) {
+    .room-delete-btn {
+        position: static !important;
+        opacity: 1 !important;
+        margin-top: 0.5rem !important;
+        margin-left: auto !important;
+        width: 24px !important;
+        height: 24px !important;
+        font-size: 14px !important;
+    }
+}
+
+/* FIX 4: Scrollbar for horizontal room scroll */
+@media (max-width: 768px) {
+    .rooms-list::-webkit-scrollbar {
+        height: 6px !important;
+    }
+    
+    .rooms-list::-webkit-scrollbar-track {
+        background: var(--surface) !important;
+        border-radius: 3px !important;
+    }
+    
+    .rooms-list::-webkit-scrollbar-thumb {
+        background: var(--border) !important;
+        border-radius: 3px !important;
+    }
+    
+    .rooms-list::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted) !important;
+    }
+}
+
+/* FIX 5: Search Highlight Styles */
+.search-highlight {
+    background: #fef08a !important;
+    color: #92400e !important;
+    padding: 0 2px !important;
+    border-radius: 3px !important;
+    font-weight: 600 !important;
+}
+
+/* FIX 6: Simple Search Button Styles */
+.simple-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    transition: border-color 0.2s ease;
+    flex-wrap: wrap;
+}
+
+.simple-search:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.simple-search-input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    flex: 1;
+    min-width: 150px;
+    padding: 0.25rem;
+}
+
+.simple-search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.simple-search-btn,
+.simple-search-clear {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.simple-search-btn:hover,
+.simple-search-clear:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+}
+
+.simple-search-clear {
+    background: var(--text-muted);
+    display: none;
+}
+
+.simple-search-clear:hover {
+    background: var(--text-primary);
+}
+
+/* FIX 7: Timer Display Mobile Fix */
+@media (max-width: 768px) {
+    .timer-display {
+        padding: 0.75rem 0;
+        margin-bottom: 1rem;
+    }
+    
+    .countdown-timer {
+        font-size: 1.75rem !important;
+    }
+    
+    .current-time {
+        font-size: 1.25rem !important;
+    }
+    
+    .countdown-date,
+    .current-date {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* FIX 8: Dashboard Card Mobile Spacing */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1.5rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .dashboard-card {
+        padding: 1.5rem !important;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    .stat {
+        min-height: 100px !important;
+        padding: 1rem 0.5rem !important;
+    }
+    
+    .stat-number {
+        font-size: 2rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem !important;
+    }
+}
+
+/* FIX 9: Force App Container Mobile Behavior */
+@media (max-width: 768px) {
+    .app-container {
+        display: flex !important;
+        flex-direction: row !important;
+        min-height: 100vh !important;
+    }
+    
+    .sidebar {
+        position: fixed !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 280px !important;
+        height: 100vh !important;
+        transform: translateX(-280px) !important;
+        transition: transform 0.3s ease-in-out !important;
+        z-index: 1000 !important;
+        background: var(--background) !important;
+        border-right: 1px solid var(--border) !important;
+        overflow-y: auto !important;
+    }
+    
+    .sidebar.sidebar-open,
+    .sidebar.active {
+        transform: translateX(0) !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+        padding: 1rem !important;
+        width: 100% !important;
+        flex: 1 !important;
+    }
+    
+    .floating-toggle {
+        display: flex !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 99999 !important;
+    }
+    
+    /* Sidebar overlay for mobile */
+    .sidebar.sidebar-open::after,
+    .sidebar.active::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 280px;
+        width: calc(100vw - 280px);
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        cursor: pointer;
+    }
+}
+
+/* FIX 10: Content Header Mobile Spacing */
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 1rem !important;
+        margin-bottom: 2rem !important;
+        padding-bottom: 1rem !important;
+    }
+    
+    .content-header h1 {
+        font-size: 1.75rem !important;
+        text-align: center !important;
+    }
+    
+    .header-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
+    }
+    
+    .header-actions .btn {
+        width: 100% !important;
+    }
+    
+    .notification-icon-container {
+        align-self: center !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* FIX 11: Message Content Mobile Spacing */
+@media (max-width: 768px) {
+    .message-group {
+        margin-bottom: 1rem !important;
+    }
+    
+    .message-header {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .message-content {
+        margin-left: 0 !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+        line-height: 1.5 !important;
+    }
+    
+    .user-avatar {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .username {
+        font-size: 0.9rem !important;
+    }
+    
+    .message-timestamp {
+        font-size: 0.75rem !important;
+    }
+}
+
+/* FIX 12: Force Proper Grid Layouts */
+.calendar-weekdays,
+.calendar-days {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    width: 100% !important;
+}
+
+.calendar-days .calendar-day {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* FIX 13: Textarea Mobile Fix */
+@media (max-width: 768px) {
+    textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        resize: none !important;
+    }
+    
+    .chat-input textarea,
+    .chat-input-area textarea {
+        min-height: 60px !important;
+        font-size: 16px !important;
+    }
+}
+
+/* FIX 14: Button Touch Targets */
+@media (max-width: 768px) {
+    .btn,
+    .room-item,
+    .menu-item,
+    .simple-search-btn,
+    .simple-search-clear {
+        min-height: 44px !important; /* Apple's recommended touch target */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .sidebar-toggle,
+    .floating-toggle {
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+}
