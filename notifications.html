@@ -5,20 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- Notification Manager -->
-    <script src="notification-manager.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (window.notificationManager) {
-                window.notificationManager.init();
-                setTimeout(() => {
-                    window.notificationManager.updateBadge();
-                    loadNotifications();
-                }, 200);
-            }
-        });
-    </script>
 </head>
 <body>
     <div class="app-container">
@@ -100,10 +86,10 @@
 
                 <!-- Notifications List -->
                 <div class="notifications-list" id="notificationsList">
-                    <!-- Notifications will be populated by JavaScript from notification manager -->
+                    <!-- Notifications will be populated by JavaScript -->
                 </div>
 
-                <!-- Empty State (Hidden by default) -->
+                <!-- Empty State -->
                 <div class="empty-state" id="emptyState" style="display: none;">
                     <h3>No notifications found</h3>
                     <p>You're all caught up! Check back later for updates on your emotional health journey.</p>
@@ -116,10 +102,172 @@
     <script src="notifications.js"></script>
     
     <script>
-    // Global variables
+    // ===== NOTIFICATION MANAGER - INLINE =====
+    class NotificationManager {
+        constructor() {
+            this.unreadCount = 0;
+            this.notifications = [];
+            this.initialized = false;
+        }
+
+        init() {
+            if (this.initialized) return;
+            this.loadNotifications();
+            this.updateBadge();
+            this.initialized = true;
+            console.log('Notification Manager initialized with', this.unreadCount, 'unread notifications');
+        }
+
+        loadNotifications() {
+            const saved = localStorage.getItem('eeh_notifications');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    this.notifications = data.notifications || [];
+                    this.unreadCount = this.notifications.filter(n => n.unread).length;
+                    console.log('Loaded', this.notifications.length, 'notifications,', this.unreadCount, 'unread');
+                    return;
+                } catch (e) {
+                    console.log('Error loading saved notifications:', e);
+                }
+            }
+
+            // Default notifications
+            this.notifications = [
+                {
+                    id: 1, type: 'coaching', title: 'New Coaching Insights Available',
+                    message: 'Your AI coach has generated new insights based on your recent conversations. Review your personalized recommendations for emotional wellness and business growth.',
+                    time: '2 hours ago', unread: true, timestamp: Date.now() - (2 * 60 * 60 * 1000)
+                },
+                {
+                    id: 2, type: 'community', title: 'New Messages in Business Growth',
+                    message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room. Join the conversation about scaling strategies.',
+                    time: '4 hours ago', unread: true, timestamp: Date.now() - (4 * 60 * 60 * 1000)
+                },
+                {
+                    id: 3, type: 'system', title: 'Weekly Progress Report Ready',
+                    message: 'Your weekly emotional health and business progress report is now available. See your growth patterns and achievements.',
+                    time: '1 day ago', unread: true, timestamp: Date.now() - (24 * 60 * 60 * 1000)
+                },
+                {
+                    id: 4, type: 'coaching', title: 'Goal Achievement Milestone',
+                    message: 'Congratulations! You\'ve completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.',
+                    time: '2 days ago', unread: false, timestamp: Date.now() - (2 * 24 * 60 * 60 * 1000)
+                },
+                {
+                    id: 5, type: 'community', title: 'Someone Mentioned You',
+                    message: 'Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.',
+                    time: '3 days ago', unread: false, timestamp: Date.now() - (3 * 24 * 60 * 60 * 1000)
+                },
+                {
+                    id: 6, type: 'community', title: 'New Room Created: Mindfulness',
+                    message: 'A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.',
+                    time: '4 days ago', unread: false, timestamp: Date.now() - (4 * 24 * 60 * 60 * 1000)
+                },
+                {
+                    id: 7, type: 'system', title: 'Platform Update: New Features',
+                    message: 'We\'ve added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.',
+                    time: '1 week ago', unread: false, timestamp: Date.now() - (7 * 24 * 60 * 60 * 1000)
+                },
+                {
+                    id: 8, type: 'billing', title: 'Payment Successful',
+                    message: 'Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.',
+                    time: '1 week ago', unread: false, timestamp: Date.now() - (7 * 24 * 60 * 60 * 1000)
+                }
+            ];
+
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            this.saveNotifications();
+            console.log('Created default notifications:', this.notifications.length, 'total,', this.unreadCount, 'unread');
+        }
+
+        saveNotifications() {
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            const data = {
+                notifications: this.notifications,
+                unreadCount: this.unreadCount,
+                lastUpdated: Date.now()
+            };
+            localStorage.setItem('eeh_notifications', JSON.stringify(data));
+            console.log('Saved notifications:', this.notifications.length, 'total,', this.unreadCount, 'unread');
+        }
+
+        updateBadge() {
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            const badges = document.querySelectorAll('#notificationBadge, .notification-badge');
+            badges.forEach(badge => {
+                if (this.unreadCount > 0) {
+                    badge.textContent = this.unreadCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+            console.log('Updated badges to show:', this.unreadCount);
+        }
+
+        addNotification(notification) {
+            const newNotification = {
+                id: Date.now(),
+                unread: true,
+                timestamp: Date.now(),
+                ...notification
+            };
+            this.notifications.unshift(newNotification);
+            this.saveNotifications();
+            this.updateBadge();
+            console.log('New notification added:', newNotification.title, '| Total unread:', this.unreadCount);
+        }
+
+        markAsRead(notificationId) {
+            const notification = this.notifications.find(n => n.id === notificationId);
+            if (notification && notification.unread) {
+                notification.unread = false;
+                this.saveNotifications();
+                this.updateBadge();
+                console.log('Marked notification', notificationId, 'as read | Remaining unread:', this.unreadCount);
+            }
+        }
+
+        markAllAsRead() {
+            let changed = false;
+            this.notifications.forEach(n => {
+                if (n.unread) {
+                    n.unread = false;
+                    changed = true;
+                }
+            });
+            
+            if (changed) {
+                this.saveNotifications();
+                this.updateBadge();
+                console.log('Marked all notifications as read');
+            }
+        }
+
+        clearAllNotifications() {
+            this.notifications = [];
+            this.saveNotifications();
+            this.updateBadge();
+            console.log('Cleared all notifications');
+        }
+
+        getUnreadCount() {
+            this.unreadCount = this.notifications.filter(n => n.unread).length;
+            return this.unreadCount;
+        }
+
+        getNotifications() {
+            return this.notifications;
+        }
+    }
+
+    // ===== INITIALIZE MANAGER =====
+    window.notificationManager = new NotificationManager();
+
+    // ===== MAIN FUNCTIONALITY =====
     let currentFilter = 'all';
 
-    // Common logout function
     function logout() {
         localStorage.removeItem('authToken');
         localStorage.removeItem('eeh_token');
@@ -129,14 +277,12 @@
         window.location.href = 'login.html';
     }
 
-    // FIXED: Notification management functions that work properly
     function markAllRead() {
         console.log('Mark all read clicked');
         if (window.notificationManager) {
             window.notificationManager.markAllAsRead();
+            loadNotifications(); // Refresh immediately
             console.log('All notifications marked as read');
-        } else {
-            console.log('Notification manager not available');
         }
     }
 
@@ -145,13 +291,8 @@
         if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
             if (window.notificationManager) {
                 window.notificationManager.clearAllNotifications();
+                loadNotifications(); // Refresh immediately
                 console.log('All notifications cleared');
-                // Force immediate refresh
-                setTimeout(() => {
-                    loadNotifications();
-                }, 100);
-            } else {
-                console.log('Notification manager not available');
             }
         }
     }
@@ -164,34 +305,25 @@
         
         if (window.notificationManager) {
             window.notificationManager.markAsRead(notificationId);
+            notificationItem.classList.remove('unread');
+            notificationItem.classList.add('read');
+            element.remove(); // Remove the "Mark as Read" button
+            updateFilterCounts();
             console.log('Notification', notificationId, 'marked as read');
         }
     }
 
-    function goToCoach() {
-        window.location.href = 'ai-coach.html';
-    }
-
-    function goToCommunity() {
-        window.location.href = 'community.html';
-    }
-
-    function goToDashboard() {
-        window.location.href = 'dashboard.html';
-    }
-
-    function goToBilling() {
-        window.location.href = 'billing.html';
-    }
+    function goToCoach() { window.location.href = 'ai-coach.html'; }
+    function goToCommunity() { window.location.href = 'community.html'; }
+    function goToDashboard() { window.location.href = 'dashboard.html'; }
+    function goToBilling() { window.location.href = 'billing.html'; }
 
     function filterNotifications(type) {
         currentFilter = type;
         
-        // Update active filter button
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
         
-        // Filter notifications
         const notifications = document.querySelectorAll('.notification-item');
         let visibleCount = 0;
         
@@ -216,7 +348,6 @@
             }
         });
         
-        // Show/hide empty state
         const emptyState = document.getElementById('emptyState');
         const notificationsList = document.getElementById('notificationsList');
         if (visibleCount === 0) {
@@ -228,7 +359,6 @@
         }
     }
 
-    // FIXED: Load notifications from notification manager
     function loadNotifications() {
         console.log('Loading notifications...');
         
@@ -249,7 +379,6 @@
             return;
         }
         
-        // Sort notifications by timestamp (newest first)
         const sortedNotifications = notifications.sort((a, b) => b.timestamp - a.timestamp);
         
         notificationsList.innerHTML = sortedNotifications.map(notification => `
@@ -271,10 +400,8 @@
             </div>
         `).join('');
         
-        // Update filter counts
         updateFilterCounts();
         
-        // Apply current filter
         if (currentFilter !== 'all') {
             const activeButton = document.querySelector('.filter-btn.active');
             if (activeButton) {
@@ -282,7 +409,6 @@
             }
         }
         
-        // Show notifications list
         notificationsList.style.display = 'block';
         document.getElementById('emptyState').style.display = 'none';
         
@@ -332,29 +458,16 @@
         });
     }
 
-    // Listen for notification updates from the manager
-    window.addEventListener('notificationsUpdated', function() {
-        console.log('Notifications updated event received - refreshing display');
-        setTimeout(() => {
-            loadNotifications();
-        }, 100);
-    });
-
-    // Initialize notifications when page loads
+    // INITIALIZE
     document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded - initializing notifications');
         
-        // Multiple attempts to ensure notifications load
-        setTimeout(() => {
-            loadNotifications();
-        }, 300);
+        window.notificationManager.init();
         
         setTimeout(() => {
-            if (window.notificationManager && window.notificationManager.notifications.length === 0) {
-                console.log('Retrying notification load...');
-                loadNotifications();
-            }
-        }, 1000);
+            window.notificationManager.updateBadge();
+            loadNotifications();
+        }, 200);
     });
 
     // Debug function
@@ -368,7 +481,6 @@
         console.log('========================');
     }
     
-    // Make debug function available globally
     window.debugNotifications = debugNotifications;
     </script>
 
