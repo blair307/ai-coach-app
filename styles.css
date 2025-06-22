@@ -2654,3 +2654,137 @@ select:focus-visible,
         font-size: 0.7rem;
     }
 }
+
+/* ADD THIS CSS TO THE END OF YOUR styles.css FILE */
+/* This overrides conflicting sidebar styles and makes the toggle work */
+
+/* Force sidebar to be moveable */
+.sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background: var(--background) !important;
+    border-right: 1px solid var(--border) !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+    transition: transform 0.3s ease !important;
+    transform: translateX(0) !important;
+}
+
+/* Sidebar closed state */
+.sidebar.closed {
+    transform: translateX(-280px) !important;
+}
+
+/* Main content adjustments */
+.main-content {
+    margin-left: 280px !important;
+    transition: margin-left 0.3s ease !important;
+    padding: 2rem !important;
+    background: var(--surface) !important;
+    min-height: 100vh !important;
+}
+
+/* Main content when sidebar is closed */
+.main-content.expanded {
+    margin-left: 0 !important;
+}
+
+/* Hamburger button - force visibility and functionality */
+.sidebar-toggle {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: 44px !important;
+    height: 44px !important;
+    background: #f1f5f9 !important;
+    border: 2px solid #6366f1 !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    gap: 4px !important;
+    padding: 8px !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    z-index: 9999 !important;
+}
+
+.sidebar-toggle:hover {
+    background: #e2e8f0 !important;
+    border-color: #4f46e5 !important;
+    transform: scale(1.05) !important;
+}
+
+.hamburger-line {
+    display: block !important;
+    width: 24px !important;
+    height: 3px !important;
+    background: #6366f1 !important;
+    border-radius: 2px !important;
+    transition: all 0.2s ease !important;
+}
+
+.sidebar-toggle:hover .hamburger-line {
+    background: #4f46e5 !important;
+}
+
+/* Floating toggle button for mobile */
+.floating-toggle {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: #6366f1 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    z-index: 99999 !important;
+    display: none !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 4px !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.floating-toggle:hover {
+    background: #4f46e5 !important;
+    transform: scale(1.05) !important;
+}
+
+.floating-toggle .hamburger-line {
+    background: white !important;
+    width: 20px !important;
+    height: 3px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-280px) !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .floating-toggle {
+        display: flex !important;
+    }
+    
+    /* Overlay for mobile */
+    .sidebar-overlay {
+        position: fixed !important;
+        top: 0 !important;
+        left: 280px !important;
+        width: calc(100vw - 280px) !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        z-index: 999 !important;
+        cursor: pointer !important;
+    }
+}
