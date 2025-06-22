@@ -315,6 +315,43 @@
     .room-item[data-default="true"] .room-delete-btn {
         display: none;
     }
+
+    /* Search Highlighting Styles */
+    .search-highlight {
+        background: #fef08a !important;
+        color: #92400e !important;
+        padding: 0 2px !important;
+        border-radius: 3px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Enhanced Search Results */
+    .search-result-preview strong {
+        background: #fef08a !important;
+        color: #92400e !important;
+        font-weight: 700 !important;
+        border-radius: 3px !important;
+    }
+
+    .search-result-item {
+        transition: all 0.3s ease;
+    }
+
+    .search-result-item:hover {
+        background: var(--primary-light) !important;
+        border-color: var(--primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+    }
+
+    /* Toggle members list (keeping for compatibility but now used for search) */
+    function toggleMembersList() {
+        // This function is kept for compatibility but now toggles search
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
+        }
+    }
     </style>
     
     <script>
