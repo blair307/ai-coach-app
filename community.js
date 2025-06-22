@@ -1,4 +1,4 @@
-// Community.js - Backend Connected Version for Persistent Storage
+// Community.js - Backend Connected Version with Simple Search
 // This replaces the localStorage version with real database storage
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -6,6 +6,7 @@ let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
+let currentMessages = []; // Store current messages for search
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -207,11 +208,15 @@ async function loadMessages(roomId) {
         const messages = await response.json();
         console.log('Loaded messages for room:', roomId, messages);
         
+        // Store messages for search
+        currentMessages = messages;
+        
         displayMessages(messages);
         
     } catch (error) {
         console.error('Error loading messages:', error);
         // Show empty state or cached messages
+        currentMessages = [];
         displayMessages([]);
     }
 }
@@ -454,212 +459,156 @@ async function deleteRoom(roomId) {
     }
 }
 
-// Delete a room
-async function deleteRoom(roomId) {
-    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
-        return;
-    }
+// =================================
+// SIMPLE SEARCH FUNCTIONALITY
+// =================================
 
-    try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to delete room');
-        }
-
-        console.log('Room deleted successfully');
-
-        // If we were in the deleted room, switch to General Discussion
-        if (currentRoomId === roomId) {
-            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
-            if (generalRoom) {
-                switchRoom(generalRoom._id);
-            }
-        }
-
-        // Reload rooms
-        await loadRooms();
-
-    } catch (error) {
-        console.error('Error deleting room:', error);
-        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
-    }
-}
-
-// Search functionality
-async function performSearch() {
-    const searchInput = document.getElementById('searchInput');
+// Simple search function that highlights text in current messages
+function performSimpleSearch() {
+    const searchInput = document.getElementById('simpleSearchInput');
     const searchQuery = searchInput?.value?.trim();
     
-    if (!searchQuery) {
-        closeSearch();
+    if (!searchQuery || searchQuery.length < 2) {
+        clearSimpleSearch();
+        if (searchQuery.length > 0 && searchQuery.length < 2) {
+            showErrorMessage('Please enter at least 2 characters to search');
+        }
         return;
     }
 
-    try {
-        // Show search results panel
-        const searchResults = document.getElementById('searchResults');
-        if (searchResults) {
-            searchResults.style.display = 'block';
-        }
-
-        const results = await searchMessagesAndRooms(searchQuery);
-        displaySearchResults(results);
-
-    } catch (error) {
-        console.error('Error performing search:', error);
-        showErrorMessage('Search failed. Please try again.');
-    }
-}
-
-// Search through messages and rooms
-async function searchMessagesAndRooms(query) {
-    const results = [];
+    // Clear any existing highlights
+    clearSearchHighlights();
     
-    try {
-        // Search rooms by name and description
-        const roomResults = rooms.filter(room => 
-            room.name.toLowerCase().includes(query.toLowerCase()) ||
-            room.description.toLowerCase().includes(query.toLowerCase())
-        );
-
-        roomResults.forEach(room => {
-            results.push({
-                type: 'room',
-                title: room.name,
-                preview: room.description,
-                data: room
-            });
-        });
-
-        // Search messages in all rooms
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (token) {
-            for (const room of rooms) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/rooms/${room._id}/messages`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        const messages = await response.json();
-                        const matchingMessages = messages.filter(message => 
-                            (message.content || message.message || '').toLowerCase().includes(query.toLowerCase())
-                        );
-
-                        matchingMessages.forEach(message => {
-                            results.push({
-                                type: 'message',
-                                title: `Message in ${room.name}`,
-                                preview: (message.content || message.message || '').substring(0, 100) + '...',
-                                data: { message, room }
-                            });
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error searching messages in room:', room.name, error);
+    // Search and highlight in current messages
+    let foundMatches = 0;
+    const messagesContainer = document.getElementById('communityMessages');
+    
+    if (messagesContainer && currentMessages.length > 0) {
+        const messageElements = messagesContainer.querySelectorAll('.message-content');
+        
+        messageElements.forEach((element, index) => {
+            const originalMessage = currentMessages[index];
+            const messageText = (originalMessage?.content || originalMessage?.message || '').toLowerCase();
+            const searchTerm = searchQuery.toLowerCase();
+            
+            if (messageText.includes(searchTerm)) {
+                // Highlight the search term
+                const regex = new RegExp(`(${escapeRegex(searchQuery)})`, 'gi');
+                const highlightedText = element.textContent.replace(regex, '<span class="search-highlight">$1</span>');
+                element.innerHTML = highlightedText;
+                foundMatches++;
+                
+                // Scroll to first match
+                if (foundMatches === 1) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
-        }
-
-    } catch (error) {
-        console.error('Error in search:', error);
+        });
     }
-
-    return results;
+    
+    // Show results
+    if (foundMatches > 0) {
+        showSearchStatus(`Found ${foundMatches} match${foundMatches === 1 ? '' : 'es'} for "${searchQuery}"`);
+        document.getElementById('simpleSearchClear').style.display = 'inline-block';
+    } else {
+        showSearchStatus(`No matches found for "${searchQuery}"`);
+        document.getElementById('simpleSearchClear').style.display = 'inline-block';
+    }
 }
 
-// Display search results
-function displaySearchResults(results) {
-    const searchContent = document.getElementById('searchContent');
-    if (!searchContent) return;
-
-    if (results.length === 0) {
-        searchContent.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                <p>No results found</p>
-            </div>
-        `;
-        return;
+// Clear search highlights and reset
+function clearSimpleSearch() {
+    // Clear the search input
+    const searchInput = document.getElementById('simpleSearchInput');
+    if (searchInput) {
+        searchInput.value = '';
     }
+    
+    // Clear highlights
+    clearSearchHighlights();
+    
+    // Hide clear button
+    const clearBtn = document.getElementById('simpleSearchClear');
+    if (clearBtn) {
+        clearBtn.style.display = 'none';
+    }
+    
+    // Clear status
+    clearSearchStatus();
+}
 
-    searchContent.innerHTML = '';
-
-    results.forEach(result => {
-        const resultElement = document.createElement('div');
-        resultElement.className = 'search-result-item';
-        
-        if (result.type === 'room') {
-            resultElement.onclick = () => {
-                switchRoom(result.data._id);
-                closeSearch();
-            };
-        } else if (result.type === 'message') {
-            resultElement.onclick = () => {
-                switchRoom(result.data.room._id);
-                closeSearch();
-                // Optionally highlight the message
-            };
-        }
-
-        resultElement.innerHTML = `
-            <div class="search-result-type">${result.type}</div>
-            <div class="search-result-title">${escapeHtml(result.title)}</div>
-            <div class="search-result-preview">${escapeHtml(result.preview)}</div>
-        `;
-
-        searchContent.appendChild(resultElement);
+// Clear search highlights from messages
+function clearSearchHighlights() {
+    const highlights = document.querySelectorAll('.search-highlight');
+    highlights.forEach(highlight => {
+        const parent = highlight.parentNode;
+        parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+        parent.normalize();
     });
 }
 
-// Close search results
-function closeSearch() {
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
+// Escape regex special characters
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\        // Re-enable');
+}
+
+// Show search status message
+function showSearchStatus(message) {
+    // Remove any existing status
+    clearSearchStatus();
     
-    if (searchResults) {
-        searchResults.style.display = 'none';
-    }
+    // Create status element
+    const statusElement = document.createElement('div');
+    statusElement.id = 'searchStatus';
+    statusElement.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--primary);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        z-index: 1000;
+        font-size: 0.875rem;
+        max-width: 300px;
+    `;
+    statusElement.textContent = message;
     
-    if (searchInput) {
-        searchInput.value = '';
+    document.body.appendChild(statusElement);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        clearSearchStatus();
+    }, 3000);
+}
+
+// Clear search status message
+function clearSearchStatus() {
+    const existingStatus = document.getElementById('searchStatus');
+    if (existingStatus) {
+        existingStatus.remove();
     }
 }
 
 // Add search on Enter key
 document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
+    const searchInput = document.getElementById('simpleSearchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                performSearch();
+                performSimpleSearch();
+            }
+        });
+        
+        // Clear search when input is empty
+        searchInput.addEventListener('input', function(e) {
+            if (!e.target.value.trim()) {
+                clearSimpleSearch();
             }
         });
     }
 });
-
-// Toggle members list (keeping for compatibility but now used for search)
-function toggleMembersList() {
-    // This function is kept for compatibility but now toggles search
-    const searchResults = document.getElementById('searchResults');
-    if (searchResults) {
-        searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
-    }
-}
 
 // Add emoji functionality
 function addEmoji() {
