@@ -3560,4 +3560,131 @@ select:focus-visible,
 
 .btn-
 
+/* =================================
+   COMMUNITY PAGE MOBILE FIX
+   Add this CSS to fix the mobile layout
+   ================================= */
 
+/* Force mobile stacking for community container */
+@media (max-width: 768px) {
+    .community-container {
+        flex-direction: column !important;
+        height: auto !important;
+        min-height: calc(100vh - 6rem) !important;
+    }
+    
+    /* Fix rooms sidebar on mobile */
+    .rooms-sidebar {
+        width: 100% !important;
+        max-height: 180px !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Make rooms horizontal scroll on mobile */
+    .rooms-list {
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 1rem !important;
+        padding: 1rem !important;
+        white-space: nowrap !important;
+    }
+    
+    /* Fix room items for horizontal scroll */
+    .room-item {
+        min-width: 200px !important;
+        flex-shrink: 0 !important;
+        display: inline-flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        white-space: normal !important;
+    }
+    
+    /* Fix chat area on mobile */
+    .chat-area {
+        flex: 1 !important;
+        min-height: calc(100vh - 280px) !important;
+        width: 100% !important;
+    }
+    
+    /* Stack chat header elements */
+    .chat-area .chat-header {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+        padding: 1rem !important;
+    }
+    
+    /* Center room title */
+    .room-title {
+        text-align: center !important;
+    }
+    
+    /* Fix chat controls */
+    .chat-controls {
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    
+    /* Fix search container to be full width and centered */
+    .search-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Fix message container */
+    .chat-messages-container {
+        flex-direction: column !important;
+        overflow: visible !important;
+    }
+    
+    /* Fix messages area */
+    .chat-messages {
+        flex: 1 !important;
+        min-height: 300px !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Fix input area */
+    .chat-input-area {
+        padding: 1rem !important;
+    }
+    
+    .chat-input-area .chat-input {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    /* Fix search results on mobile */
+    .search-results {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100% !important;
+        height: 100vh !important;
+        z-index: 1000 !important;
+        border: none !important;
+        border-radius: 0 !important;
+    }
+}
+
+/* Ensure horizontal scrolling works smoothly */
+@media (max-width: 768px) {
+    .rooms-list::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .rooms-list::-webkit-scrollbar-track {
+        background: var(--surface);
+    }
+    
+    .rooms-list::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+    }
+}
