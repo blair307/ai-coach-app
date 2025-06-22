@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset
+// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + Goals API
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -49,7 +49,6 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// DATABASE SCHEMAS
 // Updated User Schema with Streak Tracking + Password Reset
 const userSchema = new mongoose.Schema({
   firstName: String,
@@ -72,7 +71,9 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Goals Schema
+const User = mongoose.model('User', userSchema);
+
+// Goals Schema - NEW ADDITION
 const goalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
@@ -83,39 +84,7 @@ const goalSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-// Notifications Schema
-const notificationSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
-  title: { type: String, required: true },
-  content: { type: String, required: true },
-  read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-// Chat Rooms Schema
-const roomSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  isDefault: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-
-// Chat Messages Schema (UNIFIED VERSION)
-const messageSchema = new mongoose.Schema({
-  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  username: { type: String, required: true },
-  avatar: { type: String, default: 'U' },
-  content: { type: String, required: true },
-  avatarColor: { type: String, default: '#6366f1' },
-  // Legacy fields for backward compatibility
-  room: String,
-  message: String,
-  timestamp: { type: Date, default: Date.now },
-  createdAt: { type: Date, default: Date.now }
-});
+const Goal = mongoose.model('Goal', goalSchema);
 
 // Chat History Schema with Conversation Memory
 const chatSchema = new mongoose.Schema({
@@ -129,13 +98,18 @@ const chatSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-// Models
-const User = mongoose.model('User', userSchema);
-const Goal = mongoose.model('Goal', goalSchema);
-const Notification = mongoose.model('Notification', notificationSchema);
-const Room = mongoose.model('Room', roomSchema);
-const Message = mongoose.model('Message', messageSchema);
 const Chat = mongoose.model('Chat', chatSchema);
+
+// Community Message Schema
+const messageSchema = new mongoose.Schema({
+  room: String,
+  username: String,
+  userId: String,
+  message: String,
+  timestamp: { type: Date, default: Date.now }
+});
+
+const Message = mongoose.model('Message', messageSchema);
 
 // Function to update user streak
 async function updateUserStreak(userId) {
@@ -200,30 +174,7 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// CREATE DEFAULT ROOMS FUNCTION
-async function createDefaultRooms() {
-  try {
-    const existingRooms = await Room.countDocuments();
-    if (existingRooms === 0) {
-      const defaultRooms = [
-        { name: 'General Discussion', description: 'Open chat for everyone', isDefault: true },
-        { name: 'Business Growth', description: 'Discuss scaling strategies', isDefault: true },
-        { name: 'Work-Life Balance', description: 'Managing business and personal life', isDefault: true },
-        { name: 'Success Stories', description: 'Share your wins and achievements', isDefault: true }
-      ];
-      
-      for (let roomData of defaultRooms) {
-        const room = new Room(roomData);
-        await room.save();
-      }
-      console.log('Default rooms created');
-    }
-  } catch (error) {
-    console.error('Error creating default rooms:', error);
-  }
-}
-
-// ROUTES START HERE
+// Routes
 
 // Health check
 app.get('/', (req, res) => {
@@ -235,208 +186,7 @@ app.get('/test', (req, res) => {
   res.json({ message: 'New code deployed!', timestamp: new Date() });
 });
 
-// GOALS API ROUTES
-app.get('/api/goals', authenticateToken, async (req, res) => {
-  try {
-    const goals = await Goal.find({ userId: req.user.userId }).sort({ createdAt: -1 });
-    res.json({
-      subscription: user.subscription,
-      customer: user.stripeCustomerId
-    });
-  } catch (error) {
-    console.error('Billing info error:', error);
-    res.status(500).json({ message: 'Failed to get billing info' });
-  }
-});
-
-// Health check endpoint for monitoring
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    services: {
-      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-      openai: openai ? 'available' : 'unavailable',
-      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
-      email: transporter ? 'configured' : 'not configured'
-    }
-  });
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { error: error.message })
-  });
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint not found' });
-});
-
-// Initialize default rooms AFTER MongoDB connection
-mongoose.connection.once('open', () => {
-  createDefaultRooms();
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
-  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
-  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-});json(goals);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch goals' });
-  }
-});
-
-app.post('/api/goals', authenticateToken, async (req, res) => {
-  try {
-    const goal = new Goal({
-      userId: req.user.userId,
-      title: req.body.title,
-      frequency: req.body.frequency
-    });
-    await goal.save();
-    res.json(goal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create goal' });
-  }
-});
-
-app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
-  try {
-    const goal = await Goal.findOne({ _id: req.params.id, userId: req.user.userId });
-    if (!goal) {
-      return res.status(404).json({ error: 'Goal not found' });
-    }
-    
-    goal.completed = !goal.completed;
-    if (goal.completed) {
-      goal.lastCompleted = new Date();
-      goal.streak += 1;
-    } else {
-      goal.streak = Math.max(0, goal.streak - 1);
-    }
-    
-    await goal.save();
-    res.json(goal);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update goal' });
-  }
-});
-
-app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
-  try {
-    await Goal.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
-    res.json({ message: 'Goal deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete goal' });
-  }
-});
-
-// NOTIFICATIONS API ROUTES
-app.get('/api/notifications', authenticateToken, async (req, res) => {
-  try {
-    const notifications = await Notification.find({ userId: req.user.userId })
-      .sort({ createdAt: -1 });
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch notifications' });
-  }
-});
-
-app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
-  try {
-    const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.userId },
-      { read: true },
-      { new: true }
-    );
-    res.json(notification);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to mark notification as read' });
-  }
-});
-
-app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
-  try {
-    await Notification.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
-    res.json({ message: 'Notification deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete notification' });
-  }
-});
-
-// CHAT ROOMS API ROUTES
-app.get('/api/rooms', authenticateToken, async (req, res) => {
-  try {
-    const rooms = await Room.find().populate('createdBy', 'username');
-    
-    const roomsWithCounts = await Promise.all(rooms.map(async (room) => {
-      const messageCount = await Message.countDocuments({ roomId: room._id });
-      return {
-        ...room.toObject(),
-        messageCount
-      };
-    }));
-    
-    res.json(roomsWithCounts);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch rooms' });
-  }
-});
-
-app.post('/api/rooms', authenticateToken, async (req, res) => {
-  try {
-    const room = new Room({
-      name: req.body.name,
-      description: req.body.description,
-      createdBy: req.user.userId
-    });
-    await room.save();
-    res.json(room);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to create room' });
-  }
-});
-
-app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
-  try {
-    const messages = await Message.find({ roomId: req.params.id })
-      .sort({ createdAt: 1 })
-      .limit(100);
-    res.json(messages);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch messages' });
-  }
-});
-
-app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.userId);
-    const message = new Message({
-      roomId: req.params.id,
-      userId: req.user.userId,
-      username: user ? `${user.firstName} ${user.lastName}` : 'User',
-      avatar: req.body.avatar || 'U',
-      content: req.body.content,
-      avatarColor: req.body.avatarColor || '#6366f1'
-    });
-    await message.save();
-    res.json(message);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to send message' });
-  }
-});
-
-// AUTH ROUTES
+// Register new user with payment
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { firstName, lastName, email, password, plan, stripeCustomerId, paymentIntentId } = req.body;
@@ -494,6 +244,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
+// Login user with streak tracking
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -533,11 +284,12 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Verify token
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
   res.json({ message: 'Token is valid', user: req.user });
 });
 
-// PASSWORD RESET ROUTES
+// Password Reset Request
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -598,6 +350,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
+// Password Reset Confirmation
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -637,7 +390,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// PAYMENT ROUTES
+// Create Stripe subscription
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
     const { email, planAmount, plan } = req.body;
@@ -664,7 +417,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
   }
 });
 
-// AI CHAT ROUTES
+// Send message to AI Assistant with Conversation Memory
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
@@ -757,6 +510,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
   }
 });
 
+// Save chat history
 app.post('/api/chat/save', authenticateToken, async (req, res) => {
   try {
     const { messages } = req.body;
@@ -775,6 +529,7 @@ app.post('/api/chat/save', authenticateToken, async (req, res) => {
   }
 });
 
+// Get chat history
 app.get('/api/chat/history', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -787,7 +542,7 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   }
 });
 
-// COMMUNITY ROUTES (LEGACY)
+// Get community messages
 app.get('/api/community/messages/:room', authenticateToken, async (req, res) => {
   try {
     const { room } = req.params;
@@ -803,36 +558,7 @@ app.get('/api/community/messages/:room', authenticateToken, async (req, res) => 
   }
 });
 
-app.post('/api/community/send', authenticateToken, async (req, res) => {
-  try {
-    const { room, message } = req.body;
-    const userId = req.user.userId;
-    
-    const user = await User.findById(userId);
-    const username = `${user.firstName} ${user.lastName}`;
-    
-    const newMessage = new Message({
-      room,
-      username,
-      userId,
-      message,
-      content: message, // Duplicate for compatibility
-      timestamp: new Date()
-    });
-    
-    await newMessage.save();
-    
-    res.json({ 
-      message: 'Message sent successfully',
-      messageData: newMessage
-    });
-  } catch (error) {
-    console.error('Send message error:', error);
-    res.status(500).json({ message: 'Failed to send message' });
-  }
-});
-
-// DASHBOARD & OTHER ROUTES
+// Dashboard stats with real streak tracking
 app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -858,6 +584,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Get user profile with streak data
 app.get('/api/user/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -884,6 +611,7 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Notifications endpoints
 app.get('/api/notifications/unread-count', authenticateToken, (req, res) => {
   res.json({ count: Math.floor(Math.random() * 5) });
 });
@@ -892,6 +620,7 @@ app.get('/api/notifications/recent', authenticateToken, (req, res) => {
   res.json([]);
 });
 
+// Billing endpoints
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -901,4 +630,137 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
       return res.status(404).json({ message: 'User not found' });
     }
     
-    res.
+    res.json({
+      subscription: user.subscription,
+      customer: user.stripeCustomerId
+    });
+  } catch (error) {
+    console.error('Billing info error:', error);
+    res.status(500).json({ message: 'Failed to get billing info' });
+  }
+});
+
+// Community - Save message
+app.post('/api/community/send', authenticateToken, async (req, res) => {
+  try {
+    const { room, message } = req.body;
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId);
+    const username = `${user.firstName} ${user.lastName}`;
+    
+    const newMessage = new Message({
+      room,
+      username,
+      userId,
+      message,
+      timestamp: new Date()
+    });
+    
+    await newMessage.save();
+    
+    res.json({ 
+      message: 'Message sent successfully',
+      messageData: newMessage
+    });
+  } catch (error) {
+    console.error('Send message error:', error);
+    res.status(500).json({ message: 'Failed to send message' });
+  }
+});
+
+// ==========================================
+// GOALS API ROUTES - NEW ADDITION
+// ==========================================
+
+app.get('/api/goals', authenticateToken, async (req, res) => {
+  try {
+    const goals = await Goal.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch goals' });
+  }
+});
+
+app.post('/api/goals', authenticateToken, async (req, res) => {
+  try {
+    const goal = new Goal({
+      userId: req.user.userId,
+      title: req.body.title,
+      frequency: req.body.frequency
+    });
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create goal' });
+  }
+});
+
+app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
+  try {
+    const goal = await Goal.findOne({ _id: req.params.id, userId: req.user.userId });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    goal.completed = !goal.completed;
+    if (goal.completed) {
+      goal.lastCompleted = new Date();
+      goal.streak += 1;
+    } else {
+      goal.streak = Math.max(0, goal.streak - 1);
+    }
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update goal' });
+  }
+});
+
+app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
+  try {
+    await Goal.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete goal' });
+  }
+});
+
+// Health check endpoint for monitoring
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      openai: openai ? 'available' : 'unavailable',
+      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
+      email: transporter ? 'configured' : 'not configured'
+    }
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    message: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { error: error.message })
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found' });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
+  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
+  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
+});
