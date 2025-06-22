@@ -1,285 +1,550 @@
-// goals.js - Database-powered goals management
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals - Entrepreneur Emotional Health</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+                <li><a href="goals.html" class="menu-item active">
+                    Goals
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
+            </ul>
+        </nav>
 
-// Global variables
-let currentGoals = [];
-
-// Initialize when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Check authentication
-    const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-    if (!token) {
-        window.location.href = 'login.html';
-        return;
-    }
-    
-    loadGoalsFromDatabase();
-    
-    // Close modal when clicking outside
-    document.getElementById('addGoalModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeAddGoalModal();
-        }
-    });
-    
-    console.log('Goals page initialized with database');
-});
-
-// Load goals from database
-async function loadGoalsFromDatabase() {
-    try {
-        showLoading();
-        currentGoals = await window.goalsAPI.getAll();
-        renderGoals();
-        updateStats();
-    } catch (error) {
-        console.error('Error loading goals:', error);
-        window.handleAPIError(error);
-        // Fallback to empty state
-        currentGoals = [];
-        renderGoals();
-        updateStats();
-    } finally {
-        hideLoading();
-    }
-}
-
-// UI Functions
-function showAddGoalModal() {
-    document.getElementById('addGoalModal').style.display = 'flex';
-    document.getElementById('goalTitle').focus();
-}
-
-function closeAddGoalModal() {
-    document.getElementById('addGoalModal').style.display = 'none';
-    document.getElementById('goalForm').reset();
-    document.getElementById('goalError').style.display = 'none';
-}
-
-async function addGoal(event) {
-    event.preventDefault();
-    
-    const title = document.getElementById('goalTitle').value.trim();
-    const frequency = document.getElementById('goalFrequency').value;
-    
-    if (!title || !frequency) {
-        showError('Please fill in all fields');
-        return;
-    }
-
-    try {
-        showButtonLoading('Adding...');
-        
-        const newGoal = await window.goalsAPI.create({
-            title: title,
-            frequency: frequency
-        });
-        
-        currentGoals.unshift(newGoal);
-        closeAddGoalModal();
-        renderGoals();
-        updateStats();
-        showToast('Goal added successfully!');
-        
-    } catch (error) {
-        console.error('Error adding goal:', error);
-        window.handleAPIError(error);
-        showError('Error adding goal. Please try again.');
-    } finally {
-        hideButtonLoading();
-    }
-}
-
-async function toggleGoalCompletion(goalId) {
-    const goalElement = document.querySelector(`[data-goal-id="${goalId}"]`);
-    if (goalElement) {
-        goalElement.style.opacity = '0.5';
-    }
-
-    try {
-        const updatedGoal = await window.goalsAPI.toggleComplete(goalId);
-        
-        // Update local array
-        const goalIndex = currentGoals.findIndex(g => g._id === goalId);
-        if (goalIndex !== -1) {
-            currentGoals[goalIndex] = updatedGoal;
-        }
-        
-        renderGoals();
-        updateStats();
-        
-        const action = updatedGoal.completed ? 'completed' : 'marked incomplete';
-        showToast(`Goal ${action}!`);
-        
-    } catch (error) {
-        console.error('Error toggling goal:', error);
-        window.handleAPIError(error);
-        renderGoals(); // Restore UI state
-    }
-}
-
-async function deleteGoal(goalId) {
-    const goal = currentGoals.find(g => g._id === goalId);
-    if (!goal) return;
-
-    if (!confirm(`Are you sure you want to delete "${goal.title}"?`)) {
-        return;
-    }
-
-    try {
-        await window.goalsAPI.delete(goalId);
-        
-        // Remove from local array
-        currentGoals = currentGoals.filter(g => g._id !== goalId);
-        
-        renderGoals();
-        updateStats();
-        showToast('Goal deleted successfully');
-        
-    } catch (error) {
-        console.error('Error deleting goal:', error);
-        window.handleAPIError(error);
-    }
-}
-
-function renderGoals() {
-    const dailyContainer = document.getElementById('dailyGoals');
-    const weeklyContainer = document.getElementById('weeklyGoals');
-    const monthlyContainer = document.getElementById('monthlyGoals');
-    const emptyState = document.getElementById('emptyState');
-
-    // Clear containers
-    dailyContainer.innerHTML = '';
-    weeklyContainer.innerHTML = '';
-    monthlyContainer.innerHTML = '';
-
-    if (currentGoals.length === 0) {
-        emptyState.style.display = 'block';
-        document.querySelector('.goals-container').style.display = 'none';
-        return;
-    }
-
-    emptyState.style.display = 'none';
-    document.querySelector('.goals-container').style.display = 'block';
-
-    // Group goals by frequency
-    const dailyGoals = currentGoals.filter(g => g.frequency === 'daily');
-    const weeklyGoals = currentGoals.filter(g => g.frequency === 'weekly');
-    const monthlyGoals = currentGoals.filter(g => g.frequency === 'monthly');
-
-    // Render each group
-    renderGoalGroup(dailyGoals, dailyContainer);
-    renderGoalGroup(weeklyGoals, weeklyContainer);
-    renderGoalGroup(monthlyGoals, monthlyContainer);
-}
-
-function renderGoalGroup(goals, container) {
-    if (goals.length === 0) {
-        container.innerHTML = '<p class="no-goals">No goals yet</p>';
-        return;
-    }
-
-    goals.forEach(goal => {
-        const goalElement = document.createElement('div');
-        goalElement.className = `goal-item ${goal.completed ? 'completed' : ''}`;
-        goalElement.setAttribute('data-goal-id', goal._id);
-        
-        const streakDisplay = goal.streak > 0 ? `🔥 ${goal.streak}` : goal.streak || 0;
-        const lastCompleted = goal.lastCompleted ? 
-            `Last completed: ${new Date(goal.lastCompleted).toLocaleDateString()}` : 
-            'Never completed';
-        
-        goalElement.innerHTML = `
-            <div class="goal-content">
-                <div class="goal-text">
-                    <h4>${goal.title}</h4>
-                    <div class="goal-stats">
-                        <span>Streak: ${streakDisplay}</span>
-                        <span title="${lastCompleted}">Created: ${new Date(goal.createdAt).toLocaleDateString()}</span>
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>My Goals</h1>
+                <div class="header-actions">
+                    <!-- Notification Icon -->
+                    <div class="notification-icon-container" onclick="goToNotifications()">
+                        <div class="notification-bell">
+                            <span class="bell-text">🔔</span>
+                            <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
+                        </div>
                     </div>
+                    
+                    <button class="btn btn-primary" onclick="showAddGoalModal()">
+                        Add New Goal
+                    </button>
                 </div>
-                <div class="goal-actions">
-                    <button class="btn ${goal.completed ? 'btn-completed' : 'btn-incomplete'}" 
-                            onclick="toggleGoalCompletion('${goal._id}')">
-                        ${goal.completed ? 'Completed' : 'Mark Done'}
-                    </button>
-                    <button class="btn btn-delete" onclick="deleteGoal('${goal._id}')" title="Delete Goal">
-                        Delete
-                    </button>
+            </header>
+
+            <!-- Progress Overview -->
+            <div class="goals-summary">
+                <div class="summary-card">
+                    <h3 id="totalGoals">0</h3>
+                    <p>Total Goals</p>
+                </div>
+                <div class="summary-card">
+                    <h3 id="completedToday">0</h3>
+                    <p>Completed Today</p>
+                </div>
+                <div class="summary-card">
+                    <h3 id="currentStreak">0</h3>
+                    <p>Best Streak</p>
                 </div>
             </div>
-        `;
+
+            <!-- Goals List -->
+            <div class="goals-container">
+                <div class="goals-section">
+                    <h2>Daily Goals</h2>
+                    <div class="goals-list" id="dailyGoals">
+                        <!-- Daily goals will be populated here -->
+                    </div>
+                </div>
+
+                <div class="goals-section">
+                    <h2>Weekly Goals</h2>
+                    <div class="goals-list" id="weeklyGoals">
+                        <!-- Weekly goals will be populated here -->
+                    </div>
+                </div>
+
+                <div class="goals-section">
+                    <h2>Monthly Goals</h2>
+                    <div class="goals-list" id="monthlyGoals">
+                        <!-- Monthly goals will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <h3>No Goals Yet</h3>
+                <p>Create your first goal to start tracking your progress toward emotional wellness and business success.</p>
+                <button class="btn btn-primary" onclick="showAddGoalModal()">Add Your First Goal</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div class="modal-overlay" id="addGoalModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Goal</h2>
+                <button class="close-btn" onclick="closeAddGoalModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="goalForm" onsubmit="addGoal(event)">
+                    <div class="form-group">
+                        <label for="goalTitle">Goal Description</label>
+                        <input type="text" id="goalTitle" required 
+                               placeholder="e.g., Exercise for 30 minutes, Read a business book, Meditate">
+                        <small>What do you want to accomplish?</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="goalFrequency">How Often?</label>
+                        <select id="goalFrequency" required>
+                            <option value="">Select frequency</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                        <small>How frequently do you want to do this?</small>
+                    </div>
+
+                    <div id="goalError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddGoalModal()">Cancel</button>
+                <button type="submit" form="goalForm" class="btn btn-primary">Add Goal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="toast" id="toast" style="display: none;">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script src="api-service.js"></script>
+    <script src="goals.js"></script>
+    <script src="sidebar-toggle.js"></script>
+    
+    <script>
+    // Simple notification counter
+    async function updateNotificationCount() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return;
+            
+            const response = await fetch('https://ai-coach-backend-mytn.onrender.com/api/notifications/unread-count', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const count = data.count || 0;
+                const countElement = document.getElementById('headerNotificationCount');
+                
+                if (countElement) {
+                    countElement.textContent = count;
+                    countElement.setAttribute('data-count', count);
+                    countElement.style.display = count > 0 ? 'flex' : 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching notification count:', error);
+        }
+    }
+
+    function goToNotifications() {
+        window.location.href = 'notifications.html';
+    }
+
+    // Update count when page loads and every 30 seconds
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNotificationCount();
+        setInterval(updateNotificationCount, 30000);
+    });
+    </script>
+
+    <style>
+    /* Goals-specific styles */
+    .goals-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .summary-card {
+        background: var(--background);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .summary-card h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .summary-card p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .goals-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .goals-section {
+        background: var(--background);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .goals-section h2 {
+        margin: 0;
+        padding: 1.5rem;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .goals-list {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .goal-item {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .goal-item:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary-light);
+    }
+
+    .goal-item.completed {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border-color: var(--success);
+    }
+
+    .goal-content {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .goal-text {
+        flex: 1;
+    }
+
+    .goal-text h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .goal-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .goal-stats span {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        background: var(--background);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+
+    .goal-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .btn-completed {
+        background: var(--success);
+        color: white;
+        border: none;
+    }
+
+    .btn-completed:hover {
+        background: #059669;
+    }
+
+    .btn-incomplete {
+        background: var(--surface);
+        color: var(--text-primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-incomplete:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--surface);
+        color: var(--error);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-delete:hover {
+        background: var(--error);
+        color: white;
+        border-color: var(--error);
+    }
+
+    .no-goals {
+        text-align: center;
+        color: var(--text-muted);
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: var(--background);
+        border-radius: var(--radius-xl);
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--surface);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius);
+        transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background: var(--surface);
+        color: var(--text-primary);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        background: var(--surface);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--error);
+        color: var(--error);
+        padding: 0.75rem;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    /* Toast notification */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        z-index: 10000;
+        animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes slideInUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .goal-content {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
         
-        container.appendChild(goalElement);
-    });
-}
-
-function updateStats() {
-    const totalGoals = currentGoals.length;
-    const completedToday = currentGoals.filter(g => g.completed).length;
-    const totalStreak = currentGoals.reduce((sum, goal) => sum + (goal.streak || 0), 0);
-
-    document.getElementById('totalGoals').textContent = totalGoals;
-    document.getElementById('completedToday').textContent = completedToday;
-    document.getElementById('currentStreak').textContent = totalStreak;
-}
-
-function showToast(message) {
-    const toast = document.getElementById('toast');
-    const toastMessage = document.getElementById('toastMessage');
-    
-    toastMessage.textContent = message;
-    toast.style.display = 'block';
-    
-    setTimeout(() => {
-        toast.style.display = 'none';
-    }, 3000);
-}
-
-function showError(message) {
-    const errorElement = document.getElementById('goalError');
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
-}
-
-function showLoading() {
-    const containers = ['dailyGoals', 'weeklyGoals', 'monthlyGoals'];
-    containers.forEach(id => {
-        document.getElementById(id).innerHTML = '<p class="loading">Loading...</p>';
-    });
-}
-
-function hideLoading() {
-    // Loading state is cleared by renderGoals()
-}
-
-function showButtonLoading(text) {
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.textContent = text;
-        submitBtn.disabled = true;
+        .goal-actions {
+            justify-content: space-between;
+        }
+        
+        .goal-stats {
+            justify-content: center;
+        }
+        
+        .goals-summary {
+            grid-template-columns: 1fr;
+        }
     }
-}
-
-function hideButtonLoading() {
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn) {
-        submitBtn.textContent = 'Add Goal';
-        submitBtn.disabled = false;
-    }
-}
-
-function logout() {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('eeh_token');
-    localStorage.removeItem('userData');
-    // Note: No longer clearing localStorage goals since they're in database
-    window.location.href = 'login.html';
-}
-
-// Export functions for global access
-window.showAddGoalModal = showAddGoalModal;
-window.closeAddGoalModal = closeAddGoalModal;
-window.addGoal = addGoal;
-window.toggleGoalCompletion = toggleGoalCompletion;
-window.deleteGoal = deleteGoal;
-window.logout = logout;
+    </style>
+</body>
+</html>
