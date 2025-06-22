@@ -11,6 +11,235 @@ const nodemailer = require('nodemailer');
 require('dotenv').config();
 
 const app = express();
+// Add these to your backend server.js file
+
+const mongoose = require('mongoose');
+
+// 1. DATABASE SCHEMAS
+// Goals Schema
+const goalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true },
+  frequency: { type: String, enum: ['daily', 'weekly', 'monthly'], required: true },
+  completed: { type: Boolean, default: false },
+  streak: { type: Number, default: 0 },
+  lastCompleted: { type: Date },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Notifications Schema
+const notificationSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  read: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Chat Rooms Schema
+const roomSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  description: { type: String, required: true },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  isDefault: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now }
+});
+
+// Chat Messages Schema
+const messageSchema = new mongoose.Schema({
+  roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username: { type: String, required: true },
+  avatar: { type: String, required: true },
+  content: { type: String, required: true },
+  avatarColor: { type: String, default: '#6366f1' },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Goal = mongoose.model('Goal', goalSchema);
+const Notification = mongoose.model('Notification', notificationSchema);
+const Room = mongoose.model('Room', roomSchema);
+const Message = mongoose.model('Message', messageSchema);
+
+// 2. API ENDPOINTS FOR GOALS
+app.get('/api/goals', authenticateToken, async (req, res) => {
+  try {
+    const goals = await Goal.find({ userId: req.user.id }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch goals' });
+  }
+});
+
+app.post('/api/goals', authenticateToken, async (req, res) => {
+  try {
+    const goal = new Goal({
+      userId: req.user.id,
+      title: req.body.title,
+      frequency: req.body.frequency
+    });
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create goal' });
+  }
+});
+
+app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
+  try {
+    const goal = await Goal.findOne({ _id: req.params.id, userId: req.user.id });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    goal.completed = !goal.completed;
+    if (goal.completed) {
+      goal.lastCompleted = new Date();
+      goal.streak += 1;
+    } else {
+      goal.streak = Math.max(0, goal.streak - 1);
+    }
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update goal' });
+  }
+});
+
+app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
+  try {
+    await Goal.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete goal' });
+  }
+});
+
+// 3. API ENDPOINTS FOR NOTIFICATIONS
+app.get('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const notifications = await Notification.find({ userId: req.user.id })
+      .sort({ createdAt: -1 });
+    res.json(notifications);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+});
+
+app.put('/api/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const notification = await Notification.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      { read: true },
+      { new: true }
+    );
+    res.json(notification);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to mark notification as read' });
+  }
+});
+
+app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
+  try {
+    await Notification.findOneAndDelete({ _id: req.params.id, userId: req.user.id });
+    res.json({ message: 'Notification deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete notification' });
+  }
+});
+
+// 4. API ENDPOINTS FOR CHAT ROOMS
+app.get('/api/rooms', authenticateToken, async (req, res) => {
+  try {
+    const rooms = await Room.find().populate('createdBy', 'username');
+    
+    // Get message counts for each room
+    const roomsWithCounts = await Promise.all(rooms.map(async (room) => {
+      const messageCount = await Message.countDocuments({ roomId: room._id });
+      return {
+        ...room.toObject(),
+        messageCount
+      };
+    }));
+    
+    res.json(roomsWithCounts);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch rooms' });
+  }
+});
+
+app.post('/api/rooms', authenticateToken, async (req, res) => {
+  try {
+    const room = new Room({
+      name: req.body.name,
+      description: req.body.description,
+      createdBy: req.user.id
+    });
+    await room.save();
+    res.json(room);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create room' });
+  }
+});
+
+app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const messages = await Message.find({ roomId: req.params.id })
+      .sort({ createdAt: 1 })
+      .limit(100); // Limit to last 100 messages
+    res.json(messages);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});
+
+app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
+  try {
+    const message = new Message({
+      roomId: req.params.id,
+      userId: req.user.id,
+      username: req.user.username || 'User',
+      avatar: req.body.avatar || 'U',
+      content: req.body.content,
+      avatarColor: req.body.avatarColor || '#6366f1'
+    });
+    await message.save();
+    res.json(message);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
+// 5. CREATE DEFAULT ROOMS ON FIRST RUN
+async function createDefaultRooms() {
+  try {
+    const existingRooms = await Room.countDocuments();
+    if (existingRooms === 0) {
+      const defaultRooms = [
+        { name: 'General Discussion', description: 'Open chat for everyone', isDefault: true },
+        { name: 'Business Growth', description: 'Discuss scaling strategies', isDefault: true },
+        { name: 'Work-Life Balance', description: 'Managing business and personal life', isDefault: true },
+        { name: 'Success Stories', description: 'Share your wins and achievements', isDefault: true }
+      ];
+      
+      for (let roomData of defaultRooms) {
+        const room = new Room({
+          ...roomData,
+          createdBy: null // System created
+        });
+        await room.save();
+      }
+      console.log('Default rooms created');
+    }
+  } catch (error) {
+    console.error('Error creating default rooms:', error);
+  }
+}
+
+// Call this when server starts
+createDefaultRooms();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
