@@ -454,6 +454,49 @@ async function deleteRoom(roomId) {
     }
 }
 
+// Delete a room
+async function deleteRoom(roomId) {
+    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete room');
+        }
+
+        console.log('Room deleted successfully');
+
+        // If we were in the deleted room, switch to General Discussion
+        if (currentRoomId === roomId) {
+            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+            if (generalRoom) {
+                switchRoom(generalRoom._id);
+            }
+        }
+
+        // Reload rooms
+        await loadRooms();
+
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
+    }
+}
+
 // Search functionality
 async function performSearch() {
     const searchInput = document.getElementById('searchInput');
