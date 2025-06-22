@@ -84,18 +84,15 @@ const userSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 
 // Goals Schema
-
 const goalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   frequency: { type: String, enum: ['daily', 'weekly', 'monthly'], required: true },
   completed: { type: Boolean, default: false },
   streak: { type: Number, default: 0 },
-  type: { type: String, enum: ['Breakthrough', 'Micro Win'], default: 'Micro Win' },
   lastCompleted: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
-
 
 const Goal = mongoose.model('Goal', goalSchema);
 
