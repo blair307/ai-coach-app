@@ -6,7 +6,7 @@
     <title>Notifications - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- ADD THIS: Notification Manager -->
+    <!-- Notification Manager -->
     <script src="notification-manager.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -14,8 +14,8 @@
                 window.notificationManager.init();
                 setTimeout(() => {
                     window.notificationManager.updateBadge();
-                    loadNotifications(); // Load notifications immediately
-                }, 100);
+                    loadNotifications();
+                }, 200);
             }
         });
     </script>
@@ -112,46 +112,6 @@
         </main>
     </div>
 
-    <!-- Notification Settings Modal -->
-    <div class="modal" id="settingsModal" style="display: none;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Notification Settings</h3>
-                <button class="close-btn" onclick="closeSettingsModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> AI Coach Insights
-                    </label>
-                    <small>Get notified when new coaching insights are available</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Community Messages
-                    </label>
-                    <small>Receive notifications for community activity</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Weekly Reports
-                    </label>
-                    <small>Get your weekly progress summaries</small>
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" checked> Billing Updates
-                    </label>
-                    <small>Payment confirmations and billing reminders</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-            </div>
-        </div>
-    </div>
-
     <script src="sidebar-toggle.js"></script>
     <script src="notifications.js"></script>
     
@@ -169,19 +129,29 @@
         window.location.href = 'login.html';
     }
 
-    // FIXED: Notification management functions that work with notification manager
+    // FIXED: Notification management functions that work properly
     function markAllRead() {
+        console.log('Mark all read clicked');
         if (window.notificationManager) {
             window.notificationManager.markAllAsRead();
-            // Refresh will happen automatically via event listener
+            console.log('All notifications marked as read');
+        } else {
+            console.log('Notification manager not available');
         }
     }
 
     function clearAll() {
+        console.log('Clear all clicked');
         if (confirm('Are you sure you want to clear all notifications? This action cannot be undone.')) {
             if (window.notificationManager) {
                 window.notificationManager.clearAllNotifications();
-                // Refresh will happen automatically via event listener
+                console.log('All notifications cleared');
+                // Force immediate refresh
+                setTimeout(() => {
+                    loadNotifications();
+                }, 100);
+            } else {
+                console.log('Notification manager not available');
             }
         }
     }
@@ -190,9 +160,11 @@
         const notificationItem = element.closest('.notification-item');
         const notificationId = parseInt(notificationItem.getAttribute('data-id'));
         
+        console.log('Mark as read clicked for notification:', notificationId);
+        
         if (window.notificationManager) {
             window.notificationManager.markAsRead(notificationId);
-            // Refresh will happen automatically via event listener
+            console.log('Notification', notificationId, 'marked as read');
         }
     }
 
@@ -256,17 +228,10 @@
         }
     }
 
-    function closeSettingsModal() {
-        document.getElementById('settingsModal').style.display = 'none';
-    }
-
-    function saveSettings() {
-        alert('Settings saved successfully!');
-        closeSettingsModal();
-    }
-
     // FIXED: Load notifications from notification manager
     function loadNotifications() {
+        console.log('Loading notifications...');
+        
         if (!window.notificationManager) {
             console.log('Notification manager not ready yet');
             return;
@@ -275,7 +240,7 @@
         const notifications = window.notificationManager.getNotifications();
         const notificationsList = document.getElementById('notificationsList');
         
-        console.log('Loading', notifications.length, 'notifications');
+        console.log('Found', notifications.length, 'notifications');
         
         if (notifications.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
@@ -311,7 +276,6 @@
         
         // Apply current filter
         if (currentFilter !== 'all') {
-            // Re-trigger the current filter
             const activeButton = document.querySelector('.filter-btn.active');
             if (activeButton) {
                 filterNotifications(currentFilter);
@@ -322,7 +286,7 @@
         notificationsList.style.display = 'block';
         document.getElementById('emptyState').style.display = 'none';
         
-        console.log('Loaded notifications successfully');
+        console.log('Notifications loaded successfully');
     }
 
     function getIconText(type) {
@@ -370,39 +334,46 @@
 
     // Listen for notification updates from the manager
     window.addEventListener('notificationsUpdated', function() {
-        console.log('Notifications updated event received');
-        loadNotifications();
+        console.log('Notifications updated event received - refreshing display');
+        setTimeout(() => {
+            loadNotifications();
+        }, 100);
     });
 
     // Initialize notifications when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        // Wait a bit longer for notification manager to fully initialize
+        console.log('DOM loaded - initializing notifications');
+        
+        // Multiple attempts to ensure notifications load
         setTimeout(() => {
-            if (window.notificationManager && window.notificationManager.initialized) {
+            loadNotifications();
+        }, 300);
+        
+        setTimeout(() => {
+            if (window.notificationManager && window.notificationManager.notifications.length === 0) {
+                console.log('Retrying notification load...');
                 loadNotifications();
-            } else {
-                // Try again after another delay
-                setTimeout(() => {
-                    loadNotifications();
-                }, 500);
             }
-        }, 200);
+        }, 1000);
     });
 
-    // Debug function - you can call this in console to check status
+    // Debug function
     function debugNotifications() {
+        console.log('=== NOTIFICATION DEBUG ===');
         console.log('Notification Manager:', window.notificationManager);
         console.log('Initialized:', window.notificationManager?.initialized);
-        console.log('Notifications:', window.notificationManager?.getNotifications());
+        console.log('Notifications count:', window.notificationManager?.getNotifications()?.length);
         console.log('Unread count:', window.notificationManager?.getUnreadCount());
+        console.log('All notifications:', window.notificationManager?.getNotifications());
+        console.log('========================');
     }
     
-    // Add to window for debugging
+    // Make debug function available globally
     window.debugNotifications = debugNotifications;
     </script>
 
     <style>
-    /* Add notification icon styling */
+    /* Notification icon styling */
     .notification-icon {
         width: 40px;
         height: 40px;
@@ -444,6 +415,10 @@
         cursor: pointer;
     }
     
+    .notification-item:hover {
+        background: var(--surface);
+    }
+    
     .notification-content {
         flex: 1;
     }
@@ -480,6 +455,48 @@
         gap: 1rem;
         flex-wrap: wrap;
     }
+    
+    .btn-link {
+        background: none;
+        border: none;
+        color: var(--primary);
+        cursor: pointer;
+        font-size: 0.875rem;
+        padding: 0;
+        text-decoration: underline;
+        transition: color 0.2s;
+        font-weight: 500;
+    }
+    
+    .btn-link:hover {
+        color: var(--primary-dark);
+    }
+    
+    .notification-item.unread {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(14, 165, 233, 0.02) 100%);
+        border-left: 4px solid var(--primary);
+    }
+    
+    .notification-item.read {
+        opacity: 0.8;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+    
+    .empty-state h3 {
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+    
+    .empty-state p {
+        margin: 0;
+    }
     </style>
+
 </body>
 </html>
