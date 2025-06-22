@@ -2,8 +2,14 @@ let userToken = localStorage.getItem("token");
 
 async function loadGoals() {
   const res = await fetch("/api/goals", {
-    headers: { Authorization: `Bearer ${userToken}` },
+    headers: { Authorization: `Bearer ${userToken}` }
   });
+
+  if (!res.ok) {
+    console.error("Failed to fetch goals");
+    return;
+  }
+
   const data = await res.json();
   const grouped = { Breakthrough: [], "Micro Win": [] };
 
@@ -39,9 +45,9 @@ async function toggleGoal(id, completed) {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userToken}`,
+      Authorization: `Bearer ${userToken}`
     },
-    body: JSON.stringify({ completed }),
+    body: JSON.stringify({ completed })
   });
   loadGoals();
 }
@@ -65,9 +71,9 @@ async function addGoal(e) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${userToken}`,
+      Authorization: `Bearer ${userToken}`
     },
-    body: JSON.stringify({ title, frequency, type }),
+    body: JSON.stringify({ title, frequency, type })
   });
 
   closeAddGoal();
