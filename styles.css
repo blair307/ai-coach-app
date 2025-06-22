@@ -2555,3 +2555,102 @@ select:focus-visible,
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+/* Add this CSS to the END of your styles.css file */
+
+/* Notification Header Icon Styles */
+.notification-icon-container {
+    position: relative;
+    cursor: pointer;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.notification-icon-container:hover {
+    transform: scale(1.1);
+}
+
+.notification-bell {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.notification-bell:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+}
+
+.bell-text {
+    font-size: 1.1rem;
+    filter: grayscale(0.3);
+    transition: all 0.2s ease;
+}
+
+.notification-icon-container:hover .bell-text {
+    filter: grayscale(0);
+    transform: rotate(15deg);
+}
+
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+/* Hide notification count when zero */
+.notification-count[data-count="0"] {
+    display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-icon-container {
+        margin-right: 0.5rem;
+    }
+    
+    .notification-bell {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+    
+    .notification-count {
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        font-size: 0.7rem;
+    }
+}
