@@ -168,7 +168,7 @@ body {
 }
 
 .pricing-card:hover {
-    transform: translateY(-8px) scale(1.02);
+    transform: translateY(-8px) scale(.95);
     box-shadow: var(--shadow-xl);
     border-color: rgba(99, 102, 241, 0.2);
 }
