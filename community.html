@@ -71,56 +71,9 @@
                     </div>
                     
                     <div class="rooms-list" id="roomsList">
-                        <div class="room-item active" data-room="general" onclick="switchRoom('general')">
-                            <div class="room-info">
-                                <h4>General Discussion</h4>
-                                <p>Open chat for everyone</p>
-                            </div>
-                            <div class="room-stats">
-                                <span class="member-count">24</span>
-                                <span class="unread-count">3</span>
-                            </div>
-                        </div>
-                        
-                        <div class="room-item" data-room="emotional-wellness" onclick="switchRoom('emotional-wellness')">
-                            <div class="room-info">
-                                <h4>Emotional Wellness</h4>
-                                <p>Mental health & emotional intelligence</p>
-                            </div>
-                            <div class="room-stats">
-                                <span class="member-count">18</span>
-                            </div>
-                        </div>
-                        
-                        <div class="room-item" data-room="business-growth" onclick="switchRoom('business-growth')">
-                            <div class="room-info">
-                                <h4>Business Growth</h4>
-                                <p>Scaling strategies & challenges</p>
-                            </div>
-                            <div class="room-stats">
-                                <span class="member-count">31</span>
-                                <span class="unread-count">1</span>
-                            </div>
-                        </div>
-                        
-                        <div class="room-item" data-room="success-stories" onclick="switchRoom('success-stories')">
-                            <div class="room-info">
-                                <h4>Success Stories</h4>
-                                <p>Celebrate your wins & breakthroughs</p>
-                            </div>
-                            <div class="room-stats">
-                                <span class="member-count">15</span>
-                            </div>
-                        </div>
-
-                        <div class="room-item" data-room="work-life-balance" onclick="switchRoom('work-life-balance')">
-                            <div class="room-info">
-                                <h4>Work-Life Balance</h4>
-                                <p>Managing entrepreneurial stress</p>
-                            </div>
-                            <div class="room-stats">
-                                <span class="member-count">22</span>
-                            </div>
+                        <!-- Rooms will be loaded dynamically from backend -->
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Loading rooms...</p>
                         </div>
                     </div>
                 </div>
@@ -141,7 +94,10 @@
 
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Messages will be populated by JavaScript -->
+                            <!-- Messages will be populated by JavaScript from backend -->
+                            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                <p>Loading messages...</p>
+                            </div>
                         </div>
 
                         <!-- Members List (Hidden by default) -->
@@ -219,7 +175,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="community.js"></script>
     <script src="sidebar-toggle.js"></script>
     
     <script>
@@ -263,5 +218,8 @@
         setInterval(updateNotificationCount, 30000);
     });
     </script>
+    
+    <!-- Load the new backend-connected community.js LAST -->
+    <script src="community.js"></script>
 </body>
 </html>
