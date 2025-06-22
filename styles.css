@@ -3377,3 +3377,22 @@ font-size: 0.7rem;
   border-radius: 6px;
   color: #ddd;
 }
+
+.goal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.goal-title {
+  font-weight: 600;
+  color: #fff;
+}
+
+.streak-track {
+  font-size: 0.9rem;
+  color: #f4b400;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
