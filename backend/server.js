@@ -16,20 +16,15 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors({
     origin: [
-        'https://68581fb--spontaneous-treacle-905d13.netlify.app',  // Updated this line
-        'https://68564b8f9e5549641b6d3650--spontaneous-treacle-905d13.netlify.app',
-        'https://6858180--spontaneous-treacle-905d13.netlify.app',
+        /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,  // Matches any deployment
         'https://spontaneous-treacle-905d13.netlify.app',
         'http://localhost:3000',
-        'http://localhost:8080',
-        'https://localhost:3000',
-        'https://localhost:8080'
+        'http://localhost:8080'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 app.use(express.json());
 
 // Initialize services
