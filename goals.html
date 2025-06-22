@@ -47,194 +47,89 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h1>Your Goals Journey</h1>
+                <h1>My Goals</h1>
                 <div class="header-actions">
-                    <button class="btn btn-outline" onclick="showGoalInsights()">
-                        View Insights
-                    </button>
-                    <button class="btn btn-primary" onclick="createNewGoal()">
-                        Create New Goal
+                    <button class="btn btn-primary" onclick="showAddGoalModal()">
+                        Add New Goal
                     </button>
                 </div>
             </header>
 
-            <!-- Progress Overview Cards -->
-            <div class="goals-overview">
-                <div class="overview-card">
-                    <div class="overview-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                        <span class="icon-text">✓</span>
-                    </div>
-                    <div class="overview-content">
-                        <h3 id="completedGoalsCount">0</h3>
-                        <p>Goals Completed</p>
-                        <small>This month</small>
-                    </div>
+            <!-- Progress Overview -->
+            <div class="goals-summary">
+                <div class="summary-card">
+                    <h3 id="totalGoals">0</h3>
+                    <p>Total Goals</p>
                 </div>
-                
-                <div class="overview-card">
-                    <div class="overview-icon" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);">
-                        <span class="icon-text">⚡</span>
-                    </div>
-                    <div class="overview-content">
-                        <h3 id="currentStreak">0</h3>
-                        <p>Current Streak</p>
-                        <small>Days in a row</small>
-                    </div>
+                <div class="summary-card">
+                    <h3 id="completedToday">0</h3>
+                    <p>Completed Today</p>
                 </div>
-                
-                <div class="overview-card">
-                    <div class="overview-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                        <span class="icon-text">🎯</span>
-                    </div>
-                    <div class="overview-content">
-                        <h3 id="activeGoalsCount">0</h3>
-                        <p>Active Goals</p>
-                        <small>In progress</small>
-                    </div>
-                </div>
-                
-                <div class="overview-card">
-                    <div class="overview-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">
-                        <span class="icon-text">📈</span>
-                    </div>
-                    <div class="overview-content">
-                        <h3 id="completionRate">0%</h3>
-                        <p>Completion Rate</p>
-                        <small>All time</small>
-                    </div>
+                <div class="summary-card">
+                    <h3 id="currentStreak">0</h3>
+                    <p>Best Streak</p>
                 </div>
             </div>
 
-            <!-- Quick Actions & Filter Bar -->
-            <div class="goals-toolbar">
-                <div class="filter-section">
-                    <h3>Filter Goals</h3>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterGoals('all')">All Goals</button>
-                        <button class="filter-btn" onclick="filterGoals('active')">Active</button>
-                        <button class="filter-btn" onclick="filterGoals('completed')">Completed</button>
-                        <button class="filter-btn" onclick="filterGoals('overdue')">Needs Attention</button>
+            <!-- Goals List -->
+            <div class="goals-container">
+                <div class="goals-section">
+                    <h2>Daily Goals</h2>
+                    <div class="goals-list" id="dailyGoals">
+                        <!-- Daily goals will be populated here -->
                     </div>
                 </div>
-                
-                <div class="quick-actions">
-                    <h3>Quick Add</h3>
-                    <div class="quick-goal-buttons">
-                        <button class="quick-goal-btn" onclick="quickGoal('meditation', 'daily')">
-                            🧘 Daily Meditation
-                        </button>
-                        <button class="quick-goal-btn" onclick="quickGoal('exercise', 'daily')">
-                            💪 Exercise
-                        </button>
-                        <button class="quick-goal-btn" onclick="quickGoal('reading', 'daily')">
-                            📚 Read 30min
-                        </button>
-                        <button class="quick-goal-btn" onclick="quickGoal('networking', 'weekly')">
-                            🤝 Network
-                        </button>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Goals Grid -->
-            <div class="goals-grid" id="goalsGrid">
-                <!-- Goals will be populated by JavaScript -->
+                <div class="goals-section">
+                    <h2>Weekly Goals</h2>
+                    <div class="goals-list" id="weeklyGoals">
+                        <!-- Weekly goals will be populated here -->
+                    </div>
+                </div>
+
+                <div class="goals-section">
+                    <h2>Monthly Goals</h2>
+                    <div class="goals-list" id="monthlyGoals">
+                        <!-- Monthly goals will be populated here -->
+                    </div>
+                </div>
             </div>
 
             <!-- Empty State -->
-            <div class="empty-goals" id="emptyGoals" style="display: none;">
-                <div class="empty-illustration">🎯</div>
+            <div class="empty-state" id="emptyState" style="display: none;">
                 <h3>No Goals Yet</h3>
-                <p>Start your journey by creating your first goal. Set meaningful targets that align with your entrepreneurial growth and emotional wellness.</p>
-                <button class="btn btn-primary" onclick="createNewGoal()">Create Your First Goal</button>
+                <p>Create your first goal to start tracking your progress toward emotional wellness and business success.</p>
+                <button class="btn btn-primary" onclick="showAddGoalModal()">Add Your First Goal</button>
             </div>
         </main>
     </div>
 
-    <!-- Goal Creation Modal -->
-    <div class="modal-overlay" id="goalModal" style="display: none;">
-        <div class="goal-modal">
+    <!-- Add Goal Modal -->
+    <div class="modal-overlay" id="addGoalModal" style="display: none;">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 id="modalTitle">Create New Goal</h2>
-                <button class="close-btn" onclick="closeGoalModal()">×</button>
+                <h2>Add New Goal</h2>
+                <button class="close-btn" onclick="closeAddGoalModal()">×</button>
             </div>
             
             <div class="modal-body">
-                <form id="goalForm" onsubmit="saveGoal(event)">
-                    <div class="form-section">
-                        <label for="goalTitle">Goal Title *</label>
-                        <input type="text" id="goalTitle" required maxlength="100" 
-                               placeholder="e.g., Meditate for 10 minutes">
-                        <small>Make it specific and actionable</small>
+                <form id="goalForm" onsubmit="addGoal(event)">
+                    <div class="form-group">
+                        <label for="goalTitle">Goal Description</label>
+                        <input type="text" id="goalTitle" required 
+                               placeholder="e.g., Exercise for 30 minutes, Read a business book, Meditate">
+                        <small>What do you want to accomplish?</small>
                     </div>
 
-                    <div class="form-section">
-                        <label for="goalCategory">Category</label>
-                        <select id="goalCategory" required>
-                            <option value="">Select a category</option>
-                            <option value="wellness">🧘 Wellness & Health</option>
-                            <option value="business">💼 Business Growth</option>
-                            <option value="learning">📚 Learning & Development</option>
-                            <option value="relationships">🤝 Relationships & Networking</option>
-                            <option value="finance">💰 Financial Goals</option>
-                            <option value="creativity">🎨 Creativity & Innovation</option>
-                            <option value="leadership">👥 Leadership & Management</option>
-                            <option value="personal">🌟 Personal Development</option>
+                    <div class="form-group">
+                        <label for="goalFrequency">How Often?</label>
+                        <select id="goalFrequency" required>
+                            <option value="">Select frequency</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
                         </select>
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-section">
-                            <label for="goalInterval">Frequency *</label>
-                            <select id="goalInterval" required onchange="updateIntervalHelp()">
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-section">
-                            <label for="goalTarget">Target Amount</label>
-                            <input type="number" id="goalTarget" min="1" value="1" 
-                                   placeholder="How many times?">
-                            <small id="intervalHelp">Times per day</small>
-                        </div>
-                    </div>
-
-                    <div class="form-section" id="customIntervalSection" style="display: none;">
-                        <label for="customDays">Custom Schedule (days)</label>
-                        <input type="number" id="customDays" min="1" max="365" 
-                               placeholder="Repeat every X days">
-                        <small>Repeat every X days</small>
-                    </div>
-
-                    <div class="form-section">
-                        <label for="goalDescription">Description (Optional)</label>
-                        <textarea id="goalDescription" rows="3" maxlength="500"
-                                  placeholder="Add notes, motivation, or specific details about this goal..."></textarea>
-                    </div>
-
-                    <div class="form-section">
-                        <label for="goalDeadline">End Date (Optional)</label>
-                        <input type="date" id="goalDeadline">
-                        <small>Set an end date for this goal</small>
-                    </div>
-
-                    <div class="form-section">
-                        <div class="goal-options">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="goalReminders" checked>
-                                <span class="checkmark"></span>
-                                Send me reminders
-                            </label>
-                            
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="goalPublic">
-                                <span class="checkmark"></span>
-                                Share progress with community
-                            </label>
-                        </div>
+                        <small>How frequently do you want to do this?</small>
                     </div>
 
                     <div id="goalError" class="error-message" style="display: none;"></div>
@@ -242,75 +137,13 @@
             </div>
             
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeGoalModal()">Cancel</button>
-                <button type="submit" form="goalForm" class="btn btn-primary" id="saveGoalBtn">Create Goal</button>
+                <button type="button" class="btn btn-secondary" onclick="closeAddGoalModal()">Cancel</button>
+                <button type="submit" form="goalForm" class="btn btn-primary">Add Goal</button>
             </div>
         </div>
     </div>
 
-    <!-- Goal Progress Modal -->
-    <div class="modal-overlay" id="progressModal" style="display: none;">
-        <div class="progress-modal">
-            <div class="modal-header">
-                <h2 id="progressModalTitle">Goal Progress</h2>
-                <button class="close-btn" onclick="closeProgressModal()">×</button>
-            </div>
-            
-            <div class="modal-body">
-                <div class="progress-chart-container">
-                    <canvas id="progressChart" width="400" height="200"></canvas>
-                </div>
-                
-                <div class="progress-stats">
-                    <div class="stat-item">
-                        <span class="stat-label">Current Streak:</span>
-                        <span class="stat-value" id="goalStreak">0 days</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Best Streak:</span>
-                        <span class="stat-value" id="goalBestStreak">0 days</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Total Completions:</span>
-                        <span class="stat-value" id="goalCompletions">0</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Success Rate:</span>
-                        <span class="stat-value" id="goalSuccessRate">0%</span>
-                    </div>
-                </div>
-                
-                <div class="recent-activity">
-                    <h4>Recent Activity</h4>
-                    <div id="recentActivityList">
-                        <!-- Activity will be populated here -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Celebration Modal -->
-    <div class="modal-overlay celebration-modal" id="celebrationModal" style="display: none;">
-        <div class="celebration-content">
-            <div class="celebration-animation">🎉</div>
-            <h2 id="celebrationTitle">Goal Completed!</h2>
-            <p id="celebrationMessage">Amazing work! You're building great habits.</p>
-            <div class="celebration-stats">
-                <div class="celebration-stat">
-                    <strong id="celebrationStreak">5</strong>
-                    <span>Day Streak</span>
-                </div>
-                <div class="celebration-stat">
-                    <strong id="celebrationTotal">23</strong>
-                    <span>Total Completions</span>
-                </div>
-            </div>
-            <button class="btn btn-primary" onclick="closeCelebrationModal()">Keep Going!</button>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
+    <!-- Success Toast -->
     <div class="toast" id="toast" style="display: none;">
         <span id="toastMessage"></span>
     </div>
@@ -318,230 +151,110 @@
     <script src="sidebar-toggle.js"></script>
     
     <script>
-    // ===== NOTIFICATION MANAGER - INLINE =====
-    class NotificationManager {
-        constructor() {
-            this.unreadCount = 0;
-            this.notifications = [];
-            this.initialized = false;
-        }
-
-        init() {
-            if (this.initialized) return;
-            this.loadNotifications();
-            this.updateBadge();
-            this.initialized = true;
-        }
-
-        loadNotifications() {
-            const saved = localStorage.getItem('eeh_notifications');
-            if (saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    this.notifications = data.notifications || [];
-                    this.unreadCount = this.notifications.filter(n => n.unread).length;
-                    return;
-                } catch (e) {
-                    console.log('Error loading saved notifications:', e);
-                }
-            }
-
-            this.notifications = [
-                {
-                    id: 1, type: 'coaching', title: 'New Coaching Insights Available',
-                    message: 'Your AI coach has generated new insights based on your recent conversations.',
-                    time: '2 hours ago', unread: true, timestamp: Date.now() - (2 * 60 * 60 * 1000)
-                },
-                {
-                    id: 2, type: 'community', title: 'New Messages in Business Growth',
-                    message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
-                    time: '4 hours ago', unread: true, timestamp: Date.now() - (4 * 60 * 60 * 1000)
-                },
-                {
-                    id: 3, type: 'system', title: 'Weekly Progress Report Ready',
-                    message: 'Your weekly emotional health and business progress report is now available.',
-                    time: '1 day ago', unread: true, timestamp: Date.now() - (24 * 60 * 60 * 1000)
-                }
-            ];
-
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            this.saveNotifications();
-        }
-
-        saveNotifications() {
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            const data = {
-                notifications: this.notifications,
-                unreadCount: this.unreadCount,
-                lastUpdated: Date.now()
-            };
-            localStorage.setItem('eeh_notifications', JSON.stringify(data));
-        }
-
-        updateBadge() {
-            this.unreadCount = this.notifications.filter(n => n.unread).length;
-            const badges = document.querySelectorAll('#notificationBadge, .notification-badge');
-            badges.forEach(badge => {
-                if (this.unreadCount > 0) {
-                    badge.textContent = this.unreadCount;
-                    badge.style.display = 'inline-block';
-                } else {
-                    badge.style.display = 'none';
-                }
-            });
-        }
-
-        addNotification(notification) {
-            const newNotification = {
-                id: Date.now(),
-                unread: true,
-                timestamp: Date.now(),
-                ...notification
-            };
-            this.notifications.unshift(newNotification);
-            this.saveNotifications();
-            this.updateBadge();
-        }
-
-        getNotifications() { return this.notifications; }
-        getUnreadCount() { return this.unreadCount; }
-    }
-
-    // ===== GOALS MANAGER =====
-    class GoalsManager {
+    // Simple Goals Manager
+    class SimpleGoalsManager {
         constructor() {
             this.goals = [];
-            this.initialized = false;
+            this.init();
         }
 
         init() {
-            if (this.initialized) return;
             this.loadGoals();
-            this.initialized = true;
-            console.log('Goals Manager initialized with', this.goals.length, 'goals');
         }
 
         loadGoals() {
-            const saved = localStorage.getItem('eeh_goals');
+            const saved = localStorage.getItem('eeh_simple_goals');
             if (saved) {
                 try {
                     this.goals = JSON.parse(saved);
-                    return;
                 } catch (e) {
-                    console.log('Error loading saved goals:', e);
+                    console.log('Error loading goals:', e);
+                    this.goals = [];
                 }
             }
-
-            // Default sample goals
-            this.goals = [
-                {
-                    id: Date.now() - 1000,
-                    title: 'Daily Meditation',
-                    category: 'wellness',
-                    interval: 'daily',
-                    target: 1,
-                    description: '10 minutes of mindfulness meditation',
-                    created: Date.now() - (7 * 24 * 60 * 60 * 1000),
-                    lastCompleted: Date.now() - (24 * 60 * 60 * 1000),
-                    completions: [
-                        { date: Date.now() - (24 * 60 * 60 * 1000), count: 1 },
-                        { date: Date.now() - (2 * 24 * 60 * 60 * 1000), count: 1 },
-                        { date: Date.now() - (3 * 24 * 60 * 60 * 1000), count: 1 }
-                    ],
-                    streak: 3,
-                    bestStreak: 5,
-                    active: true,
-                    reminders: true,
-                    public: false
-                },
-                {
-                    id: Date.now() - 2000,
-                    title: 'Weekly Team Meeting',
-                    category: 'business',
-                    interval: 'weekly',
-                    target: 1,
-                    description: 'Conduct effective team meetings',
-                    created: Date.now() - (14 * 24 * 60 * 60 * 1000),
-                    lastCompleted: Date.now() - (3 * 24 * 60 * 60 * 1000),
-                    completions: [
-                        { date: Date.now() - (3 * 24 * 60 * 60 * 1000), count: 1 },
-                        { date: Date.now() - (10 * 24 * 60 * 60 * 1000), count: 1 }
-                    ],
-                    streak: 2,
-                    bestStreak: 2,
-                    active: true,
-                    reminders: true,
-                    public: true
-                }
-            ];
-
-            this.saveGoals();
         }
 
         saveGoals() {
-            localStorage.setItem('eeh_goals', JSON.stringify(this.goals));
+            localStorage.setItem('eeh_simple_goals', JSON.stringify(this.goals));
         }
 
-        createGoal(goalData) {
+        addGoal(title, frequency) {
             const newGoal = {
                 id: Date.now(),
-                created: Date.now(),
-                lastCompleted: null,
-                completions: [],
+                title: title.trim(),
+                frequency: frequency,
+                created: new Date().toISOString(),
+                completions: [], // Array of completion dates
                 streak: 0,
-                bestStreak: 0,
-                active: true,
-                ...goalData
+                bestStreak: 0
             };
 
-            this.goals.unshift(newGoal);
+            this.goals.push(newGoal);
             this.saveGoals();
             return newGoal;
         }
 
-        updateGoal(goalId, updates) {
-            const goalIndex = this.goals.findIndex(g => g.id === goalId);
-            if (goalIndex !== -1) {
-                this.goals[goalIndex] = { ...this.goals[goalIndex], ...updates };
-                this.saveGoals();
-                return this.goals[goalIndex];
-            }
-            return null;
-        }
-
-        deleteGoal(goalId) {
-            this.goals = this.goals.filter(g => g.id !== goalId);
-            this.saveGoals();
-        }
-
-        completeGoal(goalId) {
+        markComplete(goalId) {
             const goal = this.goals.find(g => g.id === goalId);
-            if (!goal) return null;
+            if (!goal) return false;
 
             const today = new Date().toDateString();
-            const existingCompletion = goal.completions.find(c => 
-                new Date(c.date).toDateString() === today
-            );
+            
+            // Check if already completed today/this week/this month
+            const alreadyCompleted = goal.completions.some(completion => {
+                const completionDate = new Date(completion);
+                
+                if (goal.frequency === 'daily') {
+                    return completionDate.toDateString() === today;
+                } else if (goal.frequency === 'weekly') {
+                    const weekStart = this.getWeekStart(new Date());
+                    const completionWeekStart = this.getWeekStart(completionDate);
+                    return weekStart.getTime() === completionWeekStart.getTime();
+                } else if (goal.frequency === 'monthly') {
+                    const now = new Date();
+                    return completionDate.getMonth() === now.getMonth() && 
+                           completionDate.getFullYear() === now.getFullYear();
+                }
+                return false;
+            });
 
-            if (existingCompletion) {
-                existingCompletion.count += 1;
-            } else {
-                goal.completions.push({
-                    date: Date.now(),
-                    count: 1
-                });
+            if (alreadyCompleted) {
+                return false; // Already completed for this period
             }
 
-            goal.lastCompleted = Date.now();
+            // Add completion
+            goal.completions.push(new Date().toISOString());
             this.updateStreak(goal);
             this.saveGoals();
+            return true;
+        }
 
-            // Show celebration if milestone reached
-            if (goal.streak > 0 && (goal.streak % 5 === 0 || goal.streak === goal.bestStreak)) {
-                this.showCelebration(goal);
-            }
+        markIncomplete(goalId) {
+            const goal = this.goals.find(g => g.id === goalId);
+            if (!goal) return false;
 
-            return goal;
+            const today = new Date();
+            
+            // Remove completion for current period
+            goal.completions = goal.completions.filter(completion => {
+                const completionDate = new Date(completion);
+                
+                if (goal.frequency === 'daily') {
+                    return completionDate.toDateString() !== today.toDateString();
+                } else if (goal.frequency === 'weekly') {
+                    const weekStart = this.getWeekStart(today);
+                    const completionWeekStart = this.getWeekStart(completionDate);
+                    return weekStart.getTime() !== completionWeekStart.getTime();
+                } else if (goal.frequency === 'monthly') {
+                    return !(completionDate.getMonth() === today.getMonth() && 
+                           completionDate.getFullYear() === today.getFullYear());
+                }
+                return true;
+            });
+
+            this.updateStreak(goal);
+            this.saveGoals();
+            return true;
         }
 
         updateStreak(goal) {
@@ -551,22 +264,62 @@
             }
 
             let streak = 0;
-            const today = new Date();
+            const now = new Date();
             
-            for (let i = 0; i < 365; i++) {
-                const checkDate = new Date(today);
-                checkDate.setDate(today.getDate() - i);
-                
-                const hasCompletion = goal.completions.some(c => 
-                    new Date(c.date).toDateString() === checkDate.toDateString()
-                );
+            if (goal.frequency === 'daily') {
+                // Count consecutive days
+                for (let i = 0; i < 365; i++) {
+                    const checkDate = new Date(now);
+                    checkDate.setDate(now.getDate() - i);
+                    
+                    const hasCompletion = goal.completions.some(completion => 
+                        new Date(completion).toDateString() === checkDate.toDateString()
+                    );
 
-                if (hasCompletion) {
-                    streak++;
-                } else if (i === 0) {
-                    continue;
-                } else {
-                    break;
+                    if (hasCompletion) {
+                        streak++;
+                    } else if (i === 0) {
+                        // If today has no completion, that's ok, check yesterday
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+            } else if (goal.frequency === 'weekly') {
+                // Count consecutive weeks
+                for (let i = 0; i < 52; i++) {
+                    const checkDate = new Date(now);
+                    checkDate.setDate(now.getDate() - (i * 7));
+                    const weekStart = this.getWeekStart(checkDate);
+                    
+                    const hasCompletion = goal.completions.some(completion => {
+                        const completionWeekStart = this.getWeekStart(new Date(completion));
+                        return weekStart.getTime() === completionWeekStart.getTime();
+                    });
+
+                    if (hasCompletion) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
+            } else if (goal.frequency === 'monthly') {
+                // Count consecutive months
+                for (let i = 0; i < 12; i++) {
+                    const checkDate = new Date(now);
+                    checkDate.setMonth(now.getMonth() - i);
+                    
+                    const hasCompletion = goal.completions.some(completion => {
+                        const completionDate = new Date(completion);
+                        return completionDate.getMonth() === checkDate.getMonth() && 
+                               completionDate.getFullYear() === checkDate.getFullYear();
+                    });
+
+                    if (hasCompletion) {
+                        streak++;
+                    } else {
+                        break;
+                    }
                 }
             }
 
@@ -576,359 +329,199 @@
             }
         }
 
-        showCelebration(goal) {
-            const modal = document.getElementById('celebrationModal');
-            document.getElementById('celebrationTitle').textContent = 
-                goal.streak === goal.bestStreak ? 'New Record!' : 'Milestone Reached!';
-            document.getElementById('celebrationMessage').textContent = 
-                `You've completed "${goal.title}" ${goal.streak} days in a row!`;
-            document.getElementById('celebrationStreak').textContent = goal.streak;
-            document.getElementById('celebrationTotal').textContent = goal.completions.length;
-            modal.style.display = 'flex';
+        getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day;
+            return new Date(d.setDate(diff));
+        }
+
+        deleteGoal(goalId) {
+            this.goals = this.goals.filter(g => g.id !== goalId);
+            this.saveGoals();
+        }
+
+        isCompletedForPeriod(goal) {
+            const today = new Date();
+            
+            return goal.completions.some(completion => {
+                const completionDate = new Date(completion);
+                
+                if (goal.frequency === 'daily') {
+                    return completionDate.toDateString() === today.toDateString();
+                } else if (goal.frequency === 'weekly') {
+                    const weekStart = this.getWeekStart(today);
+                    const completionWeekStart = this.getWeekStart(completionDate);
+                    return weekStart.getTime() === completionWeekStart.getTime();
+                } else if (goal.frequency === 'monthly') {
+                    return completionDate.getMonth() === today.getMonth() && 
+                           completionDate.getFullYear() === today.getFullYear();
+                }
+                return false;
+            });
         }
 
         getStats() {
-            const activeGoals = this.goals.filter(g => g.active);
-            const completedThisMonth = this.goals.reduce((total, goal) => {
-                const thisMonth = goal.completions.filter(c => {
-                    const completionDate = new Date(c.date);
-                    const now = new Date();
-                    return completionDate.getMonth() === now.getMonth() && 
-                           completionDate.getFullYear() === now.getFullYear();
-                });
-                return total + thisMonth.reduce((sum, c) => sum + c.count, 0);
-            }, 0);
+            const totalGoals = this.goals.length;
+            const completedToday = this.goals.filter(goal => 
+                goal.frequency === 'daily' && this.isCompletedForPeriod(goal)
+            ).length;
+            const bestStreak = Math.max(...this.goals.map(g => g.bestStreak), 0);
 
-            const totalCompletions = this.goals.reduce((total, goal) => 
-                total + goal.completions.reduce((sum, c) => sum + c.count, 0), 0);
-            
-            const totalTargets = this.goals.length * 30;
-            const completionRate = totalTargets > 0 ? Math.round((totalCompletions / totalTargets) * 100) : 0;
-
-            const currentStreak = Math.max(...this.goals.map(g => g.streak), 0);
-
-            return {
-                activeGoals: activeGoals.length,
-                completedThisMonth,
-                currentStreak,
-                completionRate
-            };
-        }
-
-        getGoals(filter = 'all') {
-            switch (filter) {
-                case 'active':
-                    return this.goals.filter(g => g.active);
-                case 'completed':
-                    return this.goals.filter(g => !g.active);
-                case 'overdue':
-                    return this.goals.filter(g => this.isOverdue(g));
-                default:
-                    return this.goals;
-            }
-        }
-
-        isOverdue(goal) {
-            if (!goal.active || !goal.lastCompleted) return false;
-            
-            const now = Date.now();
-            const daysSinceCompletion = (now - goal.lastCompleted) / (1000 * 60 * 60 * 24);
-            
-            switch (goal.interval) {
-                case 'daily':
-                    return daysSinceCompletion > 1;
-                case 'weekly':
-                    return daysSinceCompletion > 7;
-                case 'monthly':
-                    return daysSinceCompletion > 30;
-                default:
-                    return false;
-            }
+            return { totalGoals, completedToday, bestStreak };
         }
     }
 
-    // Initialize managers
-    window.notificationManager = new NotificationManager();
-    window.goalsManager = new GoalsManager();
+    // Initialize goals manager
+    const goalsManager = new SimpleGoalsManager();
 
-    let currentFilter = 'all';
-    let editingGoalId = null;
-
-    // ===== MAIN FUNCTIONS =====
-
-    function logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('eeh_token');
-        localStorage.removeItem('userData');
-        localStorage.removeItem('eeh_notifications');
-        localStorage.removeItem('eeh_rooms');
-        localStorage.removeItem('eeh_goals');
-        window.location.href = 'login.html';
+    // UI Functions
+    function showAddGoalModal() {
+        document.getElementById('addGoalModal').style.display = 'flex';
+        document.getElementById('goalTitle').focus();
     }
 
-    function createNewGoal() {
-        editingGoalId = null;
-        document.getElementById('modalTitle').textContent = 'Create New Goal';
-        document.getElementById('saveGoalBtn').textContent = 'Create Goal';
+    function closeAddGoalModal() {
+        document.getElementById('addGoalModal').style.display = 'none';
         document.getElementById('goalForm').reset();
-        document.getElementById('goalModal').style.display = 'flex';
-        updateIntervalHelp();
+        document.getElementById('goalError').style.display = 'none';
     }
 
-    function editGoal(goalId) {
-        const goal = window.goalsManager.goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        editingGoalId = goalId;
-        document.getElementById('modalTitle').textContent = 'Edit Goal';
-        document.getElementById('saveGoalBtn').textContent = 'Update Goal';
-        
-        // Populate form
-        document.getElementById('goalTitle').value = goal.title;
-        document.getElementById('goalCategory').value = goal.category;
-        document.getElementById('goalInterval').value = goal.interval;
-        document.getElementById('goalTarget').value = goal.target;
-        document.getElementById('goalDescription').value = goal.description || '';
-        document.getElementById('goalReminders').checked = goal.reminders;
-        document.getElementById('goalPublic').checked = goal.public;
-        
-        if (goal.deadline) {
-            document.getElementById('goalDeadline').value = new Date(goal.deadline).toISOString().split('T')[0];
-        }
-
-        document.getElementById('goalModal').style.display = 'flex';
-        updateIntervalHelp();
-    }
-
-    function saveGoal(event) {
+    function addGoal(event) {
         event.preventDefault();
         
-        const goalData = {
-            ...quickGoals[type],
-            interval,
-            target: 1,
-            reminders: true,
-            public: false
-        };
-
-        window.goalsManager.createGoal(goalData);
-        renderGoals();
-        updateOverviewStats();
-        showToast(`${goalData.title} goal added!`, 'success');
-    }
-
-    function filterGoals(filter) {
-        currentFilter = filter;
+        const title = document.getElementById('goalTitle').value.trim();
+        const frequency = document.getElementById('goalFrequency').value;
         
-        // Update filter button states
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        renderGoals();
-    }
-
-    function showGoalInsights() {
-        const stats = window.goalsManager.getStats();
-        const message = `Your Goals Insights:\n\n` +
-            `• Active Goals: ${stats.activeGoals}\n` +
-            `• Completed This Month: ${stats.completedThisMonth}\n` +
-            `• Current Streak: ${stats.currentStreak} days\n` +
-            `• Success Rate: ${stats.completionRate}%\n\n` +
-            `Keep up the great work!`;
-        
-        alert(message);
-    }
-
-    function showProgress(goalId) {
-        const goal = window.goalsManager.goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        document.getElementById('progressModalTitle').textContent = `${goal.title} - Progress`;
-        document.getElementById('goalStreak').textContent = `${goal.streak} days`;
-        document.getElementById('goalBestStreak').textContent = `${goal.bestStreak} days`;
-        document.getElementById('goalCompletions').textContent = goal.completions.length;
-        
-        const successRate = goal.completions.length > 0 ? Math.round((goal.completions.length / Math.max(goal.completions.length, 30)) * 100) : 0;
-        document.getElementById('goalSuccessRate').textContent = `${successRate}%`;
-
-        // Show recent activity
-        const recentActivity = goal.completions.slice(-5).reverse();
-        const activityHtml = recentActivity.map(completion => {
-            const date = new Date(completion.date).toLocaleDateString();
-            return `<div class="activity-item">
-                <span class="activity-date">${date}</span>
-                <span class="activity-text">Completed ${completion.count} time${completion.count > 1 ? 's' : ''}</span>
-            </div>`;
-        }).join('');
-        
-        document.getElementById('recentActivityList').innerHTML = activityHtml || '<p style="color: var(--text-muted); text-align: center;">No recent activity</p>';
-
-        document.getElementById('progressModal').style.display = 'flex';
-    }
-
-    function toggleGoalStatus(goalId) {
-        const goal = window.goalsManager.goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        const updates = { active: !goal.active };
-        window.goalsManager.updateGoal(goalId, updates);
-        renderGoals();
-        updateOverviewStats();
-        
-        showToast(`Goal ${goal.active ? 'paused' : 'resumed'}`, 'success');
-    }
-
-    // ===== MODAL FUNCTIONS =====
-
-    function closeGoalModal() {
-        document.getElementById('goalModal').style.display = 'none';
-        document.getElementById('goalError').style.display = 'none';
-        editingGoalId = null;
-    }
-
-    function closeProgressModal() {
-        document.getElementById('progressModal').style.display = 'none';
-    }
-
-    function closeCelebrationModal() {
-        document.getElementById('celebrationModal').style.display = 'none';
-    }
-
-    function updateIntervalHelp() {
-        const interval = document.getElementById('goalInterval').value;
-        const helpText = document.getElementById('intervalHelp');
-        const customSection = document.getElementById('customIntervalSection');
-        
-        switch (interval) {
-            case 'daily':
-                helpText.textContent = 'Times per day';
-                customSection.style.display = 'none';
-                break;
-            case 'weekly':
-                helpText.textContent = 'Times per week';
-                customSection.style.display = 'none';
-                break;
-            case 'monthly':
-                helpText.textContent = 'Times per month';
-                customSection.style.display = 'none';
-                break;
-            case 'custom':
-                helpText.textContent = 'Times per interval';
-                customSection.style.display = 'block';
-                break;
-        }
-    }
-
-    // ===== RENDERING FUNCTIONS =====
-
-    function renderGoals() {
-        const goals = window.goalsManager.getGoals(currentFilter);
-        const container = document.getElementById('goalsGrid');
-        const emptyState = document.getElementById('emptyGoals');
-
-        if (goals.length === 0) {
-            container.style.display = 'none';
-            emptyState.style.display = 'block';
+        if (!title || !frequency) {
+            showError('Please fill in all fields');
             return;
         }
 
-        container.style.display = 'grid';
+        try {
+            goalsManager.addGoal(title, frequency);
+            closeAddGoalModal();
+            renderGoals();
+            updateStats();
+            showToast('Goal added successfully!');
+        } catch (error) {
+            showError('Error adding goal: ' + error.message);
+        }
+    }
+
+    function toggleGoalCompletion(goalId) {
+        const goal = goalsManager.goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        const isCurrentlyCompleted = goalsManager.isCompletedForPeriod(goal);
+        
+        if (isCurrentlyCompleted) {
+            goalsManager.markIncomplete(goalId);
+            showToast('Goal marked as incomplete');
+        } else {
+            const success = goalsManager.markComplete(goalId);
+            if (success) {
+                showToast('Great job! Goal completed!');
+            } else {
+                showToast('Already completed for this period');
+            }
+        }
+        
+        renderGoals();
+        updateStats();
+    }
+
+    function deleteGoal(goalId) {
+        const goal = goalsManager.goals.find(g => g.id === goalId);
+        if (!goal) return;
+
+        if (confirm(`Are you sure you want to delete "${goal.title}"?`)) {
+            goalsManager.deleteGoal(goalId);
+            renderGoals();
+            updateStats();
+            showToast('Goal deleted');
+        }
+    }
+
+    function renderGoals() {
+        const dailyContainer = document.getElementById('dailyGoals');
+        const weeklyContainer = document.getElementById('weeklyGoals');
+        const monthlyContainer = document.getElementById('monthlyGoals');
+        const emptyState = document.getElementById('emptyState');
+
+        // Clear containers
+        dailyContainer.innerHTML = '';
+        weeklyContainer.innerHTML = '';
+        monthlyContainer.innerHTML = '';
+
+        if (goalsManager.goals.length === 0) {
+            emptyState.style.display = 'block';
+            document.querySelector('.goals-container').style.display = 'none';
+            return;
+        }
+
         emptyState.style.display = 'none';
+        document.querySelector('.goals-container').style.display = 'block';
 
-        container.innerHTML = goals.map(goal => {
-            const categoryEmojis = {
-                wellness: '🧘', business: '💼', learning: '📚',
-                relationships: '🤝', finance: '💰', creativity: '🎨',
-                leadership: '👥', personal: '🌟'
-            };
+        // Group goals by frequency
+        const dailyGoals = goalsManager.goals.filter(g => g.frequency === 'daily');
+        const weeklyGoals = goalsManager.goals.filter(g => g.frequency === 'weekly');
+        const monthlyGoals = goalsManager.goals.filter(g => g.frequency === 'monthly');
 
-            const isOverdue = window.goalsManager.isOverdue(goal);
-            const lastCompleted = goal.lastCompleted ? 
-                new Date(goal.lastCompleted).toLocaleDateString() : 'Never';
+        // Render each group
+        renderGoalGroup(dailyGoals, dailyContainer);
+        renderGoalGroup(weeklyGoals, weeklyContainer);
+        renderGoalGroup(monthlyGoals, monthlyContainer);
+    }
 
-            const progressPercent = goal.target > 0 ? 
-                Math.min((goal.completions.length / goal.target) * 100, 100) : 0;
+    function renderGoalGroup(goals, container) {
+        if (goals.length === 0) {
+            container.innerHTML = '<p class="no-goals">No goals yet</p>';
+            return;
+        }
 
-            return `
-                <div class="goal-card ${!goal.active ? 'paused' : ''} ${isOverdue ? 'overdue' : ''}">
-                    <div class="goal-header">
-                        <div class="goal-category">
-                            <span class="category-emoji">${categoryEmojis[goal.category] || '🎯'}</span>
-                            <span class="category-name">${goal.category}</span>
-                        </div>
-                        <div class="goal-actions">
-                            <button class="goal-action-btn" onclick="editGoal(${goal.id})" title="Edit Goal">
-                                ✏️
-                            </button>
-                            <button class="goal-action-btn" onclick="showProgress(${goal.id})" title="View Progress">
-                                📊
-                            </button>
-                            <button class="goal-action-btn" onclick="deleteGoal(${goal.id})" title="Delete Goal">
-                                🗑️
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div class="goal-content">
-                        <h3 class="goal-title">${goal.title}</h3>
-                        <p class="goal-description">${goal.description || 'No description'}</p>
-                        
+        goals.forEach(goal => {
+            const isCompleted = goalsManager.isCompletedForPeriod(goal);
+            const goalElement = document.createElement('div');
+            goalElement.className = `goal-item ${isCompleted ? 'completed' : ''}`;
+            
+            goalElement.innerHTML = `
+                <div class="goal-content">
+                    <div class="goal-text">
+                        <h4>${goal.title}</h4>
                         <div class="goal-stats">
-                            <div class="stat">
-                                <span class="stat-label">Streak:</span>
-                                <span class="stat-value">${goal.streak} days</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-label">Frequency:</span>
-                                <span class="stat-value">${goal.interval}</span>
-                            </div>
-                            <div class="stat">
-                                <span class="stat-label">Last:</span>
-                                <span class="stat-value">${lastCompleted}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="goal-progress">
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
-                            </div>
-                            <span class="progress-text">${goal.completions.length}/${goal.target} completions</span>
+                            <span>Streak: ${goal.streak}</span>
+                            <span>Best: ${goal.bestStreak}</span>
                         </div>
                     </div>
-                    
-                    <div class="goal-footer">
-                        <button class="btn ${goal.active ? 'btn-primary' : 'btn-secondary'}" 
-                                onclick="${goal.active ? `completeGoal(${goal.id})` : `toggleGoalStatus(${goal.id})`}">
-                            ${goal.active ? 'Mark Complete' : 'Resume Goal'}
+                    <div class="goal-actions">
+                        <button class="btn ${isCompleted ? 'btn-completed' : 'btn-incomplete'}" 
+                                onclick="toggleGoalCompletion(${goal.id})">
+                            ${isCompleted ? 'Completed' : 'Mark Done'}
                         </button>
-                        ${goal.active ? `
-                            <button class="btn btn-outline btn-small" onclick="toggleGoalStatus(${goal.id})">
-                                Pause
-                            </button>
-                        ` : ''}
+                        <button class="btn btn-delete" onclick="deleteGoal(${goal.id})" title="Delete Goal">
+                            Delete
+                        </button>
                     </div>
                 </div>
             `;
-        }).join('');
+            
+            container.appendChild(goalElement);
+        });
     }
 
-    function updateOverviewStats() {
-        const stats = window.goalsManager.getStats();
-        
-        document.getElementById('completedGoalsCount').textContent = stats.completedThisMonth;
-        document.getElementById('currentStreak').textContent = stats.currentStreak;
-        document.getElementById('activeGoalsCount').textContent = stats.activeGoals;
-        document.getElementById('completionRate').textContent = `${stats.completionRate}%`;
+    function updateStats() {
+        const stats = goalsManager.getStats();
+        document.getElementById('totalGoals').textContent = stats.totalGoals;
+        document.getElementById('completedToday').textContent = stats.completedToday;
+        document.getElementById('currentStreak').textContent = stats.bestStreak;
     }
 
-    function showToast(message, type = 'info') {
+    function showToast(message) {
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toastMessage');
         
         toastMessage.textContent = message;
-        toast.className = `toast toast-${type}`;
         toast.style.display = 'block';
         
         setTimeout(() => {
@@ -936,296 +529,216 @@
         }, 3000);
     }
 
-    // ===== INITIALIZATION =====
+    function showError(message) {
+        const errorElement = document.getElementById('goalError');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
 
+    function logout() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('userData');
+        localStorage.removeItem('eeh_simple_goals');
+        window.location.href = 'login.html';
+    }
+
+    // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize managers
-        window.notificationManager.init();
-        window.goalsManager.init();
-        
-        // Render initial content
         renderGoals();
-        updateOverviewStats();
+        updateStats();
         
-        // Close modals when clicking outside
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal-overlay')) {
-                if (e.target.id === 'goalModal') closeGoalModal();
-                if (e.target.id === 'progressModal') closeProgressModal();
-                if (e.target.id === 'celebrationModal') closeCelebrationModal();
+        // Close modal when clicking outside
+        document.getElementById('addGoalModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddGoalModal();
             }
         });
         
-        console.log('Goals page initialized successfully');
+        console.log('Simple Goals page initialized');
     });
     </script>
 
     <style>
     /* Goals-specific styles */
-    .goals-overview {
+    .goals-summary {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
         gap: 1.5rem;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
     }
 
-    .overview-card {
+    .summary-card {
         background: var(--background);
         border-radius: var(--radius-lg);
         padding: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
+        text-align: center;
         border: 1px solid var(--border);
         transition: all 0.3s ease;
     }
 
-    .overview-card:hover {
+    .summary-card:hover {
         transform: translateY(-2px);
         box-shadow: var(--shadow);
     }
 
-    .overview-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        color: white;
-        flex-shrink: 0;
-    }
-
-    .overview-content h3 {
-        font-size: 1.8rem;
+    .summary-card h3 {
+        font-size: 2.5rem;
         font-weight: 700;
-        margin: 0 0 0.25rem 0;
-        color: var(--text-primary);
+        margin: 0 0 0.5rem 0;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .overview-content p {
-        margin: 0 0 0.25rem 0;
-        font-weight: 600;
-        color: var(--text-primary);
-    }
-
-    .overview-content small {
-        color: var(--text-muted);
-        font-size: 0.8rem;
-    }
-
-    .goals-toolbar {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
-        margin-bottom: 2rem;
-        padding: 1.5rem;
-        background: var(--background);
-        border-radius: var(--radius-lg);
-        border: 1px solid var(--border);
-    }
-
-    .goals-toolbar h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.1rem;
-        color: var(--text-primary);
-    }
-
-    .filter-buttons, .quick-goal-buttons {
-        display: flex;
-        gap: 0.5rem;
-        flex-wrap: wrap;
-    }
-
-    .filter-btn, .quick-goal-btn {
-        padding: 0.5rem 1rem;
-        border: 2px solid var(--border);
-        background: var(--surface);
-        border-radius: var(--radius);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        font-size: 0.875rem;
+    .summary-card p {
+        margin: 0;
+        color: var(--text-secondary);
         font-weight: 500;
     }
 
-    .filter-btn:hover, .quick-goal-btn:hover {
-        border-color: var(--primary);
-        background: var(--background);
+    .goals-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
     }
 
-    .filter-btn.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
-    }
-
-    .goals-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-    }
-
-    .goal-card {
+    .goals-section {
         background: var(--background);
         border-radius: var(--radius-lg);
         border: 1px solid var(--border);
         overflow: hidden;
+    }
+
+    .goals-section h2 {
+        margin: 0;
+        padding: 1.5rem;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .goals-list {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .goal-item {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
         transition: all 0.3s ease;
     }
 
-    .goal-card:hover {
-        transform: translateY(-2px);
-        box-shadow: var(--shadow);
+    .goal-item:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary-light);
     }
 
-    .goal-card.paused {
-        opacity: 0.6;
-        border-color: var(--text-muted);
+    .goal-item.completed {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border-color: var(--success);
     }
 
-    .goal-card.overdue {
-        border-color: var(--error);
-        border-width: 2px;
-    }
-
-    .goal-header {
-        padding: 1rem;
-        border-bottom: 1px solid var(--border);
+    .goal-content {
+        padding: 1.5rem;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: var(--surface);
+        gap: 1rem;
     }
 
-    .goal-category {
+    .goal-text {
+        flex: 1;
+    }
+
+    .goal-text h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .goal-stats {
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        gap: 1rem;
     }
 
-    .category-emoji {
-        font-size: 1.2rem;
-    }
-
-    .category-name {
+    .goal-stats span {
         font-size: 0.875rem;
         color: var(--text-secondary);
-        text-transform: capitalize;
+        background: var(--background);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
     }
 
     .goal-actions {
         display: flex;
-        gap: 0.25rem;
+        gap: 0.75rem;
+        align-items: center;
     }
 
-    .goal-action-btn {
-        background: none;
+    .btn-completed {
+        background: var(--success);
+        color: white;
         border: none;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: var(--radius);
-        transition: background-color 0.2s ease;
     }
 
-    .goal-action-btn:hover {
+    .btn-completed:hover {
+        background: #059669;
+    }
+
+    .btn-incomplete {
         background: var(--surface);
-    }
-
-    .goal-content {
-        padding: 1rem;
-    }
-
-    .goal-title {
-        margin: 0 0 0.5rem 0;
-        font-size: 1.1rem;
-        font-weight: 600;
         color: var(--text-primary);
+        border: 2px solid var(--primary);
     }
 
-    .goal-description {
-        margin: 0 0 1rem 0;
-        color: var(--text-secondary);
+    .btn-incomplete:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--surface);
+        color: var(--error);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
         font-size: 0.875rem;
-        line-height: 1.4;
     }
 
-    .goal-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem;
-        margin-bottom: 1rem;
+    .btn-delete:hover {
+        background: var(--error);
+        color: white;
+        border-color: var(--error);
     }
 
-    .goal-stats .stat {
+    .no-goals {
         text-align: center;
-        padding: 0.5rem;
-        background: var(--surface);
-        border-radius: var(--radius);
-    }
-
-    .goal-stats .stat-label {
-        display: block;
-        font-size: 0.75rem;
         color: var(--text-muted);
-        margin-bottom: 0.25rem;
+        font-style: italic;
+        padding: 2rem;
     }
 
-    .goal-stats .stat-value {
-        font-weight: 600;
-        color: var(--text-primary);
-        font-size: 0.875rem;
-    }
-
-    .goal-progress {
-        margin-bottom: 1rem;
-    }
-
-    .progress-bar {
-        width: 100%;
-        height: 8px;
-        background: var(--surface);
-        border-radius: 4px;
-        overflow: hidden;
-        margin-bottom: 0.5rem;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--primary), var(--accent));
-        transition: width 0.3s ease;
-    }
-
-    .progress-text {
-        font-size: 0.8rem;
-        color: var(--text-muted);
-    }
-
-    .goal-footer {
-        padding: 1rem;
-        border-top: 1px solid var(--border);
-        display: flex;
-        gap: 0.5rem;
-        background: var(--surface);
-    }
-
-    .empty-goals {
+    .empty-state {
         text-align: center;
         padding: 4rem 2rem;
         color: var(--text-muted);
     }
 
-    .empty-illustration {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-    }
-
-    .empty-goals h3 {
+    .empty-state h3 {
         margin-bottom: 1rem;
         color: var(--text-primary);
+        font-size: 1.5rem;
     }
 
-    .empty-goals p {
+    .empty-state p {
         margin-bottom: 2rem;
         max-width: 400px;
         margin-left: auto;
@@ -1248,14 +761,15 @@
         backdrop-filter: blur(4px);
     }
 
-    .goal-modal, .progress-modal {
+    .modal-content {
         background: var(--background);
         border-radius: var(--radius-xl);
-        max-width: 600px;
+        max-width: 500px;
         width: 90%;
         max-height: 90vh;
         overflow-y: auto;
         box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
     }
 
     .modal-header {
@@ -1269,8 +783,9 @@
 
     .modal-header h2 {
         margin: 0;
-        font-size: 1.5rem;
         color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
     .close-btn {
@@ -1307,66 +822,40 @@
         background: var(--surface);
     }
 
-    .form-section {
+    .form-group {
         margin-bottom: 1.5rem;
     }
 
-    .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
-
-    .form-section label {
+    .form-group label {
         display: block;
         margin-bottom: 0.5rem;
         font-weight: 600;
         color: var(--text-primary);
     }
 
-    .form-section input,
-    .form-section select,
-    .form-section textarea {
+    .form-group input,
+    .form-group select {
         width: 100%;
         padding: 0.75rem;
         border: 2px solid var(--border);
         border-radius: var(--radius);
         font-family: inherit;
+        font-size: 1rem;
         transition: border-color 0.2s ease;
     }
 
-    .form-section input:focus,
-    .form-section select:focus,
-    .form-section textarea:focus {
+    .form-group input:focus,
+    .form-group select:focus {
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
-    .form-section small {
+    .form-group small {
         display: block;
         margin-top: 0.25rem;
         color: var(--text-muted);
-        font-size: 0.8rem;
-    }
-
-    .goal-options {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        cursor: pointer;
-        font-weight: 500;
-    }
-
-    .checkbox-label input[type="checkbox"] {
-        width: auto;
-        margin: 0;
+        font-size: 0.875rem;
     }
 
     .error-message {
@@ -1376,65 +865,7 @@
         padding: 0.75rem;
         border-radius: var(--radius);
         font-size: 0.875rem;
-    }
-
-    /* Celebration modal */
-    .celebration-modal .modal-overlay {
-        background: rgba(0, 0, 0, 0.7);
-    }
-
-    .celebration-content {
-        background: var(--background);
-        border-radius: var(--radius-xl);
-        padding: 3rem 2rem;
-        text-align: center;
-        max-width: 400px;
-        box-shadow: var(--shadow-xl);
-    }
-
-    .celebration-animation {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        animation: bounce 1s infinite;
-    }
-
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-        40% { transform: translateY(-10px); }
-        60% { transform: translateY(-5px); }
-    }
-
-    .celebration-content h2 {
-        margin-bottom: 1rem;
-        color: var(--text-primary);
-    }
-
-    .celebration-content p {
-        margin-bottom: 2rem;
-        color: var(--text-secondary);
-    }
-
-    .celebration-stats {
-        display: flex;
-        justify-content: center;
-        gap: 2rem;
-        margin-bottom: 2rem;
-    }
-
-    .celebration-stat {
-        text-align: center;
-    }
-
-    .celebration-stat strong {
-        display: block;
-        font-size: 2rem;
-        color: var(--primary);
-        margin-bottom: 0.25rem;
-    }
-
-    .celebration-stat span {
-        color: var(--text-muted);
-        font-size: 0.875rem;
+        margin-top: 1rem;
     }
 
     /* Toast notification */
@@ -1442,7 +873,7 @@
         position: fixed;
         bottom: 2rem;
         right: 2rem;
-        background: var(--primary);
+        background: var(--success);
         color: white;
         padding: 1rem 1.5rem;
         border-radius: var(--radius);
@@ -1451,180 +882,31 @@
         animation: slideInUp 0.3s ease;
     }
 
-    .toast-success {
-        background: var(--success);
-    }
-
-    .toast-error {
-        background: var(--error);
-    }
-
     @keyframes slideInUp {
         from { transform: translateY(100%); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
     }
 
-    /* Progress modal specific styles */
-    .progress-chart-container {
-        margin-bottom: 2rem;
-        text-align: center;
-    }
-
-    .progress-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .progress-stats .stat-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        background: var(--surface);
-        border-radius: var(--radius);
-    }
-
-    .progress-stats .stat-label {
-        color: var(--text-secondary);
-        font-weight: 500;
-    }
-
-    .progress-stats .stat-value {
-        color: var(--text-primary);
-        font-weight: 600;
-    }
-
-    .recent-activity h4 {
-        margin-bottom: 1rem;
-        color: var(--text-primary);
-    }
-
-    .activity-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .activity-item:last-child {
-        border-bottom: none;
-    }
-
-    .activity-date {
-        color: var(--text-muted);
-        font-size: 0.875rem;
-    }
-
-    .activity-text {
-        color: var(--text-primary);
-        font-weight: 500;
-    }
-
     /* Responsive design */
     @media (max-width: 768px) {
-        .goals-toolbar {
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-        
-        .goals-grid {
-            grid-template-columns: 1fr;
-        }
-        
-        .overview-card {
+        .goal-content {
             flex-direction: column;
-            text-align: center;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        
+        .goal-actions {
+            justify-content: space-between;
         }
         
         .goal-stats {
-            grid-template-columns: 1fr;
+            justify-content: center;
         }
         
-        .form-row {
+        .goals-summary {
             grid-template-columns: 1fr;
-        }
-        
-        .celebration-stats {
-            flex-direction: column;
-            gap: 1rem;
         }
     }
     </style>
 </body>
 </html>
-            title: document.getElementById('goalTitle').value.trim(),
-            category: document.getElementById('goalCategory').value,
-            interval: document.getElementById('goalInterval').value,
-            target: parseInt(document.getElementById('goalTarget').value) || 1,
-            description: document.getElementById('goalDescription').value.trim(),
-            reminders: document.getElementById('goalReminders').checked,
-            public: document.getElementById('goalPublic').checked
-        };
-
-        const deadline = document.getElementById('goalDeadline').value;
-        if (deadline) {
-            goalData.deadline = new Date(deadline).getTime();
-        }
-
-        if (goalData.interval === 'custom') {
-            goalData.customDays = parseInt(document.getElementById('customDays').value) || 1;
-        }
-
-        try {
-            if (editingGoalId) {
-                window.goalsManager.updateGoal(editingGoalId, goalData);
-            } else {
-                window.goalsManager.createGoal(goalData);
-            }
-            
-            closeGoalModal();
-            renderGoals();
-            updateOverviewStats();
-            
-            showToast(editingGoalId ? 'Goal updated successfully!' : 'Goal created successfully!', 'success');
-        } catch (error) {
-            document.getElementById('goalError').textContent = error.message;
-            document.getElementById('goalError').style.display = 'block';
-        }
-    }
-
-    function deleteGoal(goalId) {
-        const goal = window.goalsManager.goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        if (confirm(`Are you sure you want to delete "${goal.title}"? This action cannot be undone.`)) {
-            window.goalsManager.deleteGoal(goalId);
-            renderGoals();
-            updateOverviewStats();
-            showToast('Goal deleted successfully', 'success');
-        }
-    }
-
-    function completeGoal(goalId) {
-        const updatedGoal = window.goalsManager.completeGoal(goalId);
-        if (updatedGoal) {
-            renderGoals();
-            updateOverviewStats();
-            
-            // Add notification for goal completion
-            window.notificationManager.addNotification({
-                type: 'system',
-                title: 'Goal Completed!',
-                message: `You completed "${updatedGoal.title}". Keep up the great work!`,
-                time: 'Just now'
-            });
-        }
-    }
-
-    function quickGoal(type, interval) {
-        const quickGoals = {
-            meditation: { title: 'Daily Meditation', category: 'wellness', description: '10 minutes of mindfulness' },
-            exercise: { title: 'Exercise', category: 'wellness', description: '30 minutes of physical activity' },
-            reading: { title: 'Read for 30 minutes', category: 'learning', description: 'Professional or personal development' },
-            networking: { title: 'Network with peers', category: 'relationships', description: 'Connect with other entrepreneurs' }
-        };
-
-        const goalData = {
