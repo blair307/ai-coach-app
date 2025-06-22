@@ -1,10 +1,9 @@
 /**
- * Fixed Sidebar Toggle - Simple and Working
- * Replace your entire sidebar-toggle.js file with this code
+ * WORKING Sidebar Toggle - Replace your sidebar-toggle.js with this
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing sidebar toggle...');
+    console.log('🚀 Initializing WORKING sidebar toggle...');
     
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
@@ -17,36 +16,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let isOpen = true;
     let floatingButton = null;
     
-    // Create floating button for mobile/closed state
+    // Create floating button for mobile
     function createFloatingButton() {
         if (floatingButton) {
             floatingButton.remove();
         }
         
         floatingButton = document.createElement('button');
+        floatingButton.className = 'floating-toggle';
         floatingButton.innerHTML = `
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-        `;
-        
-        floatingButton.style.cssText = `
-            position: fixed !important;
-            top: 20px !important;
-            left: 20px !important;
-            width: 50px !important;
-            height: 50px !important;
-            background: #6366f1 !important;
-            border: none !important;
-            border-radius: 10px !important;
-            cursor: pointer !important;
-            z-index: 99999 !important;
-            display: none !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
-            transition: all 0.3s ease !important;
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
         `;
         
         floatingButton.addEventListener('click', function(e) {
@@ -60,36 +41,65 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Floating button created');
     }
     
-    // Open sidebar
+    // Open sidebar function
     function openSidebar() {
         console.log('🔓 Opening sidebar');
+        
+        // Remove closed class and add open state
+        sidebar.classList.remove('closed');
+        mainContent.classList.remove('expanded');
+        
+        // Force CSS transform
         sidebar.style.transform = 'translateX(0)';
         mainContent.style.marginLeft = '280px';
         
+        // Hide floating button
         if (floatingButton) {
             floatingButton.style.display = 'none';
         }
         
-        isOpen = true;
+        // Remove mobile overlay
+        removeOverlay();
         
-        // Add overlay for mobile
-        if (window.innerWidth <= 768) {
-            createOverlay();
-        }
+        isOpen = true;
+        console.log('✅ Sidebar opened');
     }
     
-    // Close sidebar
+    // Close sidebar function
     function closeSidebar() {
         console.log('🔒 Closing sidebar');
+        
+        // Add closed class
+        sidebar.classList.add('closed');
+        mainContent.classList.add('expanded');
+        
+        // Force CSS transform
         sidebar.style.transform = 'translateX(-280px)';
         mainContent.style.marginLeft = '0';
         
+        // Show floating button
         if (floatingButton) {
             floatingButton.style.display = 'flex';
         }
         
+        // Add mobile overlay if needed
+        if (window.innerWidth <= 768) {
+            createOverlay();
+        }
+        
         isOpen = false;
-        removeOverlay();
+        console.log('✅ Sidebar closed');
+    }
+    
+    // Toggle function
+    function toggleSidebar() {
+        console.log('🔄 Toggling sidebar, currently:', isOpen ? 'open' : 'closed');
+        
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
     }
     
     // Create overlay for mobile
@@ -98,19 +108,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const overlay = document.createElement('div');
         overlay.className = 'sidebar-overlay';
-        overlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 280px;
-            width: calc(100vw - 280px);
-            height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 999;
-            cursor: pointer;
-        `;
-        
         overlay.addEventListener('click', closeSidebar);
         document.body.appendChild(overlay);
+        console.log('📱 Mobile overlay created');
     }
     
     // Remove overlay
@@ -121,42 +121,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Handle hamburger button clicks
-    function handleHamburgerClick(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        console.log('🎯 Hamburger clicked');
+    // Attach to hamburger buttons
+    function attachHamburgerHandlers() {
+        const hamburgers = document.querySelectorAll('.sidebar-toggle');
+        console.log('🎯 Found hamburger buttons:', hamburgers.length);
         
-        if (isOpen) {
-            closeSidebar();
-        } else {
-            openSidebar();
-        }
-    }
-    
-    // Find and attach to hamburger button
-    function attachHamburgerHandler() {
-        const hamburger = sidebar.querySelector('.sidebar-toggle');
-        if (hamburger) {
-            // Remove any existing listeners
-            hamburger.removeEventListener('click', handleHamburgerClick);
+        hamburgers.forEach((btn, index) => {
+            // Remove existing listeners
+            btn.removeEventListener('click', toggleSidebar);
+            
             // Add new listener
-            hamburger.addEventListener('click', handleHamburgerClick);
-            console.log('🎯 Hamburger handler attached');
-        } else {
-            console.warn('⚠️ Hamburger button not found');
-        }
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`🎯 Hamburger ${index + 1} clicked`);
+                toggleSidebar();
+            });
+            
+            console.log(`✅ Handler attached to hamburger ${index + 1}`);
+        });
     }
     
     // Handle window resize
     function handleResize() {
         if (window.innerWidth <= 768) {
-            // Mobile view - close sidebar by default
+            // Mobile - close sidebar and show floating button
             if (isOpen) {
                 closeSidebar();
             }
         } else {
-            // Desktop view - open sidebar and remove overlay
+            // Desktop - open sidebar and hide floating button
             if (!isOpen) {
                 openSidebar();
             }
@@ -174,21 +168,35 @@ document.addEventListener('DOMContentLoaded', function() {
         openSidebar();
     }
     
-    // Attach hamburger handler
-    attachHamburgerHandler();
+    // Attach hamburger handlers
+    attachHamburgerHandlers();
     
-    // Re-attach handler periodically to ensure it persists
-    setInterval(attachHamburgerHandler, 3000);
+    // Re-attach handlers every 2 seconds to ensure they persist
+    setInterval(() => {
+        const hamburgers = document.querySelectorAll('.sidebar-toggle');
+        if (hamburgers.length > 0) {
+            attachHamburgerHandlers();
+        }
+    }, 2000);
     
     // Handle window resize
     window.addEventListener('resize', handleResize);
     
-    // Handle escape key to close sidebar on mobile
+    // Handle escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && window.innerWidth <= 768 && isOpen) {
             closeSidebar();
         }
     });
     
-    console.log('✅ Sidebar toggle initialized successfully');
+    // Export functions for testing
+    window.sidebarToggle = {
+        open: openSidebar,
+        close: closeSidebar,
+        toggle: toggleSidebar,
+        isOpen: () => isOpen
+    };
+    
+    console.log('✅ WORKING sidebar toggle initialized successfully');
+    console.log('🧪 Test with: window.sidebarToggle.toggle()');
 });
