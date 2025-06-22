@@ -29,10 +29,16 @@ async function loadGoals() {
     grouped[category].forEach((goal) => {
       const item = document.createElement("div");
       item.className = "goal-item";
-      item.innerHTML = `
-        <input type="checkbox" ${goal.completed ? "checked" : ""} onchange="toggleGoal('${goal._id}', this.checked)">
-        <span>${goal.title}</span>
-      `;
+    item.innerHTML = `
+  <input type="checkbox" ${goal.completed ? "checked" : ""} onchange="toggleGoal('${goal._id}', this.checked)">
+  <div class="goal-details">
+    <span class="goal-title">${goal.title}</span>
+    <div class="streak-track">
+      🔥 <span>${goal.streak || 0}</span> day streak
+    </div>
+  </div>
+`;
+
       section.querySelector(".goal-list").appendChild(item);
     });
 
