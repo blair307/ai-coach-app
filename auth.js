@@ -193,6 +193,8 @@ async function handleSignup(e) {
             streakData: data.streakData
         };
         localStorage.setItem('userData', JSON.stringify(userData));
+
+        saveRememberMe(email, password, remember);
         
         console.log('💾 Stored real user data and JWT token');
         
@@ -355,3 +357,35 @@ style.textContent = `
 `;
 
 document.head.appendChild(style);
+
+// ADD THIS TO THE BOTTOM OF YOUR EXISTING auth.js FILE
+
+// Remember Me functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const rememberCheckbox = document.getElementById('remember');
+
+    // Load saved login info when page loads
+    if (localStorage.getItem('rememberMe') === 'true') {
+        if (emailInput) emailInput.value = localStorage.getItem('savedEmail') || '';
+        if (passwordInput) passwordInput.value = localStorage.getItem('savedPassword') || '';
+        if (rememberCheckbox) rememberCheckbox.checked = true;
+    }
+});
+
+// Update your existing handleLogin function - find this line in your current code:
+// localStorage.setItem('userData', JSON.stringify(userData));
+
+// And add this RIGHT AFTER it:
+function saveRememberMe(email, password, remember) {
+    if (remember) {
+        localStorage.setItem('savedEmail', email);
+        localStorage.setItem('savedPassword', password);
+        localStorage.setItem('rememberMe', 'true');
+    } else {
+        localStorage.removeItem('savedEmail');
+        localStorage.removeItem('savedPassword');
+        localStorage.removeItem('rememberMe');
+    }
+}
