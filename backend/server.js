@@ -1294,19 +1294,7 @@ app.listen(PORT, () => {
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Enhanced Goals ✅ Notifications ✅ Chat Rooms ✅`);
 });// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage + Enhanced Goals
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const Stripe = require('stripe');
-const OpenAI = require('openai');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-require('dotenv').config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
