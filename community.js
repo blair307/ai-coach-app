@@ -1030,3 +1030,465 @@ window.closeSearchMobile = closeSearchMobile;
 window.addEmojiMobile = addEmojiMobile;
 window.sendCommunityMessageMobile = sendCommunityMessageMobile;
 window.handleOrientationChange = handleOrientationChange;
+
+// Real-time Search Enhancement for Community Page
+// Add this to the END of your community.js file or create a new file
+
+// Global search cache and state
+let searchCache = {
+    rooms: [],
+    messages: {},
+    lastUpdate: 0
+};
+
+let searchTimeout = null;
+let isSearching = false;
+
+// Enhanced real-time search initialization
+function initializeRealTimeSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (!searchInput) return;
+
+    // Remove existing event listeners
+    searchInput.removeEventListener('input', handleSearchInput);
+    searchInput.removeEventListener('keydown', handleSearchKeydown);
+    searchInput.removeEventListener('focus', handleSearchFocus);
+    searchInput.removeEventListener('blur', handleSearchBlur);
+
+    // Add new event listeners
+    searchInput.addEventListener('input', handleSearchInput);
+    searchInput.addEventListener('keydown', handleSearchKeydown);
+    searchInput.addEventListener('focus', handleSearchFocus);
+    searchInput.addEventListener('blur', handleSearchBlur);
+
+    // Initialize search cache
+    updateSearchCache();
+    
+    console.log('Real-time search initialized');
+}
+
+// Handle search input with debouncing
+function handleSearchInput(event) {
+    const query = event.target.value.trim();
+    
+    // Clear previous timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    
+    // If empty query, close search
+    if (!query) {
+        closeSearch();
+        return;
+    }
+    
+    // Show search results immediately with loading state
+    showSearchResults();
+    showSearchLoading();
+    
+    // Debounce search execution
+    searchTimeout = setTimeout(() => {
+        performRealTimeSearch(query);
+    }, 150); // 150ms debounce
+}
+
+// Handle special keys
+function handleSearchKeydown(event) {
+    if (event.key === 'Escape') {
+        closeSearch();
+        event.target.blur();
+    } else if (event.key === 'Enter') {
+        event.preventDefault();
+        const query = event.target.value.trim();
+        if (query) {
+            performRealTimeSearch(query);
+        }
+    }
+}
+
+// Handle search focus
+function handleSearchFocus(event) {
+    const query = event.target.value.trim();
+    if (query) {
+        showSearchResults();
+        performRealTimeSearch(query);
+    }
+}
+
+// Handle search blur (with delay to allow clicking results)
+function handleSearchBlur(event) {
+    setTimeout(() => {
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults && !searchResults.matches(':hover')) {
+            // Don't close if user is hovering over results
+            // closeSearch();
+        }
+    }, 150);
+}
+
+// Show search results panel
+function showSearchResults() {
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults) {
+        searchResults.style.display = 'block';
+        searchResults.classList.add('show');
+        
+        // On mobile, prevent body scrolling
+        if (window.innerWidth <= 768) {
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}
+
+// Show loading state
+function showSearchLoading() {
+    const searchContent = document.getElementById('searchContent');
+    if (searchContent) {
+        searchContent.innerHTML = `
+            <div class="quick-search-info">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <div style="width: 16px; height: 16px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    Searching...
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Perform real-time search
+async function performRealTimeSearch(query) {
+    if (isSearching) return;
+    isSearching = true;
+    
+    try {
+        const results = await searchInRealTime(query);
+        displayRealTimeResults(results, query);
+    } catch (error) {
+        console.error('Search error:', error);
+        showSearchError();
+    } finally {
+        isSearching = false;
+    }
+}
+
+// Search in real-time across cached data
+async function searchInRealTime(query) {
+    const results = [];
+    const queryLower = query.toLowerCase();
+    
+    // Update cache if needed
+    if (Date.now() - searchCache.lastUpdate > 30000) { // 30 seconds
+        await updateSearchCache();
+    }
+    
+    // Search rooms
+    searchCache.rooms.forEach(room => {
+        const nameMatch = room.name.toLowerCase().includes(queryLower);
+        const descMatch = room.description.toLowerCase().includes(queryLower);
+        
+        if (nameMatch || descMatch) {
+            results.push({
+                type: 'room',
+                title: room.name,
+                preview: room.description,
+                data: room,
+                relevance: nameMatch ? 10 : 5
+            });
+        }
+    });
+    
+    // Search messages from all loaded rooms
+    Object.entries(searchCache.messages).forEach(([roomId, messages]) => {
+        const room = searchCache.rooms.find(r => r._id === roomId);
+        if (!room) return;
+        
+        messages.forEach(message => {
+            const content = (message.content || message.message || '').toLowerCase();
+            const username = (message.username || '').toLowerCase();
+            
+            if (content.includes(queryLower) || username.includes(queryLower)) {
+                const preview = (message.content || message.message || '').substring(0, 100);
+                results.push({
+                    type: 'message',
+                    title: `${message.username || 'User'} in ${room.name}`,
+                    preview: preview + (preview.length === 100 ? '...' : ''),
+                    data: { message, room },
+                    relevance: username.includes(queryLower) ? 8 : 3
+                });
+            }
+        });
+    });
+    
+    // Sort by relevance and limit results
+    return results
+        .sort((a, b) => b.relevance - a.relevance)
+        .slice(0, 20);
+}
+
+// Update search cache
+async function updateSearchCache() {
+    try {
+        // Cache current rooms
+        searchCache.rooms = [...rooms];
+        
+        // Cache messages from currently loaded room
+        if (currentRoomId) {
+            const messagesContainer = document.getElementById('communityMessages');
+            if (messagesContainer) {
+                const messageElements = messagesContainer.querySelectorAll('.message-group');
+                const messages = Array.from(messageElements).map(el => {
+                    const username = el.querySelector('.username')?.textContent || 'User';
+                    const content = el.querySelector('.message-content')?.textContent || '';
+                    const timestamp = el.querySelector('.message-timestamp')?.textContent || '';
+                    
+                    return {
+                        username,
+                        content,
+                        message: content, // for compatibility
+                        timestamp
+                    };
+                });
+                
+                searchCache.messages[currentRoomId] = messages;
+            }
+        }
+        
+        searchCache.lastUpdate = Date.now();
+        console.log('Search cache updated', searchCache);
+    } catch (error) {
+        console.error('Error updating search cache:', error);
+    }
+}
+
+// Display real-time search results
+function displayRealTimeResults(results, query) {
+    const searchContent = document.getElementById('searchContent');
+    if (!searchContent) return;
+
+    if (results.length === 0) {
+        searchContent.innerHTML = `
+            <div class="quick-search-info">
+                Type to search rooms and messages in real-time
+            </div>
+            <div class="no-results">
+                <p>No results found for "${escapeHtml(query)}"</p>
+                <small>Try different keywords or check spelling</small>
+            </div>
+        `;
+        return;
+    }
+
+    // Group results by type
+    const roomResults = results.filter(r => r.type === 'room');
+    const messageResults = results.filter(r => r.type === 'message');
+
+    let html = `
+        <div class="quick-search-info">
+            Found ${results.length} result${results.length !== 1 ? 's' : ''} for "${escapeHtml(query)}"
+        </div>
+    `;
+
+    // Add room results
+    if (roomResults.length > 0) {
+        roomResults.forEach(result => {
+            html += `
+                <div class="search-result-item" onclick="selectSearchResult('${result.data._id}', 'room')">
+                    <div class="search-result-type">Room</div>
+                    <div class="search-result-title">${highlightText(escapeHtml(result.title), query)}</div>
+                    <div class="search-result-preview">${highlightText(escapeHtml(result.preview), query)}</div>
+                </div>
+            `;
+        });
+    }
+
+    // Add message results
+    if (messageResults.length > 0) {
+        messageResults.forEach(result => {
+            html += `
+                <div class="search-result-item" onclick="selectSearchResult('${result.data.room._id}', 'message')">
+                    <div class="search-result-type">Message</div>
+                    <div class="search-result-title">${highlightText(escapeHtml(result.title), query)}</div>
+                    <div class="search-result-preview">${highlightText(escapeHtml(result.preview), query)}</div>
+                </div>
+            `;
+        });
+    }
+
+    searchContent.innerHTML = html;
+}
+
+// Highlight search terms in text
+function highlightText(text, query) {
+    if (!query || !text) return text;
+    
+    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+    return text.replace(regex, '<span class="search-highlight">$1</span>');
+}
+
+// Escape regex special characters
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\                    <div class="search-result-preview">${highlightText(escapeHtml(');
+}
+
+// Handle search result selection
+function selectSearchResult(id, type) {
+    if (type === 'room' || type === 'message') {
+        switchRoom(id);
+        closeSearch();
+        
+        // Clear search input
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.value = '';
+            searchInput.blur();
+        }
+        
+        // Add haptic feedback on mobile
+        if (navigator.vibrate) {
+            navigator.vibrate(30);
+        }
+    }
+}
+
+// Show search error
+function showSearchError() {
+    const searchContent = document.getElementById('searchContent');
+    if (searchContent) {
+        searchContent.innerHTML = `
+            <div class="no-results">
+                <p>Search temporarily unavailable</p>
+                <small>Please try again in a moment</small>
+            </div>
+        `;
+    }
+}
+
+// Enhanced close search
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchResults) {
+        searchResults.classList.remove('show');
+        setTimeout(() => {
+            searchResults.style.display = 'none';
+        }, 300);
+        
+        // Re-enable body scrolling
+        document.body.style.overflow = '';
+    }
+    
+    // Clear search timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+        searchTimeout = null;
+    }
+}
+
+// Override existing search functions
+function performSearch() {
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        const query = searchInput.value.trim();
+        if (query) {
+            performRealTimeSearch(query);
+        } else {
+            closeSearch();
+        }
+    }
+}
+
+// Update cache when switching rooms
+const originalSwitchRoom = window.switchRoom;
+if (originalSwitchRoom) {
+    window.switchRoom = async function(roomId) {
+        const result = await originalSwitchRoom(roomId);
+        
+        // Update search cache with new room messages
+        setTimeout(() => {
+            updateSearchCache();
+        }, 1000);
+        
+        return result;
+    };
+}
+
+// Update cache when sending messages
+const originalSendCommunityMessage = window.sendCommunityMessage;
+if (originalSendCommunityMessage) {
+    window.sendCommunityMessage = async function() {
+        const result = await originalSendCommunityMessage();
+        
+        // Update cache after sending message
+        setTimeout(() => {
+            updateSearchCache();
+        }, 500);
+        
+        return result;
+    };
+}
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeRealTimeSearch);
+} else {
+    initializeRealTimeSearch();
+}
+
+// Re-initialize on room load
+document.addEventListener('roomLoaded', updateSearchCache);
+
+// Handle window resize for mobile optimization
+function handleSearchResize() {
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults && searchResults.classList.contains('show')) {
+        if (window.innerWidth <= 768) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+window.addEventListener('resize', handleSearchResize);
+window.addEventListener('orientationchange', handleSearchResize);
+
+// Add CSS animation keyframes if not already present
+if (!document.querySelector('#search-animations')) {
+    const style = document.createElement('style');
+    style.id = 'search-animations';
+    style.textContent = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .search-results {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .search-result-item {
+            transition: all 0.2s ease;
+        }
+        
+        .search-result-item:hover {
+            transform: translateX(4px);
+        }
+        
+        @media (max-width: 768px) {
+            .search-result-item:hover {
+                transform: none;
+                background: var(--surface);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// Export functions for global access
+window.performRealTimeSearch = performRealTimeSearch;
+window.closeSearch = closeSearch;
+window.selectSearchResult = selectSearchResult;
+window.updateSearchCache = updateSearchCache;
+
+console.log('Real-time search system loaded successfully');
