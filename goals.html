@@ -5,514 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Goals - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Enhanced Goals Styles */
-        .goals-hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 3rem 2rem;
-            text-align: center;
-            border-radius: var(--radius-xl);
-            margin-bottom: 2rem;
-        }
-
-        .goals-hero h1 {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            font-weight: 800;
-        }
-
-        .goals-hero p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .area-selection {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 3rem;
-        }
-
-        .area-card {
-            background: var(--background);
-            border: 2px solid var(--border);
-            border-radius: var(--radius-xl);
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .area-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--area-color, var(--primary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .area-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--area-color, var(--primary));
-        }
-
-        .area-card:hover::before {
-            opacity: 1;
-        }
-
-        .area-card.selected {
-            border-color: var(--area-color, var(--primary));
-            background: linear-gradient(135deg, rgba(var(--area-rgb), 0.1) 0%, rgba(var(--area-rgb), 0.05) 100%);
-        }
-
-        .area-card.selected::before {
-            opacity: 1;
-        }
-
-        .area-icon {
-            width: 60px;
-            height: 60px;
-            margin: 0 auto 1rem auto;
-            background: linear-gradient(135deg, var(--area-color) 0%, rgba(var(--area-rgb), 0.8) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(var(--area-rgb), 0.3);
-            transition: all 0.3s ease;
-        }
-
-        .area-name {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-        }
-
-        .area-description {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.4;
-        }
-
-        .goal-setup {
-            background: var(--background);
-            border-radius: var(--radius-xl);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-        }
-
-        .goal-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .form-section {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .form-section label {
-            font-weight: 600;
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .form-section textarea {
-            min-height: 100px;
-            resize: vertical;
-            font-family: inherit;
-        }
-
-        .daily-tasks {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .task-input-group {
-            display: flex;
-            gap: 0.75rem;
-            align-items: center;
-        }
-
-        .task-input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            font-size: 0.95rem;
-        }
-
-        .task-input:focus {
-            border-color: var(--primary);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .add-task-btn {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 1rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-
-        .add-task-btn:hover {
-            background: var(--primary-dark);
-            transform: translateY(-1px);
-        }
-
-        .remove-task-btn {
-            background: var(--error);
-            color: white;
-            border: none;
-            padding: 0.5rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .active-goals {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .goal-tracker {
-            background: var(--background);
-            border-radius: var(--radius-xl);
-            border: 1px solid var(--border);
-            overflow: hidden;
-        }
-
-        .goal-header {
-            padding: 2rem;
-            background: linear-gradient(135deg, rgba(var(--area-rgb), 0.1) 0%, rgba(var(--area-rgb), 0.05) 100%);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .goal-title {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .goal-area-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, rgba(var(--area-rgb), 1) 0%, rgba(var(--area-rgb), 0.8) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(var(--area-rgb), 0.3);
-        }
-
-        .goal-title h3 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .goal-description {
-            color: var(--text-secondary);
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-bottom: 1.5rem;
-        }
-
-        .goal-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-        }
-
-        .stat-box {
-            text-align: center;
-            padding: 1rem;
-            background: var(--surface);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-        }
-
-        .stat-number {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: rgba(var(--area-rgb), 1);
-            margin-bottom: 0.25rem;
-        }
-
-        .stat-label {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .daily-tracker {
-            padding: 2rem;
-        }
-
-        .tracker-month {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .month-nav {
-            background: var(--surface);
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-weight: 700;
-            transition: all 0.2s ease;
-        }
-
-        .month-nav:hover {
-            border-color: var(--primary);
-            transform: translateY(-1px);
-        }
-
-        .tracker-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 4px;
-            margin-bottom: 2rem;
-        }
-
-        .tracker-day {
-            aspect-ratio: 1;
-            border: 2px solid var(--border);
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            position: relative;
-        }
-
-        .tracker-day:hover {
-            transform: scale(1.05);
-        }
-
-        .tracker-day.today {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-        }
-
-        .tracker-day.completed {
-            background: rgba(var(--area-rgb), 1);
-            color: white;
-            border-color: rgba(var(--area-rgb), 1);
-        }
-
-        .tracker-day.partial {
-            background: linear-gradient(45deg, rgba(var(--area-rgb), 1) 50%, var(--surface) 50%);
-            border-color: rgba(var(--area-rgb), 1);
-        }
-
-        .tracker-day.missed {
-            background: var(--error);
-            color: white;
-            border-color: var(--error);
-        }
-
-        .tracker-day.future {
-            background: var(--surface);
-            color: var(--text-muted);
-            cursor: default;
-        }
-
-        .task-list {
-            margin-top: 2rem;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--surface);
-            border-radius: var(--radius);
-            margin-bottom: 0.75rem;
-            border: 1px solid var(--border);
-            transition: all 0.2s ease;
-        }
-
-        .task-item:hover {
-            box-shadow: var(--shadow-sm);
-        }
-
-        .task-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(var(--area-rgb), 1);
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-
-        .task-checkbox.checked {
-            background: rgba(var(--area-rgb), 1);
-            color: white;
-        }
-
-        .task-text {
-            flex: 1;
-            font-weight: 500;
-            color: var(--text-primary);
-        }
-
-        .task-streak {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-muted);
-        }
-
-        .empty-state h3 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .insights-panel {
-            background: var(--background);
-            border-radius: var(--radius-xl);
-            padding: 2rem;
-            border: 1px solid var(--border);
-            margin-top: 2rem;
-        }
-
-        .insight-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: var(--surface);
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary);
-        }
-
-        .insight-icon {
-            width: 32px;
-            height: 32px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 0.875rem;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .insight-text {
-            flex: 1;
-            font-size: 0.9rem;
-            color: var(--text-primary);
-        }
-
-        /* Area-specific color variables */
-        .mind { --area-color: #9333ea; --area-rgb: 147, 51, 234; }
-        .spirit { --area-color: #0ea5e9; --area-rgb: 14, 165, 233; }
-        .body { --area-color: #22c55e; --area-rgb: 34, 197, 94; }
-        .work { --area-color: #f59e0b; --area-rgb: 245, 158, 11; }
-        .relationships { --area-color: #ef4444; --area-rgb: 239, 68, 68; }
-        .fun { --area-color: #ec4899; --area-rgb: 236, 72, 153; }
-        .finances { --area-color: #10b981; --area-rgb: 16, 185, 129; }
-
-        @media (max-width: 768px) {
-            .goals-hero {
-                padding: 2rem 1rem;
-            }
-
-            .goals-hero h1 {
-                font-size: 2rem;
-            }
-
-            .area-selection {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .area-card {
-                padding: 1.5rem;
-            }
-
-            .goal-setup {
-                padding: 1.5rem;
-            }
-
-            .task-input-group {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .goal-stats {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .tracker-grid {
-                gap: 2px;
-            }
-
-            .tracker-day {
-                font-size: 0.8rem;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="app-container">
@@ -527,589 +19,489 @@
                 </button>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
-                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
-                <li><a href="community.html" class="menu-item">Community</a></li>
-                <li><a href="goals.html" class="menu-item active">Goals</a></li>
-                <li><a href="billing.html" class="menu-item">Billing</a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+                <li><a href="goals.html" class="menu-item active">
+                    Goals
+                </a></li>
+                <li><a href="notifications.html" class="menu-item">
+                    Notifications
+                    <span class="notification-badge" id="notificationBadge">0</span>
+                </a></li>
+                <li><a href="billing.html" class="menu-item">
+                    Billing
+                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
             </ul>
         </nav>
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Hero Section -->
-            <div class="goals-hero">
-                <h1>Your Life Goals</h1>
-                <p>Transform your life one daily action at a time. Choose an area, set a meaningful goal, and track your daily progress toward the life you want to build.</p>
-            </div>
+            <header class="content-header">
+                <h1>My Goals</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="showAddGoalModal()">
+                        Add New Goal
+                    </button>
+                </div>
+            </header>
 
-            <!-- Area Selection -->
-            <div id="areaSelection" class="area-selection">
-                <div class="area-card mind" data-area="mind">
-                    <div class="area-icon">M</div>
-                    <div class="area-name">Mind</div>
-                    <div class="area-description">Mental clarity, learning, focus, and cognitive growth</div>
+            <!-- Progress Overview -->
+            <div class="goals-summary">
+                <div class="summary-card">
+                    <h3 id="totalGoals">0</h3>
+                    <p>Total Goals</p>
                 </div>
-                <div class="area-card spirit" data-area="spirit">
-                    <div class="area-icon">S</div>
-                    <div class="area-name">Spirit</div>
-                    <div class="area-description">Purpose, values, meditation, and inner peace</div>
+                <div class="summary-card">
+                    <h3 id="completedToday">0</h3>
+                    <p>Completed Today</p>
                 </div>
-                <div class="area-card body" data-area="body">
-                    <div class="area-icon">B</div>
-                    <div class="area-name">Body</div>
-                    <div class="area-description">Health, fitness, nutrition, and physical well-being</div>
-                </div>
-                <div class="area-card work" data-area="work">
-                    <div class="area-icon">W</div>
-                    <div class="area-name">Work</div>
-                    <div class="area-description">Career growth, business development, and professional skills</div>
-                </div>
-                <div class="area-card relationships" data-area="relationships">
-                    <div class="area-icon">R</div>
-                    <div class="area-name">Relationships</div>
-                    <div class="area-description">Family, friends, networking, and meaningful connections</div>
-                </div>
-                <div class="area-card fun" data-area="fun">
-                    <div class="area-icon">F</div>
-                    <div class="area-name">Fun</div>
-                    <div class="area-description">Hobbies, recreation, adventure, and joy</div>
-                </div>
-                <div class="area-card finances" data-area="finances">
-                    <div class="area-icon">$</div>
-                    <div class="area-name">Finances</div>
-                    <div class="area-description">Money management, investments, and financial freedom</div>
+                <div class="summary-card">
+                    <h3 id="currentStreak">0</h3>
+                    <p>Best Streak</p>
                 </div>
             </div>
 
-            <!-- Goal Setup Form -->
-            <div id="goalSetup" class="goal-setup" style="display: none;">
-                <h2>Create Your Goal</h2>
-                <form class="goal-form" id="goalForm">
-                    <div class="form-section">
-                        <label>
-                            <div class="goal-area-icon">M</div>
-                            What's your big goal in this area?
-                        </label>
-                        <textarea 
-                            id="goalDescription" 
-                            placeholder="Describe your meaningful goal... (e.g., 'Build mental resilience and clarity to handle entrepreneurial stress better')"
-                            required
-                        ></textarea>
-                        <small>Be specific about what success looks like to you.</small>
+            <!-- Goals List -->
+            <div class="goals-container">
+                <div class="goals-section">
+                    <h2>Daily Goals</h2>
+                    <div class="goals-list" id="dailyGoals">
+                        <!-- Daily goals will be populated here -->
                     </div>
+                </div>
 
-                    <div class="form-section">
-                        <label>Break it down into daily actions:</label>
-                        <div class="daily-tasks" id="dailyTasks">
-                            <div class="task-input-group">
-                                <input type="text" class="task-input" placeholder="Daily action to achieve your goal (e.g., '10 minutes of meditation')" required>
-                                <button type="button" class="add-task-btn" onclick="addTaskInput()">+</button>
-                            </div>
-                        </div>
-                        <small>What specific actions will you take every day to reach your goal?</small>
+                <div class="goals-section">
+                    <h2>Weekly Goals</h2>
+                    <div class="goals-list" id="weeklyGoals">
+                        <!-- Weekly goals will be populated here -->
                     </div>
+                </div>
 
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button type="button" class="btn btn-secondary" onclick="cancelGoalSetup()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Create Goal Tracker</button>
+                <div class="goals-section">
+                    <h2>Monthly Goals</h2>
+                    <div class="goals-list" id="monthlyGoals">
+                        <!-- Monthly goals will be populated here -->
                     </div>
-                </form>
-            </div>
-
-            <!-- Active Goals -->
-            <div id="activeGoals" class="active-goals">
-                <!-- Goals will be populated here -->
+                </div>
             </div>
 
             <!-- Empty State -->
-            <div id="emptyState" class="empty-state">
-                <h3>Ready to Transform Your Life?</h3>
-                <p>Choose a life area above to create your first goal tracker. Small daily actions lead to extraordinary results.</p>
-            </div>
-
-            <!-- AI Insights Panel -->
-            <div id="insightsPanel" class="insights-panel" style="display: none;">
-                <h3>AI Insights</h3>
-                <div id="insightsList">
-                    <!-- Insights will be populated here -->
-                </div>
+            <div class="empty-state" id="emptyState" style="display: none;">
+                <h3>No Goals Yet</h3>
+                <p>Create your first goal to start tracking your progress toward emotional wellness and business success.</p>
+                <button class="btn btn-primary" onclick="showAddGoalModal()">Add Your First Goal</button>
             </div>
         </main>
     </div>
 
-    <script>
-        // Goals tracking system
-        let currentArea = null;
-        let goals = JSON.parse(localStorage.getItem('eeh_goals') || '[]');
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-
-        const areaConfig = {
-            mind: { icon: 'M', color: '#9333ea', rgb: '147, 51, 234' },
-            spirit: { icon: 'S', color: '#0ea5e9', rgb: '14, 165, 233' },
-            body: { icon: 'B', color: '#22c55e', rgb: '34, 197, 94' },
-            work: { icon: 'W', color: '#f59e0b', rgb: '245, 158, 11' },
-            relationships: { icon: 'R', color: '#ef4444', rgb: '239, 68, 68' },
-            fun: { icon: 'F', color: '#ec4899', rgb: '236, 72, 153' },
-            finances: { icon: '
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            renderGoals();
-            updateInsights();
-        });
-
-        // Area selection
-        document.querySelectorAll('.area-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const area = this.dataset.area;
-                selectArea(area);
-            });
-        });
-
-        function selectArea(area) {
-            currentArea = area;
+    <!-- Add Goal Modal -->
+    <div class="modal-overlay" id="addGoalModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Goal</h2>
+                <button class="close-btn" onclick="closeAddGoalModal()">×</button>
+            </div>
             
-            // Update selected state
-            document.querySelectorAll('.area-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.querySelector(`[data-area="${area}"]`).classList.add('selected');
-
-            // Show goal setup
-            document.getElementById('goalSetup').style.display = 'block';
-            document.querySelector('.goal-area-icon').textContent = areaConfig[area].icon;
-            
-            // Scroll to form
-            document.getElementById('goalSetup').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function addTaskInput() {
-            const tasksContainer = document.getElementById('dailyTasks');
-            const newTaskGroup = document.createElement('div');
-            newTaskGroup.className = 'task-input-group';
-            newTaskGroup.innerHTML = `
-                <input type="text" class="task-input" placeholder="Another daily action..." required>
-                <button type="button" class="remove-task-btn" onclick="removeTaskInput(this)">×</button>
-            `;
-            tasksContainer.appendChild(newTaskGroup);
-        }
-
-        function removeTaskInput(button) {
-            button.parentElement.remove();
-        }
-
-        function cancelGoalSetup() {
-            document.getElementById('goalSetup').style.display = 'none';
-            document.querySelectorAll('.area-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            currentArea = null;
-        }
-
-        // Goal form submission
-        document.getElementById('goalForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const description = document.getElementById('goalDescription').value;
-            const taskInputs = document.querySelectorAll('.task-input');
-            const tasks = Array.from(taskInputs).map(input => input.value).filter(task => task.trim());
-
-            if (tasks.length === 0) {
-                alert('Please add at least one daily task.');
-                return;
-            }
-
-            const newGoal = {
-                id: Date.now(),
-                area: currentArea,
-                description,
-                tasks,
-                createdAt: new Date().toISOString(),
-                completions: {} // Format: { 'YYYY-MM-DD': [taskIndex1, taskIndex2, ...] }
-            };
-
-            goals.push(newGoal);
-            saveGoals();
-            renderGoals();
-            cancelGoalSetup();
-
-            // Clear form
-            document.getElementById('goalForm').reset();
-            document.getElementById('dailyTasks').innerHTML = `
-                <div class="task-input-group">
-                    <input type="text" class="task-input" placeholder="Daily action to achieve your goal (e.g., '10 minutes of meditation')" required>
-                    <button type="button" class="add-task-btn" onclick="addTaskInput()">+</button>
-                </div>
-            `;
-        });
-
-        function saveGoals() {
-            localStorage.setItem('eeh_goals', JSON.stringify(goals));
-        }
-
-        function renderGoals() {
-            const container = document.getElementById('activeGoals');
-            const emptyState = document.getElementById('emptyState');
-
-            if (goals.length === 0) {
-                container.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            container.innerHTML = goals.map(goal => createGoalTracker(goal)).join('');
-        }
-
-        function createGoalTracker(goal) {
-            const config = areaConfig[goal.area];
-            const stats = calculateGoalStats(goal);
-            
-            return `
-                <div class="goal-tracker ${goal.area}" style="--area-rgb: ${config.rgb}">
-                    <div class="goal-header">
-                        <div class="goal-title">
-                            <div class="goal-area-icon">${config.icon}</div>
-                            <h3>${goal.area.charAt(0).toUpperCase() + goal.area.slice(1)} Goal</h3>
-                        </div>
-                        <div class="goal-description">${goal.description}</div>
-                        <div class="goal-stats">
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.currentStreak}</div>
-                                <div class="stat-label">Current Streak</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.completionRate}%</div>
-                                <div class="stat-label">This Month</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.totalDays}</div>
-                                <div class="stat-label">Total Days</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.bestStreak}</div>
-                                <div class="stat-label">Best Streak</div>
-                            </div>
-                        </div>
+            <div class="modal-body">
+                <form id="goalForm" onsubmit="addGoal(event)">
+                    <div class="form-group">
+                        <label for="goalTitle">Goal Description</label>
+                        <input type="text" id="goalTitle" required 
+                               placeholder="e.g., Exercise for 30 minutes, Read a business book, Meditate">
+                        <small>What do you want to accomplish?</small>
                     </div>
-                    <div class="daily-tracker">
-                        ${createMonthTracker(goal)}
-                        ${createTaskList(goal)}
+
+                    <div class="form-group">
+                        <label for="goalFrequency">How Often?</label>
+                        <select id="goalFrequency" required>
+                            <option value="">Select frequency</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                        <small>How frequently do you want to do this?</small>
                     </div>
-                </div>
-            `;
-        }
 
-        function createMonthTracker(goal) {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const today = new Date();
+                    <div id="goalError" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
             
-            let trackerHTML = `
-                <div class="tracker-month">
-                    <button class="month-nav" onclick="changeMonth(-1)">‹</button>
-                    <h4>${monthNames[currentMonth]} ${currentYear}</h4>
-                    <button class="month-nav" onclick="changeMonth(1)">›</button>
-                </div>
-                <div class="tracker-grid">
-            `;
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeAddGoalModal()">Cancel</button>
+                <button type="submit" form="goalForm" class="btn btn-primary">Add Goal</button>
+            </div>
+        </div>
+    </div>
 
-            // Add empty cells for days before month starts
-            for (let i = 0; i < firstDay; i++) {
-                trackerHTML += `<div class="tracker-day"></div>`;
-            }
+    <!-- Success Toast -->
+    <div class="toast" id="toast" style="display: none;">
+        <span id="toastMessage"></span>
+    </div>
 
-            // Add days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayCompletions = goal.completions[dateStr] || [];
-                const isToday = today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
-                const isFuture = new Date(currentYear, currentMonth, day) > today;
-                
-                let dayClass = 'tracker-day';
-                if (isToday) dayClass += ' today';
-                if (isFuture) dayClass += ' future';
-                else if (dayCompletions.length === goal.tasks.length) dayClass += ' completed';
-                else if (dayCompletions.length > 0) dayClass += ' partial';
-                else dayClass += ' missed';
+    <script src="api-service.js"></script>
+    <script src="goals.js"></script>
+    <script src="sidebar-toggle.js"></script>
+    <script src="notifications.js"></script>
 
-                trackerHTML += `
-                    <div class="${dayClass}" onclick="toggleDay('${goal.id}', '${dateStr}')" ${isFuture ? 'style="pointer-events: none;"' : ''}>
-                        ${day}
-                    </div>
-                `;
-            }
 
-            trackerHTML += '</div>';
-            return trackerHTML;
+    <style>
+    /* Goals-specific styles */
+    .goals-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .summary-card {
+        background: var(--background);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        text-align: center;
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+    }
+
+    .summary-card h3 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem 0;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .summary-card p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .goals-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .goals-section {
+        background: var(--background);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border);
+        overflow: hidden;
+    }
+
+    .goals-section h2 {
+        margin: 0;
+        padding: 1.5rem;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .goals-list {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .goal-item {
+        background: var(--surface);
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+        transition: all 0.3s ease;
+    }
+
+    .goal-item:hover {
+        box-shadow: var(--shadow-sm);
+        border-color: var(--primary-light);
+    }
+
+    .goal-item.completed {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+        border-color: var(--success);
+    }
+
+    .goal-content {
+        padding: 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .goal-text {
+        flex: 1;
+    }
+
+    .goal-text h4 {
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .goal-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .goal-stats span {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        background: var(--background);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius);
+        border: 1px solid var(--border);
+    }
+
+    .goal-actions {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+
+    .btn-completed {
+        background: var(--success);
+        color: white;
+        border: none;
+    }
+
+    .btn-completed:hover {
+        background: #059669;
+    }
+
+    .btn-incomplete {
+        background: var(--surface);
+        color: var(--text-primary);
+        border: 2px solid var(--primary);
+    }
+
+    .btn-incomplete:hover {
+        background: var(--primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--surface);
+        color: var(--error);
+        border: 1px solid var(--border);
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-delete:hover {
+        background: var(--error);
+        color: white;
+        border-color: var(--error);
+    }
+
+    .no-goals {
+        text-align: center;
+        color: var(--text-muted);
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-muted);
+    }
+
+    .empty-state h3 {
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+    }
+
+    .empty-state p {
+        margin-bottom: 2rem;
+        max-width: 400px;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-content {
+        background: var(--background);
+        border-radius: var(--radius-xl);
+        max-width: 500px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--border);
+    }
+
+    .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--surface);
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--text-muted);
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius);
+        transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background: var(--surface);
+        color: var(--text-primary);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .modal-footer {
+        padding: 1.5rem;
+        border-top: 1px solid var(--border);
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        background: var(--surface);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid var(--border);
+        border-radius: var(--radius);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color 0.2s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid var(--error);
+        color: var(--error);
+        padding: 0.75rem;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        margin-top: 1rem;
+    }
+
+    /* Toast notification */
+    .toast {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        z-index: 10000;
+        animation: slideInUp 0.3s ease;
+    }
+
+    @keyframes slideInUp {
+        from { transform: translateY(100%); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .goal-content {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
         }
-
-        function createTaskList(goal) {
-            const today = new Date().toISOString().split('T')[0];
-            const todayCompletions = goal.completions[today] || [];
-            
-            return `
-                <div class="task-list">
-                    <h4>Today's Tasks</h4>
-                    ${goal.tasks.map((task, index) => {
-                        const isCompleted = todayCompletions.includes(index);
-                        const streak = calculateTaskStreak(goal, index);
-                        return `
-                            <div class="task-item">
-                                <div class="task-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleTask('${goal.id}', ${index})">
-                                    ${isCompleted ? '✓' : ''}
-                                </div>
-                                <div class="task-text">${task}</div>
-                                <div class="task-streak">
-                                    🔥 ${streak} day${streak !== 1 ? 's' : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
+        
+        .goal-actions {
+            justify-content: space-between;
         }
-
-        function toggleTask(goalId, taskIndex) {
-            const goal = goals.find(g => g.id == goalId);
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (!goal.completions[today]) {
-                goal.completions[today] = [];
-            }
-            
-            const completions = goal., color: '#10b981', rgb: '16, 185, 129' }
-        };
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            renderGoals();
-            updateInsights();
-        });
-
-        // Area selection
-        document.querySelectorAll('.area-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const area = this.dataset.area;
-                selectArea(area);
-            });
-        });
-
-        function selectArea(area) {
-            currentArea = area;
-            
-            // Update selected state
-            document.querySelectorAll('.area-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.querySelector(`[data-area="${area}"]`).classList.add('selected');
-
-            // Show goal setup
-            document.getElementById('goalSetup').style.display = 'block';
-            document.querySelector('.goal-area-icon').textContent = areaConfig[area].icon;
-            
-            // Scroll to form
-            document.getElementById('goalSetup').scrollIntoView({ behavior: 'smooth' });
+        
+        .goal-stats {
+            justify-content: center;
         }
-
-        function addTaskInput() {
-            const tasksContainer = document.getElementById('dailyTasks');
-            const newTaskGroup = document.createElement('div');
-            newTaskGroup.className = 'task-input-group';
-            newTaskGroup.innerHTML = `
-                <input type="text" class="task-input" placeholder="Another daily action..." required>
-                <button type="button" class="remove-task-btn" onclick="removeTaskInput(this)">×</button>
-            `;
-            tasksContainer.appendChild(newTaskGroup);
+        
+        .goals-summary {
+            grid-template-columns: 1fr;
         }
-
-        function removeTaskInput(button) {
-            button.parentElement.remove();
-        }
-
-        function cancelGoalSetup() {
-            document.getElementById('goalSetup').style.display = 'none';
-            document.querySelectorAll('.area-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            currentArea = null;
-        }
-
-        // Goal form submission
-        document.getElementById('goalForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const description = document.getElementById('goalDescription').value;
-            const taskInputs = document.querySelectorAll('.task-input');
-            const tasks = Array.from(taskInputs).map(input => input.value).filter(task => task.trim());
-
-            if (tasks.length === 0) {
-                alert('Please add at least one daily task.');
-                return;
-            }
-
-            const newGoal = {
-                id: Date.now(),
-                area: currentArea,
-                description,
-                tasks,
-                createdAt: new Date().toISOString(),
-                completions: {} // Format: { 'YYYY-MM-DD': [taskIndex1, taskIndex2, ...] }
-            };
-
-            goals.push(newGoal);
-            saveGoals();
-            renderGoals();
-            cancelGoalSetup();
-
-            // Clear form
-            document.getElementById('goalForm').reset();
-            document.getElementById('dailyTasks').innerHTML = `
-                <div class="task-input-group">
-                    <input type="text" class="task-input" placeholder="Daily action to achieve your goal (e.g., '10 minutes of meditation')" required>
-                    <button type="button" class="add-task-btn" onclick="addTaskInput()">+</button>
-                </div>
-            `;
-        });
-
-        function saveGoals() {
-            localStorage.setItem('eeh_goals', JSON.stringify(goals));
-        }
-
-        function renderGoals() {
-            const container = document.getElementById('activeGoals');
-            const emptyState = document.getElementById('emptyState');
-
-            if (goals.length === 0) {
-                container.innerHTML = '';
-                emptyState.style.display = 'block';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            container.innerHTML = goals.map(goal => createGoalTracker(goal)).join('');
-        }
-
-        function createGoalTracker(goal) {
-            const config = areaConfig[goal.area];
-            const stats = calculateGoalStats(goal);
-            
-            return `
-                <div class="goal-tracker ${goal.area}" style="--area-rgb: ${config.rgb}">
-                    <div class="goal-header">
-                        <div class="goal-title">
-                            <span class="goal-area-icon">${config.icon}</span>
-                            <h3>${goal.area.charAt(0).toUpperCase() + goal.area.slice(1)} Goal</h3>
-                        </div>
-                        <div class="goal-description">${goal.description}</div>
-                        <div class="goal-stats">
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.currentStreak}</div>
-                                <div class="stat-label">Current Streak</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.completionRate}%</div>
-                                <div class="stat-label">This Month</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.totalDays}</div>
-                                <div class="stat-label">Total Days</div>
-                            </div>
-                            <div class="stat-box">
-                                <div class="stat-number">${stats.bestStreak}</div>
-                                <div class="stat-label">Best Streak</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="daily-tracker">
-                        ${createMonthTracker(goal)}
-                        ${createTaskList(goal)}
-                    </div>
-                </div>
-            `;
-        }
-
-        function createMonthTracker(goal) {
-            const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-            const today = new Date();
-            
-            let trackerHTML = `
-                <div class="tracker-month">
-                    <button class="month-nav" onclick="changeMonth(-1)">‹</button>
-                    <h4>${monthNames[currentMonth]} ${currentYear}</h4>
-                    <button class="month-nav" onclick="changeMonth(1)">›</button>
-                </div>
-                <div class="tracker-grid">
-            `;
-
-            // Add empty cells for days before month starts
-            for (let i = 0; i < firstDay; i++) {
-                trackerHTML += `<div class="tracker-day"></div>`;
-            }
-
-            // Add days of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayCompletions = goal.completions[dateStr] || [];
-                const isToday = today.getDate() === day && today.getMonth() === currentMonth && today.getFullYear() === currentYear;
-                const isFuture = new Date(currentYear, currentMonth, day) > today;
-                
-                let dayClass = 'tracker-day';
-                if (isToday) dayClass += ' today';
-                if (isFuture) dayClass += ' future';
-                else if (dayCompletions.length === goal.tasks.length) dayClass += ' completed';
-                else if (dayCompletions.length > 0) dayClass += ' partial';
-                else dayClass += ' missed';
-
-                trackerHTML += `
-                    <div class="${dayClass}" onclick="toggleDay('${goal.id}', '${dateStr}')" ${isFuture ? 'style="pointer-events: none;"' : ''}>
-                        ${day}
-                    </div>
-                `;
-            }
-
-            trackerHTML += '</div>';
-            return trackerHTML;
-        }
-
-        function createTaskList(goal) {
-            const today = new Date().toISOString().split('T')[0];
-            const todayCompletions = goal.completions[today] || [];
-            
-            return `
-                <div class="task-list">
-                    <h4>Today's Tasks</h4>
-                    ${goal.tasks.map((task, index) => {
-                        const isCompleted = todayCompletions.includes(index);
-                        const streak = calculateTaskStreak(goal, index);
-                        return `
-                            <div class="task-item">
-                                <div class="task-checkbox ${isCompleted ? 'checked' : ''}" onclick="toggleTask('${goal.id}', ${index})">
-                                    ${isCompleted ? '✓' : ''}
-                                </div>
-                                <div class="task-text">${task}</div>
-                                <div class="task-streak">
-                                    🔥 ${streak} day${streak !== 1 ? 's' : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            `;
-        }
-
-        function toggleTask(goalId, taskIndex) {
-            const goal = goals.find(g => g.id == goalId);
-            const today = new Date().toISOString().split('T')[0];
-            
-            if (!goal.completions[today]) {
-                goal.completions[today] = [];
-            }
-            
-            const completions = goal.
+    }
+    </style>
+</body>
+</html>
