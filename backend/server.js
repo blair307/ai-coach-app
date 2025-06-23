@@ -2675,7 +2675,7 @@ app.post('/api/goals/enhanced/:goalId/toggle-task', authenticateToken, async (re
     const { goalId } = req.params;
     const { taskIndex } = req.body;
     
-    if (typeof taskIndex !== 'number' || taskIndex < 0) {
+   if (typeof taskIndex !== 'number' || taskIndex < 0) {
       return res.status(400).json({ error: 'Valid task index is required' });
     }
     
@@ -2685,4 +2685,36 @@ app.post('/api/goals/enhanced/:goalId/toggle-task', authenticateToken, async (re
     });
     
     if (!goal) {
-      return res.status(404).json({ error:
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    if (taskIndex >= goal.tasks.length) {
+      return res.status(400).json({ error: 'Invalid task index' });
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (!goal.completions.get(today)) {
+      goal.completions.set(today, []);
+    }
+    
+    const todayCompletions = goal.completions.get(today);
+    const taskCompleted = todayCompletions.includes(taskIndex);
+    
+    if (taskCompleted) {
+      const updatedCompletions = todayCompletions.filter(index => index !== taskIndex);
+      goal.completions.set(today, updatedCompletions);
+    } else {
+      todayCompletions.push(taskIndex);
+      goal.completions.set(today, todayCompletions);
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Toggle task error:', error);
+    res.status(500).json({ error: 'Failed to toggle task' });
+  }
+});
