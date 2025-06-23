@@ -1707,3 +1707,48 @@ window.addEventListener('resize', () => {
         initializeMobileEnhancements();
     }
 });
+
+// ADD THIS TO THE END OF community.js - SIMPLE MOBILE FIXES
+
+// Override search functions for mobile compatibility
+function showSearchResults() {
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults) {
+        searchResults.style.display = 'flex';
+        searchResults.classList.add('show');
+    }
+}
+
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchResults) {
+        searchResults.classList.remove('show');
+        searchResults.style.display = 'none';
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.blur(); // Hide mobile keyboard
+    }
+}
+
+// Mobile-specific improvements
+if (window.innerWidth <= 1024) {
+    // Prevent zoom on iOS
+    document.querySelectorAll('input, textarea').forEach(input => {
+        if (!input.style.fontSize) {
+            input.style.fontSize = '16px';
+        }
+    });
+    
+    // Handle orientation changes
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            closeSearch();
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) emojiModal.style.display = 'none';
+        }, 100);
+    });
+}
