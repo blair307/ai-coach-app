@@ -4689,54 +4689,174 @@ font-size: 0.7rem;
     }
 }
 
-/* REPLACE THE PREVIOUS RESPONSIVE CSS WITH THIS SIMPLER VERSION */
-/* ADD TO END OF styles.css - WORKING RESPONSIVE COMMUNITY */
+/* SIMPLE MOBILE FIX - REPLACE ALL PREVIOUS RESPONSIVE CSS WITH THIS */
+/* Add to the END of styles.css */
 
-/* Mobile and Tablet - Stack vertically */
-@media (max-width: 1024px) {
+/* Mobile Only - Simple Approach */
+@media (max-width: 768px) {
+    /* Main container - fixed height */
     .community-container {
+        height: 100vh !important;
+        max-height: 100vh !important;
+        display: flex !important;
         flex-direction: column !important;
-        height: calc(100vh - 6rem) !important;
-    }
-    
-    /* Rooms become horizontal bar at top */
-    .rooms-sidebar {
-        width: 100% !important;
-        height: 160px !important;
-        max-height: 160px !important;
-        border-right: none !important;
-        border-bottom: 1px solid var(--border) !important;
-        flex-shrink: 0 !important;
-    }
-    
-    .rooms-list {
-        flex-direction: row !important;
-        overflow-x: auto !important;
-        overflow-y: hidden !important;
-        gap: 1rem !important;
-        padding: 1rem !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-    
-    .room-item {
-        min-width: 200px !important;
-        flex-shrink: 0 !important;
-    }
-    
-    /* Chat area takes remaining space */
-    .chat-area {
-        flex: 1 !important;
-        height: calc(100vh - 220px) !important;
-        min-height: calc(100vh - 220px) !important;
-    }
-    
-    /* FIXED: Search results positioned above messages, not overlapping */
-    .chat-messages-container {
-        position: relative !important;
-        flex: 1 !important;
         overflow: hidden !important;
     }
     
+    /* Rooms at top - compact */
+    .rooms-sidebar {
+        height: 25vh !important;
+        min-height: 25vh !important;
+        max-height: 25vh !important;
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+        overflow: hidden !important;
+    }
+    
+    .rooms-header {
+        padding: 0.75rem 1rem !important;
+        min-height: auto !important;
+    }
+    
+    .rooms-header h3 {
+        font-size: 1rem !important;
+        margin: 0 !important;
+    }
+    
+    .rooms-header .btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Horizontal scrolling rooms */
+    .rooms-list {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        height: calc(25vh - 60px) !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+    }
+    
+    .rooms-list::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .room-item {
+        min-width: 150px !important;
+        max-width: 150px !important;
+        height: auto !important;
+        flex-shrink: 0 !important;
+        padding: 0.75rem !important;
+    }
+    
+    .room-info h4 {
+        font-size: 0.85rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .room-info p {
+        font-size: 0.7rem !important;
+        line-height: 1.2 !important;
+        overflow: hidden !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+    }
+    
+    /* Chat area - takes remaining space */
+    .chat-area {
+        height: 75vh !important;
+        min-height: 75vh !important;
+        max-height: 75vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    
+    /* Compact chat header */
+    .chat-header {
+        padding: 0.75rem 1rem !important;
+        min-height: auto !important;
+        flex-shrink: 0 !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .room-title h2 {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+        text-align: center !important;
+    }
+    
+    .room-title p {
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+        text-align: center !important;
+    }
+    
+    .search-container {
+        width: 100% !important;
+        max-width: 250px !important;
+        margin: 0 auto !important;
+    }
+    
+    .search-input {
+        font-size: 16px !important;
+        padding: 0.5rem !important;
+    }
+    
+    /* Messages container */
+    .chat-messages-container {
+        flex: 1 !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+    
+    .chat-messages {
+        height: 100% !important;
+        overflow-y: auto !important;
+        padding: 0.75rem 1rem !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Compact input area */
+    .chat-input-area {
+        padding: 0.75rem 1rem !important;
+        flex-shrink: 0 !important;
+        border-top: 1px solid var(--border) !important;
+    }
+    
+    .chat-input {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        padding: 0.75rem !important;
+    }
+    
+    .chat-input textarea {
+        font-size: 16px !important;
+        min-height: 40px !important;
+        max-height: 80px !important;
+        resize: none !important;
+    }
+    
+    .input-actions {
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        justify-content: space-between !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+        font-size: 0.9rem !important;
+    }
+    
+    /* Search results - overlay style */
     .search-results {
         position: absolute !important;
         top: 0 !important;
@@ -4744,19 +4864,19 @@ font-size: 0.7rem;
         right: 0 !important;
         bottom: 0 !important;
         background: var(--background) !important;
-        z-index: 10 !important;
+        z-index: 100 !important;
         display: none !important;
-        flex-direction: column !important;
     }
     
     .search-results.show {
         display: flex !important;
+        flex-direction: column !important;
     }
     
     .search-header {
-        flex-shrink: 0 !important;
         padding: 1rem !important;
         border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
     }
     
     .search-content {
@@ -4764,130 +4884,35 @@ font-size: 0.7rem;
         overflow-y: auto !important;
         padding: 1rem !important;
     }
-}
-
-/* Phone - More compact */
-@media (max-width: 768px) {
-    .community-container {
-        height: calc(100vh - 4rem) !important;
+    
+    /* Message styling */
+    .message-group {
+        margin-bottom: 1rem !important;
     }
     
-    .rooms-sidebar {
-        height: 140px !important;
-        max-height: 140px !important;
-    }
-    
-    .rooms-header {
-        padding: 1rem !important;
-        flex-wrap: wrap !important;
+    .message-header {
         gap: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
     }
     
-    .rooms-list {
-        padding: 0.75rem !important;
-        gap: 0.75rem !important;
-    }
-    
-    .room-item {
-        min-width: 160px !important;
-        padding: 0.75rem !important;
-    }
-    
-    .room-info h4 {
-        font-size: 0.9rem !important;
-    }
-    
-    .room-info p {
+    .user-avatar {
+        width: 28px !important;
+        height: 28px !important;
         font-size: 0.75rem !important;
-        line-height: 1.3 !important;
     }
     
-    .chat-area {
-        height: calc(100vh - 180px) !important;
-        min-height: calc(100vh - 180px) !important;
-    }
-    
-    .chat-header {
-        padding: 1rem !important;
-        flex-direction: column !important;
-        gap: 1rem !important;
-    }
-    
-    .room-title h2 {
-        font-size: 1.25rem !important;
-        text-align: center !important;
-    }
-    
-    .room-title p {
+    .username {
         font-size: 0.85rem !important;
-        text-align: center !important;
     }
     
-    .chat-controls {
-        justify-content: center !important;
+    .message-timestamp {
+        font-size: 0.75rem !important;
     }
     
-    .search-input {
-        font-size: 16px !important; /* Prevents iOS zoom */
-    }
-    
-    .chat-messages {
-        padding: 1rem !important;
-    }
-    
-    .chat-input-area {
-        padding: 1rem !important;
-    }
-    
-    .chat-input {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-    }
-    
-    .input-actions {
-        flex-direction: row !important;
-        gap: 0.75rem !important;
-    }
-    
-    .input-actions .btn {
-        flex: 1 !important;
-        min-height: 44px !important;
-    }
-    
-    .chat-input textarea {
-        font-size: 16px !important; /* Prevents iOS zoom */
-        min-height: 44px !important;
-    }
-}
-
-/* Small phones */
-@media (max-width: 480px) {
-    .rooms-sidebar {
-        height: 120px !important;
-    }
-    
-    .room-item {
-        min-width: 140px !important;
-        padding: 0.625rem !important;
-    }
-    
-    .chat-area {
-        height: calc(100vh - 160px) !important;
-    }
-    
-    .chat-header {
-        padding: 0.75rem !important;
-    }
-}
-
-/* Hide scrollbars on mobile */
-@media (max-width: 1024px) {
-    .rooms-list {
-        scrollbar-width: none !important;
-        -ms-overflow-style: none !important;
-    }
-    
-    .rooms-list::-webkit-scrollbar {
-        display: none !important;
+    .message-content {
+        margin-left: 1.75rem !important;
+        padding: 0.625rem 0.875rem !important;
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
     }
 }
