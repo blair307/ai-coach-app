@@ -1492,3 +1492,218 @@ window.selectSearchResult = selectSearchResult;
 window.updateSearchCache = updateSearchCache;
 
 console.log('Real-time search system loaded successfully');
+
+// ADD THIS TO THE END OF YOUR community.js FILE
+
+// Mobile-specific enhancements
+function initializeMobileEnhancements() {
+    if (window.innerWidth <= 768) {
+        // Enhanced search for mobile
+        const originalCloseSearch = window.closeSearch;
+        window.closeSearch = function() {
+            const searchResults = document.getElementById('searchResults');
+            if (searchResults) {
+                searchResults.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                searchInput.blur(); // Hide keyboard
+            }
+        };
+        
+        // Enhanced emoji modal for mobile
+        const originalAddEmoji = window.addEmoji;
+        window.addEmoji = function() {
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) {
+                const isVisible = emojiModal.style.display !== 'none';
+                
+                if (!isVisible) {
+                    emojiModal.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Add backdrop
+                    const backdrop = document.createElement('div');
+                    backdrop.id = 'emojiBackdrop';
+                    backdrop.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100vw;
+                        height: 100vh;
+                        background: rgba(0, 0, 0, 0.5);
+                        z-index: 1000;
+                        backdrop-filter: blur(4px);
+                    `;
+                    backdrop.onclick = () => closeEmojiMobile();
+                    document.body.appendChild(backdrop);
+                } else {
+                    closeEmojiMobile();
+                }
+            }
+        };
+        
+        // Close emoji modal for mobile
+        window.closeEmojiMobile = function() {
+            const emojiModal = document.getElementById('emojiModal');
+            const backdrop = document.getElementById('emojiBackdrop');
+            
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+            }
+            
+            if (backdrop) {
+                backdrop.remove();
+            }
+            
+            document.body.style.overflow = '';
+        };
+        
+        // Prevent zoom on input focus (iOS)
+        const inputs = document.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            if (input.style.fontSize !== '16px') {
+                input.style.fontSize = '16px';
+            }
+        });
+        
+        // Handle orientation changes
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                const communityContainer = document.querySelector('.community-container');
+                if (communityContainer) {
+                    communityContainer.style.height = `calc(100vh - ${window.innerWidth <= 768 ? '6rem' : '8rem'})`;
+                }
+                
+                // Close modals on orientation change
+                window.closeSearch();
+                if (window.closeEmojiMobile) window.closeEmojiMobile();
+            }, 100);
+        });
+        
+        // Enhanced room switching with haptic feedback
+        const originalSwitchRoom = window.switchRoom;
+        window.switchRoom = async function(roomId) {
+            // Add haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+            
+            const result = await originalSwitchRoom(roomId);
+            
+            // Scroll to chat on mobile after switching
+            setTimeout(() => {
+                const chatArea = document.querySelector('.chat-area');
+                if (chatArea) {
+                    chatArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 200);
+            
+            return result;
+        };
+        
+        // Enhanced message sending
+        const originalSendCommunityMessage = window.sendCommunityMessage;
+        window.sendCommunityMessage = async function() {
+            const messageInput = document.getElementById('communityMessageInput');
+            
+            // Add haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(30);
+            }
+            
+            const result = await originalSendCommunityMessage();
+            
+            // Hide keyboard after sending on mobile
+            if (messageInput) {
+                messageInput.blur();
+            }
+            
+            return result;
+        };
+        
+        // Touch feedback for room items
+        const roomItems = document.querySelectorAll('.room-item');
+        roomItems.forEach(item => {
+            item.addEventListener('touchstart', function() {
+                this.style.backgroundColor = 'var(--surface)';
+            }, { passive: true });
+            
+            item.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.backgroundColor = '';
+                }, 150);
+            }, { passive: true });
+        });
+        
+        // Enhanced scroll behavior for rooms list
+        const roomsList = document.querySelector('.rooms-list');
+        if (roomsList) {
+            roomsList.style.webkitOverflowScrolling = 'touch';
+            roomsList.style.scrollbarWidth = 'none';
+        }
+        
+        // Pull-to-refresh simulation for chat messages
+        let pullStartY = 0;
+        let pullDistance = 0;
+        
+        const chatMessages = document.getElementById('communityMessages');
+        if (chatMessages) {
+            chatMessages.addEventListener('touchstart', (e) => {
+                pullStartY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            chatMessages.addEventListener('touchmove', (e) => {
+                if (chatMessages.scrollTop === 0) {
+                    pullDistance = e.touches[0].clientY - pullStartY;
+                    if (pullDistance > 0 && pullDistance < 100) {
+                        chatMessages.style.transform = `translateY(${pullDistance * 0.5}px)`;
+                        chatMessages.style.opacity = 1 - (pullDistance * 0.01);
+                    }
+                }
+            }, { passive: true });
+            
+            chatMessages.addEventListener('touchend', () => {
+                chatMessages.style.transform = '';
+                chatMessages.style.opacity = '';
+                
+                if (pullDistance > 50 && currentRoomId) {
+                    // Reload messages on pull-to-refresh
+                    loadMessages(currentRoomId);
+                }
+                pullDistance = 0;
+            }, { passive: true });
+        }
+    }
+}
+
+// Close emoji modal when clicking outside
+document.addEventListener('click', function(event) {
+    const emojiModal = document.getElementById('emojiModal');
+    const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
+    
+    if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
+        if (window.innerWidth <= 768 && window.closeEmojiMobile) {
+            window.closeEmojiMobile();
+        } else {
+            emojiModal.style.display = 'none';
+        }
+    }
+});
+
+// Initialize mobile enhancements
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMobileEnhancements);
+} else {
+    initializeMobileEnhancements();
+}
+
+// Re-initialize when window resizes
+window.addEventListener('resize', () => {
+    if (window.innerWidth <= 768) {
+        initializeMobileEnhancements();
+    }
+});
