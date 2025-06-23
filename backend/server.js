@@ -942,6 +942,228 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// ==========================================
+// LIFE GOALS API ROUTES - NEW ADDITION
+// ==========================================
+
+// Get all life goals for a user
+app.get('/api/life-goals', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const goals = await LifeGoal.find({ userId }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    console.error('Get life goals error:', error);
+    res.status(500).json({ error: 'Failed to fetch life goals' });
+  }
+});
+
+// Create a new life goal
+app.post('/api/life-goals', authenticateToken, async (req, res) => {
+  try {
+    const { area, bigGoal, dailyAction } = req.body;
+    const userId = req.user.userId;
+
+    // Validation
+    if (!area || !bigGoal || !dailyAction) {
+      return res.status(400).json({ error: 'Area, big goal, and daily action are required' });
+    }
+
+    const validAreas = ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'];
+    if (!validAreas.includes(area)) {
+      return res.status(400).json({ error: 'Invalid area specified' });
+    }
+
+    // Create new goal
+    const lifeGoal = new LifeGoal({
+      userId,
+      area,
+      bigGoal,
+      dailyAction,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await lifeGoal.save();
+
+    // Create a notification for the user
+    try {
+      const notification = new Notification({
+        userId,
+        type: 'system',
+        title: `New ${area.charAt(0).toUpperCase() + area.slice(1)} Goal Created!`,
+        content: `You've set a new goal: "${dailyAction}". Start tracking your daily progress!`,
+        createdAt: new Date()
+      });
+      await notification.save();
+    } catch (notifError) {
+      console.error('Error creating notification:', notifError);
+      // Don't fail the whole request if notification fails
+    }
+
+    res.status(201).json(lifeGoal);
+  } catch (error) {
+    console.error('Create life goal error:', error);
+    res.status(500).json({ error: 'Failed to create life goal' });
+  }
+});
+
+// Update a life goal
+app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { bigGoal, dailyAction, completed } = req.body;
+    const userId = req.user.userId;
+
+    const goal = await LifeGoal.findOne({ _id: id, userId });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    // Update fields
+    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
+    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
+    if (completed !== undefined) {
+      goal.completed = completed;
+      
+      // Handle streak tracking
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const lastCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
+      
+      if (completed) {
+        goal.lastCompletedDate = new Date();
+        
+        if (!lastCompleted) {
+          goal.streak = 1;
+        } else {
+          lastCompleted.setHours(0, 0, 0, 0);
+          const daysDiff = (today - lastCompleted) / (1000 * 60 * 60 * 24);
+          
+          if (daysDiff === 1) {
+            goal.streak += 1;
+          } else if (daysDiff > 1) {
+            goal.streak = 1;
+          }
+          // If same day, keep current streak
+        }
+      }
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+
+    res.json(goal);
+  } catch (error) {
+    console.error('Update life goal error:', error);
+    res.status(500).json({ error: 'Failed to update life goal' });
+  }
+});
+
+// Delete a life goal
+app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    const goal = await LifeGoal.findOneAndDelete({ _id: id, userId });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    console.error('Delete life goal error:', error);
+    res.status(500).json({ error: 'Failed to delete goal' });
+  }
+});
+
+// Track daily completion (for daily tracker feature)
+app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { completed } = req.body;
+    const userId = req.user.userId;
+
+    const goal = await LifeGoal.findOne({ _id: id, userId });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    // Check if already tracked today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const lastCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
+    
+    if (lastCompleted) {
+      lastCompleted.setHours(0, 0, 0, 0);
+      if (today.getTime() === lastCompleted.getTime()) {
+        return res.status(400).json({ error: 'Already tracked for today' });
+      }
+    }
+
+    // Update completion status
+    goal.completed = completed;
+    goal.lastCompletedDate = new Date();
+    
+    if (completed) {
+      goal.streak += 1;
+    } else {
+      goal.streak = Math.max(0, goal.streak - 1);
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+
+    res.json({
+      message: 'Progress tracked successfully',
+      streak: goal.streak,
+      completed: goal.completed
+    });
+  } catch (error) {
+    console.error('Track goal error:', error);
+    res.status(500).json({ error: 'Failed to track progress' });
+  }
+});
+
+// Get goal statistics for dashboard
+app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    const totalGoals = await LifeGoal.countDocuments({ userId });
+    const completedToday = await LifeGoal.countDocuments({ 
+      userId, 
+      lastCompletedDate: { 
+        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
+        $lt: new Date(new Date().setHours(23, 59, 59, 999))
+      }
+    });
+    
+    const activeStreaks = await LifeGoal.find({ userId, streak: { $gt: 0 } });
+    const longestStreak = activeStreaks.length > 0 ? Math.max(...activeStreaks.map(g => g.streak)) : 0;
+    
+    // Goals by area
+    const goalsByArea = await LifeGoal.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $group: { _id: '$area', count: { $sum: 1 } } }
+    ]);
+    
+    res.json({
+      totalGoals,
+      completedToday,
+      longestStreak,
+      goalsByArea: goalsByArea.reduce((acc, item) => {
+        acc[item._id] = item.count;
+        return acc;
+      }, {})
+    });
+  } catch (error) {
+    console.error('Get goal stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch goal statistics' });
+  }
+});
+
 // Health check endpoint for monitoring
 app.get('/health', (req, res) => {
   res.json({
@@ -983,5 +1205,5 @@ app.listen(PORT, () => {
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
+  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
 });
