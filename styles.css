@@ -4564,3 +4564,370 @@ font-size: 0.7rem;
         }
     }
 }
+
+/* Add these styles to the END of your existing styles.css file */
+
+/* =================================
+   BEAUTIFUL PURPLE GRADIENT THEME FOR ENTIRE APP
+   Add this to your existing styles.css
+   ================================= */
+
+/* Main content background with subtle gradient */
+.main-content {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+    min-height: 100vh !important;
+}
+
+/* Enhanced dashboard cards with glass-morphism */
+.dashboard-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Add purple accent line to top of each card */
+.dashboard-card::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 4px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    z-index: 1 !important;
+}
+
+/* Enhanced sidebar with gradient */
+.sidebar {
+    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border-right: 1px solid rgba(102, 126, 234, 0.15) !important;
+    box-shadow: 4px 0 24px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Enhanced sidebar menu items */
+.menu-item.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.1) 100%) !important;
+    color: #667eea !important;
+    border-left-color: #667eea !important;
+}
+
+.menu-item:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+    border-left-color: #667eea !important;
+}
+
+/* Fix blue fonts to purple throughout */
+.stat-number,
+.countdown-timer,
+.current-time {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Enhanced buttons with purple gradient */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border: none !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5) !important;
+}
+
+/* Enhanced progress bars */
+#progressBar,
+.progress-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Enhanced life area cards (goals page) */
+.life-area-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Enhanced stats cards */
+.stat {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.08) !important;
+}
+
+/* Enhanced chat/community cards */
+.community-container,
+.chat-container {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Enhanced room items */
+.room-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Enhanced notifications */
+.notification-item.unread {
+    border-left: 4px solid #667eea !important;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.02) 100%) !important;
+}
+
+/* Enhanced modals */
+.modal-content,
+.auth-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25) !important;
+}
+
+/* Enhanced form elements */
+input:focus,
+textarea:focus,
+select:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Enhanced calendar days */
+.calendar-day.today {
+    background: #667eea !important;
+}
+
+.calendar-day.meeting-day {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Enhanced goal tracker items */
+.goal-tracker-item {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.08) !important;
+}
+
+/* Enhanced activity items */
+.activity-item,
+.notification-item {
+    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.08) !important;
+}
+
+/* Enhanced header sections */
+.content-header {
+    position: relative !important;
+}
+
+.content-header::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 2px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Enhanced notification bell */
+.notification-bell {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
+    border: 2px solid rgba(102, 126, 234, 0.2) !important;
+}
+
+.notification-bell:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.12) 100%) !important;
+    border-color: rgba(102, 126, 234, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Enhanced pricing cards (if on internal pages) */
+.pricing-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12) !important;
+}
+
+.pricing-card.featured {
+    border: 2px solid #667eea !important;
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2) !important;
+}
+
+/* Enhanced insights and activity cards */
+.insight-item {
+    border-left: 4px solid #667eea !important;
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+/* Enhanced billing cards */
+.billing-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Enhanced meeting modal */
+.meeting-modal {
+    backdrop-filter: blur(8px) !important;
+}
+
+.meeting-card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25) !important;
+}
+
+/* Enhanced filter buttons */
+.filter-btn.active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+}
+
+.filter-btn:hover {
+    border-color: #667eea !important;
+    color: #667eea !important;
+}
+
+/* Enhanced search results */
+.search-results {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Enhanced emoji modal */
+.emoji-modal {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+}
+
+/* Add subtle floating animation to cards */
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-2px); }
+}
+
+.dashboard-card,
+.life-area-card {
+    animation: float 6s ease-in-out infinite !important;
+}
+
+.dashboard-card:nth-child(even) {
+    animation-delay: -3s !important;
+}
+
+/* Enhanced scrollbars with purple theme */
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+}
+
+/* Enhanced loading spinner */
+.loading-spinner {
+    border-top: 4px solid #667eea !important;
+}
+
+/* Enhanced link colors */
+a {
+    color: #667eea !important;
+}
+
+a:hover {
+    color: #764ba2 !important;
+}
+
+.view-all-link {
+    color: #667eea !important;
+}
+
+/* Enhanced success/primary colors throughout */
+.btn-success,
+.status.active,
+.plan-status.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Enhanced checkbox accent colors */
+input[type="checkbox"] {
+    accent-color: #667eea !important;
+}
+
+/* Enhanced focus states */
+button:focus-visible,
+.btn:focus-visible {
+    outline: 2px solid #667eea !important;
+    outline-offset: 2px !important;
+}
+
+/* Enhanced legend dots */
+.legend-dot.today {
+    background: #667eea !important;
+}
+
+/* Enhanced toggle buttons for daily tracker */
+#weeklyBtn.active,
+#monthlyBtn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
+}
+
+/* Enhanced progress chart items */
+#progressChart > div {
+    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
+    backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+}
+
+#progressChart > div.today {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white !important;
+    border-color: #667eea !important;
+}
+
+/* Enhanced responsive design */
+@media (max-width: 768px) {
+    .main-content {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+    }
+    
+    .dashboard-card,
+    .life-area-card {
+        animation: none !important; /* Disable animations on mobile for performance */
+    }
+}
+
+/* Enhanced dark theme support (if you add dark mode later) */
+@media (prefers-color-scheme: dark) {
+    .dashboard-card,
+    .life-area-card,
+    .modal-content {
+        background: linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(20,20,20,0.98) 100%) !important;
+        border-color: rgba(102, 126, 234, 0.3) !important;
+    }
+}
