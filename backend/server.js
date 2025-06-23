@@ -1293,7 +1293,17 @@ app.listen(PORT, () => {
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Enhanced Goals ✅ Notifications ✅ Chat Rooms ✅`);
-});
+});// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage + Enhanced Goals
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Stripe = require('stripe');
+const OpenAI = require('openai');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -1366,41 +1376,6 @@ const userSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', userSchema);
-
-// Goals Schema
-const goalSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  title: { type: String, required: true },
-  frequency: { type: String, enum: ['daily', 'weekly', 'monthly'], required: true },
-  completed: { type: Boolean, default: false },
-  streak: { type: Number, default: 0 },
-  lastCompleted: { type: Date },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Goal = mongoose.model('Goal', goalSchema);
-
-// Enhanced Goals Schema for area-based tracking
-const enhancedGoalSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  area: { 
-    type: String, 
-    enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], 
-    required: true 
-  },
-  description: { type: String, required: true },
-  tasks: [{ type: String, required: true }],
-  completions: {
-    type: Map,
-    of: [Number], // Array of task indices completed on that date
-    default: {}
-  },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-const EnhancedGoal = mongoose.model('EnhancedGoal', enhancedGoalSchema);
 
 // Notifications Schema - NEW ADDITION
 const notificationSchema = new mongoose.Schema({
