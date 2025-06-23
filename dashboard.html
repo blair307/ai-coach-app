@@ -56,9 +56,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Grid -->
+         <!-- Dashboard Grid - REORDERED -->
             <div class="dashboard-grid">
-                <!-- Progress Overview -->
+                <!-- 1. Progress Overview -->
                 <div class="dashboard-card">
                     <h3>Your Progress</h3>
                     <div class="stats-grid">
@@ -81,6 +81,144 @@
                     </div>
                 </div>
 
+                <!-- 2. Combined Timer and Calendar Section -->
+                <div class="dashboard-card">
+                    <h3>Time & Schedule</h3>
+                    
+                    <!-- Countdown Timer Display -->
+                    <div class="timer-display">
+                        <div class="countdown-container" id="countdownContainer">
+                            <div class="countdown-label">Next Meeting In:</div>
+                            <div class="countdown-timer" id="countdownTimer">--:--:--</div>
+                            <div class="countdown-date" id="countdownDate">Loading...</div>
+                        </div>
+                        <div class="no-meeting" id="noMeeting" style="display: none;">
+                            <div class="no-meeting-text">No upcoming meetings</div>
+                            <div class="current-time" id="currentTime">--:--:-- --</div>
+                            <div class="current-date" id="currentDate">Loading...</div>
+                        </div>
+                        <div class="timezone">Central Time (CST/CDT)</div>
+                    </div>
+                    
+                    <!-- Compact Calendar -->
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="prevMonth">‹</button>
+                            <h4 id="currentMonth">July 2025</h4>
+                            <button class="calendar-nav" id="nextMonth">›</button>
+                        </div>
+                        <div class="compact-calendar">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">S</div>
+                                <div class="weekday">M</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">W</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">F</div>
+                                <div class="weekday">S</div>
+                            </div>
+                            <div class="calendar-days" id="calendarDays">
+                                <!-- Days will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="meeting-legend">
+                            <span class="legend-item">
+                                <span class="legend-dot meeting-day"></span>
+                                Meeting Day
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot today"></span>
+                                Today
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Life Goals Card - UPDATED -->
+                <div class="dashboard-card">
+                    <h3>Life Goals</h3>
+                    <div id="goalsCardContent">
+                        <p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading goals...</p>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <button onclick="window.location.href='goals.html'" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                            Create a Goal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Recent Activity -->
+                <div class="dashboard-card">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Completed emotional intelligence assessment</p>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Joined discussion in Business Growth room</p>
+                                <small>4 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Set new quarterly business goals</p>
+                                <small>Yesterday</small>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Completed stress management workshop</p>
+                                <small>2 days ago</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="view-all-link">View All Activity</a>
+                </div>
+
+                <!-- 5. Notifications Preview -->
+                <div class="dashboard-card">
+                    <h3>Recent Notifications</h3>
+                    <div class="notifications-preview">
+                        <div class="notification-item unread">
+                            <div class="notification-content">
+                                <p>New coaching insights available</p>
+                                <small>2 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="notification-item unread">
+                            <div class="notification-content">
+                                <p>Sarah mentioned you in Business Growth</p>
+                                <small>4 hours ago</small>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-content">
+                                <p>Weekly progress report ready</p>
+                                <small>1 day ago</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="notifications.html" class="view-all-link">View All Notifications</a>
+                </div>
+
+                <!-- 6. Weekly Insights -->
+                <div class="dashboard-card">
+                    <h3>Recent Insights</h3>
+                    <div class="insights-list" id="insightsList">
+                        <!-- Insights will be populated by JavaScript based on user data -->
+                        <div class="empty-insights" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Start chatting with your AI coach to generate personalized insights!</p>
+                            <button class="btn btn-primary btn-small" onclick="startCoachingSession()" style="margin-top: 1rem;">
+                                Start Your First Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
                 <!-- Recent Activity -->
                 <div class="dashboard-card">
                     <h3>Recent Activity</h3>
