@@ -92,11 +92,21 @@
                 </div>
             </div>
 
-            <!-- Weekly Progress Chart -->
+            <!-- Weekly/Monthly Progress Chart -->
             <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
-                <h2 style="margin-bottom: 2rem; color: var(--text-primary);">Weekly Progress</h2>
-                <div id="weeklyProgress" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem;">
-                    <!-- Weekly progress will be populated by JavaScript -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                    <h2 style="margin: 0; color: var(--text-primary);">Progress Overview</h2>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button id="weeklyBtn" onclick="showWeeklyProgress()" class="btn btn-small" style="background: var(--primary); color: white;">
+                            Weekly
+                        </button>
+                        <button id="monthlyBtn" onclick="showMonthlyProgress()" class="btn btn-small" style="background: var(--surface); color: var(--text-primary); border: 2px solid var(--border);">
+                            Monthly
+                        </button>
+                    </div>
+                </div>
+                <div id="progressChart" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem;">
+                    <!-- Progress will be populated by JavaScript -->
                 </div>
             </div>
 
@@ -174,6 +184,7 @@
         // Daily Tracker JavaScript Implementation
         let currentGoals = [];
         let selectedGoal = null;
+        let progressView = 'weekly'; // Track current view
         
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -230,7 +241,7 @@
                 currentGoals = await response.json();
                 renderDailyGoals();
                 updateProgressStats();
-                renderWeeklyProgress();
+                showWeeklyProgress(); // Start with weekly view
                 renderGoalsByArea();
 
             } catch (error) {
@@ -279,7 +290,7 @@
                     " onclick="openGoalDetail('${goal._id}')">
                         
                         <!-- Completion Checkbox -->
-                        <div style="margin-right: 1rem;">
+                        <div style="margin-right: 1rem; flex-shrink: 0;">
                             <input type="checkbox" 
                                    id="goal-${goal._id}" 
                                    ${isCompletedToday ? 'checked' : ''} 
@@ -385,8 +396,39 @@
             document.getElementById('progressBar').style.width = `${progressPercentage}%`;
         }
 
+        // NEW: Real progress calculation function
+        function calculateDayCompletion(date) {
+            if (currentGoals.length === 0) return 0;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const checkDate = new Date(date);
+            checkDate.setHours(0, 0, 0, 0);
+            
+            if (checkDate.getTime() === today.getTime()) {
+                // For today, check actual completion
+                const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
+                return (completedToday / currentGoals.length) * 100;
+            }
+            
+            // For past days, check if goals were completed on that specific date
+            let completedOnDate = 0;
+            currentGoals.forEach(goal => {
+                if (goal.lastCompletedDate) {
+                    const completedDate = new Date(goal.lastCompletedDate);
+                    completedDate.setHours(0, 0, 0, 0);
+                    if (completedDate.getTime() === checkDate.getTime()) {
+                        completedOnDate++;
+                    }
+                }
+            });
+            
+            return (completedOnDate / currentGoals.length) * 100;
+        }
+
+        // NEW: Weekly progress with real data
         function renderWeeklyProgress() {
-            const container = document.getElementById('weeklyProgress');
+            const container = document.getElementById('progressChart');
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const today = new Date();
             
@@ -400,8 +442,8 @@
                 const dayName = days[date.getDay()];
                 const dayNumber = date.getDate();
                 
-                // Calculate completion for this day (simplified for demo)
-                const completionRate = Math.random() * 100; // Replace with actual calculation
+                // Calculate REAL completion for this day
+                const completionRate = calculateDayCompletion(date);
                 
                 html += `
                     <div style="
@@ -411,6 +453,7 @@
                         color: ${isToday ? 'white' : 'var(--text-primary)'}; 
                         border-radius: 12px; 
                         border: 2px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
+                        min-width: 80px;
                     ">
                         <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">${dayName}</div>
                         <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">${dayNumber}</div>
@@ -434,6 +477,78 @@
             }
             
             container.innerHTML = html;
+        }
+
+        // NEW: Monthly progress with real data
+        function renderMonthlyProgress() {
+            const container = document.getElementById('progressChart');
+            const today = new Date();
+            
+            let html = '';
+            
+            // Show last 30 days
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - (29 - i));
+                
+                const isToday = date.toDateString() === today.toDateString();
+                const dayNumber = date.getDate();
+                const monthName = date.toLocaleDateString('en-US', { month: 'short' });
+                
+                // Calculate REAL completion for this day
+                const completionRate = calculateDayCompletion(date);
+                
+                html += `
+                    <div style="
+                        text-align: center; 
+                        padding: 0.75rem; 
+                        background: ${isToday ? 'var(--primary)' : 'var(--surface)'}; 
+                        color: ${isToday ? 'white' : 'var(--text-primary)'}; 
+                        border-radius: 8px; 
+                        border: 1px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
+                        min-width: 60px;
+                    ">
+                        <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem;">${monthName}</div>
+                        <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;">${dayNumber}</div>
+                        <div style="
+                            width: 30px; 
+                            height: 30px; 
+                            border-radius: 50%; 
+                            background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
+                            margin: 0 auto; 
+                            display: flex; 
+                            align-items: center; 
+                            justify-content: center; 
+                            font-size: 0.7rem; 
+                            font-weight: 600;
+                            color: ${isToday ? 'white' : 'var(--text-secondary)'};
+                        ">
+                            ${Math.round(completionRate)}%
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+
+        // NEW: Toggle functions
+        function showWeeklyProgress() {
+            progressView = 'weekly';
+            document.getElementById('weeklyBtn').style.background = 'var(--primary)';
+            document.getElementById('weeklyBtn').style.color = 'white';
+            document.getElementById('monthlyBtn').style.background = 'var(--surface)';
+            document.getElementById('monthlyBtn').style.color = 'var(--text-primary)';
+            renderWeeklyProgress();
+        }
+
+        function showMonthlyProgress() {
+            progressView = 'monthly';
+            document.getElementById('monthlyBtn').style.background = 'var(--primary)';
+            document.getElementById('monthlyBtn').style.color = 'white';
+            document.getElementById('weeklyBtn').style.background = 'var(--surface)';
+            document.getElementById('weeklyBtn').style.color = 'var(--text-primary)';
+            renderMonthlyProgress();
         }
 
         function renderGoalsByArea() {
@@ -508,6 +623,7 @@
             container.innerHTML = html;
         }
 
+        // FIXED: Checkbox toggle that properly updates
         async function toggleGoalCompletion(goalId) {
             try {
                 const goal = currentGoals.find(g => g._id === goalId);
@@ -515,10 +631,21 @@
                 
                 const isCurrentlyCompleted = isGoalCompletedToday(goal);
                 
+                // Update the checkbox immediately for better UX
+                const checkbox = document.getElementById(`goal-${goalId}`);
+                if (checkbox) {
+                    checkbox.checked = !isCurrentlyCompleted;
+                }
+                
                 await updateGoalCompletion(goalId, !isCurrentlyCompleted);
                 
             } catch (error) {
                 console.error('Error toggling goal completion:', error);
+                // Revert checkbox if error
+                const checkbox = document.getElementById(`goal-${goalId}`);
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+                }
                 showError('Failed to update goal. Please try again.');
             }
         }
@@ -555,8 +682,21 @@
                 // Re-render everything
                 renderDailyGoals();
                 updateProgressStats();
-                renderWeeklyProgress();
+                
+                // Update the current progress view
+                if (progressView === 'weekly') {
+                    renderWeeklyProgress();
+                } else {
+                    renderMonthlyProgress();
+                }
+                
                 renderGoalsByArea();
+                
+                // Update modal if it's open for this goal
+                if (selectedGoal && selectedGoal._id === goalId) {
+                    selectedGoal = updatedGoal;
+                    updateModalButtons();
+                }
                 
                 // Show success message
                 showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
@@ -603,6 +743,18 @@
             document.getElementById('modalHeader').style.background = `linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%)`;
             
             // Update button visibility
+            updateModalButtons();
+            
+            // Show modal
+            document.getElementById('goalDetailModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        // FIXED: Modal button updating
+        function updateModalButtons() {
+            if (!selectedGoal) return;
+            
+            const isCompleted = isGoalCompletedToday(selectedGoal);
             const completeBtn = document.getElementById('markCompleteBtn');
             const incompleteBtn = document.getElementById('markIncompleteBtn');
             
@@ -613,10 +765,6 @@
                 completeBtn.style.display = 'block';
                 incompleteBtn.style.display = 'none';
             }
-            
-            // Show modal
-            document.getElementById('goalDetailModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
         }
 
         function closeGoalDetail() {
@@ -631,7 +779,7 @@
             try {
                 await updateGoalCompletion(selectedGoal._id, true);
                 closeGoalDetail();
-                showSuccess('Goal completed! Keep building that streak! 💪');
+                showSuccess('Goal completed! Keep building that streak!');
             } catch (error) {
                 console.error('Error marking goal complete:', error);
                 showError('Failed to mark goal as complete. Please try again.');
@@ -655,7 +803,7 @@
                 const incompleteGoals = currentGoals.filter(goal => !isGoalCompletedToday(goal));
                 
                 if (incompleteGoals.length === 0) {
-                    showSuccess('All goals are already complete for today! 🎉');
+                    showSuccess('All goals are already complete for today!');
                     return;
                 }
                 
@@ -803,7 +951,7 @@
             }
         });
 
-        // Add CSS animations
+        // ENHANCED: Responsive CSS
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideInRight {
@@ -835,21 +983,27 @@
                 100% { transform: rotate(360deg); }
             }
             
-            /* Mobile responsive adjustments */
+            /* ENHANCED Mobile responsive adjustments */
             @media (max-width: 768px) {
                 .goal-tracker-item {
                     flex-direction: column !important;
                     align-items: stretch !important;
-                    text-align: center !important;
+                    text-align: left !important;
+                    padding: 1.25rem !important;
                 }
                 
                 .goal-tracker-item > div {
                     margin: 0.5rem 0 !important;
                 }
                 
-                #weeklyProgress {
-                    grid-template-columns: repeat(7, 1fr) !important;
-                    gap: 0.5rem !important;
+                .goal-tracker-item > div:first-child {
+                    align-self: flex-start !important;
+                    margin-bottom: 1rem !important;
+                }
+                
+                #progressChart {
+                    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
+                    gap: 0.75rem !important;
                 }
                 
                 #goalsByArea {
@@ -859,6 +1013,82 @@
                 .modal-content {
                     margin: 1rem !important;
                     max-width: calc(100% - 2rem) !important;
+                }
+                
+                .content-header {
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                    gap: 1rem !important;
+                }
+                
+                .content-header h1 {
+                    text-align: center !important;
+                    font-size: 1.75rem !important;
+                }
+                
+                .header-actions {
+                    justify-content: center !important;
+                }
+                
+                /* Hero section mobile adjustments */
+                .hero-stats {
+                    flex-direction: column !important;
+                    gap: 1rem !important;
+                }
+                
+                .hero-stats > div {
+                    min-width: auto !important;
+                }
+                
+                /* Progress chart mobile specific */
+                #progressChart > div {
+                    min-width: 60px !important;
+                    padding: 0.75rem 0.5rem !important;
+                }
+                
+                #progressChart > div > div:first-child {
+                    font-size: 0.7rem !important;
+                }
+                
+                #progressChart > div > div:nth-child(2) {
+                    font-size: 1rem !important;
+                }
+                
+                /* Button toggles mobile */
+                .progress-toggles {
+                    justify-content: center !important;
+                    flex-wrap: wrap !important;
+                }
+                
+                .progress-toggles button {
+                    min-width: 80px !important;
+                }
+            }
+            
+            @media (max-width: 480px) {
+                #progressChart {
+                    grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)) !important;
+                    gap: 0.5rem !important;
+                }
+                
+                #progressChart > div {
+                    padding: 0.5rem 0.25rem !important;
+                    min-width: 50px !important;
+                }
+                
+                #progressChart > div > div:last-child {
+                    width: 25px !important;
+                    height: 25px !important;
+                    font-size: 0.6rem !important;
+                }
+                
+                .goal-tracker-item {
+                    padding: 1rem !important;
+                }
+                
+                .hero-section {
+                    padding: 2rem 1rem !important;
+                    margin: -1rem -1rem 2rem -1rem !important;
                 }
             }
         `;
