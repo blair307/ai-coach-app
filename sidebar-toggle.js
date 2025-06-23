@@ -1,174 +1,179 @@
 /**
- * BULLETPROOF SIDEBAR FIX - Back to basics that always works
- * This is the approach that worked before and will work again
+ * PERMANENT FIXED Sidebar Toggle - With Working Floating Button
+ * Replace your entire sidebar-toggle.js with this
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🔧 Bulletproof sidebar starting...');
+    console.log('🚀 Initializing PERMANENT sidebar toggle...');
     
-    // Get elements
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
-    const hamburgerButtons = document.querySelectorAll('.sidebar-toggle');
     
-    if (!sidebar || !mainContent || hamburgerButtons.length === 0) {
-        console.error('❌ Missing required elements');
+    if (!sidebar || !mainContent) {
+        console.error('❌ Missing sidebar or main content');
         return;
     }
     
-    console.log('✅ Found elements:', {
-        sidebar: !!sidebar,
-        mainContent: !!mainContent,
-        buttons: hamburgerButtons.length
-    });
+    let isOpen = true;
+    let isInitialized = false;
+    let floatingButton = null;
     
-    // CRITICAL: Remove ALL CSS classes and start fresh
-    function resetSidebar() {
-        sidebar.className = 'sidebar'; // Keep only base class
-        mainContent.className = 'main-content'; // Keep only base class
+    // Create floating hamburger button
+    function createFloatingButton() {
+        if (floatingButton) {
+            floatingButton.remove();
+        }
         
-        // Clear all inline styles
-        sidebar.style.cssText = '';
-        mainContent.style.cssText = '';
+        floatingButton = document.createElement('button');
+        floatingButton.innerHTML = `
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
+            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
+        `;
         
-        console.log('🧹 Reset all classes and styles');
+        floatingButton.style.cssText = `
+            position: fixed !important;
+            top: 20px !important;
+            left: 20px !important;
+            width: 50px !important;
+            height: 50px !important;
+            background: #6366f1 !important;
+            border: none !important;
+            border-radius: 10px !important;
+            cursor: pointer !important;
+            z-index: 99999 !important;
+            display: none !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+            transition: all 0.3s ease !important;
+        `;
+        
+        floatingButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🎯 Floating button clicked');
+            openSidebar();
+        });
+        
+        document.body.appendChild(floatingButton);
+        console.log('✅ Floating button created');
     }
     
-    // Show sidebar (desktop mode)
-    function showSidebar() {
-        console.log('👀 SHOWING sidebar');
+    // Open sidebar
+    function openSidebar() {
+        console.log('🔓 Opening sidebar');
         
-        // Force styles that ALWAYS work
-        sidebar.style.cssText = `
-            position: fixed !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 250px !important;
-            height: 100vh !important;
-            z-index: 1000 !important;
-            transform: translateX(0px) !important;
-            transition: transform 0.3s ease !important;
-        `;
+        sidebar.classList.remove('closed');
+        mainContent.classList.remove('expanded');
+        sidebar.style.transform = 'translateX(0)';
+        mainContent.style.marginLeft = '280px';
         
-        mainContent.style.cssText = `
-            margin-left: 250px !important;
-            transition: margin-left 0.3s ease !important;
-        `;
+        // Hide floating button
+        if (floatingButton) {
+            floatingButton.style.display = 'none';
+        }
         
-        // Update button states
-        hamburgerButtons.forEach(btn => btn.classList.remove('active'));
+        isOpen = true;
+        console.log('✅ Sidebar opened');
     }
     
-    // Hide sidebar (mobile mode)  
-    function hideSidebar() {
-        console.log('🙈 HIDING sidebar');
+    // Close sidebar
+    function closeSidebar() {
+        console.log('🔒 Closing sidebar');
         
-        // Force styles that ALWAYS work
-        sidebar.style.cssText = `
-            position: fixed !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 250px !important;
-            height: 100vh !important;
-            z-index: 1000 !important;
-            transform: translateX(-250px) !important;
-            transition: transform 0.3s ease !important;
-        `;
+        sidebar.classList.add('closed');
+        mainContent.classList.add('expanded');
+        sidebar.style.transform = 'translateX(-280px)';
+        mainContent.style.marginLeft = '0';
         
-        mainContent.style.cssText = `
-            margin-left: 0px !important;
-            transition: margin-left 0.3s ease !important;
-        `;
+        // Show floating button
+        if (floatingButton) {
+            floatingButton.style.display = 'flex';
+        }
         
-        // Update button states  
-        hamburgerButtons.forEach(btn => btn.classList.add('active'));
+        isOpen = false;
+        console.log('✅ Sidebar closed, floating button shown');
     }
     
     // Toggle function
-    let isVisible = true;
     function toggleSidebar() {
-        console.log('🔄 Toggling sidebar. Currently:', isVisible ? 'VISIBLE' : 'HIDDEN');
+        console.log('🔄 Toggling sidebar, currently:', isOpen ? 'open' : 'closed');
         
-        if (isVisible) {
-            hideSidebar();
-            isVisible = false;
+        if (isOpen) {
+            closeSidebar();
         } else {
-            showSidebar();
-            isVisible = true;
+            openSidebar();
         }
-        
-        console.log('🔄 Sidebar now:', isVisible ? 'VISIBLE' : 'HIDDEN');
     }
     
-    // Initialize based on screen size
-    function initializeSidebar() {
-        resetSidebar();
+    // Initialize hamburger handlers ONCE
+    function initializeHamburger() {
+        if (isInitialized) return;
         
-        if (window.innerWidth <= 768) {
-            // Mobile - start hidden
-            hideSidebar();
-            isVisible = false;
-        } else {
-            // Desktop - start visible
-            showSidebar();
-            isVisible = true;
-        }
+        const hamburgers = document.querySelectorAll('.sidebar-toggle');
+        console.log('🎯 Found hamburger buttons:', hamburgers.length);
         
-        console.log('🚀 Initialized for', window.innerWidth <= 768 ? 'MOBILE' : 'DESKTOP');
-    }
-    
-    // Add click handlers to ALL hamburger buttons
-    hamburgerButtons.forEach((button, index) => {
-        console.log(`🎯 Adding handler to button ${index + 1}`);
-        
-        // Remove existing handlers
-        button.onclick = null;
-        
-        // Add new handler
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log(`🎯 Button ${index + 1} clicked!`);
-            toggleSidebar();
+        hamburgers.forEach((btn, index) => {
+            btn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`🎯 Hamburger ${index + 1} clicked`);
+                toggleSidebar();
+            };
         });
-    });
+        
+        isInitialized = true;
+        console.log('✅ Hamburger handlers attached ONCE');
+    }
     
     // Handle window resize
-    window.addEventListener('resize', function() {
-        console.log('📱 Window resized to:', window.innerWidth);
-        initializeSidebar();
-    });
-    
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(e) {
-        if (window.innerWidth <= 768 && isVisible) {
-            const clickedInsideSidebar = sidebar.contains(e.target);
-            const clickedHamburger = Array.from(hamburgerButtons).some(btn => btn.contains(e.target));
-            
-            if (!clickedInsideSidebar && !clickedHamburger) {
-                console.log('👆 Clicked outside - closing sidebar');
-                hideSidebar();
-                isVisible = false;
+    function handleResize() {
+        if (window.innerWidth <= 768) {
+            // Mobile - close sidebar by default
+            if (isOpen) {
+                closeSidebar();
             }
+        } else {
+            // Desktop - open sidebar by default
+            if (!isOpen) {
+                openSidebar();
+            }
+        }
+    }
+    
+    // Initialize everything
+    createFloatingButton();
+    
+    // Set initial state based on screen size
+    if (window.innerWidth <= 768) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
+    
+    // Initialize hamburger handlers
+    initializeHamburger();
+    
+    // Handle window resize
+    window.addEventListener('resize', handleResize);
+    
+    // Handle escape key to close sidebar
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && isOpen && window.innerWidth <= 768) {
+            closeSidebar();
         }
     });
     
-    // Initialize
-    initializeSidebar();
-    
-    // Test functions
-    window.sidebarTest = {
-        show: showSidebar,
-        hide: hideSidebar,
+    // Export functions for testing
+    window.sidebarToggle = {
+        open: openSidebar,
+        close: closeSidebar,
         toggle: toggleSidebar,
-        reset: initializeSidebar,
-        status: () => isVisible ? 'VISIBLE' : 'HIDDEN'
+        isOpen: () => isOpen
     };
     
-    console.log('✅ Bulletproof sidebar ready!');
-    console.log('🧪 Test commands:');
-    console.log('   window.sidebarTest.toggle()');
-    console.log('   window.sidebarTest.show()');
-    console.log('   window.sidebarTest.hide()');
-    console.log('   window.sidebarTest.status()');
+    console.log('✅ PERMANENT sidebar toggle ready with floating button');
+    console.log('🧪 Test with: window.sidebarToggle.toggle()');
 });
