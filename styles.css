@@ -4567,28 +4567,29 @@ font-size: 0.7rem;
 
 /* Add these styles to the END of your existing styles.css file */
 
+/* Add these styles to the END of your existing styles.css file */
+
 /* =================================
    BEAUTIFUL PURPLE GRADIENT THEME FOR ENTIRE APP
    Add this to your existing styles.css
    ================================= */
 
-/* Main content background with subtle gradient */
+/* Main content background with beautiful purple gradient */
 .main-content {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%) !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     min-height: 100vh !important;
 }
 
-/* Enhanced dashboard cards with glass-morphism */
+/* Clean light cards that pop against purple background */
 .dashboard-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
     position: relative !important;
     overflow: hidden !important;
 }
 
-/* Add purple accent line to top of each card */
+/* Add subtle purple accent line to top of each card */
 .dashboard-card::before {
     content: '' !important;
     position: absolute !important;
@@ -4600,12 +4601,11 @@ font-size: 0.7rem;
     z-index: 1 !important;
 }
 
-/* Enhanced sidebar with gradient */
+/* Enhanced sidebar with light background */
 .sidebar {
-    background: linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.95) 100%) !important;
-    backdrop-filter: blur(20px) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
     border-right: 1px solid rgba(102, 126, 234, 0.15) !important;
-    box-shadow: 4px 0 24px rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Enhanced sidebar menu items */
@@ -4630,7 +4630,7 @@ font-size: 0.7rem;
     background-clip: text !important;
 }
 
-/* Enhanced buttons with purple gradient */
+/* Simple clean buttons (no glass-morphism) */
 .btn-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     border: none !important;
@@ -4643,6 +4643,18 @@ font-size: 0.7rem;
     box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5) !important;
 }
 
+/* Clean secondary buttons */
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 2px solid rgba(102, 126, 234, 0.3) !important;
+    color: #667eea !important;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #667eea !important;
+}
+
 /* Enhanced progress bars */
 #progressBar,
 .progress-bar {
@@ -4651,29 +4663,26 @@ font-size: 0.7rem;
 
 /* Enhanced life area cards (goals page) */
 .life-area-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
     position: relative !important;
     overflow: hidden !important;
 }
 
 /* Enhanced stats cards */
 .stat {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.08) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Enhanced chat/community cards */
 .community-container,
 .chat-container {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Enhanced room items */
@@ -4690,10 +4699,9 @@ font-size: 0.7rem;
 /* Enhanced modals */
 .modal-content,
 .auth-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Enhanced form elements */
@@ -4715,18 +4723,16 @@ select:focus {
 
 /* Enhanced goal tracker items */
 .goal-tracker-item {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.08) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
 }
 
 /* Enhanced activity items */
 .activity-item,
 .notification-item {
-    background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(248,250,252,0.9) 100%) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.08) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Enhanced header sections */
@@ -4746,22 +4752,21 @@ select:focus {
 
 /* Enhanced notification bell */
 .notification-bell {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.08) 100%) !important;
-    border: 2px solid rgba(102, 126, 234, 0.2) !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 2px solid rgba(102, 126, 234, 0.3) !important;
 }
 
 .notification-bell:hover {
-    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.12) 100%) !important;
-    border-color: rgba(102, 126, 234, 0.3) !important;
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: #667eea !important;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2) !important;
 }
 
 /* Enhanced pricing cards (if on internal pages) */
 .pricing-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.12) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
 }
 
 .pricing-card.featured {
@@ -4772,16 +4777,14 @@ select:focus {
 /* Enhanced insights and activity cards */
 .insight-item {
     border-left: 4px solid #667eea !important;
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
-    backdrop-filter: blur(10px) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Enhanced billing cards */
 .billing-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Enhanced meeting modal */
@@ -4790,10 +4793,9 @@ select:focus {
 }
 
 .meeting-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 25px 50px rgba(102, 126, 234, 0.25) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Enhanced filter buttons */
@@ -4809,18 +4811,16 @@ select:focus {
 
 /* Enhanced search results */
 .search-results {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Enhanced emoji modal */
 .emoji-modal {
-    background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%) !important;
-    backdrop-filter: blur(20px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
-    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.15) !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Add subtle floating animation to cards */
@@ -4899,9 +4899,8 @@ button:focus-visible,
 
 /* Enhanced progress chart items */
 #progressChart > div {
-    background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%) !important;
-    backdrop-filter: blur(10px) !important;
-    border: 1px solid rgba(102, 126, 234, 0.1) !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
 }
 
 #progressChart > div.today {
@@ -4910,24 +4909,20 @@ button:focus-visible,
     border-color: #667eea !important;
 }
 
+/* Make sure goals page has purple background too */
+body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    min-height: 100vh !important;
+}
+
 /* Enhanced responsive design */
 @media (max-width: 768px) {
     .main-content {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
     }
     
     .dashboard-card,
     .life-area-card {
         animation: none !important; /* Disable animations on mobile for performance */
-    }
-}
-
-/* Enhanced dark theme support (if you add dark mode later) */
-@media (prefers-color-scheme: dark) {
-    .dashboard-card,
-    .life-area-card,
-    .modal-content {
-        background: linear-gradient(135deg, rgba(30,30,30,0.95) 0%, rgba(20,20,20,0.98) 100%) !important;
-        border-color: rgba(102, 126, 234, 0.3) !important;
     }
 }
