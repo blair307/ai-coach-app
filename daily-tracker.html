@@ -663,7 +663,7 @@
                     },
                     body: JSON.stringify({
                         completed: completed,
-                        lastCompletedDate: completed ? new Date().toISOString() : null
+                        lastCompletedDate: completed ? new Date().toISOString() : undefined
                     })
                 });
 
