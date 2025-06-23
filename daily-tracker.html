@@ -1,4 +1,32 @@
-<!DOCTYPE html>
+<!-- Goal Detail Modal -->
+        <div id="goalDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(8px);">
+            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+                <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.2);">
+                    
+                    <!-- Modal Header -->
+                    <div id="modalHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; position: relative;">
+                        <h2 id="modalTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Goal Details</h2>
+                        <p id="modalArea" style="margin: 0.5rem 0 0 0; opacity: 0.9; text-transform: capitalize;"></p>
+                    </div>
+                    
+                    <!-- Modal Body -->
+                    <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">Big Goal</h3>
+                            <p id="modalBigGoal" style="color: var(--text-secondary); line-height: 1.5; font-style: italic;"></p>
+                        </div>
+                        
+                        <div style="margin-bottom: 1.5rem;">
+                            <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">Daily Action</h3>
+                            <p id="modalDailyAction" style="color: var(--text-secondary); line-height: 1.5; font-weight: 500;"></p>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                            <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.2);">
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #667eea;" id="modalStreak">0</div>
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">Current Streak</div>
+                            </div>
+                            <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -71,7 +99,10 @@
             </div>
 
             <!-- Daily Goals Tracker -->
-            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
+            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 2rem; position: relative; overflow: hidden;">
+                <!-- Subtle gradient overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 style="margin: 0; color: var(--text-primary);">Today's Goals</h2>
                     <div style="display: flex; gap: 1rem; align-items: center;">
@@ -79,7 +110,7 @@
                             Progress: <span id="progressPercentage">0%</span>
                         </div>
                         <div style="width: 120px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
-                            <div id="progressBar" style="height: 100%; background: linear-gradient(135deg, var(--success) 0%, #059669 100%); width: 0%; transition: width 0.3s ease;"></div>
+                            <div id="progressBar" style="height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.3s ease;"></div>
                         </div>
                     </div>
                 </div>
@@ -93,14 +124,17 @@
             </div>
 
             <!-- Weekly/Monthly Progress Chart -->
-            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
+            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 2rem; position: relative; overflow: hidden;">
+                <!-- Subtle gradient overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 style="margin: 0; color: var(--text-primary);">Progress Overview</h2>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button id="weeklyBtn" onclick="showWeeklyProgress()" class="btn btn-small" style="background: var(--primary); color: white;">
+                        <button id="weeklyBtn" onclick="showWeeklyProgress()" class="btn btn-small" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
                             Weekly
                         </button>
-                        <button id="monthlyBtn" onclick="showMonthlyProgress()" class="btn btn-small" style="background: var(--surface); color: var(--text-primary); border: 2px solid var(--border);">
+                        <button id="monthlyBtn" onclick="showMonthlyProgress()" class="btn btn-small" style="background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); color: var(--text-primary); border: 2px solid rgba(102, 126, 234, 0.2); backdrop-filter: blur(10px);">
                             Monthly
                         </button>
                     </div>
@@ -111,7 +145,10 @@
             </div>
 
             <!-- Goals by Area Overview -->
-            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
+            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); position: relative; overflow: hidden;">
+                <!-- Subtle gradient overlay -->
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                
                 <h2 style="margin-bottom: 2rem; color: var(--text-primary);">Goals by Life Area</h2>
                 <div id="goalsByArea" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                     <!-- Goals by area will be populated by JavaScript -->
@@ -655,16 +692,25 @@
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
                 if (!token) throw new Error('No authentication token');
 
+                const requestBody = {
+                    completed: completed
+                };
+
+                // Only set lastCompletedDate if marking as completed
+                if (completed) {
+                    requestBody.lastCompletedDate = new Date().toISOString();
+                } else {
+                    // When marking incomplete, explicitly clear the date
+                    requestBody.lastCompletedDate = null;
+                }
+
                 const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({
-                        completed: completed,
-                        lastCompletedDate: completed ? new Date().toISOString() : undefined
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
                 if (!response.ok) {
@@ -679,24 +725,26 @@
                     currentGoals[goalIndex] = updatedGoal;
                 }
                 
-                // Re-render everything
-                renderDailyGoals();
-                updateProgressStats();
-                
-                // Update the current progress view
-                if (progressView === 'weekly') {
-                    renderWeeklyProgress();
-                } else {
-                    renderMonthlyProgress();
-                }
-                
-                renderGoalsByArea();
-                
-                // Update modal if it's open for this goal
-                if (selectedGoal && selectedGoal._id === goalId) {
-                    selectedGoal = updatedGoal;
-                    updateModalButtons();
-                }
+                // Force re-render everything immediately
+                setTimeout(() => {
+                    renderDailyGoals();
+                    updateProgressStats();
+                    
+                    // Update the current progress view
+                    if (progressView === 'weekly') {
+                        renderWeeklyProgress();
+                    } else {
+                        renderMonthlyProgress();
+                    }
+                    
+                    renderGoalsByArea();
+                    
+                    // Update modal if it's open for this goal
+                    if (selectedGoal && selectedGoal._id === goalId) {
+                        selectedGoal = updatedGoal;
+                        updateModalButtons();
+                    }
+                }, 100);
                 
                 // Show success message
                 showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
