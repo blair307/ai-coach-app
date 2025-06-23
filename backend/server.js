@@ -1143,9 +1143,9 @@ app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
     const activeStreaks = await LifeGoal.find({ userId, streak: { $gt: 0 } });
     const longestStreak = activeStreaks.length > 0 ? Math.max(...activeStreaks.map(g => g.streak)) : 0;
     
-    // Goals by area
+    // Goals by area - FIX THE OBJECTID ISSUE
     const goalsByArea = await LifeGoal.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      { $match: { userId: mongoose.Types.ObjectId(userId) } }, // FIXED: Use mongoose.Types.ObjectId
       { $group: { _id: '$area', count: { $sum: 1 } } }
     ]);
     
