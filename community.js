@@ -1,20 +1,16 @@
-// Community.js - Complete Backend Connected Version with Working Search
-// This is the complete file with all functionality
+// Community.js - Backend Connected Version for Persistent Storage
+// This replaces the localStorage version with real database storage
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
-let currentMessages = []; // Store current messages for search
-let searchResults = [];
-let currentSearchTerm = '';
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Community page loading...');
     initializeCommunity();
-    setupSearchListeners();
 });
 
 // Initialize the community system
@@ -41,6 +37,7 @@ async function initializeCommunity() {
         console.log('Community initialized successfully');
     } catch (error) {
         console.error('Error initializing community:', error);
+        // Fallback to show basic interface
         showErrorMessage('Unable to load community. Please refresh the page.');
     }
 }
@@ -178,9 +175,6 @@ async function switchRoom(roomId) {
         if (roomNameElement) roomNameElement.textContent = room.name;
         if (roomDescElement) roomDescElement.textContent = room.description;
 
-        // Clear any existing search
-        clearCompleteSearch();
-
         // Load messages for this room
         await loadMessages(roomId);
 
@@ -213,14 +207,11 @@ async function loadMessages(roomId) {
         const messages = await response.json();
         console.log('Loaded messages for room:', roomId, messages);
         
-        // Store messages for search
-        currentMessages = messages;
-        
         displayMessages(messages);
         
     } catch (error) {
         console.error('Error loading messages:', error);
-        currentMessages = [];
+        // Show empty state or cached messages
         displayMessages([]);
     }
 }
@@ -463,327 +454,212 @@ async function deleteRoom(roomId) {
     }
 }
 
-// =================================
-// WORKING SEARCH SYSTEM
-// =================================
-
-// Real-time search function that actually works
-function performRealTimeSearch() {
-    const searchInput = document.getElementById('simpleSearchInput');
-    if (!searchInput) return;
-    
-    const searchTerm = searchInput.value.trim().toLowerCase();
-    currentSearchTerm = searchTerm;
-    
-    // Clear previous results
-    clearAllHighlights();
-    searchResults = [];
-    
-    if (searchTerm.length < 2) {
-        hideSearchResults();
+// Delete a room
+async function deleteRoom(roomId) {
+    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
         return;
     }
-    
-    // Search in messages
-    searchInMessages(searchTerm);
-    
-    // Search in room names and descriptions
-    searchInRooms(searchTerm);
-    
-    // Display results
-    displaySearchResults();
-}
 
-// Search through current room messages
-function searchInMessages(searchTerm) {
-    const messagesContainer = document.getElementById('communityMessages');
-    if (!messagesContainer) return;
-    
-    const messageElements = messagesContainer.querySelectorAll('.message-group');
-    
-    messageElements.forEach((messageElement, index) => {
-        const messageContent = messageElement.querySelector('.message-content');
-        const username = messageElement.querySelector('.username');
-        
-        if (messageContent && username) {
-            const messageText = messageContent.textContent.toLowerCase();
-            const userText = username.textContent.toLowerCase();
-            
-            // Check if search term is in message or username
-            if (messageText.includes(searchTerm) || userText.includes(searchTerm)) {
-                // Highlight the text
-                highlightTextInElement(messageContent, searchTerm);
-                highlightTextInElement(username, searchTerm);
-                
-                // Add to results
-                searchResults.push({
-                    type: 'message',
-                    element: messageElement,
-                    text: messageContent.textContent.substring(0, 100) + '...',
-                    username: username.textContent,
-                    index: index
-                });
-                
-                // Add visual indicator
-                messageElement.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-                messageElement.style.border = '2px solid var(--primary)';
-                messageElement.style.borderRadius = 'var(--radius)';
-                messageElement.style.marginBottom = '1rem';
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete room');
+        }
+
+        console.log('Room deleted successfully');
+
+        // If we were in the deleted room, switch to General Discussion
+        if (currentRoomId === roomId) {
+            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+            if (generalRoom) {
+                switchRoom(generalRoom._id);
             }
         }
-    });
-}
 
-// Search through room names and descriptions
-function searchInRooms(searchTerm) {
-    rooms.forEach(room => {
-        const roomName = room.name.toLowerCase();
-        const roomDesc = room.description.toLowerCase();
-        
-        if (roomName.includes(searchTerm) || roomDesc.includes(searchTerm)) {
-            searchResults.push({
-                type: 'room',
-                text: room.name,
-                description: room.description,
-                roomId: room._id,
-                room: room
-            });
-        }
-    });
-}
+        // Reload rooms
+        await loadRooms();
 
-// Highlight text within an element
-function highlightTextInElement(element, searchTerm) {
-    if (!element || !searchTerm) return;
-    
-    const originalText = element.textContent;
-    const regex = new RegExp(`(${escapeRegexChars(searchTerm)})`, 'gi');
-    
-    if (regex.test(originalText)) {
-        const highlightedText = originalText.replace(regex, '<mark class="search-highlight-mark">$1</mark>');
-        element.innerHTML = highlightedText;
+    } catch (error) {
+        console.error('Error deleting room:', error);
+        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
     }
 }
 
-// Escape regex special characters
-function escapeRegexChars(text) {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// Display search results in a popup
-function displaySearchResults() {
-    const resultsCount = searchResults.length;
+// Search functionality
+async function performSearch() {
+    const searchInput = document.getElementById('searchInput');
+    const searchQuery = searchInput?.value?.trim();
     
-    if (resultsCount === 0) {
-        showSearchPopup(`No results found for "${currentSearchTerm}"`);
+    if (!searchQuery) {
+        closeSearch();
         return;
     }
+
+    try {
+        // Show search results panel
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.style.display = 'block';
+        }
+
+        const results = await searchMessagesAndRooms(searchQuery);
+        displaySearchResults(results);
+
+    } catch (error) {
+        console.error('Error performing search:', error);
+        showErrorMessage('Search failed. Please try again.');
+    }
+}
+
+// Search through messages and rooms
+async function searchMessagesAndRooms(query) {
+    const results = [];
     
-    // Show results count
-    showSearchPopup(`Found ${resultsCount} result${resultsCount === 1 ? '' : 's'} for "${currentSearchTerm}"`);
-    
-    // Scroll to first message result if any
-    const firstMessageResult = searchResults.find(r => r.type === 'message');
-    if (firstMessageResult && firstMessageResult.element) {
-        firstMessageResult.element.scrollIntoView({ 
-            behavior: 'smooth', 
-            block: 'center' 
+    try {
+        // Search rooms by name and description
+        const roomResults = rooms.filter(room => 
+            room.name.toLowerCase().includes(query.toLowerCase()) ||
+            room.description.toLowerCase().includes(query.toLowerCase())
+        );
+
+        roomResults.forEach(room => {
+            results.push({
+                type: 'room',
+                title: room.name,
+                preview: room.description,
+                data: room
+            });
         });
-    }
-    
-    // Show clear button
-    const clearBtn = document.getElementById('simpleSearchClear');
-    if (clearBtn) {
-        clearBtn.style.display = 'inline-block';
-    }
-}
 
-// Show search results popup
-function showSearchPopup(message) {
-    // Remove existing popup
-    const existingPopup = document.getElementById('searchResultsPopup');
-    if (existingPopup) {
-        existingPopup.remove();
-    }
-    
-    // Create new popup
-    const popup = document.createElement('div');
-    popup.id = 'searchResultsPopup';
-    popup.style.cssText = `
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        background: var(--primary);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: var(--radius);
-        box-shadow: var(--shadow-lg);
-        z-index: 10000;
-        font-size: 0.9rem;
-        max-width: 300px;
-        border: 1px solid var(--primary-dark);
-    `;
-    
-    popup.innerHTML = `
-        <div>${message}</div>
-        ${searchResults.length > 0 ? createResultsList() : ''}
-    `;
-    
-    document.body.appendChild(popup);
-    
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        if (popup.parentNode) {
-            popup.remove();
+        // Search messages in all rooms
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (token) {
+            for (const room of rooms) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/rooms/${room._id}/messages`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    if (response.ok) {
+                        const messages = await response.json();
+                        const matchingMessages = messages.filter(message => 
+                            (message.content || message.message || '').toLowerCase().includes(query.toLowerCase())
+                        );
+
+                        matchingMessages.forEach(message => {
+                            results.push({
+                                type: 'message',
+                                title: `Message in ${room.name}`,
+                                preview: (message.content || message.message || '').substring(0, 100) + '...',
+                                data: { message, room }
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error searching messages in room:', room.name, error);
+                }
+            }
         }
-    }, 5000);
+
+    } catch (error) {
+        console.error('Error in search:', error);
+    }
+
+    return results;
 }
 
-// Create clickable results list
-function createResultsList() {
-    if (searchResults.length === 0) return '';
-    
-    let html = '<div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 1rem;">';
-    
-    // Show room results
-    const roomResults = searchResults.filter(r => r.type === 'room').slice(0, 3);
-    if (roomResults.length > 0) {
-        html += '<div style="margin-bottom: 0.5rem; font-weight: 600; font-size: 0.8rem;">ROOMS:</div>';
-        roomResults.forEach(result => {
-            html += `
-                <div onclick="switchToRoom('${result.roomId}')" style="
-                    cursor: pointer; 
-                    padding: 0.5rem; 
-                    margin: 0.25rem 0; 
-                    background: rgba(255,255,255,0.1); 
-                    border-radius: 4px;
-                    font-size: 0.8rem;
-                " onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-                    <strong>${result.text}</strong><br>
-                    <small style="opacity: 0.8;">${result.description}</small>
-                </div>
-            `;
-        });
-    }
-    
-    // Show message count
-    const messageResults = searchResults.filter(r => r.type === 'message');
-    if (messageResults.length > 0) {
-        html += `<div style="margin-top: 0.5rem; font-weight: 600; font-size: 0.8rem;">MESSAGES: ${messageResults.length} found in current room</div>`;
-    }
-    
-    html += '</div>';
-    return html;
-}
+// Display search results
+function displaySearchResults(results) {
+    const searchContent = document.getElementById('searchContent');
+    if (!searchContent) return;
 
-// Switch to a room from search results
-function switchToRoom(roomId) {
-    // Hide popup
-    const popup = document.getElementById('searchResultsPopup');
-    if (popup) popup.remove();
-    
-    // Switch room
-    switchRoom(roomId);
-    
-    // Perform search again in new room after a delay
-    setTimeout(() => {
-        if (currentSearchTerm) {
-            performRealTimeSearch();
+    if (results.length === 0) {
+        searchContent.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                <p>No results found</p>
+            </div>
+        `;
+        return;
+    }
+
+    searchContent.innerHTML = '';
+
+    results.forEach(result => {
+        const resultElement = document.createElement('div');
+        resultElement.className = 'search-result-item';
+        
+        if (result.type === 'room') {
+            resultElement.onclick = () => {
+                switchRoom(result.data._id);
+                closeSearch();
+            };
+        } else if (result.type === 'message') {
+            resultElement.onclick = () => {
+                switchRoom(result.data.room._id);
+                closeSearch();
+                // Optionally highlight the message
+            };
         }
-    }, 500);
-}
 
-// Hide search results
-function hideSearchResults() {
-    const popup = document.getElementById('searchResultsPopup');
-    if (popup) {
-        popup.remove();
-    }
-    
-    const clearBtn = document.getElementById('simpleSearchClear');
-    if (clearBtn) {
-        clearBtn.style.display = 'none';
-    }
-}
+        resultElement.innerHTML = `
+            <div class="search-result-type">${result.type}</div>
+            <div class="search-result-title">${escapeHtml(result.title)}</div>
+            <div class="search-result-preview">${escapeHtml(result.preview)}</div>
+        `;
 
-// Clear all search highlights and results
-function clearAllHighlights() {
-    // Remove all highlight marks
-    const highlights = document.querySelectorAll('.search-highlight-mark');
-    highlights.forEach(mark => {
-        const parent = mark.parentNode;
-        if (parent) {
-            parent.replaceChild(document.createTextNode(mark.textContent), mark);
-            parent.normalize();
-        }
+        searchContent.appendChild(resultElement);
     });
-    
-    // Remove message highlighting
-    const messageElements = document.querySelectorAll('.message-group');
-    messageElements.forEach(element => {
-        element.style.backgroundColor = '';
-        element.style.border = '';
-        element.style.borderRadius = '';
-        element.style.marginBottom = '';
-    });
-    
-    // Clear results
-    searchResults = [];
 }
 
-// Clear search completely
-function clearCompleteSearch() {
-    const searchInput = document.getElementById('simpleSearchInput');
+// Close search results
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+    
     if (searchInput) {
         searchInput.value = '';
     }
-    
-    currentSearchTerm = '';
-    clearAllHighlights();
-    hideSearchResults();
 }
 
-// Main search functions (called by buttons)
-function performSimpleSearch() {
-    performRealTimeSearch();
-}
-
-function clearSimpleSearch() {
-    clearCompleteSearch();
-}
-
-// Setup search event listeners
-function setupSearchListeners() {
-    const searchInput = document.getElementById('simpleSearchInput');
+// Add search on Enter key
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        // Search as user types (with debounce)
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                performRealTimeSearch();
-            }, 300); // Wait 300ms after user stops typing
-        });
-        
-        // Search on Enter
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                performRealTimeSearch();
-            }
-        });
-        
-        // Clear on empty
-        searchInput.addEventListener('input', function(e) {
-            if (!e.target.value.trim()) {
-                clearCompleteSearch();
+                performSearch();
             }
         });
     }
-}
+});
 
-// =================================
-// EMOJI AND UTILITY FUNCTIONS
-// =================================
+// Toggle members list (keeping for compatibility but now used for search)
+function toggleMembersList() {
+    // This function is kept for compatibility but now toggles search
+    const searchResults = document.getElementById('searchResults');
+    if (searchResults) {
+        searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
+    }
+}
 
 // Add emoji functionality
 function addEmoji() {
