@@ -1,32 +1,4 @@
-<!-- Goal Detail Modal -->
-        <div id="goalDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(8px);">
-            <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-                <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.2);">
-                    
-                    <!-- Modal Header -->
-                    <div id="modalHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; position: relative;">
-                        <h2 id="modalTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Goal Details</h2>
-                        <p id="modalArea" style="margin: 0.5rem 0 0 0; opacity: 0.9; text-transform: capitalize;"></p>
-                    </div>
-                    
-                    <!-- Modal Body -->
-                    <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">Big Goal</h3>
-                            <p id="modalBigGoal" style="color: var(--text-secondary); line-height: 1.5; font-style: italic;"></p>
-                        </div>
-                        
-                        <div style="margin-bottom: 1.5rem;">
-                            <h3 style="margin-bottom: 0.5rem; color: var(--text-primary);">Daily Action</h3>
-                            <p id="modalDailyAction" style="color: var(--text-secondary); line-height: 1.5; font-weight: 500;"></p>
-                        </div>
-                        
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-                            <div style="text-align: center; padding: 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%); border-radius: 12px; border: 1px solid rgba(102, 126, 234, 0.2);">
-                                <div style="font-size: 1.5rem; font-weight: 800; color: #667eea;" id="modalStreak">0</div>
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">Current Streak</div>
-                            </div>
-                            <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -99,10 +71,7 @@
             </div>
 
             <!-- Daily Goals Tracker -->
-            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 2rem; position: relative; overflow: hidden;">
-                <!-- Subtle gradient overlay -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                
+            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
                     <h2 style="margin: 0; color: var(--text-primary);">Today's Goals</h2>
                     <div style="display: flex; gap: 1rem; align-items: center;">
@@ -110,7 +79,7 @@
                             Progress: <span id="progressPercentage">0%</span>
                         </div>
                         <div style="width: 120px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
-                            <div id="progressBar" style="height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 0%; transition: width 0.3s ease;"></div>
+                            <div id="progressBar" style="height: 100%; background: linear-gradient(135deg, var(--success) 0%, #059669 100%); width: 0%; transition: width 0.3s ease;"></div>
                         </div>
                     </div>
                 </div>
@@ -124,17 +93,14 @@
             </div>
 
             <!-- Weekly/Monthly Progress Chart -->
-            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); margin-bottom: 2rem; position: relative; overflow: hidden;">
-                <!-- Subtle gradient overlay -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                
+            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-bottom: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
                     <h2 style="margin: 0; color: var(--text-primary);">Progress Overview</h2>
                     <div style="display: flex; gap: 0.5rem;">
-                        <button id="weeklyBtn" onclick="showWeeklyProgress()" class="btn btn-small" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+                        <button id="weeklyBtn" onclick="showWeeklyProgress()" class="btn btn-small" style="background: var(--primary); color: white;">
                             Weekly
                         </button>
-                        <button id="monthlyBtn" onclick="showMonthlyProgress()" class="btn btn-small" style="background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.95) 100%); color: var(--text-primary); border: 2px solid rgba(102, 126, 234, 0.2); backdrop-filter: blur(10px);">
+                        <button id="monthlyBtn" onclick="showMonthlyProgress()" class="btn btn-small" style="background: var(--surface); color: var(--text-primary); border: 2px solid var(--border);">
                             Monthly
                         </button>
                     </div>
@@ -145,10 +111,7 @@
             </div>
 
             <!-- Goals by Area Overview -->
-            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,250,252,0.98) 100%); backdrop-filter: blur(20px); border-radius: 16px; padding: 2rem; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border: 1px solid rgba(255,255,255,0.2); position: relative; overflow: hidden;">
-                <!-- Subtle gradient overlay -->
-                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                
+            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
                 <h2 style="margin-bottom: 2rem; color: var(--text-primary);">Goals by Life Area</h2>
                 <div id="goalsByArea" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
                     <!-- Goals by area will be populated by JavaScript -->
@@ -221,7 +184,7 @@
         // Daily Tracker JavaScript Implementation
         let currentGoals = [];
         let selectedGoal = null;
-        let progressView = 'weekly'; // Track current view
+        let progressView = 'weekly';
         
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -278,7 +241,7 @@
                 currentGoals = await response.json();
                 renderDailyGoals();
                 updateProgressStats();
-                showWeeklyProgress(); // Start with weekly view
+                showWeeklyProgress();
                 renderGoalsByArea();
 
             } catch (error) {
@@ -433,7 +396,6 @@
             document.getElementById('progressBar').style.width = `${progressPercentage}%`;
         }
 
-        // NEW: Real progress calculation function
         function calculateDayCompletion(date) {
             if (currentGoals.length === 0) return 0;
             
@@ -443,12 +405,10 @@
             checkDate.setHours(0, 0, 0, 0);
             
             if (checkDate.getTime() === today.getTime()) {
-                // For today, check actual completion
                 const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
                 return (completedToday / currentGoals.length) * 100;
             }
             
-            // For past days, check if goals were completed on that specific date
             let completedOnDate = 0;
             currentGoals.forEach(goal => {
                 if (goal.lastCompletedDate) {
@@ -463,7 +423,6 @@
             return (completedOnDate / currentGoals.length) * 100;
         }
 
-        // NEW: Weekly progress with real data
         function renderWeeklyProgress() {
             const container = document.getElementById('progressChart');
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -479,7 +438,6 @@
                 const dayName = days[date.getDay()];
                 const dayNumber = date.getDate();
                 
-                // Calculate REAL completion for this day
                 const completionRate = calculateDayCompletion(date);
                 
                 html += `
@@ -516,14 +474,12 @@
             container.innerHTML = html;
         }
 
-        // NEW: Monthly progress with real data
         function renderMonthlyProgress() {
             const container = document.getElementById('progressChart');
             const today = new Date();
             
             let html = '';
             
-            // Show last 30 days
             for (let i = 0; i < 30; i++) {
                 const date = new Date(today);
                 date.setDate(today.getDate() - (29 - i));
@@ -532,7 +488,6 @@
                 const dayNumber = date.getDate();
                 const monthName = date.toLocaleDateString('en-US', { month: 'short' });
                 
-                // Calculate REAL completion for this day
                 const completionRate = calculateDayCompletion(date);
                 
                 html += `
@@ -569,7 +524,6 @@
             container.innerHTML = html;
         }
 
-        // NEW: Toggle functions
         function showWeeklyProgress() {
             progressView = 'weekly';
             document.getElementById('weeklyBtn').style.background = 'var(--primary)';
@@ -660,7 +614,6 @@
             container.innerHTML = html;
         }
 
-        // FIXED: Checkbox toggle that properly updates
         async function toggleGoalCompletion(goalId) {
             try {
                 const goal = currentGoals.find(g => g._id === goalId);
@@ -696,11 +649,9 @@
                     completed: completed
                 };
 
-                // Only set lastCompletedDate if marking as completed
                 if (completed) {
                     requestBody.lastCompletedDate = new Date().toISOString();
                 } else {
-                    // When marking incomplete, explicitly clear the date
                     requestBody.lastCompletedDate = null;
                 }
 
@@ -725,12 +676,11 @@
                     currentGoals[goalIndex] = updatedGoal;
                 }
                 
-                // Force re-render everything immediately
+                // Force re-render everything
                 setTimeout(() => {
                     renderDailyGoals();
                     updateProgressStats();
                     
-                    // Update the current progress view
                     if (progressView === 'weekly') {
                         renderWeeklyProgress();
                     } else {
@@ -739,14 +689,12 @@
                     
                     renderGoalsByArea();
                     
-                    // Update modal if it's open for this goal
                     if (selectedGoal && selectedGoal._id === goalId) {
                         selectedGoal = updatedGoal;
                         updateModalButtons();
                     }
                 }, 100);
                 
-                // Show success message
                 showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
                 
             } catch (error) {
@@ -763,14 +711,12 @@
             const color = areaColors[goal.area] || '#6366f1';
             const isCompleted = isGoalCompletedToday(goal);
             
-            // Update modal content
             document.getElementById('modalTitle').textContent = 'Goal Details';
             document.getElementById('modalArea').textContent = goal.area;
             document.getElementById('modalBigGoal').textContent = goal.bigGoal;
             document.getElementById('modalDailyAction').textContent = goal.dailyAction;
             document.getElementById('modalStreak').textContent = goal.streak || 0;
             
-            // Format last completed date
             let lastCompletedText = 'Never';
             if (goal.lastCompletedDate) {
                 const lastDate = new Date(goal.lastCompletedDate);
@@ -787,18 +733,14 @@
             }
             document.getElementById('modalLastCompleted').textContent = lastCompletedText;
             
-            // Update header color
             document.getElementById('modalHeader').style.background = `linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%)`;
             
-            // Update button visibility
             updateModalButtons();
             
-            // Show modal
             document.getElementById('goalDetailModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
         }
 
-        // FIXED: Modal button updating
         function updateModalButtons() {
             if (!selectedGoal) return;
             
@@ -838,10 +780,22 @@
             if (!selectedGoal) return;
             
             try {
+                // Optimistic update
+                selectedGoal.lastCompletedDate = null;
+                selectedGoal.completed = false;
+                updateModalButtons();
+                
                 await updateGoalCompletion(selectedGoal._id, false);
                 closeGoalDetail();
             } catch (error) {
                 console.error('Error marking goal incomplete:', error);
+                // Revert optimistic update
+                const originalGoal = currentGoals.find(g => g._id === selectedGoal._id);
+                if (originalGoal) {
+                    selectedGoal.lastCompletedDate = originalGoal.lastCompletedDate;
+                    selectedGoal.completed = originalGoal.completed;
+                    updateModalButtons();
+                }
                 showError('Failed to mark goal as incomplete. Please try again.');
             }
         }
@@ -864,7 +818,6 @@
                 button.textContent = 'Completing...';
                 button.disabled = true;
                 
-                // Update all incomplete goals
                 for (const goal of incompleteGoals) {
                     await updateGoalCompletion(goal._id, true);
                 }
@@ -944,7 +897,6 @@
             window.location.href = 'index.html';
         }
 
-        // Notification counter
         async function updateNotificationCount() {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -973,14 +925,11 @@
             }
         }
 
-        // Handle keyboard shortcuts
         document.addEventListener('keydown', function(e) {
-            // Escape key closes modal
             if (e.key === 'Escape' && document.getElementById('goalDetailModal').style.display === 'block') {
                 closeGoalDetail();
             }
             
-            // Space bar toggles selected goal (if modal is open)
             if (e.key === ' ' && selectedGoal && document.getElementById('goalDetailModal').style.display === 'block') {
                 e.preventDefault();
                 const isCompleted = isGoalCompletedToday(selectedGoal);
@@ -992,14 +941,12 @@
             }
         });
 
-        // Close modal when clicking outside
         document.getElementById('goalDetailModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeGoalDetail();
             }
         });
 
-        // ENHANCED: Responsive CSS
         const style = document.createElement('style');
         style.textContent = `
             @keyframes slideInRight {
@@ -1031,7 +978,6 @@
                 100% { transform: rotate(360deg); }
             }
             
-            /* ENHANCED Mobile responsive adjustments */
             @media (max-width: 768px) {
                 .goal-tracker-item {
                     flex-direction: column !important;
@@ -1058,11 +1004,6 @@
                     grid-template-columns: 1fr !important;
                 }
                 
-                .modal-content {
-                    margin: 1rem !important;
-                    max-width: calc(100% - 2rem) !important;
-                }
-                
                 .content-header {
                     flex-direction: column !important;
                     align-items: stretch !important;
@@ -1077,40 +1018,6 @@
                 .header-actions {
                     justify-content: center !important;
                 }
-                
-                /* Hero section mobile adjustments */
-                .hero-stats {
-                    flex-direction: column !important;
-                    gap: 1rem !important;
-                }
-                
-                .hero-stats > div {
-                    min-width: auto !important;
-                }
-                
-                /* Progress chart mobile specific */
-                #progressChart > div {
-                    min-width: 60px !important;
-                    padding: 0.75rem 0.5rem !important;
-                }
-                
-                #progressChart > div > div:first-child {
-                    font-size: 0.7rem !important;
-                }
-                
-                #progressChart > div > div:nth-child(2) {
-                    font-size: 1rem !important;
-                }
-                
-                /* Button toggles mobile */
-                .progress-toggles {
-                    justify-content: center !important;
-                    flex-wrap: wrap !important;
-                }
-                
-                .progress-toggles button {
-                    min-width: 80px !important;
-                }
             }
             
             @media (max-width: 480px) {
@@ -1124,19 +1031,8 @@
                     min-width: 50px !important;
                 }
                 
-                #progressChart > div > div:last-child {
-                    width: 25px !important;
-                    height: 25px !important;
-                    font-size: 0.6rem !important;
-                }
-                
                 .goal-tracker-item {
                     padding: 1rem !important;
-                }
-                
-                .hero-section {
-                    padding: 2rem 1rem !important;
-                    margin: -1rem -1rem 2rem -1rem !important;
                 }
             }
         `;
