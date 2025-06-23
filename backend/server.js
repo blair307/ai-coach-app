@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage
+// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage + Enhanced Goals
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -95,6 +95,27 @@ const goalSchema = new mongoose.Schema({
 });
 
 const Goal = mongoose.model('Goal', goalSchema);
+
+// Enhanced Goals Schema for area-based tracking
+const enhancedGoalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  area: { 
+    type: String, 
+    enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], 
+    required: true 
+  },
+  description: { type: String, required: true },
+  tasks: [{ type: String, required: true }],
+  completions: {
+    type: Map,
+    of: [Number], // Array of task indices completed on that date
+    default: {}
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const EnhancedGoal = mongoose.model('EnhancedGoal', enhancedGoalSchema);
 
 // Notifications Schema - NEW ADDITION
 const notificationSchema = new mongoose.Schema({
@@ -725,7 +746,7 @@ app.post('/api/community/send', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// GOALS API ROUTES
+// GOALS API ROUTES (Original)
 // ==========================================
 
 app.get('/api/goals', authenticateToken, async (req, res) => {
@@ -758,29 +779,335 @@ app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Goal not found' });
     }
     
-    goal.completed = !goal.completed;
-    if (goal.completed) {
-      goal.lastCompleted = new Date();
-      goal.streak += 1;
-    } else {
-      goal.streak = Math.max(0, goal.streak - 1);
+    if (taskIndex >= goal.tasks.length) {
+      return res.status(400).json({ error: 'Invalid task index' });
     }
     
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Initialize today's completions if not exists
+    if (!goal.completions.get(today)) {
+      goal.completions.set(today, []);
+    }
+    
+    const todayCompletions = goal.completions.get(today);
+    const taskCompleted = todayCompletions.includes(taskIndex);
+    
+    if (taskCompleted) {
+      // Remove task from completions
+      const updatedCompletions = todayCompletions.filter(index => index !== taskIndex);
+      goal.completions.set(today, updatedCompletions);
+    } else {
+      // Add task to completions
+      todayCompletions.push(taskIndex);
+      goal.completions.set(today, todayCompletions);
+    }
+    
+    goal.updatedAt = new Date();
     await goal.save();
+    
     res.json(goal);
   } catch (error) {
+    console.error('Toggle task error:', error);
+    res.status(500).json({ error: 'Failed to toggle task' });
+  }
+});
+
+// Update goal description or tasks
+app.put('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { description, tasks } = req.body;
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    if (description) {
+      goal.description = description;
+    }
+    
+    if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+      goal.tasks = tasks.filter(task => task.trim());
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Update goal error:', error);
     res.status(500).json({ error: 'Failed to update goal' });
   }
 });
 
-app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
+// Delete enhanced goal
+app.delete('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
   try {
-    await Goal.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    const { goalId } = req.params;
+    
+    const result = await EnhancedGoal.findOneAndDelete({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
     res.json({ message: 'Goal deleted successfully' });
   } catch (error) {
+    console.error('Delete goal error:', error);
     res.status(500).json({ error: 'Failed to delete goal' });
   }
 });
+
+// Get goal statistics and insights
+app.get('/api/goals/enhanced/stats', authenticateToken, async (req, res) => {
+  try {
+    const goals = await EnhancedGoal.find({ userId: req.user.userId });
+    
+    if (goals.length === 0) {
+      return res.json({
+        totalGoals: 0,
+        activeAreas: 0,
+        totalCompletions: 0,
+        currentStreaks: {},
+        insights: []
+      });
+    }
+    
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    let totalCompletions = 0;
+    let currentStreaks = {};
+    let insights = [];
+    
+    // Calculate stats for each goal
+    goals.forEach(goal => {
+      const completions = goal.completions;
+      
+      // Count total task completions
+      for (let [date, taskIndices] of completions) {
+        totalCompletions += taskIndices.length;
+      }
+      
+      // Calculate current streak for this goal
+      let streak = 0;
+      let checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() - 1); // Start from yesterday
+      
+      while (checkDate >= new Date(goal.createdAt)) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const dayCompletions = completions.get(dateStr) || [];
+        
+        if (dayCompletions.length === goal.tasks.length) {
+          streak++;
+        } else {
+          break;
+        }
+        
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      
+      currentStreaks[goal.area] = streak;
+      
+      // Generate insights
+      if (streak >= 7) {
+        insights.push({
+          type: 'achievement',
+          area: goal.area,
+          message: `Amazing! You're on a ${streak}-day streak in ${goal.area}!`
+        });
+      }
+      
+      // Check for consistency patterns
+      const last7Days = [];
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const dayCompletions = completions.get(dateStr) || [];
+        last7Days.push(dayCompletions.length === goal.tasks.length);
+      }
+      
+      const completionRate = last7Days.filter(Boolean).length / 7;
+      if (completionRate >= 0.8) {
+        insights.push({
+          type: 'momentum',
+          area: goal.area,
+          message: `You're building great momentum in ${goal.area} - ${Math.round(completionRate * 100)}% completion this week!`
+        });
+      } else if (completionRate < 0.3) {
+        insights.push({
+          type: 'encouragement',
+          area: goal.area,
+          message: `Your ${goal.area} goal needs attention. Small daily actions create big changes!`
+        });
+      }
+    });
+    
+    res.json({
+      totalGoals: goals.length,
+      activeAreas: goals.length,
+      totalCompletions,
+      currentStreaks,
+      insights: insights.slice(0, 5) // Limit to 5 insights
+    });
+    
+  } catch (error) {
+    console.error('Get goal stats error:', error);
+    res.status(500).json({ error: 'Failed to get goal statistics' });
+  }
+});
+
+// Get goal completion data for calendar view
+app.get('/api/goals/enhanced/:goalId/calendar/:year/:month', authenticateToken, async (req, res) => {
+  try {
+    const { goalId, year, month } = req.params;
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const endDate = new Date(parseInt(year), parseInt(month), 0);
+    
+    const calendarData = {};
+    
+    // Get all completions for the month
+    for (let [dateStr, taskIndices] of goal.completions) {
+      const date = new Date(dateStr);
+      if (date >= startDate && date <= endDate) {
+        calendarData[dateStr] = {
+          completedTasks: taskIndices.length,
+          totalTasks: goal.tasks.length,
+          isComplete: taskIndices.length === goal.tasks.length
+        };
+      }
+    }
+    
+    res.json({
+      goal: {
+        area: goal.area,
+        description: goal.description,
+        tasks: goal.tasks
+      },
+      calendar: calendarData
+    });
+    
+  } catch (error) {
+    console.error('Get calendar data error:', error);
+    res.status(500).json({ error: 'Failed to get calendar data' });
+  }
+});
+
+// Bulk update completions (for manual editing)
+app.post('/api/goals/enhanced/:goalId/bulk-update', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { date, completedTaskIndices } = req.body;
+    
+    if (!date || !Array.isArray(completedTaskIndices)) {
+      return res.status(400).json({ error: 'Date and completed task indices array are required' });
+    }
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    // Validate task indices
+    const validIndices = completedTaskIndices.filter(index => 
+      typeof index === 'number' && index >= 0 && index < goal.tasks.length
+    );
+    
+    goal.completions.set(date, validIndices);
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Bulk update error:', error);
+    res.status(500).json({ error: 'Failed to update completions' });
+  }
+});
+
+// Create notification for goal milestone
+async function createGoalNotification(userId, type, title, content) {
+  try {
+    const notification = new Notification({
+      userId,
+      type: 'coaching',
+      title,
+      content
+    });
+    await notification.save();
+  } catch (error) {
+    console.error('Failed to create goal notification:', error);
+  }
+}
+
+// Background job to check for goal achievements (call this daily)
+async function checkGoalAchievements() {
+  try {
+    const goals = await EnhancedGoal.find({});
+    const today = new Date().toISOString().split('T')[0];
+    
+    for (let goal of goals) {
+      const todayCompletions = goal.completions.get(today) || [];
+      
+      // Check if all tasks completed today
+      if (todayCompletions.length === goal.tasks.length) {
+        // Calculate streak
+        let streak = 1;
+        let checkDate = new Date();
+        checkDate.setDate(checkDate.getDate() - 1);
+        
+        while (checkDate >= new Date(goal.createdAt)) {
+          const dateStr = checkDate.toISOString().split('T')[0];
+          const dayCompletions = goal.completions.get(dateStr) || [];
+          
+          if (dayCompletions.length === goal.tasks.length) {
+            streak++;
+          } else {
+            break;
+          }
+          
+          checkDate.setDate(checkDate.getDate() - 1);
+        }
+        
+        // Create notifications for milestones
+        if ([7, 14, 30, 60, 100].includes(streak)) {
+          await createGoalNotification(
+            goal.userId,
+            'coaching',
+            `${streak}-Day Streak Achievement!`,
+            `Congratulations! You've maintained a ${streak}-day streak in your ${goal.area} goal. Keep up the amazing work!`
+          );
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Goal achievement check error:', error);
+  }
+}
 
 // ==========================================
 // NOTIFICATIONS API ROUTES - NEW ADDITION
@@ -968,5 +1295,99 @@ app.listen(PORT, () => {
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
+  console.log(`💾 Database Storage: Goals ✅ Enhanced Goals ✅ Notifications ✅ Chat Rooms ✅`);
+});'Goal not found' });
+    }
+    
+    goal.completed = !goal.completed;
+    if (goal.completed) {
+      goal.lastCompleted = new Date();
+      goal.streak += 1;
+    } else {
+      goal.streak = Math.max(0, goal.streak - 1);
+    }
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update goal' });
+  }
 });
+
+app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
+  try {
+    await Goal.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete goal' });
+  }
+});
+
+// ==========================================
+// ENHANCED GOALS API ROUTES (New)
+// ==========================================
+
+// Get all enhanced goals for user
+app.get('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  try {
+    const goals = await EnhancedGoal.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    console.error('Get enhanced goals error:', error);
+    res.status(500).json({ error: 'Failed to fetch goals' });
+  }
+});
+
+// Create new enhanced goal
+app.post('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  try {
+    const { area, description, tasks } = req.body;
+    
+    if (!area || !description || !tasks || tasks.length === 0) {
+      return res.status(400).json({ error: 'Area, description, and at least one task are required' });
+    }
+
+    // Check if user already has a goal in this area
+    const existingGoal = await EnhancedGoal.findOne({ 
+      userId: req.user.userId, 
+      area: area 
+    });
+    
+    if (existingGoal) {
+      return res.status(400).json({ 
+        error: `You already have a goal in the ${area} area. Delete the existing one first.` 
+      });
+    }
+
+    const goal = new EnhancedGoal({
+      userId: req.user.userId,
+      area,
+      description,
+      tasks: tasks.filter(task => task.trim()) // Filter out empty tasks
+    });
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    console.error('Create enhanced goal error:', error);
+    res.status(500).json({ error: 'Failed to create goal' });
+  }
+});
+
+// Toggle task completion for a specific goal
+app.post('/api/goals/enhanced/:goalId/toggle-task', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { taskIndex } = req.body;
+    
+    if (typeof taskIndex !== 'number' || taskIndex < 0) {
+      return res.status(400).json({ error: 'Valid task index is required' });
+    }
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error:
