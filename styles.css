@@ -4888,12 +4888,14 @@ select:focus-visible,
     }
 }
 
-/* Enhanced Sidebar Toggle Styles */
+/* Essential Sidebar Toggle CSS - Add this to your styles.css */
+
+/* Sidebar base styles */
 .sidebar {
     position: fixed;
     left: 0;
     top: 0;
-    width: 250px;
+    width: 250px; /* Match the SIDEBAR_WIDTH in JavaScript */
     height: 100vh;
     background: var(--background, #ffffff);
     border-right: 1px solid var(--border, #e5e7eb);
@@ -4903,8 +4905,8 @@ select:focus-visible,
     overflow-y: auto;
 }
 
-/* Collapsed state */
-.sidebar.collapsed {
+/* Closed state */
+.sidebar.closed {
     transform: translateX(-100%);
 }
 
@@ -4960,6 +4962,7 @@ select:focus-visible,
     transition: all 0.3s ease;
     transform-origin: center;
     border-radius: 1px;
+    display: block;
 }
 
 /* Active state animation */
@@ -4978,13 +4981,19 @@ select:focus-visible,
 
 /* Main content adjustment */
 .main-content {
-    margin-left: 250px;
+    margin-left: 250px; /* Match sidebar width */
     transition: margin-left 0.3s ease-in-out;
     min-height: 100vh;
     width: calc(100% - 250px);
 }
 
 /* When sidebar is collapsed */
+.main-content.expanded {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* Alternative body class approach */
 .sidebar-collapsed .main-content {
     margin-left: 0;
     width: 100%;
@@ -5023,33 +5032,53 @@ select:focus-visible,
     font-weight: 600;
 }
 
-/* Mobile responsive */
+/* Mobile responsive - CRITICAL */
 @media (max-width: 768px) {
+    /* On mobile, sidebar starts closed */
     .sidebar {
         transform: translateX(-100%);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
     }
     
-    .sidebar.show {
+    /* When sidebar is NOT closed on mobile */
+    .sidebar:not(.closed) {
         transform: translateX(0);
     }
     
-    .sidebar.collapsed {
-        transform: translateX(-100%);
+    /* Main content always takes full width on mobile */
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
     
-    .main-content {
-        margin-left: 0;
-        width: 100%;
+    .main-content.expanded {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
     
     .sidebar-collapsed .main-content {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 }
 
-/* Mobile overlay */
+/* Extra small screens */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 280px;
+    }
+    
+    .sidebar-header {
+        padding: 0.75rem;
+    }
+    
+    .menu-item {
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+/* Overlay for mobile (optional) */
 .sidebar-overlay {
     position: fixed;
     top: 0;
@@ -5069,40 +5098,27 @@ select:focus-visible,
     visibility: visible;
 }
 
-/* Small screens - hide sidebar by default */
-@media (max-width: 480px) {
-    .sidebar {
-        width: 280px;
-    }
-    
-    .sidebar-header {
-        padding: 0.75rem;
-    }
-    
-    .menu-item {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-}
-
 /* Prevent body scroll when sidebar is open on mobile */
 .body-no-scroll {
     overflow: hidden;
 }
 
-/* Ensure smooth transitions */
-* {
-    box-sizing: border-box;
-}
-
-/* Make sure the app container takes full height */
+/* App container */
 .app-container {
     min-height: 100vh;
     position: relative;
 }
 
-/* Loading state for toggle button */
-.sidebar-toggle.loading {
-    opacity: 0.6;
-    pointer-events: none;
+/* Debug styles (remove in production) */
+.debug-sidebar-state::after {
+    content: attr(data-state);
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    z-index: 99999;
 }
