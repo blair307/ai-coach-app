@@ -738,3 +738,295 @@ setInterval(async () => {
         await loadMessages(currentRoomId);
     }
 }, 30000);
+
+// Add these functions to community.js or create a separate mobile-fixes.js file
+
+// Enhanced mobile search functionality
+function performSearchMobile() {
+    const searchInput = document.getElementById('searchInput');
+    const searchQuery = searchInput?.value?.trim();
+    
+    if (!searchQuery) {
+        closeSearch();
+        return;
+    }
+
+    // On mobile, show search results as full screen overlay
+    const isMobile = window.innerWidth <= 768;
+    
+    try {
+        const searchResults = document.getElementById('searchResults');
+        if (searchResults) {
+            searchResults.style.display = 'block';
+            
+            // Add mobile-specific styling
+            if (isMobile) {
+                searchResults.style.position = 'fixed';
+                searchResults.style.top = '0';
+                searchResults.style.left = '0';
+                searchResults.style.right = '0';
+                searchResults.style.bottom = '0';
+                searchResults.style.width = '100vw';
+                searchResults.style.height = '100vh';
+                searchResults.style.zIndex = '1000';
+                
+                // Prevent body scrolling when search is open
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        searchMessagesAndRooms(searchQuery).then(results => {
+            displaySearchResults(results);
+        });
+
+    } catch (error) {
+        console.error('Error performing search:', error);
+        showErrorMessage('Search failed. Please try again.');
+    }
+}
+
+// Enhanced close search for mobile
+function closeSearchMobile() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchResults) {
+        searchResults.style.display = 'none';
+        
+        // Reset mobile-specific styles
+        searchResults.style.position = '';
+        searchResults.style.top = '';
+        searchResults.style.left = '';
+        searchResults.style.right = '';
+        searchResults.style.bottom = '';
+        searchResults.style.width = '';
+        searchResults.style.height = '';
+        searchResults.style.zIndex = '';
+        
+        // Re-enable body scrolling
+        document.body.style.overflow = '';
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+        searchInput.blur(); // Hide mobile keyboard
+    }
+}
+
+// Touch-friendly room switching
+function switchRoomMobile(roomId) {
+    // Add haptic feedback if available
+    if (navigator.vibrate) {
+        navigator.vibrate(50);
+    }
+    
+    // Use existing switchRoom function
+    switchRoom(roomId);
+    
+    // On mobile, scroll to chat area after switching rooms
+    if (window.innerWidth <= 768) {
+        setTimeout(() => {
+            const chatArea = document.querySelector('.chat-area');
+            if (chatArea) {
+                chatArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 300);
+    }
+}
+
+// Enhanced emoji modal for mobile
+function addEmojiMobile() {
+    const emojiModal = document.getElementById('emojiModal');
+    const isMobile = window.innerWidth <= 768;
+    
+    if (emojiModal) {
+        const isVisible = emojiModal.style.display !== 'none';
+        
+        if (!isVisible) {
+            emojiModal.style.display = 'block';
+            
+            if (isMobile) {
+                // Prevent body scrolling when emoji picker is open
+                document.body.style.overflow = 'hidden';
+                
+                // Add backdrop for mobile
+                const backdrop = document.createElement('div');
+                backdrop.id = 'emojiBackdrop';
+                backdrop.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100vw;
+                    height: 100vh;
+                    background: rgba(0, 0, 0, 0.5);
+                    z-index: 99;
+                    backdrop-filter: blur(4px);
+                `;
+                backdrop.onclick = () => closeEmojiMobile();
+                document.body.appendChild(backdrop);
+                
+                // Ensure emoji modal is above backdrop
+                emojiModal.style.zIndex = '100';
+            }
+        } else {
+            closeEmojiMobile();
+        }
+    }
+}
+
+function closeEmojiMobile() {
+    const emojiModal = document.getElementById('emojiModal');
+    const backdrop = document.getElementById('emojiBackdrop');
+    
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+        emojiModal.style.zIndex = '';
+    }
+    
+    if (backdrop) {
+        backdrop.remove();
+    }
+    
+    // Re-enable body scrolling
+    document.body.style.overflow = '';
+}
+
+// Enhanced message sending for mobile
+function sendCommunityMessageMobile() {
+    const messageInput = document.getElementById('communityMessageInput');
+    const sendButton = document.getElementById('sendCommunityButton');
+    
+    if (!messageInput || !currentRoomId) {
+        console.error('Missing required elements or room');
+        return;
+    }
+
+    const messageText = messageInput.value.trim();
+    if (!messageText) {
+        return;
+    }
+
+    // Add mobile-specific feedback
+    if (navigator.vibrate) {
+        navigator.vibrate(30);
+    }
+
+    // Use existing sendCommunityMessage function
+    sendCommunityMessage().then(() => {
+        // On mobile, hide keyboard after sending
+        if (window.innerWidth <= 768) {
+            messageInput.blur();
+        }
+    });
+}
+
+// Handle orientation change
+function handleOrientationChange() {
+    // Force recalculation of container heights on orientation change
+    setTimeout(() => {
+        const communityContainer = document.querySelector('.community-container');
+        if (communityContainer) {
+            communityContainer.style.height = `calc(100vh - ${window.innerWidth <= 768 ? '4rem' : '6rem'})`;
+        }
+        
+        // Close any open modals on orientation change
+        closeSearchMobile();
+        closeEmojiMobile();
+    }, 100);
+}
+
+// Prevent zoom on input focus (iOS Safari)
+function preventInputZoom() {
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        if (input.style.fontSize !== '16px') {
+            input.style.fontSize = '16px';
+        }
+    });
+}
+
+// Initialize mobile enhancements
+function initializeMobileEnhancements() {
+    // Override existing functions with mobile-enhanced versions
+    if (window.innerWidth <= 768) {
+        window.performSearch = performSearchMobile;
+        window.closeSearch = closeSearchMobile;
+        window.addEmoji = addEmojiMobile;
+        
+        // Add orientation change handler
+        window.addEventListener('orientationchange', handleOrientationChange);
+        window.addEventListener('resize', handleOrientationChange);
+        
+        // Prevent input zoom on iOS
+        preventInputZoom();
+        
+        // Add touch event listeners for better mobile interaction
+        const roomItems = document.querySelectorAll('.room-item');
+        roomItems.forEach(item => {
+            item.addEventListener('touchstart', function() {
+                this.style.backgroundColor = 'var(--surface)';
+            }, { passive: true });
+            
+            item.addEventListener('touchend', function() {
+                setTimeout(() => {
+                    this.style.backgroundColor = '';
+                }, 150);
+            }, { passive: true });
+        });
+        
+        // Enhanced scroll behavior for rooms list
+        const roomsList = document.querySelector('.rooms-list');
+        if (roomsList) {
+            roomsList.style.webkitOverflowScrolling = 'touch';
+            roomsList.style.scrollbarWidth = 'none';
+        }
+        
+        // Add pull-to-refresh indicator (visual only)
+        let pullStartY = 0;
+        let pullDistance = 0;
+        
+        const chatMessages = document.getElementById('communityMessages');
+        if (chatMessages) {
+            chatMessages.addEventListener('touchstart', (e) => {
+                pullStartY = e.touches[0].clientY;
+            }, { passive: true });
+            
+            chatMessages.addEventListener('touchmove', (e) => {
+                if (chatMessages.scrollTop === 0) {
+                    pullDistance = e.touches[0].clientY - pullStartY;
+                    if (pullDistance > 0 && pullDistance < 100) {
+                        chatMessages.style.transform = `translateY(${pullDistance * 0.5}px)`;
+                        chatMessages.style.opacity = 1 - (pullDistance * 0.01);
+                    }
+                }
+            }, { passive: true });
+            
+            chatMessages.addEventListener('touchend', () => {
+                chatMessages.style.transform = '';
+                chatMessages.style.opacity = '';
+                
+                if (pullDistance > 50) {
+                    // Reload messages on pull-to-refresh
+                    if (currentRoomId) {
+                        loadMessages(currentRoomId);
+                    }
+                }
+                pullDistance = 0;
+            }, { passive: true });
+        }
+    }
+}
+
+// Call initialization when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeMobileEnhancements);
+} else {
+    initializeMobileEnhancements();
+}
+
+// Export functions for global use
+window.performSearchMobile = performSearchMobile;
+window.closeSearchMobile = closeSearchMobile;
+window.addEmojiMobile = addEmojiMobile;
+window.sendCommunityMessageMobile = sendCommunityMessageMobile;
+window.handleOrientationChange = handleOrientationChange;
