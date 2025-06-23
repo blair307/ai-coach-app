@@ -59,31 +59,25 @@
             </header>
 
             <div class="notifications-container">
-                <!-- Notification Filters -->
+                <!-- Notification Filters - REMOVED COUNT NUMBERS -->
                 <div class="notification-filters">
                     <button class="filter-btn active" onclick="filterNotifications('all')">
                         All Notifications
-                        <span class="count" id="allCount">8</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('unread')">
                         Unread
-                        <span class="count" id="unreadCount">3</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('coaching')">
                         AI Coach
-                        <span class="count" id="coachingCount">2</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('community')">
                         Community
-                        <span class="count" id="communityCount">3</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('system')">
                         System
-                        <span class="count" id="systemCount">2</span>
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('billing')">
                         Billing
-                        <span class="count" id="billingCount">1</span>
                     </button>
                 </div>
 
@@ -103,6 +97,7 @@
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToCoach()">View Insights</button>
                                 <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -121,6 +116,7 @@
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToCommunity()">Join Conversation</button>
                                 <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -139,6 +135,7 @@
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToDashboard()">View Report</button>
                                 <button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -156,6 +153,7 @@
                             <p>Congratulations! You've completed 75% of your quarterly emotional wellness goals. Your AI coach has updated your action plan.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToCoach()">View Progress</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -173,6 +171,7 @@
                             <p>Mike Chen mentioned you in the Success Stories room. Check out the discussion about overcoming entrepreneurial challenges.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToCommunity()">View Message</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -190,6 +189,7 @@
                             <p>A new community room "Mindfulness & Meditation" has been created. Join entrepreneurs discussing stress management techniques.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToCommunity()">Explore Room</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -207,6 +207,7 @@
                             <p>We've added new emotional intelligence tracking features and enhanced AI coaching capabilities. Explore the improvements in your dashboard.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToDashboard()">See What's New</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -224,6 +225,7 @@
                             <p>Your yearly subscription payment of $929 has been processed successfully. Thank you for continuing your emotional health journey with us.</p>
                             <div class="notification-actions">
                                 <button class="btn-link" onclick="goToBilling()">View Receipt</button>
+                                <button class="btn-link" onclick="deleteNotification(this)">Delete</button>
                             </div>
                         </div>
                     </div>
@@ -283,6 +285,9 @@
     <script src="sidebar-toggle.js"></script>
     
     <script>
+    // Keep track of notifications that have been cleared
+    let clearedNotifications = new Set();
+
     // Navigation functions for placeholder notifications
     function goToCoach() {
         window.location.href = 'ai-coach.html';
@@ -300,7 +305,7 @@
         window.location.href = 'billing.html';
     }
 
-    // Placeholder functions for existing notifications
+    // Mark single notification as read
     function markAsRead(element) {
         const notificationItem = element.closest('.notification-item');
         notificationItem.classList.remove('unread');
@@ -308,36 +313,69 @@
         element.remove(); // Remove the "Mark as Read" button
     }
 
-    function markAllRead() {
-        document.querySelectorAll('.notification-item.unread').forEach(item => {
-            item.classList.remove('unread');
-            item.classList.add('read');
-            const markAsReadBtn = item.querySelector('button[onclick*="markAsRead"]');
-            if (markAsReadBtn) {
-                markAsReadBtn.remove();
-            }
-        });
-        updateFilterCounts();
+    // Delete single notification permanently
+    function deleteNotification(element) {
+        const notificationItem = element.closest('.notification-item');
+        const notificationId = notificationItem.dataset.id;
+        
+        // Add to cleared set
+        clearedNotifications.add(notificationId);
+        
+        // Remove from DOM
+        notificationItem.remove();
+        
+        // Check if any notifications are left
+        checkIfEmpty();
     }
 
+    // Mark all visible notifications as read
+    function markAllRead() {
+        document.querySelectorAll('.notification-item.unread').forEach(item => {
+            if (item.style.display !== 'none') { // Only mark visible ones
+                item.classList.remove('unread');
+                item.classList.add('read');
+                const markAsReadBtn = item.querySelector('button[onclick*="markAsRead"]');
+                if (markAsReadBtn) {
+                    markAsReadBtn.remove();
+                }
+            }
+        });
+    }
+
+    // Clear all notifications permanently
     function clearAll() {
-        if (confirm('Are you sure you want to clear all notifications?')) {
+        if (confirm('Are you sure you want to clear all notifications permanently?')) {
+            // Add all notification IDs to cleared set
+            document.querySelectorAll('.notification-item').forEach(item => {
+                const notificationId = item.dataset.id;
+                clearedNotifications.add(notificationId);
+            });
+            
+            // Clear the list
             document.getElementById('notificationsList').innerHTML = '';
             document.getElementById('emptyState').style.display = 'block';
-            updateFilterCounts();
         }
     }
 
+    // Filter notifications
     function filterNotifications(type) {
         // Update active filter
         document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
         event.target.classList.add('active');
 
-        // Show/hide notifications based on type
+        // Show/hide notifications based on type and cleared status
         const notifications = document.querySelectorAll('.notification-item');
         let visibleCount = 0;
 
         notifications.forEach(notification => {
+            const notificationId = notification.dataset.id;
+            
+            // Skip if notification was cleared
+            if (clearedNotifications.has(notificationId)) {
+                notification.remove();
+                return;
+            }
+            
             const shouldShow = type === 'all' || 
                               (type === 'unread' && notification.classList.contains('unread')) ||
                               notification.dataset.type === type;
@@ -346,33 +384,22 @@
             if (shouldShow) visibleCount++;
         });
 
-        // Show empty state if no notifications visible
+        checkIfEmpty();
+    }
+
+    // Check if notifications list is empty
+    function checkIfEmpty() {
+        const visibleNotifications = document.querySelectorAll('.notification-item[style*="flex"], .notification-item:not([style*="none"])');
         const emptyState = document.getElementById('emptyState');
         const notificationsList = document.getElementById('notificationsList');
         
-        if (visibleCount === 0) {
+        if (visibleNotifications.length === 0) {
             notificationsList.style.display = 'none';
             emptyState.style.display = 'block';
         } else {
             notificationsList.style.display = 'block';
             emptyState.style.display = 'none';
         }
-    }
-
-    function updateFilterCounts() {
-        const all = document.querySelectorAll('.notification-item').length;
-        const unread = document.querySelectorAll('.notification-item.unread').length;
-        const coaching = document.querySelectorAll('.notification-item[data-type="coaching"]').length;
-        const community = document.querySelectorAll('.notification-item[data-type="community"]').length;
-        const system = document.querySelectorAll('.notification-item[data-type="system"]').length;
-        const billing = document.querySelectorAll('.notification-item[data-type="billing"]').length;
-
-        document.getElementById('allCount').textContent = all;
-        document.getElementById('unreadCount').textContent = unread;
-        document.getElementById('coachingCount').textContent = coaching;
-        document.getElementById('communityCount').textContent = community;
-        document.getElementById('systemCount').textContent = system;
-        document.getElementById('billingCount').textContent = billing;
     }
 
     function closeSettingsModal() {
@@ -391,9 +418,17 @@
         window.location.href = 'login.html';
     }
 
-    // Initialize filter counts
+    // Initialize page
     document.addEventListener('DOMContentLoaded', function() {
-        updateFilterCounts();
+        // Remove any previously cleared notifications
+        document.querySelectorAll('.notification-item').forEach(item => {
+            const notificationId = item.dataset.id;
+            if (clearedNotifications.has(notificationId)) {
+                item.remove();
+            }
+        });
+        
+        checkIfEmpty();
     });
     </script>
 </body>
