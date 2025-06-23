@@ -56,7 +56,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;" id="lifeAreasGrid">
                 
                 <!-- Mind Card -->
-                <div class="life-area-card" data-area="mind" onclick="openGoalWizard('mind')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #8b5cf6;">
+                <div class="life-area-card" data-area="mind" onclick="openGoalWizard('mind')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #8b5cf6; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(139, 92, 246, 0.15)'; this.style.borderColor='#8b5cf6';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #8b5cf6;">Mind</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Mental clarity, learning, mindfulness, and intellectual growth</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
