@@ -96,6 +96,28 @@ const goalSchema = new mongoose.Schema({
 
 const Goal = mongoose.model('Goal', goalSchema);
 
+const Goal = mongoose.model('Goal', goalSchema);
+
+// Enhanced Goals Schema for area-based tracking
+const enhancedGoalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  area: { 
+    type: String, 
+    enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], 
+    required: true 
+  },
+  description: { type: String, required: true },
+  tasks: [{ type: String, required: true }],
+  completions: {
+    type: Map,
+    of: [Number], // Array of task indices completed on that date
+    default: {}
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const EnhancedGoal = mongoose.model('EnhancedGoal', enhancedGoalSchema);
 // Notifications Schema - NEW ADDITION
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -781,6 +803,60 @@ app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete goal' });
   }
 });
+
+// ==========================================
+// ENHANCED GOALS API ROUTES
+// ==========================================
+
+// Get all enhanced goals for user
+app.get('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  // ... (copy all the enhanced goals code from my previous artifact)
+});
+
+// Create new enhanced goal
+app.post('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Toggle task completion for a specific goal
+app.post('/api/goals/enhanced/:goalId/toggle-task', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Update goal description or tasks
+app.put('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Delete enhanced goal
+app.delete('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Get goal statistics and insights
+app.get('/api/goals/enhanced/stats', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Get goal completion data for calendar view
+app.get('/api/goals/enhanced/:goalId/calendar/:year/:month', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Bulk update completions (for manual editing)
+app.post('/api/goals/enhanced/:goalId/bulk-update', authenticateToken, async (req, res) => {
+  // ... (copy all the code)
+});
+
+// Create notification for goal milestone
+async function createGoalNotification(userId, type, title, content) {
+  // ... (copy all the code)
+}
+
+// Background job to check for goal achievements (call this daily)
+async function checkGoalAchievements() {
+  // ... (copy all the code)
+}
 
 // ==========================================
 // NOTIFICATIONS API ROUTES - NEW ADDITION
