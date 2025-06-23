@@ -4565,7 +4565,127 @@ font-size: 0.7rem;
     }
 }
 
-/* Add these styles to the END of your existing styles.css file */
+/* Add this to the end of your styles.css file to fix notification badge */
 
-/* Add these styles to the END of your existing styles.css file */
+/* NOTIFICATION BADGE FIXES */
+.notification-count {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
+    
+    /* FORCE CIRCULAR SHAPE - FIX FOR OVAL ISSUE */
+    min-width: 20px;
+    max-width: 20px;
+    min-height: 20px;
+    max-height: 20px;
+    width: 20px !important;
+    height: 20px !important;
+    line-height: 16px; /* Center text vertically */
+    text-align: center;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important; /* Remove any padding that could cause oval shape */
+    
+    /* For numbers with 2+ digits, allow slight expansion but maintain circle */
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Handle larger numbers (10+) by allowing slight width increase but keeping circular */
+.notification-count[data-count^="1"]:not([data-count="1"]),
+.notification-count[data-count^="2"]:not([data-count="2"]):not([data-count="20"]):not([data-count="21"]):not([data-count="22"]):not([data-count="23"]):not([data-count="24"]):not([data-count="25"]):not([data-count="26"]):not([data-count="27"]):not([data-count="28"]):not([data-count="29"]),
+.notification-count[data-count^="3"]:not([data-count="3"]),
+.notification-count[data-count^="4"]:not([data-count="4"]),
+.notification-count[data-count^="5"]:not([data-count="5"]),
+.notification-count[data-count^="6"]:not([data-count="6"]),
+.notification-count[data-count^="7"]:not([data-count="7"]),
+.notification-count[data-count^="8"]:not([data-count="8"]),
+.notification-count[data-count^="9"]:not([data-count="9"]) {
+    min-width: 24px;
+    max-width: 24px;
+    width: 24px !important;
+    height: 20px !important;
+    border-radius: 12px; /* Maintain rounded appearance */
+    font-size: 0.7rem;
+}
+
+/* For very large numbers (100+), show 99+ */
+.notification-count[data-count="100"],
+.notification-count[data-count^="10"]:not([data-count="10"]):not([data-count="100"]),
+.notification-count[data-count^="11"]:not([data-count="11"]),
+.notification-count[data-count^="12"]:not([data-count="12"]) {
+    min-width: 28px;
+    max-width: 28px;
+    width: 28px !important;
+    height: 20px !important;
+    border-radius: 12px;
+    font-size: 0.65rem;
+}
+
+/* Hide notification count when zero - IMPORTANT FIX */
+.notification-count[data-count="0"],
+.notification-count:empty {
+    display: none !important;
+}
+
+/* Ensure notification bell container doesn't affect badge positioning */
+.notification-icon-container {
+    position: relative;
+    cursor: pointer;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.notification-bell {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+    flex-shrink: 0; /* Prevent bell from shrinking */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .notification-count {
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        max-width: 18px;
+        min-height: 18px;
+        max-height: 18px;
+        width: 18px !important;
+        height: 18px !important;
+        font-size: 0.7rem;
+        line-height: 14px;
+    }
+    
+    .notification-icon-container {
+        margin-right: 0.5rem;
+    }
+    
+    .notification-bell {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+}
 
