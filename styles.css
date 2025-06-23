@@ -4689,3 +4689,595 @@ font-size: 0.7rem;
     }
 }
 
+/* ADD THIS TO THE END OF YOUR styles.css FILE */
+/* RESPONSIVE COMMUNITY FIXES - PRESERVES ALL FUNCTIONALITY & DESIGN */
+
+/* Desktop and Tablet (above 768px) - Keep existing design */
+@media (min-width: 769px) {
+    .community-container {
+        display: flex !important;
+        height: calc(100vh - 8rem) !important;
+        gap: 0 !important;
+    }
+    
+    .rooms-sidebar {
+        width: 280px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .chat-area {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
+
+/* Mobile and Small Tablets (768px and below) */
+@media (max-width: 768px) {
+    /* Stack layout vertically */
+    .community-container {
+        display: flex !important;
+        flex-direction: column !important;
+        height: calc(100vh - 6rem) !important;
+        gap: 0 !important;
+    }
+    
+    /* Rooms sidebar becomes horizontal scrolling bar */
+    .rooms-sidebar {
+        width: 100% !important;
+        max-height: 140px !important;
+        border-right: none !important;
+        border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .rooms-header {
+        padding: 1rem !important;
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+        align-items: center !important;
+    }
+    
+    .rooms-header h3 {
+        font-size: 1rem !important;
+        margin: 0 !important;
+        flex: 1 !important;
+        min-width: 120px !important;
+    }
+    
+    .rooms-header .btn {
+        font-size: 0.875rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Horizontal scrolling rooms list */
+    .rooms-list {
+        display: flex !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    .rooms-list::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .room-item {
+        min-width: 160px !important;
+        max-width: 160px !important;
+        flex-shrink: 0 !important;
+        padding: 0.75rem !important;
+        white-space: normal !important;
+    }
+    
+    .room-info h4 {
+        font-size: 0.9rem !important;
+        margin-bottom: 0.25rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .room-info p {
+        font-size: 0.75rem !important;
+        line-height: 1.3 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    /* Chat area takes remaining space */
+    .chat-area {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: calc(100vh - 200px) !important;
+        overflow: hidden !important;
+    }
+    
+    /* Stack chat header elements */
+    .chat-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+        border-bottom: 1px solid var(--border) !important;
+    }
+    
+    .room-title {
+        text-align: center !important;
+    }
+    
+    .room-title h2 {
+        font-size: 1.25rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .room-title p {
+        font-size: 0.85rem !important;
+        margin: 0 !important;
+    }
+    
+    .chat-controls {
+        justify-content: center !important;
+        width: 100% !important;
+    }
+    
+    .search-container {
+        max-width: 100% !important;
+        min-width: auto !important;
+        flex: 1 !important;
+        max-width: 280px !important;
+    }
+    
+    .search-input {
+        min-width: 120px !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+    }
+    
+    /* Chat messages container */
+    .chat-messages-container {
+        flex: 1 !important;
+        position: relative !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    .chat-messages {
+        flex: 1 !important;
+        padding: 1rem !important;
+        gap: 1rem !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    /* Message styling */
+    .message-group {
+        margin-bottom: 1rem !important;
+    }
+    
+    .message-header {
+        gap: 0.5rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .user-avatar {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.75rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .username {
+        font-size: 0.875rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .message-timestamp {
+        font-size: 0.75rem !important;
+        margin-left: auto !important;
+    }
+    
+    .message-content {
+        margin-left: 2rem !important;
+        padding: 0.625rem 0.875rem !important;
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        border-radius: var(--radius) !important;
+        background: var(--background) !important;
+        border: 1px solid var(--border) !important;
+        word-wrap: break-word !important;
+    }
+    
+    /* Input area */
+    .chat-input-area {
+        padding: 1rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: var(--background) !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .chat-input {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.75rem !important;
+        padding: 0.875rem !important;
+    }
+    
+    .chat-input textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        min-height: 44px !important;
+        line-height: 1.3 !important;
+        resize: none !important;
+    }
+    
+    .input-actions {
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+        font-size: 0.9rem !important;
+        padding: 0.75rem 1rem !important;
+    }
+    
+    /* Search results - full screen on mobile */
+    .search-results {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: var(--background) !important;
+        z-index: 1000 !important;
+        border: none !important;
+        box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .search-results.show {
+        transform: translateX(0) !important;
+    }
+    
+    .search-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .search-header h3 {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+    }
+    
+    .close-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.5rem !important;
+        border-radius: var(--radius) !important;
+        background: var(--surface) !important;
+        border: 1px solid var(--border) !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .close-btn:hover {
+        background: var(--error) !important;
+        color: white !important;
+        border-color: var(--error) !important;
+    }
+    
+    .search-content {
+        flex: 1 !important;
+        padding: 1rem !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .search-result-item {
+        padding: 1rem !important;
+        margin-bottom: 0.75rem !important;
+        border-radius: var(--radius) !important;
+        min-height: 60px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+    }
+    
+    .search-result-title {
+        font-size: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .search-result-preview {
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* Emoji modal - bottom sheet on mobile */
+    .emoji-modal {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+        max-height: 50vh !important;
+        padding: 1rem !important;
+        background: var(--background) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-xl) !important;
+        z-index: 1001 !important;
+    }
+    
+    .emoji-grid {
+        grid-template-columns: repeat(8, 1fr) !important;
+        gap: 0.5rem !important;
+        max-height: 40vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+    
+    .emoji-grid span {
+        padding: 0.75rem 0.5rem !important;
+        font-size: 1.2rem !important;
+        min-height: 48px !important;
+        border-radius: var(--radius) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        transition: background-color 0.2s ease !important;
+    }
+    
+    .emoji-grid span:hover {
+        background: var(--surface) !important;
+    }
+    
+    /* Header actions mobile layout */
+    .header-actions {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+    
+    .notification-icon-container {
+        order: -1 !important;
+        margin-right: 0 !important;
+    }
+    
+    .online-count {
+        order: -1 !important;
+        margin-left: auto !important;
+        font-size: 0.875rem !important;
+        gap: 0.375rem !important;
+    }
+    
+    .status-dot {
+        width: 6px !important;
+        height: 6px !important;
+    }
+    
+    /* Ensure minimum touch targets */
+    .room-item,
+    .search-result-item,
+    .emoji-grid span,
+    .btn,
+    .search-btn {
+        min-height: 44px !important;
+    }
+}
+
+/* Extra Small Screens (480px and below) */
+@media (max-width: 480px) {
+    .rooms-sidebar {
+        max-height: 120px !important;
+    }
+    
+    .rooms-header {
+        padding: 0.75rem !important;
+    }
+    
+    .rooms-header h3 {
+        font-size: 0.95rem !important;
+    }
+    
+    .btn-small {
+        padding: 0.375rem 0.75rem !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .rooms-list {
+        padding: 0.5rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .room-item {
+        min-width: 140px !important;
+        max-width: 140px !important;
+        padding: 0.625rem !important;
+    }
+    
+    .room-info h4 {
+        font-size: 0.85rem !important;
+    }
+    
+    .room-info p {
+        font-size: 0.7rem !important;
+    }
+    
+    .chat-header {
+        padding: 0.75rem !important;
+    }
+    
+    .room-title h2 {
+        font-size: 1.1rem !important;
+    }
+    
+    .room-title p {
+        font-size: 0.8rem !important;
+    }
+    
+    .search-container {
+        max-width: 200px !important;
+    }
+    
+    .search-input {
+        min-width: 100px !important;
+        font-size: 16px !important;
+    }
+    
+    .chat-messages {
+        padding: 0.75rem !important;
+    }
+    
+    .message-content {
+        margin-left: 1.75rem !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.875rem !important;
+    }
+    
+    .chat-input-area {
+        padding: 0.75rem !important;
+    }
+    
+    .chat-input {
+        padding: 0.75rem !important;
+        gap: 0.625rem !important;
+    }
+    
+    .input-actions .btn {
+        min-height: 42px !important;
+        font-size: 0.875rem !important;
+        padding: 0.625rem 0.875rem !important;
+    }
+}
+
+/* Landscape orientation optimizations for mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .community-container {
+        height: calc(100vh - 3rem) !important;
+    }
+    
+    .rooms-sidebar {
+        max-height: 100px !important;
+    }
+    
+    .chat-area {
+        min-height: calc(100vh - 160px) !important;
+    }
+    
+    .chat-header {
+        padding: 0.75rem 1rem !important;
+        flex-direction: row !important;
+        gap: 1rem !important;
+    }
+    
+    .room-title {
+        text-align: left !important;
+        flex: 1 !important;
+    }
+    
+    .room-title h2 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.125rem !important;
+    }
+    
+    .room-title p {
+        font-size: 0.8rem !important;
+    }
+    
+    .chat-controls {
+        justify-content: flex-end !important;
+    }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+    @media (max-width: 768px) {
+        .community-container {
+            height: calc(100vh - 6rem - env(safe-area-inset-bottom)) !important;
+        }
+        
+        .chat-area {
+            min-height: calc(100vh - 200px - env(safe-area-inset-bottom)) !important;
+        }
+        
+        .chat-input-area {
+            padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+        }
+        
+        .emoji-modal {
+            bottom: env(safe-area-inset-bottom) !important;
+        }
+    }
+}
+
+/* Improved scrolling performance */
+.rooms-list,
+.chat-messages,
+.search-content {
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+}
+
+.rooms-list::-webkit-scrollbar,
+.chat-messages::-webkit-scrollbar {
+    display: none !important;
+}
+
+/* Animation improvements for mobile */
+@media (max-width: 768px) {
+    .message-group {
+        animation: none !important; /* Disable animations on mobile for better performance */
+    }
+    
+    .room-item:hover,
+    .search-result-item:hover {
+        transform: none !important; /* Disable hover transforms on mobile */
+    }
+    
+    .room-item:active {
+        background: var(--surface) !important;
+        transform: scale(0.98) !important;
+    }
+}
+
+/* Prevent text selection on mobile for UI elements */
+@media (max-width: 768px) {
+    .room-item,
+    .search-result-item,
+    .emoji-grid span,
+    .btn {
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+    }
+}
+
+/* Focus states for accessibility */
+@media (max-width: 768px) {
+    .room-item:focus,
+    .search-result-item:focus,
+    .btn:focus {
+        outline: 2px solid var(--primary) !important;
+        outline-offset: 2px !important;
+    }
+}
