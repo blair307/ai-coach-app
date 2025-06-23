@@ -8,7 +8,7 @@
 </head>
 <body>
     <div class="app-container">
-        <!-- Sidebar Navigation (keep your existing sidebar) -->
+        <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>EEH</h2>
@@ -72,7 +72,7 @@
                 </div>
 
                 <!-- Spirit Card -->
-                <div class="life-area-card" data-area="spirit" onclick="openGoalWizard('spirit')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #06b6d4;">
+                <div class="life-area-card" data-area="spirit" onclick="openGoalWizard('spirit')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #06b6d4; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(6, 182, 212, 0.15)'; this.style.borderColor='#06b6d4';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #06b6d4;">Spirit</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Purpose, values, inner peace, and spiritual connection</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -88,7 +88,7 @@
                 </div>
 
                 <!-- Body Card -->
-                <div class="life-area-card" data-area="body" onclick="openGoalWizard('body')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #10b981;">
+                <div class="life-area-card" data-area="body" onclick="openGoalWizard('body')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(16, 185, 129, 0.15)'; this.style.borderColor='#10b981';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #10b981;">Body</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Health, fitness, nutrition, and physical well-being</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -104,7 +104,7 @@
                 </div>
 
                 <!-- Work Card -->
-                <div class="life-area-card" data-area="work" onclick="openGoalWizard('work')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f59e0b;">
+                <div class="life-area-card" data-area="work" onclick="openGoalWizard('work')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(245, 158, 11, 0.15)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #f59e0b;">Work</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Career growth, business goals, and professional development</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -120,7 +120,7 @@
                 </div>
 
                 <!-- Relationships Card -->
-                <div class="life-area-card" data-area="relationships" onclick="openGoalWizard('relationships')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #ec4899;">
+                <div class="life-area-card" data-area="relationships" onclick="openGoalWizard('relationships')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #ec4899; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(236, 72, 153, 0.15)'; this.style.borderColor='#ec4899';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #ec4899;">Relationships</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Family, friends, romantic relationships, and social connections</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -136,7 +136,7 @@
                 </div>
 
                 <!-- Fun Card -->
-                <div class="life-area-card" data-area="fun" onclick="openGoalWizard('fun')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f97316;">
+                <div class="life-area-card" data-area="fun" onclick="openGoalWizard('fun')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f97316; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(249, 115, 22, 0.15)'; this.style.borderColor='#f97316';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #f97316;">Fun</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Hobbies, recreation, adventure, and life enjoyment</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -152,7 +152,7 @@
                 </div>
 
                 <!-- Finances Card -->
-                <div class="life-area-card" data-area="finances" onclick="openGoalWizard('finances')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s ease; border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #059669;">
+                <div class="life-area-card" data-area="finances" onclick="openGoalWizard('finances')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #059669; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(5, 150, 105, 0.15)'; this.style.borderColor='#059669';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
                     <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #059669;">Finances</h3>
                     <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Money management, savings, investments, and financial freedom</p>
                     <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
@@ -180,12 +180,536 @@
         </main>
     </div>
 
+    <!-- Goal Wizard Modal -->
+    <div id="goalWizardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+            <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+                
+                <!-- Modal Header -->
+                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
+                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
+                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
+                    
+                    <!-- Step 1: Big Goal Question -->
+                    <div id="step1" class="wizard-step">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
+                        
+                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
+                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Choose ONE Daily Action -->
+                    <div id="step2" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
+                        
+                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
+                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Confirmation and Tracker Setup -->
+                    <div id="step3" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
+                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
+                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Basic Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
-        // Simple placeholder function for now
+        // Goal Wizard JavaScript with Backend Storage
+        let currentStep = 1;
+        let currentArea = '';
+        let wizardData = {};
+
+        // API Base URL
+        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+
+        // Area configurations
+        const areaConfig = {
+            mind: {
+                title: 'Set Your Mind Goals',
+                subtitle: "Let's create meaningful goals for your mental growth",
+                color: '#8b5cf6',
+                description: 'Think big! What would you love to achieve in your mind/mental development over the next year?',
+                examples: [
+                    'Read for 30 minutes every morning',
+                    'Meditate for 10 minutes daily',
+                    'Journal for 15 minutes each night',
+                    'Practice a new skill 3x per week',
+                    'Limit social media to 30 min/day'
+                ]
+            },
+            spirit: {
+                title: 'Set Your Spirit Goals',
+                subtitle: "Let's nurture your inner peace and purpose",
+                color: '#06b6d4',
+                description: 'What spiritual or purpose-driven goals would bring you more peace and fulfillment?',
+                examples: [
+                    'Practice gratitude journaling daily',
+                    'Attend spiritual services weekly',
+                    'Spend time in nature every day',
+                    'Practice mindfulness during meals',
+                    'Volunteer 2 hours per week'
+                ]
+            },
+            body: {
+                title: 'Set Your Body Goals',
+                subtitle: "Let's optimize your physical health and energy",
+                color: '#10b981',
+                description: 'What physical health and fitness goals would make you feel strongest and most energized?',
+                examples: [
+                    'Exercise 4 times per week',
+                    'Drink 8 glasses of water daily',
+                    'Sleep 7-8 hours every night',
+                    'Take a 20-minute walk daily',
+                    'Eat vegetables with every meal'
+                ]
+            },
+            work: {
+                title: 'Set Your Work Goals',
+                subtitle: "Let's advance your career and professional growth",
+                color: '#f59e0b',
+                description: 'What career or business goals would take your professional life to the next level?',
+                examples: [
+                    'Learn something new for 1 hour daily',
+                    'Network with 1 new person per week',
+                    'Complete one course monthly',
+                    'Set work boundaries at 6pm daily',
+                    'Review goals every morning'
+                ]
+            },
+            relationships: {
+                title: 'Set Your Relationship Goals',
+                subtitle: "Let's strengthen your connections with others",
+                color: '#ec4899',
+                description: 'How would you like to improve and deepen your relationships with family, friends, and loved ones?',
+                examples: [
+                    'Have one meaningful conversation daily',
+                    'Call family twice per week',
+                    'Practice active listening daily',
+                    'Say thank you to someone daily',
+                    'Plan quality time weekly'
+                ]
+            },
+            fun: {
+                title: 'Set Your Fun Goals',
+                subtitle: "Let's bring more joy and adventure into your life",
+                color: '#f97316',
+                description: 'What fun activities, hobbies, or adventures would make your life more enjoyable and fulfilling?',
+                examples: [
+                    'Try one new thing weekly',
+                    'Take photos of beautiful moments daily',
+                    'Play music for 30 minutes daily',
+                    'Learn a new hobby weekly',
+                    'Explore somewhere new monthly'
+                ]
+            },
+            finances: {
+                title: 'Set Your Finance Goals',
+                subtitle: "Let's build your financial security and freedom",
+                color: '#059669',
+                description: 'What financial goals would give you more security, freedom, and peace of mind?',
+                examples: [
+                    'Save $20 every day',
+                    'Track expenses for 5 minutes daily',
+                    'Read one financial article weekly',
+                    'Review budget every Sunday',
+                    'Learn about investing daily'
+                ]
+            }
+        };
+
         function openGoalWizard(area) {
-            alert(`Goal wizard for ${area} coming soon! We'll guide you through setting meaningful goals in this area.`);
+            currentArea = area;
+            currentStep = 1;
+            const config = areaConfig[area];
+            
+            // Update header
+            document.getElementById('wizardTitle').textContent = config.title;
+            document.getElementById('wizardSubtitle').textContent = config.subtitle;
+            document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
+            
+            // Update step 1 description
+            document.getElementById('stepDescription').textContent = config.description;
+            
+            // Reset form
+            document.getElementById('bigGoalInput').value = '';
+            document.getElementById('dailyActionInput').value = '';
+            showStep(1);
+            
+            // Show modal
+            document.getElementById('goalWizardModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            // Focus on textarea
+            setTimeout(() => {
+                document.getElementById('bigGoalInput').focus();
+            }, 100);
+        }
+
+        function closeWizard() {
+            document.getElementById('goalWizardModal').style.display = 'none';
+            document.body.style.overflow = '';
+            
+            // Reset wizard
+            currentStep = 1;
+            currentArea = '';
+            wizardData = {};
+        }
+
+        function showStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
+            
+            // Show current step
+            document.getElementById(`step${step}`).style.display = 'block';
+            currentStep = step;
+            
+            // Update examples for step 2
+            if (step === 2) {
+                updateExamples();
+            }
+        }
+
+        function updateExamples() {
+            const config = areaConfig[currentArea];
+            const examplesList = document.getElementById('examplesList');
+            
+            examplesList.innerHTML = '';
+            config.examples.forEach(example => {
+                const exampleBtn = document.createElement('button');
+                exampleBtn.textContent = example;
+                exampleBtn.style.cssText = `
+                    background: var(--background);
+                    border: 2px solid var(--border);
+                    color: var(--text-secondary);
+                    padding: 0.5rem 1rem;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    transition: all 0.2s ease;
+                `;
+                
+                exampleBtn.onclick = () => {
+                    document.getElementById('dailyActionInput').value = example;
+                    // Highlight selected example
+                    examplesList.querySelectorAll('button').forEach(btn => {
+                        btn.style.background = 'var(--background)';
+                        btn.style.borderColor = 'var(--border)';
+                        btn.style.color = 'var(--text-secondary)';
+                    });
+                    exampleBtn.style.background = config.color;
+                    exampleBtn.style.borderColor = config.color;
+                    exampleBtn.style.color = 'white';
+                };
+                
+                exampleBtn.onmouseover = () => {
+                    if (exampleBtn.style.background !== config.color) {
+                        exampleBtn.style.borderColor = config.color;
+                        exampleBtn.style.color = config.color;
+                    }
+                };
+                
+                exampleBtn.onmouseout = () => {
+                    if (exampleBtn.style.background !== config.color) {
+                        exampleBtn.style.borderColor = 'var(--border)';
+                        exampleBtn.style.color = 'var(--text-secondary)';
+                    }
+                };
+                
+                examplesList.appendChild(exampleBtn);
+            });
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                const bigGoal = document.getElementById('bigGoalInput').value.trim();
+                if (!bigGoal) {
+                    alert('Please describe your big goal before continuing.');
+                    return;
+                }
+                wizardData.bigGoal = bigGoal;
+                showStep(2);
+            } else if (currentStep === 2) {
+                const dailyAction = document.getElementById('dailyActionInput').value.trim();
+                if (!dailyAction) {
+                    alert('Please choose a daily action before continuing.');
+                    return;
+                }
+                wizardData.dailyAction = dailyAction;
+                
+                // Update step 3 summary
+                document.getElementById('bigGoalSummary').textContent = wizardData.bigGoal;
+                document.getElementById('dailyActionSummary').textContent = wizardData.dailyAction;
+                
+                showStep(3);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        async function createGoals() {
+            try {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Creating Goal...';
+                button.disabled = true;
+                
+                // Prepare goal data
+                const goalData = {
+                    area: currentArea,
+                    bigGoal: wizardData.bigGoal,
+                    dailyAction: wizardData.dailyAction,
+                    createdAt: new Date().toISOString()
+                };
+                
+                // Save to backend
+                await saveGoalToBackend(goalData);
+                
+                // Close wizard
+                closeWizard();
+                
+                // Show success message
+                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress.`);
+                
+                // Refresh goals display
+                await loadGoalsOverview();
+                
+            } catch (error) {
+                console.error('Error creating goal:', error);
+                showErrorMessage('There was an error creating your goal. Please try again.');
+                
+                // Reset button
+                const button = event.target;
+                button.textContent = 'Create My Goal! 🎯';
+                button.disabled = false;
+            }
+        }
+
+        async function saveGoalToBackend(goalData) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(goalData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save goal to backend');
+                }
+
+                const result = await response.json();
+                console.log('Goal saved successfully:', result);
+                return result;
+                
+            } catch (error) {
+                console.error('Backend save failed, using localStorage fallback:', error);
+                
+                // Fallback to localStorage
+                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                if (!existingGoals[goalData.area]) {
+                    existingGoals[goalData.area] = [];
+                }
+                existingGoals[goalData.area].push({
+                    ...goalData,
+                    id: Date.now().toString()
+                });
+                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
+            }
+        }
+
+        async function loadGoalsOverview() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                let goals = {};
+
+                if (token) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const backendGoals = await response.json();
+                            // Convert array to grouped object
+                            backendGoals.forEach(goal => {
+                                if (!goals[goal.area]) goals[goal.area] = [];
+                                goals[goal.area].push(goal);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Failed to load from backend:', error);
+                    }
+                }
+
+                // Fallback to localStorage if backend fails
+                if (Object.keys(goals).length === 0) {
+                    goals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                }
+
+                const overviewContainer = document.getElementById('goalsOverview');
+                
+                if (Object.keys(goals).length === 0) {
+                    overviewContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>';
+                    return;
+                }
+                
+                let html = '';
+                Object.entries(goals).forEach(([area, areaGoals]) => {
+                    const config = areaConfig[area];
+                    const latestGoal = areaGoals[areaGoals.length - 1];
+                    
+                    html += `
+                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 0.5rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
+                            <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4;">${latestGoal.bigGoal}</p>
+                            <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${latestGoal.dailyAction}</p>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <button onclick="viewGoalDetails('${area}')" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
+                                <button onclick="openDailyTracker('${area}')" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Update card stats
+                    updateAreaStats(area, areaGoals);
+                });
+                
+                overviewContainer.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading goals overview:', error);
+                document.getElementById('goalsOverview').innerHTML = '<p style="text-align: center; color: var(--error); padding: 2rem;">Error loading goals. Please refresh the page.</p>';
+            }
+        }
+
+        function updateAreaStats(area, goals) {
+            const goalsCount = goals.length;
+            const goalsElement = document.getElementById(`${area}-goals`);
+            const progressElement = document.getElementById(`${area}-progress`);
+            
+            if (goalsElement) goalsElement.textContent = goalsCount;
+            if (progressElement) {
+                // Calculate progress based on days since creation (placeholder)
+                const latestGoal = goals[goals.length - 1];
+                const daysSinceCreation = Math.floor((new Date() - new Date(latestGoal.createdAt)) / (1000 * 60 * 60 * 24));
+                const progress = Math.min(100, Math.max(0, daysSinceCreation * 10)); // 10% per day as example
+                progressElement.textContent = `${progress}%`;
+            }
+        }
+
+        function showSuccessMessage(message) {
+            showToast(message, 'success');
+        }
+
+        function showErrorMessage(message) {
+            showToast(message, 'error');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'var(--success)' : 'var(--error)';
+            
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: ${bgColor};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 400px;
+                font-weight: 500;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        function viewGoalDetails(area) {
+            // Implementation for viewing goal details
+            alert(`Goal details for ${area} will show tracking history and progress!`);
+        }
+
+        function openDailyTracker(area) {
+            alert(`Daily tracker for ${area} coming soon! This will be a simple checkbox to track daily completion.`);
+        }
+
+        function adjustBrightness(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
         }
 
         function goToNotifications() {
@@ -203,7 +727,7 @@
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
                 if (!token) return;
                 
-                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
+                const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -226,11 +750,45 @@
             }
         }
 
-        // Update count when page loads
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(100px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            
+            @keyframes slideOutRight {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(100px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Handle keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.id === 'bigGoalInput') {
+                e.preventDefault();
+                nextStep();
+            }
+            
+            if (e.key === 'Enter' && e.target.id === 'dailyActionInput') {
+                e.preventDefault();
+                nextStep();
+            }
+            
+            if (e.key === 'Escape' && document.getElementById('goalWizardModal').style.display === 'block') {
+                closeWizard();
+            }
+        });
+
+        // Load goals and notifications when page loads
         document.addEventListener('DOMContentLoaded', function() {
+            loadGoalsOverview();
             updateNotificationCount();
             setInterval(updateNotificationCount, 30000);
         });
+
     </script>
 </body>
 </html>
