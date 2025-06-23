@@ -151,6 +151,21 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
+// Life Goals Schema - NEW ADDITION
+const lifeGoalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  area: { type: String, enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], required: true },
+  bigGoal: { type: String, required: true },
+  dailyAction: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+  streak: { type: Number, default: 0 },
+  lastCompletedDate: { type: Date },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
+
 // Function to update user streak
 async function updateUserStreak(userId) {
   try {
