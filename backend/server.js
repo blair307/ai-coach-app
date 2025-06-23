@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage
+// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage + Enhanced Goals
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -96,7 +96,28 @@ const goalSchema = new mongoose.Schema({
 
 const Goal = mongoose.model('Goal', goalSchema);
 
-// Notifications Schema - NEW ADDITION
+// Enhanced Goals Schema for area-based tracking
+const enhancedGoalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  area: { 
+    type: String, 
+    enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], 
+    required: true 
+  },
+  description: { type: String, required: true },
+  tasks: [{ type: String, required: true }],
+  completions: {
+    type: Map,
+    of: [Number], // Array of task indices completed on that date
+    default: {}
+  },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const EnhancedGoal = mongoose.model('EnhancedGoal', enhancedGoalSchema);
+
+// Notifications Schema
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
@@ -108,7 +129,7 @@ const notificationSchema = new mongoose.Schema({
 
 const Notification = mongoose.model('Notification', notificationSchema);
 
-// Chat Rooms Schema - NEW ADDITION
+// Chat Rooms Schema
 const roomSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -133,15 +154,13 @@ const chatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model('Chat', chatSchema);
 
-// Updated Community Message Schema - Enhanced for room support
+// Updated Community Message Schema
 const messageSchema = new mongoose.Schema({
-  // Legacy fields (keep for backward compatibility)
   room: String,
   username: String,
   userId: String,
   message: String,
   timestamp: { type: Date, default: Date.now },
-  // New fields for enhanced room support
   roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
   content: String,
   avatar: { type: String, default: 'U' },
@@ -151,7 +170,7 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
-// Function to update user streak
+// Helper Functions
 async function updateUserStreak(userId) {
   try {
     const user = await User.findById(userId);
@@ -196,7 +215,6 @@ async function updateUserStreak(userId) {
   }
 }
 
-// Create default rooms function
 async function createDefaultRooms() {
   try {
     const existingRooms = await Room.countDocuments();
@@ -219,6 +237,20 @@ async function createDefaultRooms() {
   }
 }
 
+async function createGoalNotification(userId, type, title, content) {
+  try {
+    const notification = new Notification({
+      userId,
+      type: 'coaching',
+      title,
+      content
+    });
+    await notification.save();
+  } catch (error) {
+    console.error('Failed to create goal notification:', error);
+  }
+}
+
 // JWT Middleware
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
@@ -237,19 +269,16 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Routes
-
-// Health check
+// Basic Routes
 app.get('/', (req, res) => {
   res.json({ message: 'AI Coach Backend is running!' });
 });
 
-// Test route
 app.get('/test', (req, res) => {
   res.json({ message: 'New code deployed!', timestamp: new Date() });
 });
 
-// Register new user with payment
+// Authentication Routes
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { firstName, lastName, email, password, plan, stripeCustomerId, paymentIntentId } = req.body;
@@ -307,7 +336,6 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// Login user with streak tracking
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -347,12 +375,10 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// Verify token
 app.get('/api/auth/verify', authenticateToken, (req, res) => {
   res.json({ message: 'Token is valid', user: req.user });
 });
 
-// Password Reset Request
 app.post('/api/auth/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
@@ -413,7 +439,6 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
-// Password Reset Confirmation
 app.post('/api/auth/reset-password', async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -453,7 +478,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// Create Stripe subscription
+// Payment Routes
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
     const { email, planAmount, plan } = req.body;
@@ -480,7 +505,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
   }
 });
 
-// Send message to AI Assistant with Conversation Memory
+// Chat Routes
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
@@ -573,7 +598,6 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
   }
 });
 
-// Save chat history
 app.post('/api/chat/save', authenticateToken, async (req, res) => {
   try {
     const { messages } = req.body;
@@ -592,7 +616,6 @@ app.post('/api/chat/save', authenticateToken, async (req, res) => {
   }
 });
 
-// Get chat history
 app.get('/api/chat/history', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -605,7 +628,7 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   }
 });
 
-// Get community messages (legacy support)
+// Community Routes
 app.get('/api/community/messages/:room', authenticateToken, async (req, res) => {
   try {
     const { room } = req.params;
@@ -621,7 +644,36 @@ app.get('/api/community/messages/:room', authenticateToken, async (req, res) => 
   }
 });
 
-// Dashboard stats with real streak tracking
+app.post('/api/community/send', authenticateToken, async (req, res) => {
+  try {
+    const { room, message } = req.body;
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId);
+    const username = `${user.firstName} ${user.lastName}`;
+    
+    const newMessage = new Message({
+      room,
+      username,
+      userId,
+      message,
+      content: message,
+      timestamp: new Date()
+    });
+    
+    await newMessage.save();
+    
+    res.json({ 
+      message: 'Message sent successfully',
+      messageData: newMessage
+    });
+  } catch (error) {
+    console.error('Send message error:', error);
+    res.status(500).json({ message: 'Failed to send message' });
+  }
+});
+
+// Dashboard Routes
 app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -647,7 +699,7 @@ app.get('/api/dashboard/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user profile with streak data
+// User Profile Routes
 app.get('/api/user/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -674,7 +726,7 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Billing endpoints
+// Billing Routes
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -694,40 +746,7 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   }
 });
 
-// Community - Save message (legacy support)
-app.post('/api/community/send', authenticateToken, async (req, res) => {
-  try {
-    const { room, message } = req.body;
-    const userId = req.user.userId;
-    
-    const user = await User.findById(userId);
-    const username = `${user.firstName} ${user.lastName}`;
-    
-    const newMessage = new Message({
-      room,
-      username,
-      userId,
-      message,
-      content: message, // For compatibility
-      timestamp: new Date()
-    });
-    
-    await newMessage.save();
-    
-    res.json({ 
-      message: 'Message sent successfully',
-      messageData: newMessage
-    });
-  } catch (error) {
-    console.error('Send message error:', error);
-    res.status(500).json({ message: 'Failed to send message' });
-  }
-});
-
-// ==========================================
-// GOALS API ROUTES
-// ==========================================
-
+// Original Goals Routes
 app.get('/api/goals', authenticateToken, async (req, res) => {
   try {
     const goals = await Goal.find({ userId: req.user.userId }).sort({ createdAt: -1 });
@@ -782,10 +801,322 @@ app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==========================================
-// NOTIFICATIONS API ROUTES - NEW ADDITION
-// ==========================================
+// Enhanced Goals Routes
+app.get('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  try {
+    const goals = await EnhancedGoal.find({ userId: req.user.userId }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    console.error('Get enhanced goals error:', error);
+    res.status(500).json({ error: 'Failed to fetch goals' });
+  }
+});
 
+app.post('/api/goals/enhanced', authenticateToken, async (req, res) => {
+  try {
+    const { area, description, tasks } = req.body;
+    
+    if (!area || !description || !tasks || tasks.length === 0) {
+      return res.status(400).json({ error: 'Area, description, and at least one task are required' });
+    }
+
+    const existingGoal = await EnhancedGoal.findOne({ 
+      userId: req.user.userId, 
+      area: area 
+    });
+    
+    if (existingGoal) {
+      return res.status(400).json({ 
+        error: `You already have a goal in the ${area} area. Delete the existing one first.` 
+      });
+    }
+
+    const goal = new EnhancedGoal({
+      userId: req.user.userId,
+      area,
+      description,
+      tasks: tasks.filter(task => task.trim())
+    });
+    
+    await goal.save();
+    res.json(goal);
+  } catch (error) {
+    console.error('Create enhanced goal error:', error);
+    res.status(500).json({ error: 'Failed to create goal' });
+  }
+});
+
+app.post('/api/goals/enhanced/:goalId/toggle-task', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { taskIndex } = req.body;
+    
+    if (typeof taskIndex !== 'number' || taskIndex < 0) {
+      return res.status(400).json({ error: 'Valid task index is required' });
+    }
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    if (taskIndex >= goal.tasks.length) {
+      return res.status(400).json({ error: 'Invalid task index' });
+    }
+    
+    const today = new Date().toISOString().split('T')[0];
+    
+    if (!goal.completions.get(today)) {
+      goal.completions.set(today, []);
+    }
+    
+    const todayCompletions = goal.completions.get(today);
+    const taskCompleted = todayCompletions.includes(taskIndex);
+    
+    if (taskCompleted) {
+      const updatedCompletions = todayCompletions.filter(index => index !== taskIndex);
+      goal.completions.set(today, updatedCompletions);
+    } else {
+      todayCompletions.push(taskIndex);
+      goal.completions.set(today, todayCompletions);
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Toggle task error:', error);
+    res.status(500).json({ error: 'Failed to toggle task' });
+  }
+});
+
+app.put('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { description, tasks } = req.body;
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    if (description) {
+      goal.description = description;
+    }
+    
+    if (tasks && Array.isArray(tasks) && tasks.length > 0) {
+      goal.tasks = tasks.filter(task => task.trim());
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Update goal error:', error);
+    res.status(500).json({ error: 'Failed to update goal' });
+  }
+});
+
+app.delete('/api/goals/enhanced/:goalId', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    
+    const result = await EnhancedGoal.findOneAndDelete({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    res.json({ message: 'Goal deleted successfully' });
+  } catch (error) {
+    console.error('Delete goal error:', error);
+    res.status(500).json({ error: 'Failed to delete goal' });
+  }
+});
+
+app.get('/api/goals/enhanced/stats', authenticateToken, async (req, res) => {
+  try {
+    const goals = await EnhancedGoal.find({ userId: req.user.userId });
+    
+    if (goals.length === 0) {
+      return res.json({
+        totalGoals: 0,
+        activeAreas: 0,
+        totalCompletions: 0,
+        currentStreaks: {},
+        insights: []
+      });
+    }
+    
+    const today = new Date();
+    let totalCompletions = 0;
+    let currentStreaks = {};
+    let insights = [];
+    
+    goals.forEach(goal => {
+      const completions = goal.completions;
+      
+      for (let [date, taskIndices] of completions) {
+        totalCompletions += taskIndices.length;
+      }
+      
+      let streak = 0;
+      let checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() - 1);
+      
+      while (checkDate >= new Date(goal.createdAt)) {
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const dayCompletions = completions.get(dateStr) || [];
+        
+        if (dayCompletions.length === goal.tasks.length) {
+          streak++;
+        } else {
+          break;
+        }
+        
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+      
+      currentStreaks[goal.area] = streak;
+      
+      if (streak >= 7) {
+        insights.push({
+          type: 'achievement',
+          area: goal.area,
+          message: `Amazing! You're on a ${streak}-day streak in ${goal.area}!`
+        });
+      }
+      
+      const last7Days = [];
+      for (let i = 0; i < 7; i++) {
+        const checkDate = new Date(today);
+        checkDate.setDate(today.getDate() - i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        const dayCompletions = completions.get(dateStr) || [];
+        last7Days.push(dayCompletions.length === goal.tasks.length);
+      }
+      
+      const completionRate = last7Days.filter(Boolean).length / 7;
+      if (completionRate >= 0.8) {
+        insights.push({
+          type: 'momentum',
+          area: goal.area,
+          message: `You're building great momentum in ${goal.area} - ${Math.round(completionRate * 100)}% completion this week!`
+        });
+      } else if (completionRate < 0.3) {
+        insights.push({
+          type: 'encouragement',
+          area: goal.area,
+          message: `Your ${goal.area} goal needs attention. Small daily actions create big changes!`
+        });
+      }
+    });
+    
+    res.json({
+      totalGoals: goals.length,
+      activeAreas: goals.length,
+      totalCompletions,
+      currentStreaks,
+      insights: insights.slice(0, 5)
+    });
+    
+  } catch (error) {
+    console.error('Get goal stats error:', error);
+    res.status(500).json({ error: 'Failed to get goal statistics' });
+  }
+});
+
+app.get('/api/goals/enhanced/:goalId/calendar/:year/:month', authenticateToken, async (req, res) => {
+  try {
+    const { goalId, year, month } = req.params;
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    const startDate = new Date(parseInt(year), parseInt(month) - 1, 1);
+    const endDate = new Date(parseInt(year), parseInt(month), 0);
+    
+    const calendarData = {};
+    
+    for (let [dateStr, taskIndices] of goal.completions) {
+      const date = new Date(dateStr);
+      if (date >= startDate && date <= endDate) {
+        calendarData[dateStr] = {
+          completedTasks: taskIndices.length,
+          totalTasks: goal.tasks.length,
+          isComplete: taskIndices.length === goal.tasks.length
+        };
+      }
+    }
+    
+    res.json({
+      goal: {
+        area: goal.area,
+        description: goal.description,
+        tasks: goal.tasks
+      },
+      calendar: calendarData
+    });
+    
+  } catch (error) {
+    console.error('Get calendar data error:', error);
+    res.status(500).json({ error: 'Failed to get calendar data' });
+  }
+});
+
+app.post('/api/goals/enhanced/:goalId/bulk-update', authenticateToken, async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const { date, completedTaskIndices } = req.body;
+    
+    if (!date || !Array.isArray(completedTaskIndices)) {
+      return res.status(400).json({ error: 'Date and completed task indices array are required' });
+    }
+    
+    const goal = await EnhancedGoal.findOne({ 
+      _id: goalId, 
+      userId: req.user.userId 
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+    
+    const validIndices = completedTaskIndices.filter(index => 
+      typeof index === 'number' && index >= 0 && index < goal.tasks.length
+    );
+    
+    goal.completions.set(date, validIndices);
+    goal.updatedAt = new Date();
+    await goal.save();
+    
+    res.json(goal);
+  } catch (error) {
+    console.error('Bulk update error:', error);
+    res.status(500).json({ error: 'Failed to update completions' });
+  }
+});
+
+// Notifications Routes
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.user.userId })
@@ -818,7 +1149,6 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Updated notifications endpoints
 app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
   try {
     const count = await Notification.countDocuments({ 
@@ -842,10 +1172,7 @@ app.get('/api/notifications/recent', authenticateToken, async (req, res) => {
   }
 });
 
-// ==========================================
-// CHAT ROOMS API ROUTES - NEW ADDITION
-// ==========================================
-
+// Chat Rooms Routes
 app.get('/api/rooms', authenticateToken, async (req, res) => {
   try {
     const rooms = await Room.find().populate('createdBy', 'firstName lastName');
@@ -898,7 +1225,7 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       username: user ? `${user.firstName} ${user.lastName}` : 'User',
       avatar: req.body.avatar || 'U',
       content: req.body.content,
-      message: req.body.content, // For compatibility
+      message: req.body.content,
       avatarColor: req.body.avatarColor || '#6366f1'
     });
     await message.save();
@@ -915,10 +1242,7 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Room not found or you do not have permission to delete it' });
     }
     
-    // Delete all messages in the room
     await Message.deleteMany({ roomId: req.params.id });
-    
-    // Delete the room
     await Room.findByIdAndDelete(req.params.id);
     
     res.json({ message: 'Room deleted successfully' });
@@ -927,7 +1251,7 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Health check endpoint for monitoring
+// Health check endpoint
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -968,5 +1292,5 @@ app.listen(PORT, () => {
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
+  console.log(`💾 Database Storage: Goals ✅ Enhanced Goals ✅ Notifications ✅ Chat Rooms ✅`);
 });
