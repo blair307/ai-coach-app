@@ -1834,7 +1834,7 @@ body {
 .countdown-timer {
     font-size: 2rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -1864,7 +1864,7 @@ body {
 .current-time {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--text-primary);
+    color: var(--primary);
     margin-bottom: 0.5rem;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -2772,4 +2772,56 @@ select:focus-visible,
     .universal-hamburger {
         transition: none !important;
     }
+}
+
+/* =================================
+   SIMPLE DESKTOP-ONLY FIXES
+   Add this code to the BOTTOM of your styles.css file
+   ================================= */
+
+/* DESKTOP ONLY - Layout Width Fix */
+@media (min-width: 769px) {
+    .main-content {
+        width: 100% !important;
+        max-width: none !important;
+        flex: 1 !important;
+    }
+    
+    .main-content.shifted {
+        width: calc(100% - 280px) !important;
+    }
+    
+    .dashboard-grid {
+        width: 100%;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+/* Timer Color Fix - Purple Instead of Blue */
+.countdown-timer {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+.current-time {
+    color: var(--primary) !important;
+}
+
+.stat-number {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+.calendar-day.today {
+    background: var(--primary) !important;
+}
+
+.legend-dot.today {
+    background: var(--primary) !important;
 }
