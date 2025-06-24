@@ -220,25 +220,45 @@
             document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('en-US', options);
         }
 
-        // FIXED: Better goal completion check
+        // FIXED: Better goal completion check with new history system
         function isGoalCompletedToday(goal) {
-            // If no lastCompletedDate, definitely not completed
-            if (!goal.lastCompletedDate) {
-                console.log(`Goal ${goal._id}: No lastCompletedDate, returning false`);
-                return false;
-            }
-            
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            const todayString = today.toISOString().split('T')[0];
+            
+            // Check completionHistory first (new system)
+            if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
+                const todayEntry = goal.completionHistory.find(entry => {
+                    const entryDate = new Date(entry.date);
+                    entryDate.setHours(0, 0, 0, 0);
+                    return entryDate.getTime() === today.getTime();
+                });
+                
+                const isCompleted = todayEntry ? todayEntry.completed : false;
+                
+                console.log(`Goal ${goal._id} (NEW SYSTEM):`, {
+                    todayEntry,
+                    isCompleted,
+                    historyLength: goal.completionHistory.length
+                });
+                
+                return isCompleted;
+            }
+            
+            // Fallback to old system
+            if (!goal.lastCompletedDate) {
+                console.log(`Goal ${goal._id} (OLD SYSTEM): No lastCompletedDate, returning false`);
+                return false;
+            }
             
             const lastCompleted = new Date(goal.lastCompletedDate);
             lastCompleted.setHours(0, 0, 0, 0);
             
             const isCompletedToday = today.getTime() === lastCompleted.getTime();
             
-            console.log(`Goal ${goal._id}:`, {
+            console.log(`Goal ${goal._id} (OLD SYSTEM):`, {
                 lastCompletedDate: goal.lastCompletedDate,
-                today: today.toISOString().split('T')[0],
+                today: todayString,
                 lastCompleted: lastCompleted.toISOString().split('T')[0],
                 isCompletedToday
             });
@@ -289,7 +309,19 @@
             completionHistory = {};
             
             currentGoals.forEach(goal => {
-                if (goal.lastCompletedDate) {
+                // Use the new completionHistory array if available
+                if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
+                    goal.completionHistory.forEach(entry => {
+                        if (entry.completed) {
+                            const dateKey = new Date(entry.date).toISOString().split('T')[0];
+                            if (!completionHistory[dateKey]) {
+                                completionHistory[dateKey] = [];
+                            }
+                            completionHistory[dateKey].push(goal._id);
+                        }
+                    });
+                } else if (goal.lastCompletedDate) {
+                    // Fallback to old system for backward compatibility
                     const dateKey = new Date(goal.lastCompletedDate).toISOString().split('T')[0];
                     if (!completionHistory[dateKey]) {
                         completionHistory[dateKey] = [];
