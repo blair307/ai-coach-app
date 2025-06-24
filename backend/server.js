@@ -1008,6 +1008,7 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
   }
 });
 
+// FIXED: Update a life goal - THIS IS THE CORRECTED VERSION
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1079,47 +1080,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       streak: goal.streak,
       lastCompletedDate: goal.lastCompletedDate
     });
-
-    res.json(goal);
-  } catch (error) {
-    console.error('Update life goal error:', error);
-    res.status(500).json({ error: 'Failed to update life goal' });
-  }
-});
-    }
-
-    // Update fields
-    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
-    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
-    if (completed !== undefined) {
-      goal.completed = completed;
-      
-      // Handle streak tracking
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const lastCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
-      
-      if (completed) {
-        goal.lastCompletedDate = new Date();
-        
-        if (!lastCompleted) {
-          goal.streak = 1;
-        } else {
-          lastCompleted.setHours(0, 0, 0, 0);
-          const daysDiff = (today - lastCompleted) / (1000 * 60 * 60 * 24);
-          
-          if (daysDiff === 1) {
-            goal.streak += 1;
-          } else if (daysDiff > 1) {
-            goal.streak = 1;
-          }
-          // If same day, keep current streak
-        }
-      }
-    }
-    
-    goal.updatedAt = new Date();
-    await goal.save();
 
     res.json(goal);
   } catch (error) {
@@ -1211,9 +1171,9 @@ app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
     const activeStreaks = await LifeGoal.find({ userId, streak: { $gt: 0 } });
     const longestStreak = activeStreaks.length > 0 ? Math.max(...activeStreaks.map(g => g.streak)) : 0;
     
-    // Goals by area - FIX THE OBJECTID ISSUE
+    // Goals by area - FIXED ObjectId usage
     const goalsByArea = await LifeGoal.aggregate([
-      { $match: { userId: mongoose.Types.ObjectId(userId) } }, // FIXED: Use mongoose.Types.ObjectId
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $group: { _id: '$area', count: { $sum: 1 } } }
     ]);
     
