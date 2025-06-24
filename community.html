@@ -68,9 +68,35 @@
                     </div>
                     
                     <div class="rooms-list" id="roomsList">
-                        <!-- Rooms will be loaded dynamically from backend -->
-                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                            <p>Loading rooms...</p>
+                        <!-- Demo rooms for testing -->
+                        <div class="room-item active">
+                            <div class="room-info">
+                                <h4>General Discussion</h4>
+                                <p>Open chat for everyone</p>
+                            </div>
+                            <div class="room-stats">
+                                <span class="member-count">24 members</span>
+                                <span class="unread-count">3</span>
+                            </div>
+                        </div>
+                        <div class="room-item">
+                            <div class="room-info">
+                                <h4>Business Growth</h4>
+                                <p>Scaling and expansion tips</p>
+                            </div>
+                            <div class="room-stats">
+                                <span class="member-count">18 members</span>
+                            </div>
+                        </div>
+                        <div class="room-item">
+                            <div class="room-info">
+                                <h4>Mental Health</h4>
+                                <p>Support and wellness</p>
+                            </div>
+                            <div class="room-stats">
+                                <span class="member-count">31 members</span>
+                                <span class="unread-count">1</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -96,9 +122,27 @@
 
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Messages will be populated by JavaScript from backend -->
-                            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                <p>Loading messages...</p>
+                            <!-- Demo messages -->
+                            <div class="message-group">
+                                <div class="message-header">
+                                    <div class="user-avatar">JD</div>
+                                    <span class="username">John Doe</span>
+                                    <span class="message-timestamp">2:30 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    Welcome to the community! Feel free to share your thoughts and connect with fellow entrepreneurs.
+                                </div>
+                            </div>
+                            
+                            <div class="message-group">
+                                <div class="message-header">
+                                    <div class="user-avatar">SM</div>
+                                    <span class="username">Sarah Miller</span>
+                                    <span class="message-timestamp">2:45 PM</span>
+                                </div>
+                                <div class="message-content">
+                                    Thanks! Excited to be here. Looking forward to learning from everyone's experiences.
+                                </div>
                             </div>
                         </div>
 
@@ -160,7 +204,7 @@
     <script src="sidebar-toggle.js"></script>
     
     <style>
-    /* Enhanced Search Bar Styles - Mobile First */
+    /* Original Search Bar Styles - NO MOBILE CSS ADDED */
     .search-container {
         display: flex;
         align-items: center;
@@ -170,8 +214,6 @@
         border-radius: var(--radius);
         padding: 0.5rem;
         transition: border-color 0.2s ease;
-        width: 100%;
-        max-width: 300px;
     }
 
     .search-container:focus-within {
@@ -186,7 +228,7 @@
         font-size: 0.875rem;
         color: var(--text-primary);
         flex: 1;
-        min-width: 120px;
+        min-width: 200px;
     }
 
     .search-input::placeholder {
@@ -204,8 +246,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        min-width: 32px;
-        min-height: 32px;
     }
 
     .search-btn:hover {
@@ -213,8 +253,9 @@
         background: rgba(99, 102, 241, 0.1);
     }
 
-    /* Enhanced Search Results Styles */
+    /* Search Results Styles */
     .search-results {
+        width: 300px;
         background: var(--background);
         border-left: 1px solid var(--border);
         position: absolute;
@@ -223,13 +264,6 @@
         height: 100%;
         z-index: 10;
         box-shadow: var(--shadow);
-        width: 300px;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-    }
-
-    .search-results.show {
-        transform: translateX(0);
     }
 
     .search-header {
@@ -246,27 +280,6 @@
         color: var(--text-primary);
         font-size: 1.1rem;
         font-weight: 600;
-    }
-
-    .close-btn {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-        cursor: pointer;
-        border-radius: var(--radius);
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        transition: all 0.2s ease;
-    }
-
-    .close-btn:hover {
-        background: var(--error);
-        color: white;
-        border-color: var(--error);
     }
 
     .search-content {
@@ -290,8 +303,6 @@
     .search-result-item:hover {
         background: var(--background);
         border-color: var(--primary);
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
     }
 
     .search-result-type {
@@ -306,7 +317,6 @@
         font-weight: 600;
         color: var(--text-primary);
         margin-bottom: 0.25rem;
-        font-size: 0.9rem;
     }
 
     .search-result-preview {
@@ -331,7 +341,6 @@
         align-items: center;
         justify-content: center;
         margin-left: auto;
-        flex-shrink: 0;
     }
 
     .room-item:hover .room-delete-btn {
@@ -343,6 +352,7 @@
         transform: scale(1.1);
     }
 
+    /* Hide delete button for default rooms */
     .room-item[data-default="true"] .room-delete-btn {
         display: none;
     }
@@ -356,6 +366,7 @@
         font-weight: 600 !important;
     }
 
+    /* Enhanced Search Results */
     .search-result-preview strong {
         background: #fef08a !important;
         color: #92400e !important;
@@ -363,341 +374,165 @@
         border-radius: 3px !important;
     }
 
-    /* Enhanced Mobile Responsive Design */
-    @media (max-width: 768px) {
-        /* Container adjustments */
-        .community-container {
-            height: 100vh !important;
-            max-height: 100vh !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-        }
-        
-        /* Rooms sidebar - horizontal on mobile */
-        .rooms-sidebar {
-            height: 25vh !important;
-            min-height: 25vh !important;
-            max-height: 25vh !important;
-            width: 100% !important;
-            border-right: none !important;
-            border-bottom: 1px solid var(--border) !important;
-            overflow: hidden !important;
-        }
-        
-        .rooms-header {
-            padding: 0.75rem 1rem !important;
-            min-height: auto !important;
-        }
-        
-        .rooms-header h3 {
-            font-size: 1rem !important;
-            margin: 0 !important;
-        }
-        
-        .rooms-header .btn {
-            font-size: 0.8rem !important;
-            padding: 0.5rem 0.75rem !important;
-        }
-        
-        /* Horizontal scrolling rooms */
-        .rooms-list {
-            display: flex !important;
-            flex-direction: row !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            gap: 0.75rem !important;
-            padding: 0.75rem 1rem !important;
-            height: calc(25vh - 60px) !important;
-            -webkit-overflow-scrolling: touch !important;
-            scrollbar-width: none !important;
-        }
-        
-        .rooms-list::-webkit-scrollbar {
-            display: none !important;
-        }
-        
-        .room-item {
-            min-width: 150px !important;
-            max-width: 150px !important;
-            height: auto !important;
-            flex-shrink: 0 !important;
-            padding: 0.75rem !important;
-        }
-        
-        .room-info h4 {
-            font-size: 0.85rem !important;
-            margin-bottom: 0.25rem !important;
-        }
-        
-        .room-info p {
-            font-size: 0.7rem !important;
-            line-height: 1.2 !important;
-            overflow: hidden !important;
-            display: -webkit-box !important;
-            -webkit-line-clamp: 2 !important;
-            -webkit-box-orient: vertical !important;
-        }
-        
-        /* Chat area - takes remaining space */
-        .chat-area {
-            height: 75vh !important;
-            min-height: 75vh !important;
-            max-height: 75vh !important;
-            display: flex !important;
-            flex-direction: column !important;
-            overflow: hidden !important;
-        }
-        
-        /* Compact chat header */
-        .chat-area .chat-header {
-            padding: 0.75rem 1rem !important;
-            min-height: auto !important;
-            flex-shrink: 0 !important;
-            flex-direction: column !important;
-            gap: 0.75rem !important;
-        }
-        
-        .room-title h2 {
-            font-size: 1.1rem !important;
-            margin: 0 !important;
-            text-align: center !important;
-        }
-        
-        .room-title p {
-            font-size: 0.8rem !important;
-            margin: 0 !important;
-            text-align: center !important;
-        }
-        
-        .search-container {
-            width: 100% !important;
-            max-width: 250px !important;
-            margin: 0 auto !important;
-        }
-        
-        .search-input {
-            font-size: 16px !important;
-            padding: 0.25rem !important;
-            min-width: 100px !important;
-        }
-        
-        /* Messages container */
-        .chat-messages-container {
-            flex: 1 !important;
-            overflow: hidden !important;
-            position: relative !important;
-        }
-        
-        .chat-messages {
-            height: 100% !important;
-            overflow-y: auto !important;
-            padding: 0.75rem 1rem !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-        
-        /* Compact input area */
-        .chat-input-area {
-            padding: 0.75rem 1rem !important;
-            flex-shrink: 0 !important;
-            border-top: 1px solid var(--border) !important;
-        }
-        
-        .chat-input-area .chat-input {
-            flex-direction: column !important;
-            gap: 0.5rem !important;
-            padding: 0.75rem !important;
-        }
-        
-        .chat-input-area textarea {
-            font-size: 16px !important;
-            min-height: 40px !important;
-            max-height: 80px !important;
-            resize: none !important;
-        }
-        
-        .input-actions {
-            flex-direction: row !important;
-            gap: 0.5rem !important;
-            justify-content: space-between !important;
-        }
-        
-        .input-actions .btn {
-            flex: 1 !important;
-            min-height: 44px !important;
-            font-size: 0.9rem !important;
-        }
-        
-        /* Mobile search results - full screen overlay */
-        .search-results {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 1000 !important;
-            border: none !important;
-            box-shadow: none !important;
-            transform: translateX(100%) !important;
-        }
-        
-        .search-results.show {
-            transform: translateX(0) !important;
-        }
-        
-        .search-header {
-            padding: 1rem !important;
-        }
-        
-        .search-content {
-            height: calc(100vh - 80px) !important;
-            padding: 1rem !important;
-        }
-        
-        /* Message styling adjustments */
-        .message-group {
-            margin-bottom: 1rem !important;
-        }
-        
-        .message-header {
-            gap: 0.5rem !important;
-            margin-bottom: 0.5rem !important;
-        }
-        
-        .user-avatar {
-            width: 28px !important;
-            height: 28px !important;
-            font-size: 0.75rem !important;
-        }
-        
-        .username {
-            font-size: 0.85rem !important;
-        }
-        
-        .message-timestamp {
-            font-size: 0.75rem !important;
-        }
-        
-        .message-content {
-            margin-left: 1.75rem !important;
-            padding: 0.625rem 0.875rem !important;
-            font-size: 0.9rem !important;
-            line-height: 1.4 !important;
-        }
-
-        /* Emoji modal adjustments */
-        .emoji-modal {
-            position: fixed !important;
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-            max-height: 50vh !important;
-            padding: 1rem !important;
-        }
-        
-        .emoji-grid {
-            grid-template-columns: repeat(8, 1fr) !important;
-            gap: 0.5rem !important;
-            max-height: 40vh !important;
-            overflow-y: auto !important;
-        }
-        
-        .emoji-grid span {
-            min-height: 44px !important;
-            padding: 0.75rem 0.5rem !important;
-            font-size: 1.2rem !important;
-        }
+    .search-result-item {
+        transition: all 0.3s ease;
     }
 
-    /* Touch improvements */
-    @media (max-width: 768px) {
-        .room-item,
-        .search-result-item,
-        .btn,
-        .search-btn,
-        .close-btn {
-            min-height: 44px !important;
-        }
+    .search-result-item:hover {
+        background: var(--primary-light) !important;
+        border-color: var(--primary) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
     }
 
-    /* iOS Safari specific fixes */
-    @supports (-webkit-touch-callout: none) {
-        @media (max-width: 768px) {
-            .community-container {
-                height: calc(100vh - env(safe-area-inset-bottom)) !important;
-            }
-            
-            .chat-area {
-                min-height: calc(75vh - env(safe-area-inset-bottom)) !important;
-            }
-        }
+    /* Success notification */
+    .success-notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--success);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        z-index: 10000;
+        font-weight: 600;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
     }
     </style>
     
     <script>
-    // Progress tracking integration
-    let progressTrackerLoaded = false;
+    // SIMPLE Progress Tracking - Just Update localStorage
+    function trackCommunityPost() {
+        try {
+            // Get existing progress data
+            let progressData = localStorage.getItem('eeh_progress_data');
+            
+            if (!progressData) {
+                // Create initial data if it doesn't exist
+                progressData = {
+                    coachingSessions: 0,
+                    firstActiveDate: new Date().toISOString().split('T')[0],
+                    lastActiveDate: new Date().toISOString().split('T')[0],
+                    activeDays: [new Date().toISOString().split('T')[0]],
+                    communityPosts: 0,
+                    activeGoals: 0,
+                    totalLogins: 1,
+                    streakDays: 1,
+                    lastStreakDate: new Date().toISOString().split('T')[0]
+                };
+            } else {
+                progressData = JSON.parse(progressData);
+            }
+            
+            // Increment community posts
+            progressData.communityPosts = (progressData.communityPosts || 0) + 1;
+            
+            // Mark today as active
+            const today = new Date().toISOString().split('T')[0];
+            if (!progressData.activeDays) {
+                progressData.activeDays = [];
+            }
+            if (!progressData.activeDays.includes(today)) {
+                progressData.activeDays.push(today);
+            }
+            progressData.lastActiveDate = today;
+            
+            // Save back to localStorage
+            localStorage.setItem('eeh_progress_data', JSON.stringify(progressData));
+            
+            console.log(`🎉 COMMUNITY POST TRACKED! Total: ${progressData.communityPosts}`);
+            
+            // Show success message
+            showSuccessMessage();
+            
+            return progressData.communityPosts;
+            
+        } catch (error) {
+            console.error('Error tracking community post:', error);
+            return null;
+        }
+    }
 
-    // Enhanced send community message function with progress tracking
+    function showSuccessMessage() {
+        // Remove any existing notifications
+        const existing = document.querySelector('.success-notification');
+        if (existing) {
+            existing.remove();
+        }
+        
+        // Create success notification
+        const notification = document.createElement('div');
+        notification.className = 'success-notification';
+        notification.textContent = '✅ Community post tracked!';
+        
+        document.body.appendChild(notification);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Enhanced send community message function
     function sendCommunityMessage() {
         const input = document.getElementById('communityMessageInput');
         const message = input.value.trim();
         
-        if (!message) return;
+        if (!message) {
+            alert('Please type a message first!');
+            return;
+        }
         
-        // Your existing message sending logic here...
-        console.log('Sending message:', message);
+        // Track the community post
+        const newCount = trackCommunityPost();
         
-        // Track community post for progress
-        trackCommunityPost();
+        // Add the message to the chat visually
+        addMessageToChat(message);
         
         // Clear input
         input.value = '';
         
+        // Focus back on input for next message
+        input.focus();
+        
+        console.log(`📬 Message sent! You now have ${newCount} community posts.`);
+        console.log('💡 Go to your dashboard to see the updated counter!');
+        
         // Call your existing community.js function if it exists
-        if (window.sendMessage) {
+        if (window.sendMessage && typeof window.sendMessage === 'function') {
             window.sendMessage();
         }
     }
 
-    // Progress tracking function
-    function trackCommunityPost() {
-        // Try to access progress tracker from parent window or global scope
-        if (window.parent && window.parent.progressTracker) {
-            window.parent.progressTracker.incrementCommunityPosts();
-            console.log('📈 Community post tracked via parent window!');
-        } else if (window.progressTracker) {
-            window.progressTracker.incrementCommunityPosts();
-            console.log('📈 Community post tracked!');
-        } else {
-            // Fallback: try to get from localStorage and increment manually
-            try {
-                const progressData = localStorage.getItem('eeh_progress_data');
-                if (progressData) {
-                    const data = JSON.parse(progressData);
-                    data.communityPosts = (data.communityPosts || 0) + 1;
-                    
-                    // Mark today as active
-                    const today = new Date().toISOString().split('T')[0];
-                    if (Array.isArray(data.activeDays)) {
-                        if (!data.activeDays.includes(today)) {
-                            data.activeDays.push(today);
-                        }
-                    } else {
-                        data.activeDays = [today];
-                    }
-                    data.lastActiveDate = today;
-                    
-                    localStorage.setItem('eeh_progress_data', JSON.stringify(data));
-                    console.log('📈 Community post tracked via localStorage! Total:', data.communityPosts);
-                }
-            } catch (error) {
-                console.log('ℹ️ Progress tracker not available yet');
-            }
-        }
+    // Add message to chat display
+    function addMessageToChat(message) {
+        const messagesContainer = document.getElementById('communityMessages');
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+        
+        const messageGroup = document.createElement('div');
+        messageGroup.className = 'message-group';
+        messageGroup.innerHTML = `
+            <div class="message-header">
+                <div class="user-avatar">YOU</div>
+                <span class="username">You</span>
+                <span class="message-timestamp">${timeString}</span>
+            </div>
+            <div class="message-content">${message}</div>
+        `;
+        
+        messagesContainer.appendChild(messageGroup);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
 
     // Handle enter key in textarea
@@ -739,9 +574,9 @@
         }
         
         // Show search results
-        searchResults.classList.add('show');
+        searchResults.style.display = 'block';
         
-        // Mock search results for demo
+        // Mock search results
         searchContent.innerHTML = `
             <div class="search-result-item">
                 <div class="search-result-type">MESSAGE</div>
@@ -757,17 +592,15 @@
     }
 
     function closeSearch() {
-        const searchResults = document.getElementById('searchResults');
-        searchResults.classList.remove('show');
+        document.getElementById('searchResults').style.display = 'none';
         document.getElementById('searchInput').value = '';
     }
 
-    // Room management functions (placeholders)
+    // Room management
     function createRoom() {
         const roomName = prompt('Enter room name:');
         if (roomName) {
-            console.log('Creating room:', roomName);
-            // Your room creation logic here
+            alert(`Room "${roomName}" created! (This is a demo)`);
         }
     }
 
@@ -809,39 +642,50 @@
         }
     }
 
-    // Initialize when page loads
+    // Initialize
     document.addEventListener('DOMContentLoaded', function() {
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
         
-        // Close emoji modal when clicking outside
+        // Show current community posts count
+        try {
+            const progressData = localStorage.getItem('eeh_progress_data');
+            if (progressData) {
+                const data = JSON.parse(progressData);
+                console.log(`📊 Current community posts: ${data.communityPosts || 0}`);
+            } else {
+                console.log('📊 No progress data found - will create on first message');
+            }
+        } catch (error) {
+            console.log('📊 Progress data will be created on first message');
+        }
+        
+        // Close modals when clicking outside
         document.addEventListener('click', function(event) {
             const emojiModal = document.getElementById('emojiModal');
-            const isEmojiButton = event.target.closest('[onclick*="addEmoji"]');
-            const isEmojiModal = event.target.closest('.emoji-modal');
+            const searchResults = document.getElementById('searchResults');
             
-            if (!isEmojiButton && !isEmojiModal && emojiModal.style.display === 'block') {
+            // Close emoji modal
+            if (!event.target.closest('[onclick*="addEmoji"]') && 
+                !event.target.closest('.emoji-modal') && 
+                emojiModal.style.display === 'block') {
                 emojiModal.style.display = 'none';
             }
-        });
-        
-        // Close search results when clicking outside
-        document.addEventListener('click', function(event) {
-            const searchResults = document.getElementById('searchResults');
-            const isSearchButton = event.target.closest('.search-btn');
-            const isSearchInput = event.target.closest('#searchInput');
-            const isSearchResults = event.target.closest('.search-results');
             
-            if (!isSearchButton && !isSearchInput && !isSearchResults && searchResults.classList.contains('show')) {
+            // Close search results
+            if (!event.target.closest('.search-btn') && 
+                !event.target.closest('#searchInput') && 
+                !event.target.closest('.search-results') && 
+                searchResults.style.display === 'block') {
                 closeSearch();
             }
         });
 
-        console.log('✅ Community page initialized with progress tracking');
+        console.log('✅ Community page ready! Send a message to test progress tracking.');
     });
     </script>
     
-    <!-- Load the community.js LAST if you have additional backend functionality -->
+    <!-- Load community.js if you have additional backend functionality -->
     <script src="community.js"></script>
 </body>
 </html>
