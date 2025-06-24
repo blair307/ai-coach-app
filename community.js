@@ -1,4 +1,4 @@
-// Community.js - MINIMAL VERSION - No layout functions at all
+// Community.js - SIMPLE VERSION - No problematic resize listeners
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeCommunity();
 });
 
-// Initialize the community system - NO LAYOUT FUNCTIONS
+// Initialize the community system
 async function initializeCommunity() {
     try {
         console.log('🚀 Starting community initialization...');
@@ -23,6 +23,9 @@ async function initializeCommunity() {
             console.error('No user found');
             return;
         }
+
+        // Set layout based on screen size (ONE TIME ONLY)
+        setLayoutForScreenSize();
 
         // Load all rooms from backend
         await loadRooms();
@@ -39,6 +42,47 @@ async function initializeCommunity() {
     } catch (error) {
         console.error('❌ Error initializing community:', error);
         showErrorMessage('Unable to load community. Please refresh the page.');
+    }
+}
+
+// SIMPLE: Set layout based on screen size (called only once)
+function setLayoutForScreenSize() {
+    const isMobile = window.innerWidth <= 1024;
+    console.log('📱 Setting layout for screen size:', { isMobile, width: window.innerWidth });
+    
+    const mobileSelector = document.querySelector('.mobile-room-selector');
+    const desktopSidebar = document.querySelector('.rooms-sidebar');
+    const desktopOnlyElements = document.querySelectorAll('.desktop-only');
+
+    if (isMobile) {
+        // Show mobile layout
+        if (mobileSelector) mobileSelector.style.display = 'block';
+        if (desktopSidebar) desktopSidebar.style.display = 'none';
+        
+        // Hide desktop-only elements
+        desktopOnlyElements.forEach(el => {
+            if (!el.classList.contains('rooms-sidebar')) {
+                el.style.display = 'none';
+            }
+        });
+
+        // Prevent iOS zoom on inputs
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (input.style.fontSize !== '16px') {
+                input.style.fontSize = '16px';
+            }
+        });
+
+    } else {
+        // Show desktop layout
+        if (mobileSelector) mobileSelector.style.display = 'none';
+        if (desktopSidebar) desktopSidebar.style.display = 'flex';
+        
+        // Show desktop-only elements
+        desktopOnlyElements.forEach(el => {
+            el.style.display = '';
+        });
     }
 }
 
@@ -346,6 +390,11 @@ async function sendCommunityMessage() {
             sendButton.textContent = 'Sending...';
         }
 
+        // Add mobile haptic feedback
+        if (navigator.vibrate && window.innerWidth <= 1024) {
+            navigator.vibrate(30);
+        }
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
             throw new Error('No authentication token');
@@ -369,10 +418,16 @@ async function sendCommunityMessage() {
             throw new Error('Failed to send message');
         }
 
+        const newMessage = await response.json();
         console.log('📤 Message sent successfully');
 
         // Clear input
         messageInput.value = '';
+
+        // Hide mobile keyboard
+        if (window.innerWidth <= 1024) {
+            messageInput.blur();
+        }
 
         // Reload messages to show the new one
         await loadMessages(currentRoomId);
@@ -392,9 +447,19 @@ async function sendCommunityMessage() {
 
 // Handle keyboard input
 function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        sendCommunityMessage();
+    if (event.key === 'Enter') {
+        const isMobile = window.innerWidth <= 1024;
+        
+        if (isMobile) {
+            // On mobile, don't send on Enter to allow multi-line
+            return;
+        } else {
+            // On desktop, send on Enter (unless Shift+Enter)
+            if (!event.shiftKey) {
+                event.preventDefault();
+                sendCommunityMessage();
+            }
+        }
     }
 }
 
@@ -489,11 +554,11 @@ async function deleteRoom(roomId) {
 // Error message function
 function showErrorMessage(message) {
     const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 1024;
     
     toast.style.cssText = `
         position: fixed;
-        bottom: 20px;
-        right: 20px;
+        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
         background: #ef4444;
         color: white;
         padding: 1rem 1.5rem;
@@ -501,7 +566,6 @@ function showErrorMessage(message) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 10000;
         font-weight: 500;
-        max-width: 400px;
     `;
     toast.textContent = message;
     
@@ -514,9 +578,20 @@ function showErrorMessage(message) {
     }, 4000);
 }
 
-// Simple emoji function
+// Emoji functions
 function addEmoji() {
-    insertEmoji('😊');
+    const isMobile = window.innerWidth <= 1024;
+    
+    if (isMobile) {
+        insertEmoji('😊');
+        return;
+    }
+    
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        const isVisible = emojiModal.style.display !== 'none';
+        emojiModal.style.display = isVisible ? 'none' : 'block';
+    }
 }
 
 function insertEmoji(emoji) {
@@ -531,11 +606,19 @@ function insertEmoji(emoji) {
         messageInput.setSelectionRange(newPos, newPos);
         messageInput.focus();
     }
+    
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+    }
 }
 
-// Minimal search functions
+// Search functionality (desktop only)
 function performSearch() {
-    console.log('🔍 Search functionality');
+    if (window.innerWidth <= 1024) {
+        return; // Skip search on mobile
+    }
+    console.log('🔍 Search functionality available on desktop');
 }
 
 function closeSearch() {
@@ -551,12 +634,38 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+// SIMPLE: Only add essential event listeners (NO RESIZE LISTENERS)
+function initializeBasicEvents() {
+    console.log('🚀 Initializing basic event listeners');
+    
+    // Close emoji modal when clicking outside (desktop only)
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth > 1024) {
+            const emojiModal = document.getElementById('emojiModal');
+            const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
+            
+            if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
+                emojiModal.style.display = 'none';
+            }
+        }
+    });
+    
+    console.log('✅ Basic event listeners initialized');
+}
+
 // Auto-refresh messages every 30 seconds
 setInterval(async () => {
     if (currentRoomId) {
         await loadMessages(currentRoomId);
     }
 }, 30000);
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeBasicEvents);
+} else {
+    initializeBasicEvents();
+}
 
 // Export functions for global access
 window.updateRoomsList = updateRoomsList;
@@ -572,4 +681,4 @@ window.closeSearch = closeSearch;
 window.initializeCommunity = initializeCommunity;
 window.logout = logout;
 
-console.log('✅ Community.js loaded - MINIMAL VERSION with no layout functions');
+console.log('✅ Community.js loaded - SIMPLE VERSION with no problematic resize listeners');
