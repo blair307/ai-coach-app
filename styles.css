@@ -906,7 +906,6 @@ body {
     font-size: 1.25rem;
     font-weight: 600;
 }
-
 /* =================================
    CLEAN SIDEBAR TOGGLE - SIMPLIFIED
    ================================= */
@@ -1012,6 +1011,7 @@ body {
         padding: 1.5rem;
     }
 }
+
 /* =================================
    CLEAN CHAT INTERFACE - NO ICONS + RESPONSIVE
    ================================= */
