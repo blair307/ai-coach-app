@@ -4965,6 +4965,17 @@ font-size: 0.7rem;
     transition: all 0.3s ease !important;
 }
 
+/* Hide any X or close elements that might appear */
+.universal-hamburger::before,
+.universal-hamburger::after {
+    display: none !important;
+}
+
+/* Hide any child X elements */
+.universal-hamburger > *:not(.hamburger-line) {
+    display: none !important;
+}
+
 .universal-hamburger:hover {
     background: #4f46e5 !important;
     transform: scale(1.05) !important;
