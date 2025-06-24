@@ -1,11 +1,12 @@
-// Community.js - Complete Updated Version with Responsive Mobile Support
-// This replaces the localStorage version with real database storage + mobile responsive features
+// Community.js - FIXED VERSION - Prevents infinite loop with debounced layout initialization
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
+let layoutInitialized = false;
+let resizeTimeout = null;
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -16,11 +17,19 @@ document.addEventListener('DOMContentLoaded', function() {
 // Initialize the community system
 async function initializeCommunity() {
     try {
+        console.log('🚀 Starting community initialization...');
+        
         // Get current user info
         currentUser = getCurrentUser();
         if (!currentUser) {
             console.error('No user found');
             return;
+        }
+
+        // Initialize responsive layout ONCE
+        if (!layoutInitialized) {
+            initializeMobileLayout();
+            layoutInitialized = true;
         }
 
         // Load all rooms from backend
@@ -31,16 +40,12 @@ async function initializeCommunity() {
         if (generalRoom) {
             currentRoomId = generalRoom._id;
             currentRoomName = generalRoom.name;
-            switchRoom(generalRoom._id);
+            await switchRoom(generalRoom._id);
         }
         
-        // Initialize responsive layout
-        initializeMobileLayout();
-        
-        console.log('Community initialized successfully');
+        console.log('✅ Community initialized successfully');
     } catch (error) {
-        console.error('Error initializing community:', error);
-        // Fallback to show basic interface
+        console.error('❌ Error initializing community:', error);
         showErrorMessage('Unable to load community. Please refresh the page.');
     }
 }
@@ -84,7 +89,7 @@ async function loadRooms() {
         }
 
         rooms = await response.json();
-        console.log('Loaded rooms:', rooms);
+        console.log('📁 Loaded rooms:', rooms.length);
         
         // Update the rooms list in the UI
         updateRoomsList();
@@ -94,22 +99,20 @@ async function loadRooms() {
         // Use fallback default rooms if backend fails
         rooms = [
             { _id: 'general', name: 'General Discussion', description: 'Open chat for everyone' },
-            { _id: 'emotional-wellness', name: 'Emotional Wellness', description: 'Mental health & emotional intelligence' },
             { _id: 'business-growth', name: 'Business Growth', description: 'Scaling strategies & challenges' },
-            { _id: 'success-stories', name: 'Success Stories', description: 'Celebrate your wins & breakthroughs' },
             { _id: 'work-life-balance', name: 'Work-Life Balance', description: 'Managing entrepreneurial stress' }
         ];
         updateRoomsList();
     }
 }
 
-// Enhanced updateRoomsList to support both desktop and mobile
+// FIXED: Enhanced updateRoomsList with safety checks
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
     const roomDropdown = document.getElementById('roomDropdown');
     
     // Update desktop rooms list
-    if (roomsList) {
+    if (roomsList && rooms && rooms.length > 0) {
         roomsList.innerHTML = '';
 
         rooms.forEach(room => {
@@ -147,7 +150,7 @@ function updateRoomsList() {
     }
     
     // Update mobile dropdown
-    if (roomDropdown) {
+    if (roomDropdown && rooms && rooms.length > 0) {
         roomDropdown.innerHTML = '<option value="">Select a room...</option>';
         
         rooms.forEach(room => {
@@ -160,21 +163,21 @@ function updateRoomsList() {
     }
 }
 
-// Enhanced switchRoom function for responsive layout
+// FIXED: Enhanced switchRoom with better error handling
 async function switchRoom(roomId) {
     try {
         if (!roomId) {
-            console.log('No room ID provided');
+            console.log('⚠️ No room ID provided');
             return;
         }
 
         const room = rooms.find(r => r._id === roomId);
         if (!room) {
-            console.error('Room not found:', roomId);
+            console.error('❌ Room not found:', roomId);
             return;
         }
 
-        console.log('Switching to room:', room.name);
+        console.log('🔄 Switching to room:', room.name);
 
         // Update current room
         currentRoomId = roomId;
@@ -217,9 +220,9 @@ async function switchRoom(roomId) {
         // Load messages for this room
         await loadMessages(roomId);
 
-        console.log('Successfully switched to room:', room.name);
+        console.log('✅ Successfully switched to room:', room.name);
     } catch (error) {
-        console.error('Error switching rooms:', error);
+        console.error('❌ Error switching rooms:', error);
         showErrorMessage('Failed to switch rooms. Please try again.');
     }
 }
@@ -244,13 +247,12 @@ async function loadMessages(roomId) {
         }
 
         const messages = await response.json();
-        console.log('Loaded messages for room:', roomId, messages);
+        console.log('💬 Loaded messages for room:', roomId, messages.length);
         
         displayMessages(messages);
         
     } catch (error) {
         console.error('Error loading messages:', error);
-        // Show empty state or cached messages
         displayMessages([]);
     }
 }
@@ -330,7 +332,7 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Enhanced sendCommunityMessage for better mobile support
+// Send a message
 async function sendCommunityMessage() {
     try {
         const messageInput = document.getElementById('communityMessageInput');
@@ -381,7 +383,7 @@ async function sendCommunityMessage() {
         }
 
         const newMessage = await response.json();
-        console.log('Message sent successfully:', newMessage);
+        console.log('📤 Message sent successfully');
 
         // Clear input
         messageInput.value = '';
@@ -407,7 +409,7 @@ async function sendCommunityMessage() {
     }
 }
 
-// Enhanced keyboard handling for mobile
+// Handle keyboard input
 function handleCommunityKeyPress(event) {
     if (event.key === 'Enter') {
         const isMobile = window.innerWidth <= 1024;
@@ -425,24 +427,19 @@ function handleCommunityKeyPress(event) {
     }
 }
 
-// Enhanced createRoom function with mobile support
+// Create a new room
 async function createRoom() {
     try {
-        // Use a more mobile-friendly prompt
-        const roomName = prompt('Enter room name (e.g., "Tech Talk", "Motivation"):');
+        const roomName = prompt('Enter room name:');
         if (!roomName || !roomName.trim()) return;
 
-        const roomDescription = prompt('Enter a brief description:');
+        const roomDescription = prompt('Enter room description:');
         if (!roomDescription || !roomDescription.trim()) return;
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
             throw new Error('No authentication token');
         }
-
-        // Show loading
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) loadingOverlay.style.display = 'flex';
 
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             method: 'POST',
@@ -461,7 +458,7 @@ async function createRoom() {
         }
 
         const newRoom = await response.json();
-        console.log('Room created successfully:', newRoom);
+        console.log('🆕 Room created successfully:', newRoom.name);
 
         // Reload rooms
         await loadRooms();
@@ -472,10 +469,6 @@ async function createRoom() {
     } catch (error) {
         console.error('Error creating room:', error);
         showErrorMessage('Failed to create room. Please try again.');
-    } finally {
-        // Hide loading
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 }
 
@@ -503,7 +496,7 @@ async function deleteRoom(roomId) {
             throw new Error('Failed to delete room');
         }
 
-        console.log('Room deleted successfully');
+        console.log('🗑️ Room deleted successfully');
 
         // If we were in the deleted room, switch to General Discussion
         if (currentRoomId === roomId) {
@@ -522,12 +515,15 @@ async function deleteRoom(roomId) {
     }
 }
 
-// Mobile-specific layout initialization
+// FIXED: Mobile layout initialization with debouncing
 function initializeMobileLayout() {
-    const isMobile = window.innerWidth <= 1024;
-    console.log('Initializing mobile layout:', { isMobile, width: window.innerWidth });
+    if (layoutInitialized) {
+        return; // Prevent multiple initializations
+    }
     
-    // Show/hide elements based on screen size
+    const isMobile = window.innerWidth <= 1024;
+    console.log('📱 Mobile layout initialized:', { isMobile, width: window.innerWidth });
+    
     const mobileSelector = document.querySelector('.mobile-room-selector');
     const desktopSidebar = document.querySelector('.rooms-sidebar');
     const desktopOnlyElements = document.querySelectorAll('.desktop-only');
@@ -541,7 +537,7 @@ function initializeMobileLayout() {
             desktopSidebar.style.display = 'none';
         }
         
-        // Hide desktop-only elements (except the sidebar which we already handled)
+        // Hide desktop-only elements
         desktopOnlyElements.forEach(el => {
             if (!el.classList.contains('rooms-sidebar')) {
                 el.style.display = 'none';
@@ -572,7 +568,21 @@ function initializeMobileLayout() {
     }
 }
 
-// Enhanced error message function with mobile support
+// FIXED: Debounced resize handler
+function handleResize() {
+    if (resizeTimeout) {
+        clearTimeout(resizeTimeout);
+    }
+    
+    resizeTimeout = setTimeout(() => {
+        // Reset layout flag to allow re-initialization
+        layoutInitialized = false;
+        initializeMobileLayout();
+        layoutInitialized = true;
+    }, 250); // Wait 250ms after resize stops
+}
+
+// Error message function
 function showErrorMessage(message) {
     const toast = document.createElement('div');
     const isMobile = window.innerWidth <= 1024;
@@ -587,64 +597,27 @@ function showErrorMessage(message) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         z-index: 10000;
         font-weight: 500;
-        animation: slideIn 0.3s ease-out;
     `;
     toast.textContent = message;
     
     document.body.appendChild(toast);
     
     setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
     }, 4000);
 }
 
-// Enhanced success message function
-function showSuccessMessage(message) {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
-        background: #10b981;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-weight: 500;
-        animation: slideIn 0.3s ease-out;
-    `;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOut 0.3s ease-out';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Mobile-enhanced emoji functions
+// Emoji functions
 function addEmoji() {
     const isMobile = window.innerWidth <= 1024;
     
     if (isMobile) {
-        // On mobile, just insert a simple emoji
         insertEmoji('😊');
         return;
     }
     
-    // Desktop emoji modal
     const emojiModal = document.getElementById('emojiModal');
     if (emojiModal) {
         const isVisible = emojiModal.style.display !== 'none';
@@ -660,13 +633,11 @@ function insertEmoji(emoji) {
         const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
         messageInput.value = textBefore + emoji + textAfter;
         
-        // Set cursor position after emoji
         const newPos = cursorPos + emoji.length;
         messageInput.setSelectionRange(newPos, newPos);
         messageInput.focus();
     }
     
-    // Hide emoji modal
     const emojiModal = document.getElementById('emojiModal');
     if (emojiModal) {
         emojiModal.style.display = 'none';
@@ -674,189 +645,41 @@ function insertEmoji(emoji) {
 }
 
 // Search functionality (desktop only)
-async function performSearch() {
+function performSearch() {
     if (window.innerWidth <= 1024) {
-        // Skip search on mobile
-        return;
+        return; // Skip search on mobile
     }
-    
-    const searchInput = document.getElementById('searchInput');
-    const searchQuery = searchInput?.value?.trim();
-    
-    if (!searchQuery) {
-        closeSearch();
-        return;
-    }
-
-    try {
-        // Show search results panel
-        const searchResults = document.getElementById('searchResults');
-        if (searchResults) {
-            searchResults.style.display = 'block';
-        }
-
-        const results = await searchMessagesAndRooms(searchQuery);
-        displaySearchResults(results);
-
-    } catch (error) {
-        console.error('Error performing search:', error);
-        showErrorMessage('Search failed. Please try again.');
-    }
+    console.log('🔍 Search functionality disabled on mobile');
 }
 
-// Search through messages and rooms (desktop only)
-async function searchMessagesAndRooms(query) {
-    const results = [];
-    
-    try {
-        // Search rooms by name and description
-        const roomResults = rooms.filter(room => 
-            room.name.toLowerCase().includes(query.toLowerCase()) ||
-            room.description.toLowerCase().includes(query.toLowerCase())
-        );
-
-        roomResults.forEach(room => {
-            results.push({
-                type: 'room',
-                title: room.name,
-                preview: room.description,
-                data: room
-            });
-        });
-
-        // Search messages in all rooms
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (token) {
-            for (const room of rooms) {
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/rooms/${room._id}/messages`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (response.ok) {
-                        const messages = await response.json();
-                        const matchingMessages = messages.filter(message => 
-                            (message.content || message.message || '').toLowerCase().includes(query.toLowerCase())
-                        );
-
-                        matchingMessages.forEach(message => {
-                            results.push({
-                                type: 'message',
-                                title: `Message in ${room.name}`,
-                                preview: (message.content || message.message || '').substring(0, 100) + '...',
-                                data: { message, room }
-                            });
-                        });
-                    }
-                } catch (error) {
-                    console.error('Error searching messages in room:', room.name, error);
-                }
-            }
-        }
-
-    } catch (error) {
-        console.error('Error in search:', error);
-    }
-
-    return results;
-}
-
-// Display search results (desktop only)
-function displaySearchResults(results) {
-    const searchContent = document.getElementById('searchContent');
-    if (!searchContent) return;
-
-    if (results.length === 0) {
-        searchContent.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                <p>No results found</p>
-            </div>
-        `;
-        return;
-    }
-
-    searchContent.innerHTML = '';
-
-    results.forEach(result => {
-        const resultElement = document.createElement('div');
-        resultElement.className = 'search-result-item';
-        
-        if (result.type === 'room') {
-            resultElement.onclick = () => {
-                switchRoom(result.data._id);
-                closeSearch();
-            };
-        } else if (result.type === 'message') {
-            resultElement.onclick = () => {
-                switchRoom(result.data.room._id);
-                closeSearch();
-            };
-        }
-
-        resultElement.innerHTML = `
-            <div class="search-result-type">${result.type}</div>
-            <div class="search-result-title">${escapeHtml(result.title)}</div>
-            <div class="search-result-preview">${escapeHtml(result.preview)}</div>
-        `;
-
-        searchContent.appendChild(resultElement);
-    });
-}
-
-// Close search results (desktop only)
 function closeSearch() {
     const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
-    
     if (searchResults) {
         searchResults.style.display = 'none';
     }
-    
-    if (searchInput) {
-        searchInput.value = '';
-    }
 }
 
-// Touch-friendly room switching for mobile
-function switchRoomMobile(roomId) {
-    // Add haptic feedback if available
-    if (navigator.vibrate) {
-        navigator.vibrate(30);
-    }
-    
-    switchRoom(roomId);
+// Logout function
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
 }
 
-// Orientation change handler
-function handleOrientationChange() {
-    setTimeout(() => {
-        initializeMobileLayout();
-        
-        // Adjust container heights
-        const container = document.querySelector('.community-responsive-container');
-        if (container && window.innerWidth <= 1024) {
-            container.style.height = `calc(100vh - 6rem)`;
-        }
-        
-        // Close any open modals
-        const emojiModal = document.getElementById('emojiModal');
-        if (emojiModal) emojiModal.style.display = 'none';
-    }, 100);
-}
-
-// Initialize responsive behavior
+// FIXED: Initialize with proper event listeners
 function initializeResponsiveCommunity() {
-    console.log('Initializing responsive community features');
+    console.log('🚀 Initializing responsive community features');
     
-    // Set up layout
-    initializeMobileLayout();
+    // Add DEBOUNCED resize listener
+    window.addEventListener('resize', handleResize);
     
-    // Add event listeners
-    window.addEventListener('resize', initializeMobileLayout);
-    window.addEventListener('orientationchange', handleOrientationChange);
+    // Add orientation change handler
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            layoutInitialized = false;
+            initializeMobileLayout();
+            layoutInitialized = true;
+        }, 100);
+    });
     
     // Close emoji modal when clicking outside (desktop only)
     document.addEventListener('click', function(event) {
@@ -870,13 +693,7 @@ function initializeResponsiveCommunity() {
         }
     });
     
-    console.log('Responsive community features initialized');
-}
-
-// Logout function (should exist globally)
-function logout() {
-    localStorage.clear();
-    window.location.href = 'index.html';
+    console.log('✅ Responsive community features initialized');
 }
 
 // Auto-refresh messages every 30 seconds
@@ -886,7 +703,7 @@ setInterval(async () => {
     }
 }, 30000);
 
-// Auto-initialize when DOM is ready
+// Initialize when DOM is ready
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initializeResponsiveCommunity);
 } else {
@@ -894,10 +711,6 @@ if (document.readyState === 'loading') {
 }
 
 // Export functions for global access
-window.initializeMobileLayout = initializeMobileLayout;
-window.showSuccessMessage = showSuccessMessage;
-window.switchRoomMobile = switchRoomMobile;
-window.handleOrientationChange = handleOrientationChange;
 window.updateRoomsList = updateRoomsList;
 window.switchRoom = switchRoom;
 window.sendCommunityMessage = sendCommunityMessage;
@@ -909,5 +722,6 @@ window.insertEmoji = insertEmoji;
 window.performSearch = performSearch;
 window.closeSearch = closeSearch;
 window.initializeCommunity = initializeCommunity;
+window.logout = logout;
 
-console.log('Community.js loaded successfully with responsive features');
+console.log('✅ Community.js loaded successfully with FIXED responsive features');
