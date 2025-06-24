@@ -220,11 +220,10 @@
             document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('en-US', options);
         }
 
-        // FIXED: Better goal completion check with new history system
+        // FIXED: Better goal completion check with proper fallback logic
         function isGoalCompletedToday(goal) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-            const todayString = today.toISOString().split('T')[0];
             
             // Check completionHistory first (new system)
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
@@ -234,18 +233,38 @@
                     return entryDate.getTime() === today.getTime();
                 });
                 
-                const isCompleted = todayEntry ? todayEntry.completed : false;
+                if (todayEntry) {
+                    const isCompleted = todayEntry.completed;
+                    console.log(`Goal ${goal._id} (NEW SYSTEM - TODAY ENTRY):`, {
+                        todayEntry,
+                        isCompleted,
+                        historyLength: goal.completionHistory.length
+                    });
+                    return isCompleted;
+                }
                 
-                console.log(`Goal ${goal._id} (NEW SYSTEM):`, {
-                    todayEntry,
-                    isCompleted,
-                    historyLength: goal.completionHistory.length
+                // If no today entry in history, check lastCompletedDate as fallback
+                if (goal.lastCompletedDate) {
+                    const lastCompleted = new Date(goal.lastCompletedDate);
+                    lastCompleted.setHours(0, 0, 0, 0);
+                    const isCompletedToday = today.getTime() === lastCompleted.getTime();
+                    
+                    console.log(`Goal ${goal._id} (NEW SYSTEM - FALLBACK TO LAST COMPLETED):`, {
+                        lastCompletedDate: goal.lastCompletedDate,
+                        isCompletedToday,
+                        historyLength: goal.completionHistory.length
+                    });
+                    return isCompletedToday;
+                }
+                
+                console.log(`Goal ${goal._id} (NEW SYSTEM - NO TODAY ENTRY):`, {
+                    historyLength: goal.completionHistory.length,
+                    returning: false
                 });
-                
-                return isCompleted;
+                return false;
             }
             
-            // Fallback to old system
+            // Fallback to old system completely
             if (!goal.lastCompletedDate) {
                 console.log(`Goal ${goal._id} (OLD SYSTEM): No lastCompletedDate, returning false`);
                 return false;
@@ -253,12 +272,11 @@
             
             const lastCompleted = new Date(goal.lastCompletedDate);
             lastCompleted.setHours(0, 0, 0, 0);
-            
             const isCompletedToday = today.getTime() === lastCompleted.getTime();
             
             console.log(`Goal ${goal._id} (OLD SYSTEM):`, {
                 lastCompletedDate: goal.lastCompletedDate,
-                today: todayString,
+                today: today.toISOString().split('T')[0],
                 lastCompleted: lastCompleted.toISOString().split('T')[0],
                 isCompletedToday
             });
