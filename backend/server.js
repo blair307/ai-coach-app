@@ -1278,6 +1278,37 @@ app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
   }
 });
 
+// Migration function to convert existing goals to new history format
+async function migrateGoalsToHistory() {
+  try {
+    console.log('🔄 Starting goal history migration...');
+    
+    const goalsToMigrate = await LifeGoal.find({ 
+      completionHistory: { $exists: false } 
+    });
+    
+    console.log(`📊 Found ${goalsToMigrate.length} goals to migrate`);
+    
+    for (const goal of goalsToMigrate) {
+      goal.completionHistory = [];
+      
+      // If there's a lastCompletedDate, add it to history
+      if (goal.lastCompletedDate) {
+        goal.completionHistory.push({
+          date: goal.lastCompletedDate,
+          completed: true
+        });
+      }
+      
+      await goal.save();
+    }
+    
+    console.log('✅ Goal history migration completed');
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+  }
+}
+
 // Health check endpoint for monitoring
 app.get('/health', (req, res) => {
   res.json({
@@ -1309,6 +1340,7 @@ app.use((req, res) => {
 // Initialize default rooms after MongoDB connection
 mongoose.connection.once('open', () => {
   createDefaultRooms();
+  migrateGoalsToHistory(); // ADD THIS LINE
 });
 
 // Start server
