@@ -672,12 +672,14 @@ async function toggleGoalCompletion(goalId) {
             completed: completed
         };
 
-        if (completed) {
-            requestBody.lastCompletedDate = new Date().toISOString();
-        } else {
-            requestBody.lastCompletedDate = null;
-            requestBody.completed = false;
-        }
+if (completed) {
+    requestBody.lastCompletedDate = new Date().toISOString();
+    requestBody.completed = true;
+} else {
+    // When marking incomplete, explicitly clear the date
+    requestBody.lastCompletedDate = null;
+    requestBody.completed = false;
+}
 
         console.log('📤 Request body:', requestBody);
         console.log('📍 Making API call to:', `${API_BASE_URL}/api/life-goals/${goalId}`);
@@ -688,17 +690,17 @@ async function toggleGoalCompletion(goalId) {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(requestBody)
-        });
-
-        console.log('📥 API Response status:', response.status);
-        console.log('📥 API Response ok:', response.ok);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.log('❌ API Error response:', errorText);
-            throw new Error('Failed to update goal');
-        }
+           const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+    method: 'PUT',
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        completed: completed,
+        ...(completed ? { lastCompletedDate: new Date().toISOString() } : { lastCompletedDate: null })
+    })
+});
 
         const updatedGoal = await response.json();
         console.log('✅ Updated goal received:', updatedGoal);
