@@ -740,19 +740,6 @@ body {
     background: var(--surface);
 }
 
-.sidebar-header {
-    padding: 2rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-@media (max-width: 768px) {
-    .sidebar-header {
-        padding: 1.5rem;
-    }
-}
 
 .sidebar-header h2 {
     font-size: 1.25rem;
@@ -862,11 +849,26 @@ body {
     align-items: center;
 }
 
+@media (max-width: 768px) {
+    .header-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2rem;
     margin-bottom: 3rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
 }
 
 .dashboard-card {
@@ -1576,7 +1578,6 @@ body {
     40% { transform: scale(1); opacity: 1; }
 }
 
-/* =================================
  /* =================================
    MODERN COMMUNITY - DESKTOP ONLY (BASE STYLES)
    ================================= */
