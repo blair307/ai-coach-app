@@ -181,10 +181,11 @@
     <!-- Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
-        // Daily Tracker JavaScript Implementation
+        // SIMPLIFIED Daily Tracker - Server Only Approach
         let currentGoals = [];
         let selectedGoal = null;
         let progressView = 'weekly';
+        let completionHistory = {}; // Store completion history for progress chart
         
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -219,6 +220,28 @@
             document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('en-US', options);
         }
 
+        // SIMPLE: Check if goal was completed today based on server data
+        function isGoalCompletedToday(goal) {
+            if (!goal.lastCompletedDate) return false;
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const lastCompleted = new Date(goal.lastCompletedDate);
+            lastCompleted.setHours(0, 0, 0, 0);
+            
+            const isCompletedToday = today.getTime() === lastCompleted.getTime();
+            
+            console.log(`Goal ${goal._id}:`, {
+                lastCompletedDate: goal.lastCompletedDate,
+                today: today.toISOString().split('T')[0],
+                lastCompleted: lastCompleted.toISOString().split('T')[0],
+                isCompletedToday
+            });
+            
+            return isCompletedToday;
+        }
+
         async function loadDailyGoals() {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -226,6 +249,8 @@
                     showError('Please log in to view your goals');
                     return;
                 }
+
+                console.log('🔄 Loading goals from server...');
 
                 const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
                     headers: {
@@ -239,15 +264,37 @@
                 }
 
                 currentGoals = await response.json();
+                console.log('✅ Goals loaded:', currentGoals);
+                
+                // Build completion history for progress chart
+                buildCompletionHistory();
+                
                 renderDailyGoals();
                 updateProgressStats();
                 showWeeklyProgress();
                 renderGoalsByArea();
 
             } catch (error) {
-                console.error('Error loading goals:', error);
+                console.error('❌ Error loading goals:', error);
                 showError('Failed to load your goals. Please try again.');
             }
+        }
+
+        function buildCompletionHistory() {
+            console.log('📊 Building completion history...');
+            completionHistory = {};
+            
+            currentGoals.forEach(goal => {
+                if (goal.lastCompletedDate) {
+                    const dateKey = new Date(goal.lastCompletedDate).toISOString().split('T')[0];
+                    if (!completionHistory[dateKey]) {
+                        completionHistory[dateKey] = [];
+                    }
+                    completionHistory[dateKey].push(goal._id);
+                }
+            });
+            
+            console.log('📊 Completion history built:', completionHistory);
         }
 
         function renderDailyGoals() {
@@ -371,18 +418,6 @@
             container.innerHTML = html;
         }
 
-        function isGoalCompletedToday(goal) {
-            if (!goal.lastCompletedDate) return false;
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const lastCompleted = new Date(goal.lastCompletedDate);
-            lastCompleted.setHours(0, 0, 0, 0);
-            
-            return today.getTime() === lastCompleted.getTime();
-        }
-
         function updateProgressStats() {
             const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
             const totalGoals = currentGoals.length;
@@ -399,26 +434,8 @@
         function calculateDayCompletion(date) {
             if (currentGoals.length === 0) return 0;
             
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const checkDate = new Date(date);
-            checkDate.setHours(0, 0, 0, 0);
-            
-            if (checkDate.getTime() === today.getTime()) {
-                const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
-                return (completedToday / currentGoals.length) * 100;
-            }
-            
-            let completedOnDate = 0;
-            currentGoals.forEach(goal => {
-                if (goal.lastCompletedDate) {
-                    const completedDate = new Date(goal.lastCompletedDate);
-                    completedDate.setHours(0, 0, 0, 0);
-                    if (completedDate.getTime() === checkDate.getTime()) {
-                        completedOnDate++;
-                    }
-                }
-            });
+            const dateKey = date.toISOString().split('T')[0];
+            const completedOnDate = completionHistory[dateKey] ? completionHistory[dateKey].length : 0;
             
             return (completedOnDate / currentGoals.length) * 100;
         }
@@ -615,71 +632,73 @@
         }
 
         async function toggleGoalCompletion(goalId) {
+            console.log('🔄 TOGGLE CALLED - goalId:', goalId);
+            
             try {
                 const goal = currentGoals.find(g => g._id === goalId);
-                if (!goal) return;
-                
-                const isCurrentlyCompleted = isGoalCompletedToday(goal);
-                const newCompletionState = !isCurrentlyCompleted;
-                
-                await updateGoalCompletion(goalId, newCompletionState);
-                
-                // Show appropriate message
-                if (newCompletionState) {
-                    showSuccess('Goal completed! 🎉');
-                } else {
-                    showSuccess('Goal marked as incomplete.');
+                if (!goal) {
+                    console.log('❌ Goal not found:', goalId);
+                    return;
                 }
                 
+                const currentlyCompleted = isGoalCompletedToday(goal);
+                const newState = !currentlyCompleted;
+                
+                console.log('📋 Goal current state:', currentlyCompleted);
+                console.log('🔄 Setting to:', newState);
+                
+                // Call the server immediately
+                await updateGoalOnServer(goalId, newState);
+                
+                // Reload fresh data from server
+                await loadDailyGoals();
+                
+                // Show success message
+                showSuccess(newState ? 'Goal completed! 🎉' : 'Goal marked as incomplete.');
+                
             } catch (error) {
-                console.error('Error toggling goal completion:', error);
+                console.error('❌ Toggle failed:', error);
                 showError('Failed to update goal. Please try again.');
             }
         }
 
-        async function updateGoalCompletion(goalId, completed) {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) throw new Error('No authentication token');
-
-                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        completed: completed,
-                        lastCompletedDate: completed ? new Date().toISOString() : null
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update goal');
-                }
-
-                const updatedGoal = await response.json();
-                
-                // Update the goal in our local array
-                const goalIndex = currentGoals.findIndex(g => g._id === goalId);
-                if (goalIndex !== -1) {
-                    currentGoals[goalIndex] = updatedGoal;
-                }
-                
-                // Force re-render everything
-                setTimeout(() => {
-                    loadDailyGoals();
-                    
-                    if (selectedGoal && selectedGoal._id === goalId) {
-                        selectedGoal = updatedGoal;
-                        updateModalButtons();
-                    }
-                }, 100);
-                
-            } catch (error) {
-                console.error('Error updating goal:', error);
-                throw error;
+        async function updateGoalOnServer(goalId, completed) {
+            console.log('📤 UPDATING SERVER - goalId:', goalId, 'completed:', completed);
+            
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) {
+                throw new Error('No authentication token');
             }
+
+            const requestData = {
+                completed: completed,
+                lastCompletedDate: completed ? new Date().toISOString() : null
+            };
+            
+            console.log('📤 Request data:', requestData);
+
+            const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            });
+
+            console.log('📥 Server response status:', response.status);
+            console.log('📥 Server response ok:', response.ok);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('❌ Server error response:', errorText);
+                throw new Error(`Server error: ${response.status}`);
+            }
+
+            const updatedGoal = await response.json();
+            console.log('✅ Server returned updated goal:', updatedGoal);
+            
+            return updatedGoal;
         }
 
         function openGoalDetail(goalId) {
@@ -688,7 +707,6 @@
             
             selectedGoal = goal;
             const color = areaColors[goal.area] || '#6366f1';
-            const isCompleted = isGoalCompletedToday(goal);
             
             document.getElementById('modalTitle').textContent = 'Goal Details';
             document.getElementById('modalArea').textContent = goal.area;
@@ -727,6 +745,8 @@
             const completeBtn = document.getElementById('markCompleteBtn');
             const incompleteBtn = document.getElementById('markIncompleteBtn');
             
+            console.log('🔘 Updating modal buttons - goal completed today:', isCompleted);
+            
             if (isCompleted) {
                 completeBtn.style.display = 'none';
                 incompleteBtn.style.display = 'block';
@@ -746,28 +766,16 @@
 
         async function markGoalComplete() {
             if (!selectedGoal) return;
-            
-            try {
-                await updateGoalCompletion(selectedGoal._id, true);
-                closeGoalDetail();
-                showSuccess('Goal completed! Keep building that streak!');
-            } catch (error) {
-                console.error('Error marking goal complete:', error);
-                showError('Failed to mark goal as complete. Please try again.');
-            }
+            console.log('✅ MODAL: Mark Complete clicked');
+            await toggleGoalCompletion(selectedGoal._id);
+            closeGoalDetail();
         }
 
         async function markGoalIncomplete() {
             if (!selectedGoal) return;
-            
-            try {
-                await updateGoalCompletion(selectedGoal._id, false);
-                closeGoalDetail();
-                showSuccess('Goal marked as incomplete.');
-            } catch (error) {
-                console.error('Error marking goal incomplete:', error);
-                showError('Failed to mark goal as incomplete. Please try again.');
-            }
+            console.log('❌ MODAL: Mark Incomplete clicked');
+            await toggleGoalCompletion(selectedGoal._id);
+            closeGoalDetail();
         }
 
         async function markAllComplete() {
@@ -789,8 +797,11 @@
                 button.disabled = true;
                 
                 for (const goal of incompleteGoals) {
-                    await updateGoalCompletion(goal._id, true);
+                    await updateGoalOnServer(goal._id, true);
                 }
+                
+                // Reload fresh data
+                await loadDailyGoals();
                 
                 button.textContent = originalText;
                 button.disabled = false;
