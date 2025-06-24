@@ -748,9 +748,13 @@ function addEmoji() {
         return;
     }
     
+    toggleEmoji();
+}
+
+function toggleEmoji() {
     const emojiModal = document.getElementById('emojiModal');
     if (emojiModal) {
-        const isVisible = emojiModal.style.display !== 'none';
+        const isVisible = emojiModal.style.display === 'block';
         emojiModal.style.display = isVisible ? 'none' : 'block';
     }
 }
@@ -840,6 +844,7 @@ window.handleCommunityKeyPress = handleCommunityKeyPress;
 window.createRoom = createRoom;
 window.deleteRoom = deleteRoom;
 window.addEmoji = addEmoji;
+window.toggleEmoji = toggleEmoji;
 window.insertEmoji = insertEmoji;
 window.performSearch = performSearch;
 window.closeSearch = closeSearch;
