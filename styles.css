@@ -2825,3 +2825,60 @@ select:focus-visible,
 .legend-dot.today {
     background: var(--primary) !important;
 }
+.goal-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    gap: 1rem;
+}
+
+.goal-content {
+    flex: 1;
+}
+
+.goal-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.goal-action {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.goal-streak {
+    text-align: center;
+    margin-right: 1rem;
+}
+
+.streak-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.streak-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.goal-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.area-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.progress-count {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
