@@ -160,9 +160,15 @@ const lifeGoalSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
   streak: { type: Number, default: 0 },
   lastCompletedDate: { type: Date },
+  // NEW: Store all completion dates
+  completionHistory: [{ 
+    date: { type: Date, required: true },
+    completed: { type: Boolean, required: true }
+  }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
@@ -1008,7 +1014,6 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
   }
 });
 
-// FIXED: Update a life goal - THIS IS THE CORRECTED VERSION
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1026,47 +1031,127 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     if (bigGoal !== undefined) goal.bigGoal = bigGoal;
     if (dailyAction !== undefined) goal.dailyAction = dailyAction;
     
-    // FIXED: Handle completion status and date properly
+    // ENHANCED: Handle completion with full history tracking
     if (completed !== undefined) {
       goal.completed = completed;
       
-      // FIXED: Explicitly handle the lastCompletedDate
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayString = today.toISOString().split('T')[0];
+      
+      // Initialize completionHistory if it doesn't exist
+      if (!goal.completionHistory) {
+        goal.completionHistory = [];
+      }
+      
+      // Check if there's already an entry for today
+      const existingTodayIndex = goal.completionHistory.findIndex(entry => {
+        const entryDate = new Date(entry.date);
+        entryDate.setHours(0, 0, 0, 0);
+        return entryDate.getTime() === today.getTime();
+      });
+      
       if (completed && lastCompletedDate) {
+        // COMPLETING the goal
         goal.lastCompletedDate = new Date(lastCompletedDate);
         
-        // Handle streak calculation for completion
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const completedDate = new Date(lastCompletedDate);
-        completedDate.setHours(0, 0, 0, 0);
+        // Add or update today's completion in history
+        if (existingTodayIndex >= 0) {
+          goal.completionHistory[existingTodayIndex].completed = true;
+        } else {
+          goal.completionHistory.push({
+            date: today,
+            completed: true
+          });
+        }
         
-        // Only update streak if completing for today
-        if (today.getTime() === completedDate.getTime()) {
-          const previousCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
+        // Calculate streak based on consecutive completed days
+        const sortedHistory = goal.completionHistory
+          .filter(entry => entry.completed)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let currentStreak = 0;
+        const oneDay = 24 * 60 * 60 * 1000;
+        
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const entryDate = new Date(sortedHistory[i].date);
+          entryDate.setHours(0, 0, 0, 0);
           
-          if (!previousCompleted) {
-            goal.streak = 1;
+          if (i === 0) {
+            // First entry (most recent)
+            if (entryDate.getTime() === today.getTime()) {
+              currentStreak = 1;
+            } else {
+              break; // Not completed today, no current streak
+            }
           } else {
-            previousCompleted.setHours(0, 0, 0, 0);
-            const daysDiff = (today - previousCompleted) / (1000 * 60 * 60 * 24);
+            // Check if this date is consecutive with previous
+            const prevDate = new Date(sortedHistory[i-1].date);
+            prevDate.setHours(0, 0, 0, 0);
+            const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
             
             if (daysDiff === 1) {
-              goal.streak += 1;
-            } else if (daysDiff > 1) {
-              goal.streak = 1;
+              currentStreak++;
+            } else {
+              break; // Gap in streak
             }
-            // If same day, keep current streak
           }
         }
+        
+        goal.streak = currentStreak;
+        
       } else if (!completed) {
-        // FIXED: When marking incomplete, clear the date and handle streak
+        // UNCOMPLETING the goal
         goal.lastCompletedDate = null;
         
-        // Don't reduce streak to 0 immediately, just remove today's completion
-        // The streak represents consecutive days, so if they had a 5-day streak
-        // and uncheck today, they should go back to 4 days (yesterday's completion)
-        if (goal.streak > 0) {
-          goal.streak = Math.max(0, goal.streak - 1);
+        // Add or update today's entry as incomplete
+        if (existingTodayIndex >= 0) {
+          goal.completionHistory[existingTodayIndex].completed = false;
+        } else {
+          goal.completionHistory.push({
+            date: today,
+            completed: false
+          });
+        }
+        
+        // Recalculate streak without today
+        const sortedCompletedHistory = goal.completionHistory
+          .filter(entry => entry.completed && new Date(entry.date).getTime() !== today.getTime())
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (sortedCompletedHistory.length === 0) {
+          goal.streak = 0;
+        } else {
+          // Find the most recent streak ending before today
+          let streak = 0;
+          const oneDay = 24 * 60 * 60 * 1000;
+          const yesterday = new Date(today.getTime() - oneDay);
+          
+          for (let i = 0; i < sortedCompletedHistory.length; i++) {
+            const entryDate = new Date(sortedCompletedHistory[i].date);
+            entryDate.setHours(0, 0, 0, 0);
+            
+            if (i === 0) {
+              // Check if most recent completion was yesterday
+              if (entryDate.getTime() === yesterday.getTime()) {
+                streak = 1;
+              } else {
+                break;
+              }
+            } else {
+              const prevDate = new Date(sortedCompletedHistory[i-1].date);
+              prevDate.setHours(0, 0, 0, 0);
+              const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
+              
+              if (daysDiff === 1) {
+                streak++;
+              } else {
+                break;
+              }
+            }
+          }
+          
+          goal.streak = streak;
         }
       }
     }
@@ -1078,7 +1163,8 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       id: goal._id,
       completed: goal.completed,
       streak: goal.streak,
-      lastCompletedDate: goal.lastCompletedDate
+      lastCompletedDate: goal.lastCompletedDate,
+      historyLength: goal.completionHistory ? goal.completionHistory.length : 0
     });
 
     res.json(goal);
