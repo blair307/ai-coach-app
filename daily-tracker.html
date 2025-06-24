@@ -686,24 +686,16 @@ if (completed) {
                     currentGoals[goalIndex] = updatedGoal;
                 }
                 
-                // Force re-render everything
-                setTimeout(() => {
-                    renderDailyGoals();
-                    updateProgressStats();
-                    
-                    if (progressView === 'weekly') {
-                        renderWeeklyProgress();
-                    } else {
-                        renderMonthlyProgress();
-                    }
-                    
-                    renderGoalsByArea();
-                    
-                    if (selectedGoal && selectedGoal._id === goalId) {
-                        selectedGoal = updatedGoal;
-                        updateModalButtons();
-                    }
-                }, 100);
+// Force re-render everything
+setTimeout(() => {
+    // Reload goals from server to ensure we have latest data
+    loadDailyGoals();
+    
+    if (selectedGoal && selectedGoal._id === goalId) {
+        selectedGoal = updatedGoal;
+        updateModalButtons();
+    }
+}, 100);
                 
                 showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
                 
