@@ -907,7 +907,111 @@ body {
     font-weight: 600;
 }
 
+/* =================================
+   CLEAN SIDEBAR TOGGLE - SIMPLIFIED
+   ================================= */
 
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--background);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    transform: translateX(0);
+}
+
+.sidebar.closed {
+    transform: translateX(-280px);
+}
+
+.main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    padding: 2rem;
+    background: var(--surface);
+    min-height: 100vh;
+}
+
+.main-content.expanded {
+    margin-left: 0;
+}
+
+.sidebar-toggle {
+    display: flex;
+    flex-direction: column;
+    width: 44px;
+    height: 44px;
+    background: var(--surface);
+    border: 2px solid var(--primary);
+    border-radius: var(--radius);
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    padding: 8px;
+}
+
+.sidebar-toggle:hover {
+    background: #e2e8f0;
+    border-color: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover .hamburger-line {
+    background: var(--primary-dark);
+}
+
+.sidebar-header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-280px);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .sidebar:not(.closed) {
+        transform: translateX(0);
+    }
+    
+    .sidebar:not(.closed)::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 280px;
+        width: calc(100vw - 280px);
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+    
+    .sidebar-header {
+        padding: 1.5rem;
+    }
+}
 /* =================================
    CLEAN CHAT INTERFACE - NO ICONS + RESPONSIVE
    ================================= */
