@@ -251,12 +251,191 @@ x<!DOCTYPE html>
         </div>
     </div>
 
-    <script src="api-service.js"></script>
+   <script src="api-service.js"></script>
     <script src="sidebar-toggle.js"></script>
     <script src="notifications.js"></script>
     <script src="dashboard.js"></script>
     
     <script>
+    /**
+     * PROGRESS TRACKER - EMBEDDED VERSION
+     * This tracks coaching sessions, active days, community posts, and goals
+     */
+    
+    class ProgressTracker {
+        constructor() {
+            this.storageKey = 'eeh_progress_data';
+            this.initializeData();
+            this.startDailyActiveTracking();
+        }
+
+        initializeData() {
+            const stored = localStorage.getItem(this.storageKey);
+            
+            if (stored) {
+                this.data = JSON.parse(stored);
+                this.data = {
+                    coachingSessions: this.data.coachingSessions || 0,
+                    firstActiveDate: this.data.firstActiveDate || new Date().toISOString().split('T')[0],
+                    lastActiveDate: this.data.lastActiveDate || new Date().toISOString().split('T')[0],
+                    activeDays: this.data.activeDays || new Set(),
+                    communityPosts: this.data.communityPosts || 0,
+                    activeGoals: this.data.activeGoals || 0,
+                    totalLogins: this.data.totalLogins || 0,
+                    streakDays: this.data.streakDays || 0,
+                    lastStreakDate: this.data.lastStreakDate || null,
+                    ...this.data
+                };
+                
+                if (Array.isArray(this.data.activeDays)) {
+                    this.data.activeDays = new Set(this.data.activeDays);
+                }
+            } else {
+                this.data = {
+                    coachingSessions: 0,
+                    firstActiveDate: new Date().toISOString().split('T')[0],
+                    lastActiveDate: new Date().toISOString().split('T')[0],
+                    activeDays: new Set(),
+                    communityPosts: 0,
+                    activeGoals: 0,
+                    totalLogins: 1,
+                    streakDays: 1,
+                    lastStreakDate: new Date().toISOString().split('T')[0]
+                };
+                this.markActiveToday();
+            }
+            
+            this.updateStreak();
+            this.save();
+        }
+
+        save() {
+            const dataToStore = {
+                ...this.data,
+                activeDays: Array.from(this.data.activeDays)
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
+        }
+
+        markActiveToday() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!this.data.activeDays.has(today)) {
+                this.data.activeDays.add(today);
+                this.data.lastActiveDate = today;
+                this.updateStreak();
+                this.save();
+            }
+        }
+
+        updateStreak() {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            if (this.data.lastStreakDate === yesterdayStr || this.data.lastStreakDate === today) {
+                if (this.data.activeDays.has(today) && this.data.lastStreakDate !== today) {
+                    this.data.streakDays += 1;
+                    this.data.lastStreakDate = today;
+                }
+            } else if (this.data.activeDays.has(today)) {
+                this.data.streakDays = 1;
+                this.data.lastStreakDate = today;
+            } else {
+                const lastActive = new Date(this.data.lastActiveDate);
+                const daysSinceActive = Math.floor((new Date() - lastActive) / (1000 * 60 * 60 * 24));
+                
+                if (daysSinceActive > 1) {
+                    this.data.streakDays = 0;
+                }
+            }
+        }
+
+        getDaysActive() {
+            return this.data.activeDays.size;
+        }
+
+        incrementCoachingSessions() {
+            this.data.coachingSessions += 1;
+            this.markActiveToday();
+            this.save();
+            this.updateDisplay();
+            console.log(`🎯 Coaching session completed! Total: ${this.data.coachingSessions}`);
+        }
+
+        incrementCommunityPosts() {
+            this.data.communityPosts += 1;
+            this.markActiveToday();
+            this.save();
+            this.updateDisplay();
+            console.log(`💬 Community post created! Total: ${this.data.communityPosts}`);
+        }
+
+        updateActiveGoals(count) {
+            this.data.activeGoals = count;
+            this.save();
+            this.updateDisplay();
+        }
+
+        getProgressData() {
+            return {
+                coachingSessions: this.data.coachingSessions,
+                daysActive: this.getDaysActive(),
+                communityPosts: this.data.communityPosts,
+                activeGoals: this.data.activeGoals,
+                streakDays: this.data.streakDays
+            };
+        }
+
+        updateDisplay() {
+            const progress = this.getProgressData();
+            
+            const statNumbers = document.querySelectorAll('.stat-number');
+            if (statNumbers.length >= 4) {
+                statNumbers[0].textContent = progress.coachingSessions;
+                statNumbers[1].textContent = progress.daysActive;
+                statNumbers[2].textContent = progress.communityPosts;
+                statNumbers[3].textContent = progress.activeGoals;
+                
+                statNumbers.forEach((el, index) => {
+                    el.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        el.style.transform = 'scale(1)';
+                    }, 200);
+                });
+            }
+            console.log('📊 Progress updated:', progress);
+        }
+
+        startDailyActiveTracking() {
+            this.markActiveToday();
+            
+            setInterval(() => {
+                this.markActiveToday();
+            }, 30 * 60 * 1000);
+            
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    this.markActiveToday();
+                    this.updateDisplay();
+                }
+            });
+        }
+
+        resetProgress() {
+            if (confirm('Are you sure you want to reset all progress? This cannot be undone.')) {
+                localStorage.removeItem(this.storageKey);
+                this.initializeData();
+                this.updateDisplay();
+                console.log('🔄 Progress reset successfully');
+            }
+        }
+    }
+
+    // Initialize progress tracker
+    let progressTracker;
+
     // Simple notification counter
     async function updateNotificationCount() {
         try {
@@ -312,6 +491,12 @@ x<!DOCTYPE html>
 
             const goals = await response.json();
             const goalsCardContent = document.getElementById('goalsCardContent');
+            
+            // Update active goals count in progress tracker
+            const activeGoalsCount = goals.filter(goal => (goal.streak || 0) > 0).length;
+            if (progressTracker) {
+                progressTracker.updateActiveGoals(activeGoalsCount);
+            }
             
             if (goals.length === 0) {
                 goalsCardContent.innerHTML = `
@@ -395,20 +580,67 @@ x<!DOCTYPE html>
         }
     }
 
-    // Update count when page loads and every 30 seconds
+    // Enhanced startCoachingSession function
+    function startCoachingSession() {
+        // Track the coaching session
+        if (progressTracker) {
+            progressTracker.incrementCoachingSessions();
+        }
+        
+        // Navigate to AI coach
+        window.location.href = 'ai-coach.html';
+    }
+
+    // Testing function
+    function testProgressTracking() {
+        console.log('🧪 Testing Progress Tracking...');
+        
+        if (progressTracker) {
+            console.log('Current Progress:', progressTracker.getProgressData());
+            
+            // Test coaching session
+            progressTracker.incrementCoachingSessions();
+            
+            // Test community post
+            progressTracker.incrementCommunityPosts();
+            
+            // Test goals update
+            progressTracker.updateActiveGoals(3);
+            
+            console.log('Updated Progress:', progressTracker.getProgressData());
+        } else {
+            console.error('❌ Progress Tracker not found');
+        }
+    }
+
+    // Initialize everything when page loads
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize progress tracker
+        progressTracker = new ProgressTracker();
+        
+        // Update display immediately
+        setTimeout(() => {
+            progressTracker.updateDisplay();
+        }, 500);
+        
+        // Make it globally available
+        window.progressTracker = progressTracker;
+        window.testProgressTracking = testProgressTracking;
+        
+        // Update notification count
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
         
         // Load dashboard goals
-        setTimeout(loadDashboardGoals, 500);
+        setTimeout(loadDashboardGoals, 1000);
+        
+        console.log('✅ Progress Tracker initialized');
     });
     
-    // Timer and Calendar Functionality
+    // Your existing timer and calendar code stays the same...
     let currentDate = new Date();
     let selectedMeetingDate = null;
 
-    // Meeting schedule starting July 8th, 2025
     const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00');
     const MEETING_DURATION = 80;
     const EARLY_ACCESS = 10;
@@ -418,9 +650,8 @@ x<!DOCTYPE html>
         const now = new Date();
         let nextMeeting = new Date(MEETING_START_DATE);
         
-        // Find the next meeting date
         while (nextMeeting <= now) {
-            nextMeeting.setDate(nextMeeting.getDate() + 14); // Every 2 weeks
+            nextMeeting.setDate(nextMeeting.getDate() + 14);
         }
         
         return nextMeeting;
@@ -437,7 +668,6 @@ x<!DOCTYPE html>
         const countdownDate = document.getElementById('countdownDate');
         
         if (timeDiff > 0) {
-            // Show countdown
             countdownContainer.style.display = 'block';
             noMeetingContainer.style.display = 'none';
             
@@ -460,7 +690,6 @@ x<!DOCTYPE html>
             });
             countdownDate.textContent = dateString + ' at 5:30 PM CST';
         } else {
-            // No upcoming meetings (shouldn't happen with our logic, but fallback)
             countdownContainer.style.display = 'none';
             noMeetingContainer.style.display = 'block';
             updateCurrentTime();
@@ -637,10 +866,6 @@ x<!DOCTYPE html>
         generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
     }
 
-    function startCoachingSession() {
-        window.location.href = 'ai-coach.html';
-    }
-
     function logout() {
         localStorage.clear();
         window.location.href = 'index.html';
@@ -670,6 +895,5 @@ x<!DOCTYPE html>
         });
     });
     </script>
- 
 </body>
 </html>
