@@ -1,5 +1,5 @@
-// Community.js - Backend Connected Version for Persistent Storage
-// This replaces the localStorage version with real database storage
+// Community.js - Complete Updated Version with Responsive Mobile Support
+// This replaces the localStorage version with real database storage + mobile responsive features
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -33,6 +33,9 @@ async function initializeCommunity() {
             currentRoomName = generalRoom.name;
             switchRoom(generalRoom._id);
         }
+        
+        // Initialize responsive layout
+        initializeMobileLayout();
         
         console.log('Community initialized successfully');
     } catch (error) {
@@ -100,73 +103,97 @@ async function loadRooms() {
     }
 }
 
-// Update the rooms list in the UI
+// Enhanced updateRoomsList to support both desktop and mobile
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
-    if (!roomsList) return;
+    const roomDropdown = document.getElementById('roomDropdown');
+    
+    // Update desktop rooms list
+    if (roomsList) {
+        roomsList.innerHTML = '';
 
-    roomsList.innerHTML = '';
-
-    rooms.forEach(room => {
-        const roomElement = document.createElement('div');
-        roomElement.className = 'room-item';
-        roomElement.setAttribute('data-room', room._id);
-        
-        // Mark default rooms so they can't be deleted
-        if (room.isDefault) {
-            roomElement.setAttribute('data-default', 'true');
-        }
-        
-        roomElement.onclick = (e) => {
-            // Don't switch room if clicking delete button
-            if (e.target.classList.contains('room-delete-btn')) {
-                return;
+        rooms.forEach(room => {
+            const roomElement = document.createElement('div');
+            roomElement.className = 'room-item';
+            roomElement.setAttribute('data-room', room._id);
+            
+            if (room.isDefault) {
+                roomElement.setAttribute('data-default', 'true');
             }
-            switchRoom(room._id);
-        };
+            
+            roomElement.onclick = (e) => {
+                if (e.target.classList.contains('room-delete-btn')) {
+                    return;
+                }
+                switchRoom(room._id);
+            };
 
-        // Check if this is the current room
-        if (room._id === currentRoomId) {
-            roomElement.classList.add('active');
-        }
+            if (room._id === currentRoomId) {
+                roomElement.classList.add('active');
+            }
 
-        roomElement.innerHTML = `
-            <div class="room-info">
-                <h4>${room.name}</h4>
-                <p>${room.description}</p>
-            </div>
-            <div class="room-stats">
-                ${!room.isDefault ? `<button class="room-delete-btn" onclick="deleteRoom('${room._id}')" title="Delete room">×</button>` : ''}
-            </div>
-        `;
+            roomElement.innerHTML = `
+                <div class="room-info">
+                    <h4>${room.name}</h4>
+                    <p>${room.description}</p>
+                </div>
+                <div class="room-stats">
+                    ${!room.isDefault ? `<button class="room-delete-btn" onclick="deleteRoom('${room._id}')" title="Delete room">×</button>` : ''}
+                </div>
+            `;
 
-        roomsList.appendChild(roomElement);
-    });
+            roomsList.appendChild(roomElement);
+        });
+    }
+    
+    // Update mobile dropdown
+    if (roomDropdown) {
+        roomDropdown.innerHTML = '<option value="">Select a room...</option>';
+        
+        rooms.forEach(room => {
+            const option = document.createElement('option');
+            option.value = room._id;
+            option.textContent = room.name;
+            option.selected = room._id === currentRoomId;
+            roomDropdown.appendChild(option);
+        });
+    }
 }
 
-// Switch to a different room
+// Enhanced switchRoom function for responsive layout
 async function switchRoom(roomId) {
     try {
-        // Find the room data
+        if (!roomId) {
+            console.log('No room ID provided');
+            return;
+        }
+
         const room = rooms.find(r => r._id === roomId);
         if (!room) {
             console.error('Room not found:', roomId);
             return;
         }
 
+        console.log('Switching to room:', room.name);
+
         // Update current room
         currentRoomId = roomId;
         currentRoomName = room.name;
 
-        // Update UI - remove active class from all rooms
+        // Update desktop UI
         document.querySelectorAll('.room-item').forEach(item => {
             item.classList.remove('active');
         });
 
-        // Add active class to current room
         const currentRoomElement = document.querySelector(`[data-room="${roomId}"]`);
         if (currentRoomElement) {
             currentRoomElement.classList.add('active');
+        }
+
+        // Update mobile dropdown
+        const roomDropdown = document.getElementById('roomDropdown');
+        if (roomDropdown) {
+            roomDropdown.value = roomId;
         }
 
         // Update room title
@@ -175,10 +202,22 @@ async function switchRoom(roomId) {
         if (roomNameElement) roomNameElement.textContent = room.name;
         if (roomDescElement) roomDescElement.textContent = room.description;
 
+        // Enable message input and buttons
+        const messageInput = document.getElementById('communityMessageInput');
+        const sendButton = document.getElementById('sendCommunityButton');
+        const emojiButton = document.getElementById('emojiBtn');
+        
+        if (messageInput) {
+            messageInput.disabled = false;
+            messageInput.placeholder = `Message ${room.name}...`;
+        }
+        if (sendButton) sendButton.disabled = false;
+        if (emojiButton) emojiButton.disabled = false;
+
         // Load messages for this room
         await loadMessages(roomId);
 
-        console.log('Switched to room:', room.name);
+        console.log('Successfully switched to room:', room.name);
     } catch (error) {
         console.error('Error switching rooms:', error);
         showErrorMessage('Failed to switch rooms. Please try again.');
@@ -291,14 +330,14 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Send a message
+// Enhanced sendCommunityMessage for better mobile support
 async function sendCommunityMessage() {
     try {
         const messageInput = document.getElementById('communityMessageInput');
         const sendButton = document.getElementById('sendCommunityButton');
         
         if (!messageInput || !currentRoomId) {
-            console.error('Missing required elements or room');
+            console.error('Missing required elements or room not selected');
             return;
         }
 
@@ -307,10 +346,15 @@ async function sendCommunityMessage() {
             return;
         }
 
-        // Disable send button
+        // Show loading state
         if (sendButton) {
             sendButton.disabled = true;
             sendButton.textContent = 'Sending...';
+        }
+
+        // Add mobile haptic feedback
+        if (navigator.vibrate && window.innerWidth <= 1024) {
+            navigator.vibrate(30);
         }
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -342,6 +386,11 @@ async function sendCommunityMessage() {
         // Clear input
         messageInput.value = '';
 
+        // Hide mobile keyboard
+        if (window.innerWidth <= 1024) {
+            messageInput.blur();
+        }
+
         // Reload messages to show the new one
         await loadMessages(currentRoomId);
 
@@ -358,27 +407,42 @@ async function sendCommunityMessage() {
     }
 }
 
-// Handle Enter key press in message input
+// Enhanced keyboard handling for mobile
 function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault();
-        sendCommunityMessage();
+    if (event.key === 'Enter') {
+        const isMobile = window.innerWidth <= 1024;
+        
+        if (isMobile) {
+            // On mobile, don't send on Enter to allow multi-line
+            return;
+        } else {
+            // On desktop, send on Enter (unless Shift+Enter)
+            if (!event.shiftKey) {
+                event.preventDefault();
+                sendCommunityMessage();
+            }
+        }
     }
 }
 
-// Create a new room
+// Enhanced createRoom function with mobile support
 async function createRoom() {
-    const roomName = prompt('Enter room name:');
-    if (!roomName || !roomName.trim()) return;
-
-    const roomDescription = prompt('Enter room description:');
-    if (!roomDescription || !roomDescription.trim()) return;
-
     try {
+        // Use a more mobile-friendly prompt
+        const roomName = prompt('Enter room name (e.g., "Tech Talk", "Motivation"):');
+        if (!roomName || !roomName.trim()) return;
+
+        const roomDescription = prompt('Enter a brief description:');
+        if (!roomDescription || !roomDescription.trim()) return;
+
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
             throw new Error('No authentication token');
         }
+
+        // Show loading
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.style.display = 'flex';
 
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             method: 'POST',
@@ -408,6 +472,10 @@ async function createRoom() {
     } catch (error) {
         console.error('Error creating room:', error);
         showErrorMessage('Failed to create room. Please try again.');
+    } finally {
+        // Hide loading
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        if (loadingOverlay) loadingOverlay.style.display = 'none';
     }
 }
 
@@ -454,51 +522,164 @@ async function deleteRoom(roomId) {
     }
 }
 
-// Delete a room
-async function deleteRoom(roomId) {
-    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
-        return;
-    }
+// Mobile-specific layout initialization
+function initializeMobileLayout() {
+    const isMobile = window.innerWidth <= 1024;
+    console.log('Initializing mobile layout:', { isMobile, width: window.innerWidth });
+    
+    // Show/hide elements based on screen size
+    const mobileSelector = document.querySelector('.mobile-room-selector');
+    const desktopSidebar = document.querySelector('.rooms-sidebar');
+    const desktopOnlyElements = document.querySelectorAll('.desktop-only');
 
-    try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (!token) {
-            throw new Error('No authentication token');
+    if (isMobile) {
+        // Show mobile layout
+        if (mobileSelector) {
+            mobileSelector.style.display = 'block';
         }
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+        if (desktopSidebar) {
+            desktopSidebar.style.display = 'none';
+        }
+        
+        // Hide desktop-only elements (except the sidebar which we already handled)
+        desktopOnlyElements.forEach(el => {
+            if (!el.classList.contains('rooms-sidebar')) {
+                el.style.display = 'none';
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to delete room');
-        }
-
-        console.log('Room deleted successfully');
-
-        // If we were in the deleted room, switch to General Discussion
-        if (currentRoomId === roomId) {
-            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
-            if (generalRoom) {
-                switchRoom(generalRoom._id);
+        // Prevent iOS zoom on inputs
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (input.style.fontSize !== '16px') {
+                input.style.fontSize = '16px';
             }
+        });
+
+    } else {
+        // Show desktop layout
+        if (mobileSelector) {
+            mobileSelector.style.display = 'none';
         }
-
-        // Reload rooms
-        await loadRooms();
-
-    } catch (error) {
-        console.error('Error deleting room:', error);
-        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
+        if (desktopSidebar) {
+            desktopSidebar.style.display = 'flex';
+        }
+        
+        // Show desktop-only elements
+        desktopOnlyElements.forEach(el => {
+            el.style.display = '';
+        });
     }
 }
 
-// Search functionality
+// Enhanced error message function with mobile support
+function showErrorMessage(message) {
+    const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 1024;
+    
+    toast.style.cssText = `
+        position: fixed;
+        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
+        background: #ef4444;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 4000);
+}
+
+// Enhanced success message function
+function showSuccessMessage(message) {
+    const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 1024;
+    
+    toast.style.cssText = `
+        position: fixed;
+        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
+        background: #10b981;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-weight: 500;
+        animation: slideIn 0.3s ease-out;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Mobile-enhanced emoji functions
+function addEmoji() {
+    const isMobile = window.innerWidth <= 1024;
+    
+    if (isMobile) {
+        // On mobile, just insert a simple emoji
+        insertEmoji('😊');
+        return;
+    }
+    
+    // Desktop emoji modal
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        const isVisible = emojiModal.style.display !== 'none';
+        emojiModal.style.display = isVisible ? 'none' : 'block';
+    }
+}
+
+function insertEmoji(emoji) {
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const cursorPos = messageInput.selectionStart || messageInput.value.length;
+        const textBefore = messageInput.value.substring(0, cursorPos);
+        const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+        messageInput.value = textBefore + emoji + textAfter;
+        
+        // Set cursor position after emoji
+        const newPos = cursorPos + emoji.length;
+        messageInput.setSelectionRange(newPos, newPos);
+        messageInput.focus();
+    }
+    
+    // Hide emoji modal
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+    }
+}
+
+// Search functionality (desktop only)
 async function performSearch() {
+    if (window.innerWidth <= 1024) {
+        // Skip search on mobile
+        return;
+    }
+    
     const searchInput = document.getElementById('searchInput');
     const searchQuery = searchInput?.value?.trim();
     
@@ -523,7 +704,7 @@ async function performSearch() {
     }
 }
 
-// Search through messages and rooms
+// Search through messages and rooms (desktop only)
 async function searchMessagesAndRooms(query) {
     const results = [];
     
@@ -583,7 +764,7 @@ async function searchMessagesAndRooms(query) {
     return results;
 }
 
-// Display search results
+// Display search results (desktop only)
 function displaySearchResults(results) {
     const searchContent = document.getElementById('searchContent');
     if (!searchContent) return;
@@ -612,7 +793,6 @@ function displaySearchResults(results) {
             resultElement.onclick = () => {
                 switchRoom(result.data.room._id);
                 closeSearch();
-                // Optionally highlight the message
             };
         }
 
@@ -626,7 +806,7 @@ function displaySearchResults(results) {
     });
 }
 
-// Close search results
+// Close search results (desktop only)
 function closeSearch() {
     const searchResults = document.getElementById('searchResults');
     const searchInput = document.getElementById('searchInput');
@@ -640,80 +820,57 @@ function closeSearch() {
     }
 }
 
-// Add search on Enter key
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                performSearch();
-            }
-        });
-    }
-});
-
-// Toggle members list (keeping for compatibility but now used for search)
-function toggleMembersList() {
-    // This function is kept for compatibility but now toggles search
-    const searchResults = document.getElementById('searchResults');
-    if (searchResults) {
-        searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-// Add emoji functionality
-function addEmoji() {
-    const emojiModal = document.getElementById('emojiModal');
-    if (emojiModal) {
-        emojiModal.style.display = emojiModal.style.display === 'none' ? 'block' : 'none';
-    }
-}
-
-function insertEmoji(emoji) {
-    const messageInput = document.getElementById('communityMessageInput');
-    if (messageInput) {
-        const cursorPos = messageInput.selectionStart;
-        const textBefore = messageInput.value.substring(0, cursorPos);
-        const textAfter = messageInput.value.substring(messageInput.selectionEnd);
-        messageInput.value = textBefore + emoji + textAfter;
-        
-        // Set cursor position after emoji
-        messageInput.selectionStart = messageInput.selectionEnd = cursorPos + emoji.length;
-        messageInput.focus();
+// Touch-friendly room switching for mobile
+function switchRoomMobile(roomId) {
+    // Add haptic feedback if available
+    if (navigator.vibrate) {
+        navigator.vibrate(30);
     }
     
-    // Hide emoji modal
-    const emojiModal = document.getElementById('emojiModal');
-    if (emojiModal) {
-        emojiModal.style.display = 'none';
-    }
+    switchRoom(roomId);
 }
 
-// Show error message
-function showErrorMessage(message) {
-    // Create a simple toast notification
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #ef4444;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        max-width: 300px;
-    `;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
+// Orientation change handler
+function handleOrientationChange() {
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
+        initializeMobileLayout();
+        
+        // Adjust container heights
+        const container = document.querySelector('.community-responsive-container');
+        if (container && window.innerWidth <= 1024) {
+            container.style.height = `calc(100vh - 6rem)`;
         }
-    }, 5000);
+        
+        // Close any open modals
+        const emojiModal = document.getElementById('emojiModal');
+        if (emojiModal) emojiModal.style.display = 'none';
+    }, 100);
+}
+
+// Initialize responsive behavior
+function initializeResponsiveCommunity() {
+    console.log('Initializing responsive community features');
+    
+    // Set up layout
+    initializeMobileLayout();
+    
+    // Add event listeners
+    window.addEventListener('resize', initializeMobileLayout);
+    window.addEventListener('orientationchange', handleOrientationChange);
+    
+    // Close emoji modal when clicking outside (desktop only)
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth > 1024) {
+            const emojiModal = document.getElementById('emojiModal');
+            const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
+            
+            if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
+                emojiModal.style.display = 'none';
+            }
+        }
+    });
+    
+    console.log('Responsive community features initialized');
 }
 
 // Logout function (should exist globally)
@@ -722,16 +879,6 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// Close emoji modal when clicking outside
-document.addEventListener('click', function(event) {
-    const emojiModal = document.getElementById('emojiModal');
-    const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
-    
-    if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
-        emojiModal.style.display = 'none';
-    }
-});
-
 // Auto-refresh messages every 30 seconds
 setInterval(async () => {
     if (currentRoomId) {
@@ -739,1016 +886,28 @@ setInterval(async () => {
     }
 }, 30000);
 
-// Add these functions to community.js or create a separate mobile-fixes.js file
-
-// Enhanced mobile search functionality
-function performSearchMobile() {
-    const searchInput = document.getElementById('searchInput');
-    const searchQuery = searchInput?.value?.trim();
-    
-    if (!searchQuery) {
-        closeSearch();
-        return;
-    }
-
-    // On mobile, show search results as full screen overlay
-    const isMobile = window.innerWidth <= 768;
-    
-    try {
-        const searchResults = document.getElementById('searchResults');
-        if (searchResults) {
-            searchResults.style.display = 'block';
-            
-            // Add mobile-specific styling
-            if (isMobile) {
-                searchResults.style.position = 'fixed';
-                searchResults.style.top = '0';
-                searchResults.style.left = '0';
-                searchResults.style.right = '0';
-                searchResults.style.bottom = '0';
-                searchResults.style.width = '100vw';
-                searchResults.style.height = '100vh';
-                searchResults.style.zIndex = '1000';
-                
-                // Prevent body scrolling when search is open
-                document.body.style.overflow = 'hidden';
-            }
-        }
-
-        searchMessagesAndRooms(searchQuery).then(results => {
-            displaySearchResults(results);
-        });
-
-    } catch (error) {
-        console.error('Error performing search:', error);
-        showErrorMessage('Search failed. Please try again.');
-    }
-}
-
-// Enhanced close search for mobile
-function closeSearchMobile() {
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchResults) {
-        searchResults.style.display = 'none';
-        
-        // Reset mobile-specific styles
-        searchResults.style.position = '';
-        searchResults.style.top = '';
-        searchResults.style.left = '';
-        searchResults.style.right = '';
-        searchResults.style.bottom = '';
-        searchResults.style.width = '';
-        searchResults.style.height = '';
-        searchResults.style.zIndex = '';
-        
-        // Re-enable body scrolling
-        document.body.style.overflow = '';
-    }
-    
-    if (searchInput) {
-        searchInput.value = '';
-        searchInput.blur(); // Hide mobile keyboard
-    }
-}
-
-// Touch-friendly room switching
-function switchRoomMobile(roomId) {
-    // Add haptic feedback if available
-    if (navigator.vibrate) {
-        navigator.vibrate(50);
-    }
-    
-    // Use existing switchRoom function
-    switchRoom(roomId);
-    
-    // On mobile, scroll to chat area after switching rooms
-    if (window.innerWidth <= 768) {
-        setTimeout(() => {
-            const chatArea = document.querySelector('.chat-area');
-            if (chatArea) {
-                chatArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        }, 300);
-    }
-}
-
-// Enhanced emoji modal for mobile
-function addEmojiMobile() {
-    const emojiModal = document.getElementById('emojiModal');
-    const isMobile = window.innerWidth <= 768;
-    
-    if (emojiModal) {
-        const isVisible = emojiModal.style.display !== 'none';
-        
-        if (!isVisible) {
-            emojiModal.style.display = 'block';
-            
-            if (isMobile) {
-                // Prevent body scrolling when emoji picker is open
-                document.body.style.overflow = 'hidden';
-                
-                // Add backdrop for mobile
-                const backdrop = document.createElement('div');
-                backdrop.id = 'emojiBackdrop';
-                backdrop.style.cssText = `
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: rgba(0, 0, 0, 0.5);
-                    z-index: 99;
-                    backdrop-filter: blur(4px);
-                `;
-                backdrop.onclick = () => closeEmojiMobile();
-                document.body.appendChild(backdrop);
-                
-                // Ensure emoji modal is above backdrop
-                emojiModal.style.zIndex = '100';
-            }
-        } else {
-            closeEmojiMobile();
-        }
-    }
-}
-
-function closeEmojiMobile() {
-    const emojiModal = document.getElementById('emojiModal');
-    const backdrop = document.getElementById('emojiBackdrop');
-    
-    if (emojiModal) {
-        emojiModal.style.display = 'none';
-        emojiModal.style.zIndex = '';
-    }
-    
-    if (backdrop) {
-        backdrop.remove();
-    }
-    
-    // Re-enable body scrolling
-    document.body.style.overflow = '';
-}
-
-// Enhanced message sending for mobile
-function sendCommunityMessageMobile() {
-    const messageInput = document.getElementById('communityMessageInput');
-    const sendButton = document.getElementById('sendCommunityButton');
-    
-    if (!messageInput || !currentRoomId) {
-        console.error('Missing required elements or room');
-        return;
-    }
-
-    const messageText = messageInput.value.trim();
-    if (!messageText) {
-        return;
-    }
-
-    // Add mobile-specific feedback
-    if (navigator.vibrate) {
-        navigator.vibrate(30);
-    }
-
-    // Use existing sendCommunityMessage function
-    sendCommunityMessage().then(() => {
-        // On mobile, hide keyboard after sending
-        if (window.innerWidth <= 768) {
-            messageInput.blur();
-        }
-    });
-}
-
-// Handle orientation change
-function handleOrientationChange() {
-    // Force recalculation of container heights on orientation change
-    setTimeout(() => {
-        const communityContainer = document.querySelector('.community-container');
-        if (communityContainer) {
-            communityContainer.style.height = `calc(100vh - ${window.innerWidth <= 768 ? '4rem' : '6rem'})`;
-        }
-        
-        // Close any open modals on orientation change
-        closeSearchMobile();
-        closeEmojiMobile();
-    }, 100);
-}
-
-// Prevent zoom on input focus (iOS Safari)
-function preventInputZoom() {
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-        if (input.style.fontSize !== '16px') {
-            input.style.fontSize = '16px';
-        }
-    });
-}
-
-// Initialize mobile enhancements
-function initializeMobileEnhancements() {
-    // Override existing functions with mobile-enhanced versions
-    if (window.innerWidth <= 768) {
-        window.performSearch = performSearchMobile;
-        window.closeSearch = closeSearchMobile;
-        window.addEmoji = addEmojiMobile;
-        
-        // Add orientation change handler
-        window.addEventListener('orientationchange', handleOrientationChange);
-        window.addEventListener('resize', handleOrientationChange);
-        
-        // Prevent input zoom on iOS
-        preventInputZoom();
-        
-        // Add touch event listeners for better mobile interaction
-        const roomItems = document.querySelectorAll('.room-item');
-        roomItems.forEach(item => {
-            item.addEventListener('touchstart', function() {
-                this.style.backgroundColor = 'var(--surface)';
-            }, { passive: true });
-            
-            item.addEventListener('touchend', function() {
-                setTimeout(() => {
-                    this.style.backgroundColor = '';
-                }, 150);
-            }, { passive: true });
-        });
-        
-        // Enhanced scroll behavior for rooms list
-        const roomsList = document.querySelector('.rooms-list');
-        if (roomsList) {
-            roomsList.style.webkitOverflowScrolling = 'touch';
-            roomsList.style.scrollbarWidth = 'none';
-        }
-        
-        // Add pull-to-refresh indicator (visual only)
-        let pullStartY = 0;
-        let pullDistance = 0;
-        
-        const chatMessages = document.getElementById('communityMessages');
-        if (chatMessages) {
-            chatMessages.addEventListener('touchstart', (e) => {
-                pullStartY = e.touches[0].clientY;
-            }, { passive: true });
-            
-            chatMessages.addEventListener('touchmove', (e) => {
-                if (chatMessages.scrollTop === 0) {
-                    pullDistance = e.touches[0].clientY - pullStartY;
-                    if (pullDistance > 0 && pullDistance < 100) {
-                        chatMessages.style.transform = `translateY(${pullDistance * 0.5}px)`;
-                        chatMessages.style.opacity = 1 - (pullDistance * 0.01);
-                    }
-                }
-            }, { passive: true });
-            
-            chatMessages.addEventListener('touchend', () => {
-                chatMessages.style.transform = '';
-                chatMessages.style.opacity = '';
-                
-                if (pullDistance > 50) {
-                    // Reload messages on pull-to-refresh
-                    if (currentRoomId) {
-                        loadMessages(currentRoomId);
-                    }
-                }
-                pullDistance = 0;
-            }, { passive: true });
-        }
-    }
-}
-
-// Call initialization when DOM is ready
+// Auto-initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeMobileEnhancements);
+    document.addEventListener('DOMContentLoaded', initializeResponsiveCommunity);
 } else {
-    initializeMobileEnhancements();
-}
-
-// Export functions for global use
-window.performSearchMobile = performSearchMobile;
-window.closeSearchMobile = closeSearchMobile;
-window.addEmojiMobile = addEmojiMobile;
-window.sendCommunityMessageMobile = sendCommunityMessageMobile;
-window.handleOrientationChange = handleOrientationChange;
-
-// Real-time Search Enhancement for Community Page
-// Add this to the END of your community.js file or create a new file
-
-// Global search cache and state
-let searchCache = {
-    rooms: [],
-    messages: {},
-    lastUpdate: 0
-};
-
-let searchTimeout = null;
-let isSearching = false;
-
-// Enhanced real-time search initialization
-function initializeRealTimeSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (!searchInput) return;
-
-    // Remove existing event listeners
-    searchInput.removeEventListener('input', handleSearchInput);
-    searchInput.removeEventListener('keydown', handleSearchKeydown);
-    searchInput.removeEventListener('focus', handleSearchFocus);
-    searchInput.removeEventListener('blur', handleSearchBlur);
-
-    // Add new event listeners
-    searchInput.addEventListener('input', handleSearchInput);
-    searchInput.addEventListener('keydown', handleSearchKeydown);
-    searchInput.addEventListener('focus', handleSearchFocus);
-    searchInput.addEventListener('blur', handleSearchBlur);
-
-    // Initialize search cache
-    updateSearchCache();
-    
-    console.log('Real-time search initialized');
-}
-
-// Handle search input with debouncing
-function handleSearchInput(event) {
-    const query = event.target.value.trim();
-    
-    // Clear previous timeout
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-    
-    // If empty query, close search
-    if (!query) {
-        closeSearch();
-        return;
-    }
-    
-    // Show search results immediately with loading state
-    showSearchResults();
-    showSearchLoading();
-    
-    // Debounce search execution
-    searchTimeout = setTimeout(() => {
-        performRealTimeSearch(query);
-    }, 150); // 150ms debounce
-}
-
-// Handle special keys
-function handleSearchKeydown(event) {
-    if (event.key === 'Escape') {
-        closeSearch();
-        event.target.blur();
-    } else if (event.key === 'Enter') {
-        event.preventDefault();
-        const query = event.target.value.trim();
-        if (query) {
-            performRealTimeSearch(query);
-        }
-    }
-}
-
-// Handle search focus
-function handleSearchFocus(event) {
-    const query = event.target.value.trim();
-    if (query) {
-        showSearchResults();
-        performRealTimeSearch(query);
-    }
-}
-
-// Handle search blur (with delay to allow clicking results)
-function handleSearchBlur(event) {
-    setTimeout(() => {
-        const searchResults = document.getElementById('searchResults');
-        if (searchResults && !searchResults.matches(':hover')) {
-            // Don't close if user is hovering over results
-            // closeSearch();
-        }
-    }, 150);
-}
-
-// Show search results panel
-function showSearchResults() {
-    const searchResults = document.getElementById('searchResults');
-    if (searchResults) {
-        searchResults.style.display = 'block';
-        searchResults.classList.add('show');
-        
-        // On mobile, prevent body scrolling
-        if (window.innerWidth <= 768) {
-            document.body.style.overflow = 'hidden';
-        }
-    }
-}
-
-// Show loading state
-function showSearchLoading() {
-    const searchContent = document.getElementById('searchContent');
-    if (searchContent) {
-        searchContent.innerHTML = `
-            <div class="quick-search-info">
-                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <div style="width: 16px; height: 16px; border: 2px solid var(--border); border-top: 2px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                    Searching...
-                </div>
-            </div>
-        `;
-    }
-}
-
-// Perform real-time search
-async function performRealTimeSearch(query) {
-    if (isSearching) return;
-    isSearching = true;
-    
-    try {
-        const results = await searchInRealTime(query);
-        displayRealTimeResults(results, query);
-    } catch (error) {
-        console.error('Search error:', error);
-        showSearchError();
-    } finally {
-        isSearching = false;
-    }
-}
-
-// Search in real-time across cached data
-async function searchInRealTime(query) {
-    const results = [];
-    const queryLower = query.toLowerCase();
-    
-    // Update cache if needed
-    if (Date.now() - searchCache.lastUpdate > 30000) { // 30 seconds
-        await updateSearchCache();
-    }
-    
-    // Search rooms
-    searchCache.rooms.forEach(room => {
-        const nameMatch = room.name.toLowerCase().includes(queryLower);
-        const descMatch = room.description.toLowerCase().includes(queryLower);
-        
-        if (nameMatch || descMatch) {
-            results.push({
-                type: 'room',
-                title: room.name,
-                preview: room.description,
-                data: room,
-                relevance: nameMatch ? 10 : 5
-            });
-        }
-    });
-    
-    // Search messages from all loaded rooms
-    Object.entries(searchCache.messages).forEach(([roomId, messages]) => {
-        const room = searchCache.rooms.find(r => r._id === roomId);
-        if (!room) return;
-        
-        messages.forEach(message => {
-            const content = (message.content || message.message || '').toLowerCase();
-            const username = (message.username || '').toLowerCase();
-            
-            if (content.includes(queryLower) || username.includes(queryLower)) {
-                const preview = (message.content || message.message || '').substring(0, 100);
-                results.push({
-                    type: 'message',
-                    title: `${message.username || 'User'} in ${room.name}`,
-                    preview: preview + (preview.length === 100 ? '...' : ''),
-                    data: { message, room },
-                    relevance: username.includes(queryLower) ? 8 : 3
-                });
-            }
-        });
-    });
-    
-    // Sort by relevance and limit results
-    return results
-        .sort((a, b) => b.relevance - a.relevance)
-        .slice(0, 20);
-}
-
-// Update search cache
-async function updateSearchCache() {
-    try {
-        // Cache current rooms
-        searchCache.rooms = [...rooms];
-        
-        // Cache messages from currently loaded room
-        if (currentRoomId) {
-            const messagesContainer = document.getElementById('communityMessages');
-            if (messagesContainer) {
-                const messageElements = messagesContainer.querySelectorAll('.message-group');
-                const messages = Array.from(messageElements).map(el => {
-                    const username = el.querySelector('.username')?.textContent || 'User';
-                    const content = el.querySelector('.message-content')?.textContent || '';
-                    const timestamp = el.querySelector('.message-timestamp')?.textContent || '';
-                    
-                    return {
-                        username,
-                        content,
-                        message: content, // for compatibility
-                        timestamp
-                    };
-                });
-                
-                searchCache.messages[currentRoomId] = messages;
-            }
-        }
-        
-        searchCache.lastUpdate = Date.now();
-        console.log('Search cache updated', searchCache);
-    } catch (error) {
-        console.error('Error updating search cache:', error);
-    }
-}
-
-// Display real-time search results
-function displayRealTimeResults(results, query) {
-    const searchContent = document.getElementById('searchContent');
-    if (!searchContent) return;
-
-    if (results.length === 0) {
-        searchContent.innerHTML = `
-            <div class="quick-search-info">
-                Type to search rooms and messages in real-time
-            </div>
-            <div class="no-results">
-                <p>No results found for "${escapeHtml(query)}"</p>
-                <small>Try different keywords or check spelling</small>
-            </div>
-        `;
-        return;
-    }
-
-    // Group results by type
-    const roomResults = results.filter(r => r.type === 'room');
-    const messageResults = results.filter(r => r.type === 'message');
-
-    let html = `
-        <div class="quick-search-info">
-            Found ${results.length} result${results.length !== 1 ? 's' : ''} for "${escapeHtml(query)}"
-        </div>
-    `;
-
-    // Add room results
-    if (roomResults.length > 0) {
-        roomResults.forEach(result => {
-            html += `
-                <div class="search-result-item" onclick="selectSearchResult('${result.data._id}', 'room')">
-                    <div class="search-result-type">Room</div>
-                    <div class="search-result-title">${highlightText(escapeHtml(result.title), query)}</div>
-                    <div class="search-result-preview">${highlightText(escapeHtml(result.preview), query)}</div>
-                </div>
-            `;
-        });
-    }
-
-    // Add message results
-    if (messageResults.length > 0) {
-        messageResults.forEach(result => {
-            html += `
-                <div class="search-result-item" onclick="selectSearchResult('${result.data.room._id}', 'message')">
-                    <div class="search-result-type">Message</div>
-                    <div class="search-result-title">${highlightText(escapeHtml(result.title), query)}</div>
-                    <div class="search-result-preview">${highlightText(escapeHtml(result.preview), query)}</div>
-                </div>
-            `;
-        });
-    }
-
-    searchContent.innerHTML = html;
-}
-
-// Highlight search terms in text
-function highlightText(text, query) {
-    if (!query || !text) return text;
-    
-    const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-    return text.replace(regex, '<span class="search-highlight">$1</span>');
-}
-
-// Escape regex special characters
-function escapeRegex(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\                    <div class="search-result-preview">${highlightText(escapeHtml(');
-}
-
-// Handle search result selection
-function selectSearchResult(id, type) {
-    if (type === 'room' || type === 'message') {
-        switchRoom(id);
-        closeSearch();
-        
-        // Clear search input
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) {
-            searchInput.value = '';
-            searchInput.blur();
-        }
-        
-        // Add haptic feedback on mobile
-        if (navigator.vibrate) {
-            navigator.vibrate(30);
-        }
-    }
-}
-
-// Show search error
-function showSearchError() {
-    const searchContent = document.getElementById('searchContent');
-    if (searchContent) {
-        searchContent.innerHTML = `
-            <div class="no-results">
-                <p>Search temporarily unavailable</p>
-                <small>Please try again in a moment</small>
-            </div>
-        `;
-    }
-}
-
-// Enhanced close search
-function closeSearch() {
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchResults) {
-        searchResults.classList.remove('show');
-        setTimeout(() => {
-            searchResults.style.display = 'none';
-        }, 300);
-        
-        // Re-enable body scrolling
-        document.body.style.overflow = '';
-    }
-    
-    // Clear search timeout
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-        searchTimeout = null;
-    }
-}
-
-// Override existing search functions
-function performSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        const query = searchInput.value.trim();
-        if (query) {
-            performRealTimeSearch(query);
-        } else {
-            closeSearch();
-        }
-    }
-}
-
-// Update cache when switching rooms
-const originalSwitchRoom = window.switchRoom;
-if (originalSwitchRoom) {
-    window.switchRoom = async function(roomId) {
-        const result = await originalSwitchRoom(roomId);
-        
-        // Update search cache with new room messages
-        setTimeout(() => {
-            updateSearchCache();
-        }, 1000);
-        
-        return result;
-    };
-}
-
-// Update cache when sending messages
-const originalSendCommunityMessage = window.sendCommunityMessage;
-if (originalSendCommunityMessage) {
-    window.sendCommunityMessage = async function() {
-        const result = await originalSendCommunityMessage();
-        
-        // Update cache after sending message
-        setTimeout(() => {
-            updateSearchCache();
-        }, 500);
-        
-        return result;
-    };
-}
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeRealTimeSearch);
-} else {
-    initializeRealTimeSearch();
-}
-
-// Re-initialize on room load
-document.addEventListener('roomLoaded', updateSearchCache);
-
-// Handle window resize for mobile optimization
-function handleSearchResize() {
-    const searchResults = document.getElementById('searchResults');
-    if (searchResults && searchResults.classList.contains('show')) {
-        if (window.innerWidth <= 768) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-    }
-}
-
-window.addEventListener('resize', handleSearchResize);
-window.addEventListener('orientationchange', handleSearchResize);
-
-// Add CSS animation keyframes if not already present
-if (!document.querySelector('#search-animations')) {
-    const style = document.createElement('style');
-    style.id = 'search-animations';
-    style.textContent = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .search-results {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .search-result-item {
-            transition: all 0.2s ease;
-        }
-        
-        .search-result-item:hover {
-            transform: translateX(4px);
-        }
-        
-        @media (max-width: 768px) {
-            .search-result-item:hover {
-                transform: none;
-                background: var(--surface);
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    initializeResponsiveCommunity();
 }
 
 // Export functions for global access
-window.performRealTimeSearch = performRealTimeSearch;
+window.initializeMobileLayout = initializeMobileLayout;
+window.showSuccessMessage = showSuccessMessage;
+window.switchRoomMobile = switchRoomMobile;
+window.handleOrientationChange = handleOrientationChange;
+window.updateRoomsList = updateRoomsList;
+window.switchRoom = switchRoom;
+window.sendCommunityMessage = sendCommunityMessage;
+window.handleCommunityKeyPress = handleCommunityKeyPress;
+window.createRoom = createRoom;
+window.deleteRoom = deleteRoom;
+window.addEmoji = addEmoji;
+window.insertEmoji = insertEmoji;
+window.performSearch = performSearch;
 window.closeSearch = closeSearch;
-window.selectSearchResult = selectSearchResult;
-window.updateSearchCache = updateSearchCache;
+window.initializeCommunity = initializeCommunity;
 
-console.log('Real-time search system loaded successfully');
-
-// ADD THIS TO THE END OF YOUR community.js FILE
-
-// Mobile-specific enhancements
-function initializeMobileEnhancements() {
-    if (window.innerWidth <= 768) {
-        // Enhanced search for mobile
-        const originalCloseSearch = window.closeSearch;
-        window.closeSearch = function() {
-            const searchResults = document.getElementById('searchResults');
-            if (searchResults) {
-                searchResults.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-            
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) {
-                searchInput.value = '';
-                searchInput.blur(); // Hide keyboard
-            }
-        };
-        
-        // Enhanced emoji modal for mobile
-        const originalAddEmoji = window.addEmoji;
-        window.addEmoji = function() {
-            const emojiModal = document.getElementById('emojiModal');
-            if (emojiModal) {
-                const isVisible = emojiModal.style.display !== 'none';
-                
-                if (!isVisible) {
-                    emojiModal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
-                    
-                    // Add backdrop
-                    const backdrop = document.createElement('div');
-                    backdrop.id = 'emojiBackdrop';
-                    backdrop.style.cssText = `
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100vw;
-                        height: 100vh;
-                        background: rgba(0, 0, 0, 0.5);
-                        z-index: 1000;
-                        backdrop-filter: blur(4px);
-                    `;
-                    backdrop.onclick = () => closeEmojiMobile();
-                    document.body.appendChild(backdrop);
-                } else {
-                    closeEmojiMobile();
-                }
-            }
-        };
-        
-        // Close emoji modal for mobile
-        window.closeEmojiMobile = function() {
-            const emojiModal = document.getElementById('emojiModal');
-            const backdrop = document.getElementById('emojiBackdrop');
-            
-            if (emojiModal) {
-                emojiModal.style.display = 'none';
-            }
-            
-            if (backdrop) {
-                backdrop.remove();
-            }
-            
-            document.body.style.overflow = '';
-        };
-        
-        // Prevent zoom on input focus (iOS)
-        const inputs = document.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-            if (input.style.fontSize !== '16px') {
-                input.style.fontSize = '16px';
-            }
-        });
-        
-        // Handle orientation changes
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => {
-                const communityContainer = document.querySelector('.community-container');
-                if (communityContainer) {
-                    communityContainer.style.height = `calc(100vh - ${window.innerWidth <= 768 ? '6rem' : '8rem'})`;
-                }
-                
-                // Close modals on orientation change
-                window.closeSearch();
-                if (window.closeEmojiMobile) window.closeEmojiMobile();
-            }, 100);
-        });
-        
-        // Enhanced room switching with haptic feedback
-        const originalSwitchRoom = window.switchRoom;
-        window.switchRoom = async function(roomId) {
-            // Add haptic feedback
-            if (navigator.vibrate) {
-                navigator.vibrate(30);
-            }
-            
-            const result = await originalSwitchRoom(roomId);
-            
-            // Scroll to chat on mobile after switching
-            setTimeout(() => {
-                const chatArea = document.querySelector('.chat-area');
-                if (chatArea) {
-                    chatArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 200);
-            
-            return result;
-        };
-        
-        // Enhanced message sending
-        const originalSendCommunityMessage = window.sendCommunityMessage;
-        window.sendCommunityMessage = async function() {
-            const messageInput = document.getElementById('communityMessageInput');
-            
-            // Add haptic feedback
-            if (navigator.vibrate) {
-                navigator.vibrate(30);
-            }
-            
-            const result = await originalSendCommunityMessage();
-            
-            // Hide keyboard after sending on mobile
-            if (messageInput) {
-                messageInput.blur();
-            }
-            
-            return result;
-        };
-        
-        // Touch feedback for room items
-        const roomItems = document.querySelectorAll('.room-item');
-        roomItems.forEach(item => {
-            item.addEventListener('touchstart', function() {
-                this.style.backgroundColor = 'var(--surface)';
-            }, { passive: true });
-            
-            item.addEventListener('touchend', function() {
-                setTimeout(() => {
-                    this.style.backgroundColor = '';
-                }, 150);
-            }, { passive: true });
-        });
-        
-        // Enhanced scroll behavior for rooms list
-        const roomsList = document.querySelector('.rooms-list');
-        if (roomsList) {
-            roomsList.style.webkitOverflowScrolling = 'touch';
-            roomsList.style.scrollbarWidth = 'none';
-        }
-        
-        // Pull-to-refresh simulation for chat messages
-        let pullStartY = 0;
-        let pullDistance = 0;
-        
-        const chatMessages = document.getElementById('communityMessages');
-        if (chatMessages) {
-            chatMessages.addEventListener('touchstart', (e) => {
-                pullStartY = e.touches[0].clientY;
-            }, { passive: true });
-            
-            chatMessages.addEventListener('touchmove', (e) => {
-                if (chatMessages.scrollTop === 0) {
-                    pullDistance = e.touches[0].clientY - pullStartY;
-                    if (pullDistance > 0 && pullDistance < 100) {
-                        chatMessages.style.transform = `translateY(${pullDistance * 0.5}px)`;
-                        chatMessages.style.opacity = 1 - (pullDistance * 0.01);
-                    }
-                }
-            }, { passive: true });
-            
-            chatMessages.addEventListener('touchend', () => {
-                chatMessages.style.transform = '';
-                chatMessages.style.opacity = '';
-                
-                if (pullDistance > 50 && currentRoomId) {
-                    // Reload messages on pull-to-refresh
-                    loadMessages(currentRoomId);
-                }
-                pullDistance = 0;
-            }, { passive: true });
-        }
-    }
-}
-
-// Close emoji modal when clicking outside
-document.addEventListener('click', function(event) {
-    const emojiModal = document.getElementById('emojiModal');
-    const addEmojiBtn = event.target.closest('button[onclick="addEmoji()"]');
-    
-    if (emojiModal && !emojiModal.contains(event.target) && !addEmojiBtn) {
-        if (window.innerWidth <= 768 && window.closeEmojiMobile) {
-            window.closeEmojiMobile();
-        } else {
-            emojiModal.style.display = 'none';
-        }
-    }
-});
-
-// Initialize mobile enhancements
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeMobileEnhancements);
-} else {
-    initializeMobileEnhancements();
-}
-
-// Re-initialize when window resizes
-window.addEventListener('resize', () => {
-    if (window.innerWidth <= 768) {
-        initializeMobileEnhancements();
-    }
-});
-
-// ADD THIS TO THE END OF community.js - SIMPLE MOBILE FIXES
-
-// Override search functions for mobile compatibility
-function showSearchResults() {
-    const searchResults = document.getElementById('searchResults');
-    if (searchResults) {
-        searchResults.style.display = 'flex';
-        searchResults.classList.add('show');
-    }
-}
-
-function closeSearch() {
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchResults) {
-        searchResults.classList.remove('show');
-        searchResults.style.display = 'none';
-    }
-    
-    if (searchInput) {
-        searchInput.value = '';
-        searchInput.blur(); // Hide mobile keyboard
-    }
-}
-
-// Mobile-specific improvements
-if (window.innerWidth <= 1024) {
-    // Prevent zoom on iOS
-    document.querySelectorAll('input, textarea').forEach(input => {
-        if (!input.style.fontSize) {
-            input.style.fontSize = '16px';
-        }
-    });
-    
-    // Handle orientation changes
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            closeSearch();
-            const emojiModal = document.getElementById('emojiModal');
-            if (emojiModal) emojiModal.style.display = 'none';
-        }, 100);
-    });
-}
+console.log('Community.js loaded successfully with responsive features');
