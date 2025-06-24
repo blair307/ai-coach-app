@@ -220,9 +220,13 @@
             document.getElementById('currentDateDisplay').textContent = now.toLocaleDateString('en-US', options);
         }
 
-        // SIMPLE: Check if goal was completed today based on server data
+        // FIXED: Better goal completion check
         function isGoalCompletedToday(goal) {
-            if (!goal.lastCompletedDate) return false;
+            // If no lastCompletedDate, definitely not completed
+            if (!goal.lastCompletedDate) {
+                console.log(`Goal ${goal._id}: No lastCompletedDate, returning false`);
+                return false;
+            }
             
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -631,6 +635,7 @@
             container.innerHTML = html;
         }
 
+        // FIXED: More robust toggle function
         async function toggleGoalCompletion(goalId) {
             console.log('🔄 TOGGLE CALLED - goalId:', goalId);
             
@@ -647,7 +652,14 @@
                 console.log('📋 Goal current state:', currentlyCompleted);
                 console.log('🔄 Setting to:', newState);
                 
-                // Call the server immediately
+                // Show immediate feedback
+                const checkbox = document.getElementById(`goal-${goalId}`);
+                if (checkbox) {
+                    checkbox.checked = newState;
+                    checkbox.disabled = true;
+                }
+                
+                // Call the server
                 await updateGoalOnServer(goalId, newState);
                 
                 // Reload fresh data from server
@@ -659,21 +671,32 @@
             } catch (error) {
                 console.error('❌ Toggle failed:', error);
                 showError('Failed to update goal. Please try again.');
+                
+                // Reload to reset state
+                await loadDailyGoals();
             }
         }
 
+        // FIXED: Clearer server update logic
         async function updateGoalOnServer(goalId, completed) {
-            console.log('📤 UPDATING SERVER - goalId:', goalId, 'completed:', completed);
+            console.log(`📤 UPDATING SERVER - goalId: ${goalId}, completed: ${completed}`);
             
             const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
             if (!token) {
                 throw new Error('No authentication token');
             }
 
+            // FIXED: More explicit request data
             const requestData = {
-                completed: completed,
-                lastCompletedDate: completed ? new Date().toISOString() : null
+                completed: completed
             };
+            
+            // IMPORTANT: Only set lastCompletedDate if completing, set to null if uncompleting
+            if (completed) {
+                requestData.lastCompletedDate = new Date().toISOString();
+            } else {
+                requestData.lastCompletedDate = null;
+            }
             
             console.log('📤 Request data:', requestData);
 
@@ -738,6 +761,7 @@
             document.body.style.overflow = 'hidden';
         }
 
+        // UPDATED: Better modal button management
         function updateModalButtons() {
             if (!selectedGoal) return;
             
