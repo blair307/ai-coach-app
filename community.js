@@ -1,12 +1,10 @@
-// Community.js - FIXED VERSION - Prevents infinite loop with debounced layout initialization
+// Community.js - SIMPLE VERSION - No problematic resize listeners
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
-let layoutInitialized = false;
-let resizeTimeout = null;
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -26,11 +24,8 @@ async function initializeCommunity() {
             return;
         }
 
-        // Initialize responsive layout ONCE
-        if (!layoutInitialized) {
-            initializeMobileLayout();
-            layoutInitialized = true;
-        }
+        // Set layout based on screen size (ONE TIME ONLY)
+        setLayoutForScreenSize();
 
         // Load all rooms from backend
         await loadRooms();
@@ -47,6 +42,47 @@ async function initializeCommunity() {
     } catch (error) {
         console.error('❌ Error initializing community:', error);
         showErrorMessage('Unable to load community. Please refresh the page.');
+    }
+}
+
+// SIMPLE: Set layout based on screen size (called only once)
+function setLayoutForScreenSize() {
+    const isMobile = window.innerWidth <= 1024;
+    console.log('📱 Setting layout for screen size:', { isMobile, width: window.innerWidth });
+    
+    const mobileSelector = document.querySelector('.mobile-room-selector');
+    const desktopSidebar = document.querySelector('.rooms-sidebar');
+    const desktopOnlyElements = document.querySelectorAll('.desktop-only');
+
+    if (isMobile) {
+        // Show mobile layout
+        if (mobileSelector) mobileSelector.style.display = 'block';
+        if (desktopSidebar) desktopSidebar.style.display = 'none';
+        
+        // Hide desktop-only elements
+        desktopOnlyElements.forEach(el => {
+            if (!el.classList.contains('rooms-sidebar')) {
+                el.style.display = 'none';
+            }
+        });
+
+        // Prevent iOS zoom on inputs
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            if (input.style.fontSize !== '16px') {
+                input.style.fontSize = '16px';
+            }
+        });
+
+    } else {
+        // Show desktop layout
+        if (mobileSelector) mobileSelector.style.display = 'none';
+        if (desktopSidebar) desktopSidebar.style.display = 'flex';
+        
+        // Show desktop-only elements
+        desktopOnlyElements.forEach(el => {
+            el.style.display = '';
+        });
     }
 }
 
@@ -106,7 +142,7 @@ async function loadRooms() {
     }
 }
 
-// FIXED: Enhanced updateRoomsList with safety checks
+// Update rooms list for both desktop and mobile
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
     const roomDropdown = document.getElementById('roomDropdown');
@@ -163,7 +199,7 @@ function updateRoomsList() {
     }
 }
 
-// FIXED: Enhanced switchRoom with better error handling
+// Switch to a different room
 async function switchRoom(roomId) {
     try {
         if (!roomId) {
@@ -515,73 +551,6 @@ async function deleteRoom(roomId) {
     }
 }
 
-// FIXED: Mobile layout initialization with debouncing
-function initializeMobileLayout() {
-    if (layoutInitialized) {
-        return; // Prevent multiple initializations
-    }
-    
-    const isMobile = window.innerWidth <= 1024;
-    console.log('📱 Mobile layout initialized:', { isMobile, width: window.innerWidth });
-    
-    const mobileSelector = document.querySelector('.mobile-room-selector');
-    const desktopSidebar = document.querySelector('.rooms-sidebar');
-    const desktopOnlyElements = document.querySelectorAll('.desktop-only');
-
-    if (isMobile) {
-        // Show mobile layout
-        if (mobileSelector) {
-            mobileSelector.style.display = 'block';
-        }
-        if (desktopSidebar) {
-            desktopSidebar.style.display = 'none';
-        }
-        
-        // Hide desktop-only elements
-        desktopOnlyElements.forEach(el => {
-            if (!el.classList.contains('rooms-sidebar')) {
-                el.style.display = 'none';
-            }
-        });
-
-        // Prevent iOS zoom on inputs
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            if (input.style.fontSize !== '16px') {
-                input.style.fontSize = '16px';
-            }
-        });
-
-    } else {
-        // Show desktop layout
-        if (mobileSelector) {
-            mobileSelector.style.display = 'none';
-        }
-        if (desktopSidebar) {
-            desktopSidebar.style.display = 'flex';
-        }
-        
-        // Show desktop-only elements
-        desktopOnlyElements.forEach(el => {
-            el.style.display = '';
-        });
-    }
-}
-
-// FIXED: Debounced resize handler
-function handleResize() {
-    if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-    }
-    
-    resizeTimeout = setTimeout(() => {
-        // Reset layout flag to allow re-initialization
-        layoutInitialized = false;
-        initializeMobileLayout();
-        layoutInitialized = true;
-    }, 250); // Wait 250ms after resize stops
-}
-
 // Error message function
 function showErrorMessage(message) {
     const toast = document.createElement('div');
@@ -649,7 +618,7 @@ function performSearch() {
     if (window.innerWidth <= 1024) {
         return; // Skip search on mobile
     }
-    console.log('🔍 Search functionality disabled on mobile');
+    console.log('🔍 Search functionality available on desktop');
 }
 
 function closeSearch() {
@@ -665,21 +634,9 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// FIXED: Initialize with proper event listeners
-function initializeResponsiveCommunity() {
-    console.log('🚀 Initializing responsive community features');
-    
-    // Add DEBOUNCED resize listener
-    window.addEventListener('resize', handleResize);
-    
-    // Add orientation change handler
-    window.addEventListener('orientationchange', () => {
-        setTimeout(() => {
-            layoutInitialized = false;
-            initializeMobileLayout();
-            layoutInitialized = true;
-        }, 100);
-    });
+// SIMPLE: Only add essential event listeners (NO RESIZE LISTENERS)
+function initializeBasicEvents() {
+    console.log('🚀 Initializing basic event listeners');
     
     // Close emoji modal when clicking outside (desktop only)
     document.addEventListener('click', function(event) {
@@ -693,7 +650,7 @@ function initializeResponsiveCommunity() {
         }
     });
     
-    console.log('✅ Responsive community features initialized');
+    console.log('✅ Basic event listeners initialized');
 }
 
 // Auto-refresh messages every 30 seconds
@@ -705,9 +662,9 @@ setInterval(async () => {
 
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeResponsiveCommunity);
+    document.addEventListener('DOMContentLoaded', initializeBasicEvents);
 } else {
-    initializeResponsiveCommunity();
+    initializeBasicEvents();
 }
 
 // Export functions for global access
@@ -724,4 +681,4 @@ window.closeSearch = closeSearch;
 window.initializeCommunity = initializeCommunity;
 window.logout = logout;
 
-console.log('✅ Community.js loaded successfully with FIXED responsive features');
+console.log('✅ Community.js loaded - SIMPLE VERSION with no problematic resize listeners');
