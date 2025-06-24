@@ -1008,16 +1008,84 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
   }
 });
 
-// Update a life goal
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { bigGoal, dailyAction, completed } = req.body;
+    const { bigGoal, dailyAction, completed, lastCompletedDate } = req.body;
     const userId = req.user.userId;
+
+    console.log(`🔄 Updating goal ${id}:`, { completed, lastCompletedDate });
 
     const goal = await LifeGoal.findOne({ _id: id, userId });
     if (!goal) {
       return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    // Update fields
+    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
+    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
+    
+    // FIXED: Handle completion status and date properly
+    if (completed !== undefined) {
+      goal.completed = completed;
+      
+      // FIXED: Explicitly handle the lastCompletedDate
+      if (completed && lastCompletedDate) {
+        goal.lastCompletedDate = new Date(lastCompletedDate);
+        
+        // Handle streak calculation for completion
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const completedDate = new Date(lastCompletedDate);
+        completedDate.setHours(0, 0, 0, 0);
+        
+        // Only update streak if completing for today
+        if (today.getTime() === completedDate.getTime()) {
+          const previousCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
+          
+          if (!previousCompleted) {
+            goal.streak = 1;
+          } else {
+            previousCompleted.setHours(0, 0, 0, 0);
+            const daysDiff = (today - previousCompleted) / (1000 * 60 * 60 * 24);
+            
+            if (daysDiff === 1) {
+              goal.streak += 1;
+            } else if (daysDiff > 1) {
+              goal.streak = 1;
+            }
+            // If same day, keep current streak
+          }
+        }
+      } else if (!completed) {
+        // FIXED: When marking incomplete, clear the date and handle streak
+        goal.lastCompletedDate = null;
+        
+        // Don't reduce streak to 0 immediately, just remove today's completion
+        // The streak represents consecutive days, so if they had a 5-day streak
+        // and uncheck today, they should go back to 4 days (yesterday's completion)
+        if (goal.streak > 0) {
+          goal.streak = Math.max(0, goal.streak - 1);
+        }
+      }
+    }
+    
+    goal.updatedAt = new Date();
+    await goal.save();
+
+    console.log(`✅ Goal updated:`, {
+      id: goal._id,
+      completed: goal.completed,
+      streak: goal.streak,
+      lastCompletedDate: goal.lastCompletedDate
+    });
+
+    res.json(goal);
+  } catch (error) {
+    console.error('Update life goal error:', error);
+    res.status(500).json({ error: 'Failed to update life goal' });
+  }
+});
     }
 
     // Update fields
