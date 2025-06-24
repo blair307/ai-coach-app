@@ -614,46 +614,46 @@
             container.innerHTML = html;
         }
 
-        async function toggleGoalCompletion(goalId) {
-            try {
-                const goal = currentGoals.find(g => g._id === goalId);
-                if (!goal) return;
-                
-                const isCurrentlyCompleted = isGoalCompletedToday(goal);
-                
-                // Update the checkbox immediately for better UX
-                const checkbox = document.getElementById(`goal-${goalId}`);
-                if (checkbox) {
-                    checkbox.checked = !isCurrentlyCompleted;
-                }
-                
-                await updateGoalCompletion(goalId, !isCurrentlyCompleted);
-                
-            } catch (error) {
-                console.error('Error toggling goal completion:', error);
-                // Revert checkbox if error
-                const checkbox = document.getElementById(`goal-${goalId}`);
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                }
-                showError('Failed to update goal. Please try again.');
-            }
+async function toggleGoalCompletion(goalId) {
+    try {
+        const goal = currentGoals.find(g => g._id === goalId);
+        if (!goal) return;
+        
+        const isCurrentlyCompleted = isGoalCompletedToday(goal);
+        const newCompletionState = !isCurrentlyCompleted;
+        
+        await updateGoalCompletion(goalId, newCompletionState);
+        
+        // Show appropriate message
+        if (newCompletionState) {
+            showSuccess('Goal completed! 🎉');
+        } else {
+            showSuccess('Goal marked as incomplete.');
         }
+        
+    } catch (error) {
+        console.error('Error toggling goal completion:', error);
+        showError('Failed to update goal. Please try again.');
+        // The page will reload from the server anyway due to the forced re-render
+    }
+}
 
         async function updateGoalCompletion(goalId, completed) {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
                 if (!token) throw new Error('No authentication token');
 
-                const requestBody = {
-                    completed: completed
-                };
+const requestBody = {
+    completed: completed
+};
 
-                if (completed) {
-                    requestBody.lastCompletedDate = new Date().toISOString();
-                } else {
-                    requestBody.lastCompletedDate = null;
-                }
+if (completed) {
+    requestBody.lastCompletedDate = new Date().toISOString();
+} else {
+    // When marking incomplete, we need to properly reset the completion
+    requestBody.lastCompletedDate = null;
+    requestBody.completed = false;
+}
 
                 const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
                     method: 'PUT',
@@ -741,21 +741,25 @@
             document.body.style.overflow = 'hidden';
         }
 
-        function updateModalButtons() {
-            if (!selectedGoal) return;
-            
-            const isCompleted = isGoalCompletedToday(selectedGoal);
-            const completeBtn = document.getElementById('markCompleteBtn');
-            const incompleteBtn = document.getElementById('markIncompleteBtn');
-            
-            if (isCompleted) {
-                completeBtn.style.display = 'none';
-                incompleteBtn.style.display = 'block';
-            } else {
-                completeBtn.style.display = 'block';
-                incompleteBtn.style.display = 'none';
-            }
-        }
+function updateModalButtons() {
+    if (!selectedGoal) return;
+    
+    const isCompleted = isGoalCompletedToday(selectedGoal);
+    const completeBtn = document.getElementById('markCompleteBtn');
+    const incompleteBtn = document.getElementById('markIncompleteBtn');
+    
+    if (isCompleted) {
+        completeBtn.style.display = 'none';
+        completeBtn.textContent = 'Complete Today\'s Action';
+        incompleteBtn.style.display = 'block';
+        incompleteBtn.textContent = 'Mark Incomplete';
+    } else {
+        completeBtn.style.display = 'block';
+        completeBtn.textContent = 'Complete Today\'s Action';
+        incompleteBtn.style.display = 'none';
+        incompleteBtn.textContent = 'Mark Incomplete';
+    }
+}
 
         function closeGoalDetail() {
             document.getElementById('goalDetailModal').style.display = 'none';
@@ -776,18 +780,14 @@
             }
         }
 
-        async function markGoalIncomplete() {
-            if (!selectedGoal) return;
-            
-            try {
-                // Optimistic update
-                selectedGoal.lastCompletedDate = null;
-                selectedGoal.completed = false;
-                updateModalButtons();
-                
-                await updateGoalCompletion(selectedGoal._id, false);
-                closeGoalDetail();
-            } catch (error) {
+async function markGoalIncomplete() {
+    if (!selectedGoal) return;
+    
+    try {
+        await updateGoalCompletion(selectedGoal._id, false);
+        closeGoalDetail();
+        showSuccess('Goal marked as incomplete.');
+    } catch (error) {
                 console.error('Error marking goal incomplete:', error);
                 // Revert optimistic update
                 const originalGoal = currentGoals.find(g => g._id === selectedGoal._id);
