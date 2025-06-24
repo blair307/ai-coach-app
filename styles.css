@@ -4917,107 +4917,113 @@ font-size: 0.7rem;
     }
 }
 
-/* ADD THIS CSS TO THE END OF YOUR styles.css FILE */
-/* Mobile Hamburger Fix - Ensures hamburger works on mobile */
+/* ADD THIS CSS TO THE END OF YOUR styles.css FILE - REPLACES PREVIOUS HAMBURGER CSS */
 
-/* Force hamburger button to always be visible */
-.sidebar-toggle,
-button.sidebar-toggle {
+/* Remove the old hamburger from sidebar header */
+.sidebar-header .sidebar-toggle {
+    display: none !important;
+}
+
+/* Adjust sidebar header to move EEH to the right */
+.sidebar-header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end; /* Move EEH to the right */
+    align-items: center;
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+/* Universal Purple Hamburger Button - Always visible in top-left */
+.universal-hamburger {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    width: 50px !important;
+    height: 50px !important;
+    background: #6366f1 !important;
+    border: none !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    z-index: 99999 !important;
     display: flex !important;
     flex-direction: column !important;
-    width: 44px !important;
-    height: 44px !important;
-    background: #f1f5f9 !important;
-    border: 2px solid #6366f1 !important;
-    border-radius: 8px !important;
-    position: relative !important;
-    z-index: 9999 !important;
-    margin-left: auto !important;
     justify-content: center !important;
     align-items: center !important;
     gap: 4px !important;
-    cursor: pointer !important;
-    padding: 8px !important;
-    box-sizing: border-box !important;
-    transition: all 0.2s ease !important;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
+    transition: all 0.3s ease !important;
 }
 
-.sidebar-toggle:hover,
-button.sidebar-toggle:hover {
-    background: #e2e8f0 !important;
-    border-color: #4f46e5 !important;
-    transform: scale(1.02) !important;
+.universal-hamburger:hover {
+    background: #4f46e5 !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5) !important;
 }
 
-/* Force hamburger lines to be visible */
-.hamburger-line {
+.universal-hamburger .hamburger-line {
     display: block !important;
-    width: 24px !important;
+    width: 20px !important;
     height: 3px !important;
-    background: #6366f1 !important;
+    background: white !important;
     border-radius: 2px !important;
     transition: all 0.2s ease !important;
 }
 
-.sidebar-toggle:hover .hamburger-line {
-    background: #4f46e5 !important;
+/* Sidebar positioning - always starts from left edge */
+.sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 280px !important;
+    height: 100vh !important;
+    background: var(--background) !important;
+    border-right: 1px solid var(--border) !important;
+    overflow-y: auto !important;
+    z-index: 1000 !important;
+    transition: transform 0.3s ease !important;
+    transform: translateX(-280px) !important; /* Start closed */
 }
 
-/* Mobile specific behavior */
+/* Sidebar open state */
+.sidebar.open {
+    transform: translateX(0) !important;
+}
+
+/* Main content adjustments */
+.main-content {
+    transition: margin-left 0.3s ease !important;
+    padding: 2rem !important;
+    background: var(--surface) !important;
+    min-height: 100vh !important;
+    margin-left: 0 !important; /* Start with no margin */
+}
+
+/* Main content when sidebar is open on desktop */
+@media (min-width: 769px) {
+    .main-content.shifted {
+        margin-left: 280px !important;
+    }
+}
+
+/* Mobile specific styles */
 @media (max-width: 768px) {
-    /* Hide floating button when sidebar is open */
-    .floating-toggle {
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
-        width: 50px !important;
-        height: 50px !important;
-        background: #6366f1 !important;
-        border: none !important;
-        border-radius: 10px !important;
-        cursor: pointer !important;
-        z-index: 99999 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 4px !important;
-        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .floating-toggle:hover {
-        background: #4f46e5 !important;
-        transform: scale(1.05) !important;
-    }
-    
-    .floating-toggle .hamburger-line {
-        background: white !important;
-        width: 20px !important;
-        height: 3px !important;
-    }
-    
-    /* Sidebar starts closed on mobile */
-    .sidebar {
-        transform: translateX(-280px) !important;
-    }
-    
-    /* When sidebar is open on mobile */
-    .sidebar.mobile-open {
-        transform: translateX(0) !important;
-    }
-    
-    /* Hide floating button when sidebar is open */
-    .sidebar.mobile-open ~ .floating-toggle {
-        display: none !important;
-    }
-    
-    /* Main content always full width on mobile */
     .main-content {
-        margin-left: 0 !important;
+        margin-left: 0 !important; /* Always full width on mobile */
+        padding: 1rem !important;
     }
     
-    /* Overlay when sidebar is open on mobile */
+    /* Mobile overlay when sidebar is open */
     .mobile-overlay {
         position: fixed !important;
         top: 0 !important;
@@ -5034,21 +5040,7 @@ button.sidebar-toggle:hover {
     }
 }
 
-/* Desktop behavior - sidebar always visible */
-@media (min-width: 769px) {
-    .floating-toggle {
-        display: none !important;
-    }
-    
-    .mobile-overlay {
-        display: none !important;
-    }
-    
-    .sidebar {
-        transform: translateX(0) !important;
-    }
-    
-    .main-content {
-        margin-left: 280px !important;
-    }
+/* Hide any old floating toggles */
+.floating-toggle {
+    display: none !important;
 }
