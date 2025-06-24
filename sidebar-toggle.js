@@ -1,9 +1,9 @@
 /**
- * FIXED Mobile Hamburger Toggle - Replace your sidebar-toggle.js with this
+ * UNIFIED Purple Hamburger Toggle - Replace your entire sidebar-toggle.js with this
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing mobile hamburger toggle...');
+    console.log('🚀 Initializing unified purple hamburger...');
     
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
@@ -14,33 +14,33 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     let isMobile = window.innerWidth <= 768;
-    let isOpen = !isMobile; // Start open on desktop, closed on mobile
-    let floatingButton = null;
+    let isOpen = false; // Start closed for both desktop and mobile
+    let universalButton = null;
     let mobileOverlay = null;
     
-    // Create floating hamburger button
-    function createFloatingButton() {
-        if (floatingButton) {
-            floatingButton.remove();
+    // Create the universal purple hamburger button
+    function createUniversalButton() {
+        if (universalButton) {
+            universalButton.remove();
         }
         
-        floatingButton = document.createElement('button');
-        floatingButton.className = 'floating-toggle';
-        floatingButton.innerHTML = `
+        universalButton = document.createElement('button');
+        universalButton.className = 'universal-hamburger';
+        universalButton.innerHTML = `
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
             <span class="hamburger-line"></span>
         `;
         
-        floatingButton.addEventListener('click', function(e) {
+        universalButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            console.log('🎯 Floating button clicked');
-            openSidebar();
+            console.log('🎯 Universal hamburger clicked');
+            toggleSidebar();
         });
         
-        document.body.appendChild(floatingButton);
-        console.log('✅ Floating button created');
+        document.body.appendChild(universalButton);
+        console.log('✅ Universal purple button created');
     }
     
     // Create mobile overlay
@@ -64,12 +64,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function openSidebar() {
         console.log('🔓 Opening sidebar');
         
+        sidebar.classList.add('open');
+        
         if (isMobile) {
-            sidebar.classList.add('mobile-open');
             mobileOverlay.classList.add('active');
         } else {
-            sidebar.style.transform = 'translateX(0)';
-            mainContent.style.marginLeft = '280px';
+            mainContent.classList.add('shifted');
         }
         
         isOpen = true;
@@ -80,12 +80,12 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeSidebar() {
         console.log('🔒 Closing sidebar');
         
+        sidebar.classList.remove('open');
+        
         if (isMobile) {
-            sidebar.classList.remove('mobile-open');
             mobileOverlay.classList.remove('active');
         } else {
-            sidebar.style.transform = 'translateX(-280px)';
-            mainContent.style.marginLeft = '0';
+            mainContent.classList.remove('shifted');
         }
         
         isOpen = false;
@@ -103,66 +103,51 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize hamburger handlers
-    function initializeHamburger() {
-        const hamburgers = document.querySelectorAll('.sidebar-toggle');
-        console.log('🎯 Found hamburger buttons:', hamburgers.length);
-        
-        hamburgers.forEach((btn, index) => {
-            btn.onclick = function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log(`🎯 Hamburger ${index + 1} clicked`);
-                toggleSidebar();
-            };
-        });
-        
-        console.log('✅ Hamburger handlers attached');
-    }
-    
     // Handle window resize
     function handleResize() {
         const wasMobile = isMobile;
         isMobile = window.innerWidth <= 768;
         
         if (wasMobile !== isMobile) {
-            // Mode changed
+            // Mode changed - keep sidebar state but adjust behavior
             if (isMobile) {
                 // Switched to mobile
                 console.log('📱 Switched to mobile mode');
-                closeSidebar();
+                mainContent.classList.remove('shifted');
+                if (isOpen) {
+                    mobileOverlay.classList.add('active');
+                }
             } else {
                 // Switched to desktop
                 console.log('🖥️ Switched to desktop mode');
-                // Clean up mobile classes
-                sidebar.classList.remove('mobile-open');
                 mobileOverlay.classList.remove('active');
-                // Open sidebar for desktop
-                openSidebar();
+                if (isOpen) {
+                    mainContent.classList.add('shifted');
+                }
             }
         }
     }
     
     // Initialize everything
-    createFloatingButton();
+    createUniversalButton();
     createMobileOverlay();
     
-    // Set initial state based on screen size
-    if (isMobile) {
-        closeSidebar();
-    } else {
-        openSidebar();
-    }
+    // Start with sidebar closed
+    closeSidebar();
     
-    // Initialize hamburger handlers
-    initializeHamburger();
+    // Remove any old hamburger handlers
+    const oldHamburgers = document.querySelectorAll('.sidebar-toggle');
+    oldHamburgers.forEach(btn => {
+        btn.style.display = 'none';
+        btn.onclick = null;
+    });
     
     // Handle window resize
     window.addEventListener('resize', handleResize);
     
-    // Handle escape key to close sidebar on mobile
+    // Handle escape key to close sidebar
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && isOpen && isMobile) {
+        if (e.key === 'Escape' && isOpen) {
             closeSidebar();
         }
     });
@@ -175,6 +160,6 @@ document.addEventListener('DOMContentLoaded', function() {
         isOpen: () => isOpen
     };
     
-    console.log('✅ Mobile hamburger toggle ready');
+    console.log('✅ Unified purple hamburger ready');
     console.log('🧪 Test with: window.sidebarToggle.toggle()');
 });
