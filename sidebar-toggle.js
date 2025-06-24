@@ -1,10 +1,9 @@
 /**
- * PERMANENT FIXED Sidebar Toggle - With Working Floating Button
- * Replace your entire sidebar-toggle.js with this
+ * FIXED Mobile Hamburger Toggle - Replace your sidebar-toggle.js with this
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Initializing PERMANENT sidebar toggle...');
+    console.log('🚀 Initializing mobile hamburger toggle...');
     
     const sidebar = document.querySelector('#sidebar');
     const mainContent = document.querySelector('.main-content');
@@ -14,9 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    let isOpen = true;
-    let isInitialized = false;
+    let isMobile = window.innerWidth <= 768;
+    let isOpen = !isMobile; // Start open on desktop, closed on mobile
     let floatingButton = null;
+    let mobileOverlay = null;
     
     // Create floating hamburger button
     function createFloatingButton() {
@@ -25,29 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         floatingButton = document.createElement('button');
+        floatingButton.className = 'floating-toggle';
         floatingButton.innerHTML = `
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-            <span style="display: block; width: 20px; height: 3px; background: white; margin: 2px 0; border-radius: 2px; transition: all 0.2s;"></span>
-        `;
-        
-        floatingButton.style.cssText = `
-            position: fixed !important;
-            top: 20px !important;
-            left: 20px !important;
-            width: 50px !important;
-            height: 50px !important;
-            background: #6366f1 !important;
-            border: none !important;
-            border-radius: 10px !important;
-            cursor: pointer !important;
-            z-index: 99999 !important;
-            display: none !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4) !important;
-            transition: all 0.3s ease !important;
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
         `;
         
         floatingButton.addEventListener('click', function(e) {
@@ -61,18 +43,33 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('✅ Floating button created');
     }
     
+    // Create mobile overlay
+    function createMobileOverlay() {
+        if (mobileOverlay) {
+            mobileOverlay.remove();
+        }
+        
+        mobileOverlay = document.createElement('div');
+        mobileOverlay.className = 'mobile-overlay';
+        
+        mobileOverlay.addEventListener('click', function() {
+            closeSidebar();
+        });
+        
+        document.body.appendChild(mobileOverlay);
+        console.log('✅ Mobile overlay created');
+    }
+    
     // Open sidebar
     function openSidebar() {
         console.log('🔓 Opening sidebar');
         
-        sidebar.classList.remove('closed');
-        mainContent.classList.remove('expanded');
-        sidebar.style.transform = 'translateX(0)';
-        mainContent.style.marginLeft = '280px';
-        
-        // Hide floating button
-        if (floatingButton) {
-            floatingButton.style.display = 'none';
+        if (isMobile) {
+            sidebar.classList.add('mobile-open');
+            mobileOverlay.classList.add('active');
+        } else {
+            sidebar.style.transform = 'translateX(0)';
+            mainContent.style.marginLeft = '280px';
         }
         
         isOpen = true;
@@ -83,18 +80,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function closeSidebar() {
         console.log('🔒 Closing sidebar');
         
-        sidebar.classList.add('closed');
-        mainContent.classList.add('expanded');
-        sidebar.style.transform = 'translateX(-280px)';
-        mainContent.style.marginLeft = '0';
-        
-        // Show floating button
-        if (floatingButton) {
-            floatingButton.style.display = 'flex';
+        if (isMobile) {
+            sidebar.classList.remove('mobile-open');
+            mobileOverlay.classList.remove('active');
+        } else {
+            sidebar.style.transform = 'translateX(-280px)';
+            mainContent.style.marginLeft = '0';
         }
         
         isOpen = false;
-        console.log('✅ Sidebar closed, floating button shown');
+        console.log('✅ Sidebar closed');
     }
     
     // Toggle function
@@ -108,10 +103,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Initialize hamburger handlers ONCE
+    // Initialize hamburger handlers
     function initializeHamburger() {
-        if (isInitialized) return;
-        
         const hamburgers = document.querySelectorAll('.sidebar-toggle');
         console.log('🎯 Found hamburger buttons:', hamburgers.length);
         
@@ -124,20 +117,27 @@ document.addEventListener('DOMContentLoaded', function() {
             };
         });
         
-        isInitialized = true;
-        console.log('✅ Hamburger handlers attached ONCE');
+        console.log('✅ Hamburger handlers attached');
     }
     
     // Handle window resize
     function handleResize() {
-        if (window.innerWidth <= 768) {
-            // Mobile - close sidebar by default
-            if (isOpen) {
+        const wasMobile = isMobile;
+        isMobile = window.innerWidth <= 768;
+        
+        if (wasMobile !== isMobile) {
+            // Mode changed
+            if (isMobile) {
+                // Switched to mobile
+                console.log('📱 Switched to mobile mode');
                 closeSidebar();
-            }
-        } else {
-            // Desktop - open sidebar by default
-            if (!isOpen) {
+            } else {
+                // Switched to desktop
+                console.log('🖥️ Switched to desktop mode');
+                // Clean up mobile classes
+                sidebar.classList.remove('mobile-open');
+                mobileOverlay.classList.remove('active');
+                // Open sidebar for desktop
                 openSidebar();
             }
         }
@@ -145,9 +145,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize everything
     createFloatingButton();
+    createMobileOverlay();
     
     // Set initial state based on screen size
-    if (window.innerWidth <= 768) {
+    if (isMobile) {
         closeSidebar();
     } else {
         openSidebar();
@@ -159,9 +160,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle window resize
     window.addEventListener('resize', handleResize);
     
-    // Handle escape key to close sidebar
+    // Handle escape key to close sidebar on mobile
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && isOpen && window.innerWidth <= 768) {
+        if (e.key === 'Escape' && isOpen && isMobile) {
             closeSidebar();
         }
     });
@@ -174,6 +175,6 @@ document.addEventListener('DOMContentLoaded', function() {
         isOpen: () => isOpen
     };
     
-    console.log('✅ PERMANENT sidebar toggle ready with floating button');
+    console.log('✅ Mobile hamburger toggle ready');
     console.log('🧪 Test with: window.sidebarToggle.toggle()');
 });
