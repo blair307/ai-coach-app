@@ -647,63 +647,73 @@ async function toggleGoalCompletion(goalId) {
     }
 }
 
-        async function updateGoalCompletion(goalId, completed) {
+       async function updateGoalCompletion(goalId, completed) {
     console.log('🔄 updateGoalCompletion called:', { goalId, completed });
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) throw new Error('No authentication token');
-
-const requestBody = {
-    completed: completed
-};
-
-if (completed) {
-    requestBody.lastCompletedDate = new Date().toISOString();
-} else {
-    // When marking incomplete, we need to properly reset the completion
-    requestBody.lastCompletedDate = null;
-    requestBody.completed = false;
-}
-
-                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestBody)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to update goal');
-                }
-
-                const updatedGoal = await response.json();
-                
-                // Update the goal in our local array
-                const goalIndex = currentGoals.findIndex(g => g._id === goalId);
-                if (goalIndex !== -1) {
-                    currentGoals[goalIndex] = updatedGoal;
-                }
-                
-// Force re-render everything
-setTimeout(() => {
-    // Reload goals from server to ensure we have latest data
-    loadDailyGoals();
     
-    if (selectedGoal && selectedGoal._id === goalId) {
-        selectedGoal = updatedGoal;
-        updateModalButtons();
-    }
-}, 100);
-                
-                showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
-                
-            } catch (error) {
-                console.error('Error updating goal:', error);
-                throw error;
-            }
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        console.log('🔑 Token found:', !!token);
+        
+        if (!token) throw new Error('No authentication token');
+
+        const requestBody = {
+            completed: completed
+        };
+
+        if (completed) {
+            requestBody.lastCompletedDate = new Date().toISOString();
+        } else {
+            requestBody.lastCompletedDate = null;
+            requestBody.completed = false;
         }
+
+        console.log('📤 Request body:', requestBody);
+        console.log('📍 Making API call to:', `${API_BASE_URL}/api/life-goals/${goalId}`);
+
+        const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+
+        console.log('📥 API Response status:', response.status);
+        console.log('📥 API Response ok:', response.ok);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.log('❌ API Error response:', errorText);
+            throw new Error('Failed to update goal');
+        }
+
+        const updatedGoal = await response.json();
+        console.log('✅ Updated goal received:', updatedGoal);
+        
+        const goalIndex = currentGoals.findIndex(g => g._id === goalId);
+        if (goalIndex !== -1) {
+            currentGoals[goalIndex] = updatedGoal;
+            console.log('🔄 Local goal updated');
+        }
+        
+        setTimeout(() => {
+            console.log('🎨 Re-rendering UI...');
+            loadDailyGoals();
+            
+            if (selectedGoal && selectedGoal._id === goalId) {
+                selectedGoal = updatedGoal;
+                updateModalButtons();
+            }
+        }, 100);
+        
+        showSuccess(completed ? 'Goal marked as complete!' : 'Goal marked as incomplete.');
+        
+    } catch (error) {
+        console.error('❌ Error updating goal:', error);
+        throw error;
+    }
+}
 
         function openGoalDetail(goalId) {
             const goal = currentGoals.find(g => g._id === goalId);
