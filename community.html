@@ -102,7 +102,7 @@
                             </div>
                         </div>
 
-                        <!-- Members List (Hidden by default) -->
+                        <!-- Search Results -->
                         <div class="search-results" id="searchResults" style="display: none;">
                             <div class="search-header">
                                 <h3>Search Results</h3>
@@ -160,7 +160,7 @@
     <script src="sidebar-toggle.js"></script>
     
     <style>
-    /* Search Bar Styles */
+    /* Enhanced Search Bar Styles - Mobile First */
     .search-container {
         display: flex;
         align-items: center;
@@ -170,6 +170,8 @@
         border-radius: var(--radius);
         padding: 0.5rem;
         transition: border-color 0.2s ease;
+        width: 100%;
+        max-width: 300px;
     }
 
     .search-container:focus-within {
@@ -184,7 +186,7 @@
         font-size: 0.875rem;
         color: var(--text-primary);
         flex: 1;
-        min-width: 200px;
+        min-width: 120px;
     }
 
     .search-input::placeholder {
@@ -202,6 +204,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
+        min-width: 32px;
+        min-height: 32px;
     }
 
     .search-btn:hover {
@@ -209,9 +213,8 @@
         background: rgba(99, 102, 241, 0.1);
     }
 
-    /* Search Results Styles */
+    /* Enhanced Search Results Styles */
     .search-results {
-        width: 300px;
         background: var(--background);
         border-left: 1px solid var(--border);
         position: absolute;
@@ -220,6 +223,13 @@
         height: 100%;
         z-index: 10;
         box-shadow: var(--shadow);
+        width: 300px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    }
+
+    .search-results.show {
+        transform: translateX(0);
     }
 
     .search-header {
@@ -236,6 +246,27 @@
         color: var(--text-primary);
         font-size: 1.1rem;
         font-weight: 600;
+    }
+
+    .close-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        cursor: pointer;
+        border-radius: var(--radius);
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.2s ease;
+    }
+
+    .close-btn:hover {
+        background: var(--error);
+        color: white;
+        border-color: var(--error);
     }
 
     .search-content {
@@ -259,6 +290,8 @@
     .search-result-item:hover {
         background: var(--background);
         border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
     }
 
     .search-result-type {
@@ -273,6 +306,7 @@
         font-weight: 600;
         color: var(--text-primary);
         margin-bottom: 0.25rem;
+        font-size: 0.9rem;
     }
 
     .search-result-preview {
@@ -297,6 +331,7 @@
         align-items: center;
         justify-content: center;
         margin-left: auto;
+        flex-shrink: 0;
     }
 
     .room-item:hover .room-delete-btn {
@@ -308,7 +343,6 @@
         transform: scale(1.1);
     }
 
-    /* Hide delete button for default rooms */
     .room-item[data-default="true"] .room-delete-btn {
         display: none;
     }
@@ -322,7 +356,6 @@
         font-weight: 600 !important;
     }
 
-    /* Enhanced Search Results */
     .search-result-preview strong {
         background: #fef08a !important;
         color: #92400e !important;
@@ -330,34 +363,424 @@
         border-radius: 3px !important;
     }
 
-    .search-result-item {
-        transition: all 0.3s ease;
+    /* Enhanced Mobile Responsive Design */
+    @media (max-width: 768px) {
+        /* Container adjustments */
+        .community-container {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        
+        /* Rooms sidebar - horizontal on mobile */
+        .rooms-sidebar {
+            height: 25vh !important;
+            min-height: 25vh !important;
+            max-height: 25vh !important;
+            width: 100% !important;
+            border-right: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            overflow: hidden !important;
+        }
+        
+        .rooms-header {
+            padding: 0.75rem 1rem !important;
+            min-height: auto !important;
+        }
+        
+        .rooms-header h3 {
+            font-size: 1rem !important;
+            margin: 0 !important;
+        }
+        
+        .rooms-header .btn {
+            font-size: 0.8rem !important;
+            padding: 0.5rem 0.75rem !important;
+        }
+        
+        /* Horizontal scrolling rooms */
+        .rooms-list {
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            gap: 0.75rem !important;
+            padding: 0.75rem 1rem !important;
+            height: calc(25vh - 60px) !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+        }
+        
+        .rooms-list::-webkit-scrollbar {
+            display: none !important;
+        }
+        
+        .room-item {
+            min-width: 150px !important;
+            max-width: 150px !important;
+            height: auto !important;
+            flex-shrink: 0 !important;
+            padding: 0.75rem !important;
+        }
+        
+        .room-info h4 {
+            font-size: 0.85rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        
+        .room-info p {
+            font-size: 0.7rem !important;
+            line-height: 1.2 !important;
+            overflow: hidden !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+        }
+        
+        /* Chat area - takes remaining space */
+        .chat-area {
+            height: 75vh !important;
+            min-height: 75vh !important;
+            max-height: 75vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+        }
+        
+        /* Compact chat header */
+        .chat-area .chat-header {
+            padding: 0.75rem 1rem !important;
+            min-height: auto !important;
+            flex-shrink: 0 !important;
+            flex-direction: column !important;
+            gap: 0.75rem !important;
+        }
+        
+        .room-title h2 {
+            font-size: 1.1rem !important;
+            margin: 0 !important;
+            text-align: center !important;
+        }
+        
+        .room-title p {
+            font-size: 0.8rem !important;
+            margin: 0 !important;
+            text-align: center !important;
+        }
+        
+        .search-container {
+            width: 100% !important;
+            max-width: 250px !important;
+            margin: 0 auto !important;
+        }
+        
+        .search-input {
+            font-size: 16px !important;
+            padding: 0.25rem !important;
+            min-width: 100px !important;
+        }
+        
+        /* Messages container */
+        .chat-messages-container {
+            flex: 1 !important;
+            overflow: hidden !important;
+            position: relative !important;
+        }
+        
+        .chat-messages {
+            height: 100% !important;
+            overflow-y: auto !important;
+            padding: 0.75rem 1rem !important;
+            -webkit-overflow-scrolling: touch !important;
+        }
+        
+        /* Compact input area */
+        .chat-input-area {
+            padding: 0.75rem 1rem !important;
+            flex-shrink: 0 !important;
+            border-top: 1px solid var(--border) !important;
+        }
+        
+        .chat-input-area .chat-input {
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+            padding: 0.75rem !important;
+        }
+        
+        .chat-input-area textarea {
+            font-size: 16px !important;
+            min-height: 40px !important;
+            max-height: 80px !important;
+            resize: none !important;
+        }
+        
+        .input-actions {
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+            justify-content: space-between !important;
+        }
+        
+        .input-actions .btn {
+            flex: 1 !important;
+            min-height: 44px !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Mobile search results - full screen overlay */
+        .search-results {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 1000 !important;
+            border: none !important;
+            box-shadow: none !important;
+            transform: translateX(100%) !important;
+        }
+        
+        .search-results.show {
+            transform: translateX(0) !important;
+        }
+        
+        .search-header {
+            padding: 1rem !important;
+        }
+        
+        .search-content {
+            height: calc(100vh - 80px) !important;
+            padding: 1rem !important;
+        }
+        
+        /* Message styling adjustments */
+        .message-group {
+            margin-bottom: 1rem !important;
+        }
+        
+        .message-header {
+            gap: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        .user-avatar {
+            width: 28px !important;
+            height: 28px !important;
+            font-size: 0.75rem !important;
+        }
+        
+        .username {
+            font-size: 0.85rem !important;
+        }
+        
+        .message-timestamp {
+            font-size: 0.75rem !important;
+        }
+        
+        .message-content {
+            margin-left: 1.75rem !important;
+            padding: 0.625rem 0.875rem !important;
+            font-size: 0.9rem !important;
+            line-height: 1.4 !important;
+        }
+
+        /* Emoji modal adjustments */
+        .emoji-modal {
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
+            max-height: 50vh !important;
+            padding: 1rem !important;
+        }
+        
+        .emoji-grid {
+            grid-template-columns: repeat(8, 1fr) !important;
+            gap: 0.5rem !important;
+            max-height: 40vh !important;
+            overflow-y: auto !important;
+        }
+        
+        .emoji-grid span {
+            min-height: 44px !important;
+            padding: 0.75rem 0.5rem !important;
+            font-size: 1.2rem !important;
+        }
     }
 
-    .search-result-item:hover {
-        background: var(--primary-light) !important;
-        border-color: var(--primary) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.2);
+    /* Touch improvements */
+    @media (max-width: 768px) {
+        .room-item,
+        .search-result-item,
+        .btn,
+        .search-btn,
+        .close-btn {
+            min-height: 44px !important;
+        }
     }
 
-    /* Toggle members list (keeping for compatibility but now used for search) */
-    function toggleMembersList() {
-        // This function is kept for compatibility but now toggles search
-        const searchResults = document.getElementById('searchResults');
-        if (searchResults) {
-            searchResults.style.display = searchResults.style.display === 'none' ? 'block' : 'none';
+    /* iOS Safari specific fixes */
+    @supports (-webkit-touch-callout: none) {
+        @media (max-width: 768px) {
+            .community-container {
+                height: calc(100vh - env(safe-area-inset-bottom)) !important;
+            }
+            
+            .chat-area {
+                min-height: calc(75vh - env(safe-area-inset-bottom)) !important;
+            }
         }
     }
     </style>
     
     <script>
-    // Notification counter function
+    // Progress tracking integration
+    let progressTrackerLoaded = false;
+
+    // Enhanced send community message function with progress tracking
+    function sendCommunityMessage() {
+        const input = document.getElementById('communityMessageInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // Your existing message sending logic here...
+        console.log('Sending message:', message);
+        
+        // Track community post for progress
+        trackCommunityPost();
+        
+        // Clear input
+        input.value = '';
+        
+        // Call your existing community.js function if it exists
+        if (window.sendMessage) {
+            window.sendMessage();
+        }
+    }
+
+    // Progress tracking function
+    function trackCommunityPost() {
+        // Try to access progress tracker from parent window or global scope
+        if (window.parent && window.parent.progressTracker) {
+            window.parent.progressTracker.incrementCommunityPosts();
+            console.log('📈 Community post tracked via parent window!');
+        } else if (window.progressTracker) {
+            window.progressTracker.incrementCommunityPosts();
+            console.log('📈 Community post tracked!');
+        } else {
+            // Fallback: try to get from localStorage and increment manually
+            try {
+                const progressData = localStorage.getItem('eeh_progress_data');
+                if (progressData) {
+                    const data = JSON.parse(progressData);
+                    data.communityPosts = (data.communityPosts || 0) + 1;
+                    
+                    // Mark today as active
+                    const today = new Date().toISOString().split('T')[0];
+                    if (Array.isArray(data.activeDays)) {
+                        if (!data.activeDays.includes(today)) {
+                            data.activeDays.push(today);
+                        }
+                    } else {
+                        data.activeDays = [today];
+                    }
+                    data.lastActiveDate = today;
+                    
+                    localStorage.setItem('eeh_progress_data', JSON.stringify(data));
+                    console.log('📈 Community post tracked via localStorage! Total:', data.communityPosts);
+                }
+            } catch (error) {
+                console.log('ℹ️ Progress tracker not available yet');
+            }
+        }
+    }
+
+    // Handle enter key in textarea
+    function handleCommunityKeyPress(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            sendCommunityMessage();
+        }
+    }
+
+    // Emoji functions
+    function addEmoji() {
+        const modal = document.getElementById('emojiModal');
+        modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function insertEmoji(emoji) {
+        const input = document.getElementById('communityMessageInput');
+        const cursorPos = input.selectionStart;
+        const textBefore = input.value.substring(0, cursorPos);
+        const textAfter = input.value.substring(input.selectionEnd);
+        
+        input.value = textBefore + emoji + textAfter;
+        input.focus();
+        input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+        
+        document.getElementById('emojiModal').style.display = 'none';
+    }
+
+    // Search functions
+    function performSearch() {
+        const query = document.getElementById('searchInput').value.trim();
+        const searchResults = document.getElementById('searchResults');
+        const searchContent = document.getElementById('searchContent');
+        
+        if (!query) {
+            closeSearch();
+            return;
+        }
+        
+        // Show search results
+        searchResults.classList.add('show');
+        
+        // Mock search results for demo
+        searchContent.innerHTML = `
+            <div class="search-result-item">
+                <div class="search-result-type">MESSAGE</div>
+                <div class="search-result-title">Found in General Discussion</div>
+                <div class="search-result-preview">Message containing "<strong>${query}</strong>" from yesterday</div>
+            </div>
+            <div class="search-result-item">
+                <div class="search-result-type">ROOM</div>
+                <div class="search-result-title">Business Growth</div>
+                <div class="search-result-preview">Room discussing topics related to "<strong>${query}</strong>"</div>
+            </div>
+        `;
+    }
+
+    function closeSearch() {
+        const searchResults = document.getElementById('searchResults');
+        searchResults.classList.remove('show');
+        document.getElementById('searchInput').value = '';
+    }
+
+    // Room management functions (placeholders)
+    function createRoom() {
+        const roomName = prompt('Enter room name:');
+        if (roomName) {
+            console.log('Creating room:', roomName);
+            // Your room creation logic here
+        }
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    // Notification functions
     function goToNotifications() {
         window.location.href = 'notifications.html';
     }
 
-    // Simple notification counter
     async function updateNotificationCount() {
         try {
             const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -386,14 +809,39 @@
         }
     }
 
-    // Update count when page loads and every 30 seconds
+    // Initialize when page loads
     document.addEventListener('DOMContentLoaded', function() {
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
+        
+        // Close emoji modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const emojiModal = document.getElementById('emojiModal');
+            const isEmojiButton = event.target.closest('[onclick*="addEmoji"]');
+            const isEmojiModal = event.target.closest('.emoji-modal');
+            
+            if (!isEmojiButton && !isEmojiModal && emojiModal.style.display === 'block') {
+                emojiModal.style.display = 'none';
+            }
+        });
+        
+        // Close search results when clicking outside
+        document.addEventListener('click', function(event) {
+            const searchResults = document.getElementById('searchResults');
+            const isSearchButton = event.target.closest('.search-btn');
+            const isSearchInput = event.target.closest('#searchInput');
+            const isSearchResults = event.target.closest('.search-results');
+            
+            if (!isSearchButton && !isSearchInput && !isSearchResults && searchResults.classList.contains('show')) {
+                closeSearch();
+            }
+        });
+
+        console.log('✅ Community page initialized with progress tracking');
     });
     </script>
     
-    <!-- Load the new backend-connected community.js LAST -->
+    <!-- Load the community.js LAST if you have additional backend functionality -->
     <script src="community.js"></script>
 </body>
 </html>
