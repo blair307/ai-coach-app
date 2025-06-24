@@ -1,47 +1,143 @@
-// Community.js - SIMPLE VERSION - No problematic resize listeners
+// Community.js - FIXED VERSION - No more loading loops!
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
+let isInitialized = false; // Add this flag to prevent re-initialization
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Community page loading...');
-    initializeCommunity();
+    console.log('🚀 Community page loading...');
+    
+    // Hide loading overlay immediately
+    hideLoadingOverlay();
+    
+    // Initialize with a small delay to ensure DOM is ready
+    setTimeout(() => {
+        initializeCommunity();
+    }, 100);
 });
+
+// Hide the loading overlay
+function hideLoadingOverlay() {
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    if (loadingOverlay) {
+        loadingOverlay.style.display = 'none';
+    }
+}
+
+// Show error in community area instead of endless loading
+function showCommunityError(message) {
+    const messagesContainer = document.getElementById('communityMessages');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                <h3 style="color: var(--error); margin-bottom: 1rem;">⚠️ Connection Issue</h3>
+                <p style="margin-bottom: 1.5rem;">${message}</p>
+                <button onclick="retryInitialization()" class="btn btn-primary">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+}
+
+// Retry initialization function
+function retryInitialization() {
+    console.log('🔄 Retrying community initialization...');
+    const messagesContainer = document.getElementById('communityMessages');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                <p>Reconnecting...</p>
+            </div>
+        `;
+    }
+    
+    // Reset initialization flag
+    isInitialized = false;
+    
+    // Try again after a short delay
+    setTimeout(() => {
+        initializeCommunity();
+    }, 1000);
+}
 
 // Initialize the community system
 async function initializeCommunity() {
     try {
+        // Prevent multiple initializations
+        if (isInitialized) {
+            console.log('⚠️ Community already initialized, skipping...');
+            return;
+        }
+
         console.log('🚀 Starting community initialization...');
         
         // Get current user info
         currentUser = getCurrentUser();
         if (!currentUser) {
-            console.error('No user found');
+            console.error('❌ No user found');
+            showCommunityError('Please log in to access the community.');
             return;
         }
+
+        console.log('✅ User found:', currentUser.email);
 
         // Set layout based on screen size (ONE TIME ONLY)
         setLayoutForScreenSize();
 
+        // Show loading message in community area
+        const messagesContainer = document.getElementById('communityMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    <p>Loading rooms...</p>
+                </div>
+            `;
+        }
+
         // Load all rooms from backend
-        await loadRooms();
+        const roomsLoaded = await loadRooms();
         
-        // Set default room (General Discussion)
+        if (!roomsLoaded) {
+            console.error('❌ Failed to load rooms');
+            showCommunityError('Unable to load chat rooms. Please check your connection and try again.');
+            return;
+        }
+
+        // Set default room (General Discussion or first available)
         const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
         if (generalRoom) {
             currentRoomId = generalRoom._id;
             currentRoomName = generalRoom.name;
+            console.log('🏠 Setting default room:', currentRoomName);
             await switchRoom(generalRoom._id);
+        } else {
+            // No rooms available
+            const messagesContainer = document.getElementById('communityMessages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                        <h3>Welcome to Community Chat!</h3>
+                        <p style="margin-bottom: 1.5rem;">No rooms are available yet.</p>
+                        <button onclick="createRoom()" class="btn btn-primary">
+                            Create First Room
+                        </button>
+                    </div>
+                `;
+            }
         }
-        
+
+        // Mark as initialized
+        isInitialized = true;
         console.log('✅ Community initialized successfully');
+        
     } catch (error) {
         console.error('❌ Error initializing community:', error);
-        showErrorMessage('Unable to load community. Please refresh the page.');
+        showCommunityError('Failed to initialize community. Please refresh the page or try again later.');
     }
 }
 
@@ -90,22 +186,28 @@ function setLayoutForScreenSize() {
 function getCurrentUser() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (!token) return null;
+        if (!token) {
+            console.log('❌ No auth token found');
+            return null;
+        }
         
         // Decode JWT token to get user info (simple decode, not verification)
         const payload = JSON.parse(atob(token.split('.')[1]));
-        return {
+        const user = {
             id: payload.userId,
             email: payload.email,
             name: localStorage.getItem('userName') || 'User'
         };
+        
+        console.log('✅ Current user:', user);
+        return user;
     } catch (error) {
-        console.error('Error getting current user:', error);
+        console.error('❌ Error getting current user:', error);
         return null;
     }
 }
 
-// Load all rooms from backend
+// Load all rooms from backend - WITH TIMEOUT
 async function loadRooms() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -113,15 +215,24 @@ async function loadRooms() {
             throw new Error('No authentication token');
         }
 
+        console.log('📡 Fetching rooms from backend...');
+
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error('Failed to load rooms');
+            throw new Error(`Failed to load rooms: ${response.status}`);
         }
 
         rooms = await response.json();
@@ -129,16 +240,20 @@ async function loadRooms() {
         
         // Update the rooms list in the UI
         updateRoomsList();
+        return true;
         
     } catch (error) {
-        console.error('Error loading rooms:', error);
+        console.error('❌ Error loading rooms:', error);
+        
         // Use fallback default rooms if backend fails
+        console.log('🔄 Using fallback rooms...');
         rooms = [
             { _id: 'general', name: 'General Discussion', description: 'Open chat for everyone' },
             { _id: 'business-growth', name: 'Business Growth', description: 'Scaling strategies & challenges' },
             { _id: 'work-life-balance', name: 'Work-Life Balance', description: 'Managing entrepreneurial stress' }
         ];
         updateRoomsList();
+        return true; // Return true even with fallback rooms
     }
 }
 
@@ -146,6 +261,8 @@ async function loadRooms() {
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
     const roomDropdown = document.getElementById('roomDropdown');
+    
+    console.log('🔄 Updating rooms list UI...');
     
     // Update desktop rooms list
     if (roomsList && rooms && rooms.length > 0) {
@@ -197,6 +314,8 @@ function updateRoomsList() {
             roomDropdown.appendChild(option);
         });
     }
+    
+    console.log('✅ Rooms list updated');
 }
 
 // Switch to a different room
@@ -263,7 +382,7 @@ async function switchRoom(roomId) {
     }
 }
 
-// Load messages for a specific room
+// Load messages for a specific room - WITH TIMEOUT
 async function loadMessages(roomId) {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -271,15 +390,34 @@ async function loadMessages(roomId) {
             throw new Error('No authentication token');
         }
 
+        console.log('📨 Loading messages for room:', roomId);
+
+        // Show loading in messages area
+        const messagesContainer = document.getElementById('communityMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <p>Loading messages...</p>
+                </div>
+            `;
+        }
+
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
         const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/messages`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error('Failed to load messages');
+            throw new Error(`Failed to load messages: ${response.status}`);
         }
 
         const messages = await response.json();
@@ -288,7 +426,9 @@ async function loadMessages(roomId) {
         displayMessages(messages);
         
     } catch (error) {
-        console.error('Error loading messages:', error);
+        console.error('❌ Error loading messages:', error);
+        
+        // Show empty state instead of hanging
         displayMessages([]);
     }
 }
@@ -368,14 +508,14 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Send a message
+// Send a message - WITH TIMEOUT
 async function sendCommunityMessage() {
     try {
         const messageInput = document.getElementById('communityMessageInput');
         const sendButton = document.getElementById('sendCommunityButton');
         
         if (!messageInput || !currentRoomId) {
-            console.error('Missing required elements or room not selected');
+            console.error('❌ Missing required elements or room not selected');
             return;
         }
 
@@ -400,6 +540,10 @@ async function sendCommunityMessage() {
             throw new Error('No authentication token');
         }
 
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
         // Send message to backend
         const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
             method: 'POST',
@@ -411,11 +555,14 @@ async function sendCommunityMessage() {
                 content: messageText,
                 avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U',
                 avatarColor: '#6366f1'
-            })
+            }),
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error('Failed to send message');
+            throw new Error(`Failed to send message: ${response.status}`);
         }
 
         const newMessage = await response.json();
@@ -433,7 +580,7 @@ async function sendCommunityMessage() {
         await loadMessages(currentRoomId);
 
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('❌ Error sending message:', error);
         showErrorMessage('Failed to send message. Please try again.');
     } finally {
         // Re-enable send button
@@ -463,7 +610,7 @@ function handleCommunityKeyPress(event) {
     }
 }
 
-// Create a new room
+// Create a new room - WITH TIMEOUT
 async function createRoom() {
     try {
         const roomName = prompt('Enter room name:');
@@ -477,6 +624,10 @@ async function createRoom() {
             throw new Error('No authentication token');
         }
 
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             method: 'POST',
             headers: {
@@ -486,11 +637,14 @@ async function createRoom() {
             body: JSON.stringify({
                 name: roomName.trim(),
                 description: roomDescription.trim()
-            })
+            }),
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error('Failed to create room');
+            throw new Error(`Failed to create room: ${response.status}`);
         }
 
         const newRoom = await response.json();
@@ -503,12 +657,12 @@ async function createRoom() {
         switchRoom(newRoom._id);
 
     } catch (error) {
-        console.error('Error creating room:', error);
+        console.error('❌ Error creating room:', error);
         showErrorMessage('Failed to create room. Please try again.');
     }
 }
 
-// Delete a room
+// Delete a room - WITH TIMEOUT
 async function deleteRoom(roomId) {
     if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
         return;
@@ -520,16 +674,23 @@ async function deleteRoom(roomId) {
             throw new Error('No authentication token');
         }
 
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            signal: controller.signal
         });
 
+        clearTimeout(timeoutId);
+
         if (!response.ok) {
-            throw new Error('Failed to delete room');
+            throw new Error(`Failed to delete room: ${response.status}`);
         }
 
         console.log('🗑️ Room deleted successfully');
@@ -546,7 +707,7 @@ async function deleteRoom(roomId) {
         await loadRooms();
 
     } catch (error) {
-        console.error('Error deleting room:', error);
+        console.error('❌ Error deleting room:', error);
         showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
     }
 }
@@ -653,10 +814,14 @@ function initializeBasicEvents() {
     console.log('✅ Basic event listeners initialized');
 }
 
-// Auto-refresh messages every 30 seconds
+// Auto-refresh messages every 30 seconds (only if initialized)
 setInterval(async () => {
-    if (currentRoomId) {
-        await loadMessages(currentRoomId);
+    if (currentRoomId && isInitialized) {
+        try {
+            await loadMessages(currentRoomId);
+        } catch (error) {
+            console.log('⚠️ Auto-refresh failed, will try again next time');
+        }
     }
 }, 30000);
 
@@ -679,6 +844,7 @@ window.insertEmoji = insertEmoji;
 window.performSearch = performSearch;
 window.closeSearch = closeSearch;
 window.initializeCommunity = initializeCommunity;
+window.retryInitialization = retryInitialization;
 window.logout = logout;
 
-console.log('✅ Community.js loaded - SIMPLE VERSION with no problematic resize listeners');
+console.log('✅ Community.js loaded - FIXED VERSION with proper error handling and no loops!');
