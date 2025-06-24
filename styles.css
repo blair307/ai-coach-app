@@ -905,6 +905,144 @@ body {
     font-weight: 600;
 }
 
+/* =================================
+   WORKING SIDEBAR TOGGLE CSS - FIXED VERSION
+   Add this after .dashboard-card h3 section
+   ================================= */
+
+/* Base sidebar styles - NO !important to allow JavaScript control */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--background);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    z-index: 1000;
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(0); /* Default open */
+}
+
+/* Closed state - matches JavaScript class name */
+.sidebar.closed {
+    transform: translateX(-280px);
+}
+
+/* Main content adjustments - NO !important */
+.main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    padding: 2rem;
+    background: var(--surface);
+    min-height: 100vh;
+}
+
+/* Main content when sidebar is closed - matches JavaScript class */
+.main-content.expanded {
+    margin-left: 0;
+}
+
+/* Hamburger button styling */
+.sidebar-toggle {
+    display: flex;
+    flex-direction: column;
+    width: 44px;
+    height: 44px;
+    background: #f1f5f9;
+    border: 2px solid #6366f1;
+    border-radius: 8px;
+    position: relative;
+    z-index: 9999;
+    margin-left: auto;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 8px;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+    background: #e2e8f0;
+    border-color: #4f46e5;
+    transform: scale(1.02);
+}
+
+/* Hamburger lines */
+.hamburger-line {
+    display: block;
+    width: 24px;
+    height: 3px;
+    background: #6366f1;
+    border-radius: 2px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-toggle:hover .hamburger-line {
+    background: #4f46e5;
+}
+
+/* Mobile responsive behavior */
+@media (max-width: 768px) {
+    /* On mobile, sidebar starts closed */
+    .sidebar {
+        transform: translateX(-280px);
+    }
+    
+    /* Main content takes full width on mobile */
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    /* Sidebar open state on mobile */
+    .sidebar:not(.closed) {
+        transform: translateX(0);
+    }
+    
+    /* Add overlay when sidebar is open on mobile */
+    .sidebar:not(.closed)::after {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 280px;
+        width: calc(100vw - 280px);
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        cursor: pointer;
+    }
+    
+    /* Hide hamburger button in sidebar header on mobile when closed */
+    .sidebar.closed .sidebar-toggle {
+        display: none;
+    }
+}
+
+/* Remove interfering pseudo-elements */
+.sidebar-header *::before,
+.sidebar-header *::after {
+    display: none;
+}
+
+/* Ensure sidebar header layout */
+.sidebar-header {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .sidebar-header {
+        padding: 1.5rem;
+    }
+}
+
 /* FIXED STATS GRID - NO OVERLAPPING TEXT + RESPONSIVE */
 .stats-grid {
     display: grid;
