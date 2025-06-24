@@ -615,12 +615,22 @@
         }
 
 async function toggleGoalCompletion(goalId) {
+    console.log('🔄 toggleGoalCompletion called with goalId:', goalId);
+    
     try {
         const goal = currentGoals.find(g => g._id === goalId);
-        if (!goal) return;
+        console.log('📋 Found goal:', goal);
+        
+        if (!goal) {
+            console.log('❌ No goal found with ID:', goalId);
+            return;
+        }
         
         const isCurrentlyCompleted = isGoalCompletedToday(goal);
+        console.log('✅ Is currently completed:', isCurrentlyCompleted);
+        
         const newCompletionState = !isCurrentlyCompleted;
+        console.log('🔄 New completion state will be:', newCompletionState);
         
         await updateGoalCompletion(goalId, newCompletionState);
         
@@ -632,13 +642,13 @@ async function toggleGoalCompletion(goalId) {
         }
         
     } catch (error) {
-        console.error('Error toggling goal completion:', error);
+        console.error('❌ Error toggling goal completion:', error);
         showError('Failed to update goal. Please try again.');
-        // The page will reload from the server anyway due to the forced re-render
     }
 }
 
         async function updateGoalCompletion(goalId, completed) {
+    console.log('🔄 updateGoalCompletion called:', { goalId, completed });
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
                 if (!token) throw new Error('No authentication token');
