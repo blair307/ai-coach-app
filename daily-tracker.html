@@ -371,17 +371,29 @@
             container.innerHTML = html;
         }
 
-        function isGoalCompletedToday(goal) {
-            if (!goal.lastCompletedDate) return false;
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            
-            const lastCompleted = new Date(goal.lastCompletedDate);
-            lastCompleted.setHours(0, 0, 0, 0);
-            
-            return today.getTime() === lastCompleted.getTime();
-        }
+function isGoalCompletedToday(goal) {
+    console.log('🗓️ Checking completion for goal:', goal._id);
+    console.log('📅 Goal lastCompletedDate:', goal.lastCompletedDate);
+    console.log('📅 Goal completed field:', goal.completed);
+    
+    if (!goal.lastCompletedDate) {
+        console.log('❌ No lastCompletedDate, returning false');
+        return false;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastCompleted = new Date(goal.lastCompletedDate);
+    lastCompleted.setHours(0, 0, 0, 0);
+    
+    const isToday = today.getTime() === lastCompleted.getTime();
+    console.log('🗓️ Today:', today.toISOString().split('T')[0]);
+    console.log('🗓️ Last completed:', lastCompleted.toISOString().split('T')[0]);
+    console.log('✅ Is completed today:', isToday);
+    
+    return isToday;
+}
 
         function updateProgressStats() {
             const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
