@@ -66,7 +66,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="mind-progress">0%</span>
+                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="mind-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #06b6d4; display: block;" id="spirit-progress">0%</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="spirit-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -98,7 +98,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #10b981; display: block;" id="body-progress">0%</span>
+                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="body-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #f59e0b; display: block;" id="work-progress">0%</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="work-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -130,7 +130,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #ec4899; display: block;" id="relationships-progress">0%</span>
+                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="relationships-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #f97316; display: block;" id="fun-progress">0%</span>
+                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="fun-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #059669; display: block;" id="finances-progress">0%</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="finances-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -255,6 +255,10 @@
     <!-- Basic Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
+
+        function goToDailyTracker() {
+    window.location.href = 'daily-tracker.html';
+}
         // Goal Wizard JavaScript with Backend Storage
         let currentStep = 1;
         let currentArea = '';
@@ -610,21 +614,36 @@
                 }
                 
                 let html = '';
-                Object.entries(goals).forEach(([area, areaGoals]) => {
-                    const config = areaConfig[area];
-                    const latestGoal = areaGoals[areaGoals.length - 1];
-                    
-                    html += `
-                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 0.5rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
-                            <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4;">${latestGoal.bigGoal}</p>
-                            <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${latestGoal.dailyAction}</p>
-                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                <button onclick="viewGoalDetails('${area}')" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
-                                <button onclick="openDailyTracker('${area}')" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
-                            </div>
-                        </div>
-                    `;
+Object.entries(goals).forEach(([area, areaGoals]) => {
+    const config = areaConfig[area];
+    
+    html += `
+        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
+    `;
+    
+    // Show ALL goals instead of just the latest one
+    areaGoals.forEach((goal, index) => {
+        const streakDisplay = goal.streak || 0;
+        html += `
+            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border);">
+                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4;">${goal.bigGoal}</p>
+                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
+                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; gap: 1rem;">
+                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
+                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += `</div>`;
                     
                     // Update card stats
                     updateAreaStats(area, areaGoals);
@@ -638,20 +657,33 @@
             }
         }
 
-        function updateAreaStats(area, goals) {
-            const goalsCount = goals.length;
-            const goalsElement = document.getElementById(`${area}-goals`);
-            const progressElement = document.getElementById(`${area}-progress`);
-            
-            if (goalsElement) goalsElement.textContent = goalsCount;
-            if (progressElement) {
-                // Calculate progress based on days since creation (placeholder)
-                const latestGoal = goals[goals.length - 1];
-                const daysSinceCreation = Math.floor((new Date() - new Date(latestGoal.createdAt)) / (1000 * 60 * 60 * 24));
-                const progress = Math.min(100, Math.max(0, daysSinceCreation * 10)); // 10% per day as example
-                progressElement.textContent = `${progress}%`;
+function updateAreaStats(area, goals) {
+    const goalsCount = goals.length;
+    const goalsElement = document.getElementById(`${area}-goals`);
+    const progressElement = document.getElementById(`${area}-progress`);
+    
+    if (goalsElement) goalsElement.textContent = goalsCount;
+    if (progressElement) {
+        // Calculate progress as X/Y format instead of percentage
+        let completedToday = 0;
+        const totalGoals = goals.length;
+        
+        goals.forEach(goal => {
+            if (goal.lastCompletedDate) {
+                const lastCompleted = new Date(goal.lastCompletedDate);
+                const today = new Date();
+                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                
+                // If completed today or has active streak, count as completed
+                if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
+                    completedToday++;
+                }
             }
-        }
+        });
+        
+        progressElement.textContent = `${completedToday}/${totalGoals}`;
+    }
+}
 
         function showSuccessMessage(message) {
             showToast(message, 'success');
@@ -693,14 +725,13 @@
             }, 4000);
         }
 
-        function viewGoalDetails(area) {
-            // Implementation for viewing goal details
-            alert(`Goal details for ${area} will show tracking history and progress!`);
-        }
+      function viewGoalDetails(area) {
+    window.location.href = 'daily-tracker.html';
+}
 
-        function openDailyTracker(area) {
-            alert(`Daily tracker for ${area} coming soon! This will be a simple checkbox to track daily completion.`);
-        }
+function openDailyTracker(area) {
+    window.location.href = 'daily-tracker.html';
+}
 
         function adjustBrightness(color, percent) {
             const num = parseInt(color.replace('#', ''), 16);
