@@ -1,7 +1,5 @@
 // Community.js - SIMPLE VERSION - No problematic resize listeners
 
-let layoutAlreadyInitialized = false;
-
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
