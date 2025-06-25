@@ -1,4 +1,4 @@
-// Complete Enhanced Community.js - All Features + Simplified Replies + Bigger Messages Window
+// Enhanced Community.js - PROPER THREADED REPLIES (Connected to Original Messages)
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -10,7 +10,7 @@ let currentReplyTo = null;
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Community with simplified replies loading...');
+    console.log('🚀 Enhanced Community with THREADED replies loading...');
     
     // FORCE HIDE modals immediately on page load
     setTimeout(() => {
@@ -303,24 +303,23 @@ async function switchRoom(roomId) {
     }
 }
 
-// ENHANCED: Create message element with simplified reply styling
-function createMessageElement(message) {
+// ENHANCED: Create message element with PROPER THREADING
+function createMessageElement(message, isReply = false, parentIndex = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
     messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
     
-    // SIMPLIFIED: Add reply class if this is a reply
-    if (message.replyTo) {
+    // THREADED: Add reply class and proper styling
+    if (isReply) {
         messageDiv.classList.add('reply');
-        console.log('💬 Creating simplified reply message');
+        messageDiv.setAttribute('data-parent-id', parentIndex);
+        console.log('💬 Creating THREADED reply message connected to parent');
     }
 
     const username = message.username || 'User';
     const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     const timestamp = formatMessageTime(message.createdAt || message.timestamp);
     const content = message.content || message.message || '';
-    
-    // NO MORE REPLY REFERENCE BOXES - Just simple styling
     
     // Simulate like count
     const likes = message.likes || [];
@@ -405,16 +404,16 @@ async function loadMessages(roomId) {
             replies: messages.filter(m => m.replyTo).length
         });
         
-        displayMessages(messages);
+        displayThreadedMessages(messages);
         
     } catch (error) {
         console.error('❌ Error loading messages:', error);
-        displayMessages([]);
+        displayThreadedMessages([]);
     }
 }
 
-// Display messages with simplified reply styling
-function displayMessages(messages) {
+// FIXED: Display messages with PROPER THREADING (replies appear under original messages)
+function displayThreadedMessages(messages) {
     const messagesContainer = document.getElementById('communityMessages');
     if (!messagesContainer) return;
 
@@ -429,15 +428,61 @@ function displayMessages(messages) {
         return;
     }
 
+    // THREADED ALGORITHM: Group messages by parent-child relationships
+    const messageMap = new Map();
+    const rootMessages = [];
+    
+    // First pass: Create a map of all messages
     messages.forEach(message => {
-        const messageElement = createMessageElement(message);
+        messageMap.set(message._id, { ...message, replies: [] });
+    });
+    
+    // Second pass: Build the threaded structure
+    messages.forEach(message => {
+        if (message.replyTo && message.replyTo.messageId) {
+            // This is a reply - find its parent
+            const parent = messageMap.get(message.replyTo.messageId);
+            if (parent) {
+                parent.replies.push(message);
+                console.log(`🔗 Threading reply "${message.content.substring(0, 30)}..." under parent "${parent.content.substring(0, 30)}..."`);
+            } else {
+                // Parent not found, treat as root message
+                rootMessages.push(message);
+            }
+        } else {
+            // This is a root message
+            rootMessages.push(message);
+        }
+    });
+    
+    // Third pass: Render the threaded messages
+    function renderMessage(message, isReply = false, depth = 0) {
+        const messageElement = createMessageElement(message, isReply, depth);
         messagesContainer.appendChild(messageElement);
+        
+        // Render replies underneath this message
+        const messageData = messageMap.get(message._id);
+        if (messageData && messageData.replies.length > 0) {
+            messageData.replies.forEach(reply => {
+                renderMessage(reply, true, depth + 1);
+            });
+        }
+    }
+    
+    // Render all root messages and their threaded replies
+    rootMessages.forEach(message => {
+        renderMessage(message, false, 0);
     });
 
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
     const replyCount = messages.filter(m => m.replyTo).length;
-    console.log(`📊 Displayed ${messages.length} messages (${replyCount} replies)`);
+    console.log(`📊 Displayed ${messages.length} messages in THREADED format (${replyCount} replies properly connected)`);
+}
+
+// Keep the displayMessages function for backward compatibility
+function displayMessages(messages) {
+    displayThreadedMessages(messages);
 }
 
 // ENHANCED: Reply functionality with notification creation
@@ -576,9 +621,10 @@ async function sendCommunityMessage() {
                 username: currentReplyTo.username,
                 content: currentReplyTo.content
             };
-            console.log('📤 Sending reply with notification data:', {
+            console.log('📤 Sending THREADED reply with notification data:', {
                 replyToUserId: currentReplyTo.userId,
-                replyToUsername: currentReplyTo.username
+                replyToUsername: currentReplyTo.username,
+                replyToMessageId: currentReplyTo.messageId
             });
         }
 
@@ -605,7 +651,8 @@ async function sendCommunityMessage() {
         console.log('📤 Message sent successfully:', {
             id: newMessage._id,
             isReply: !!newMessage.replyTo,
-            notificationCreated: !!newMessage.replyTo
+            notificationCreated: !!newMessage.replyTo,
+            willBeThreaded: !!newMessage.replyTo
         });
 
         messageInput.value = '';
@@ -616,9 +663,10 @@ async function sendCommunityMessage() {
         }
 
         if (currentReplyTo) {
-            showSuccessToast('Reply sent! Notification created.');
+            showSuccessToast('Reply sent! Will appear under original message.');
         }
 
+        // Reload messages to show the new threaded structure
         await loadMessages(currentRoomId);
 
     } catch (error) {
@@ -680,7 +728,7 @@ async function initializeCommunity() {
             return;
         }
 
-        console.log('🚀 Starting enhanced community with simplified reply system...');
+        console.log('🚀 Starting enhanced community with THREADED reply system...');
         
         const searchResults = document.getElementById('searchResults');
         const emojiModal = document.getElementById('emojiModal');
@@ -745,7 +793,7 @@ async function initializeCommunity() {
         }
 
         isInitialized = true;
-        console.log('✅ Enhanced community initialized successfully');
+        console.log('✅ Enhanced community with THREADED replies initialized successfully');
         
     } catch (error) {
         console.error('❌ Error initializing community:', error);
@@ -1286,6 +1334,7 @@ window.sendCommunityMessage = sendCommunityMessage;
 window.handleCommunityKeyPress = handleCommunityKeyPress;
 window.loadMessages = loadMessages;
 window.displayMessages = displayMessages;
+window.displayThreadedMessages = displayThreadedMessages;
 window.createMessageElement = createMessageElement;
 window.replyToMessage = replyToMessage;
 window.cancelReply = cancelReply;
@@ -1312,4 +1361,4 @@ window.currentRoomId = currentRoomId;
 window.rooms = rooms;
 window.currentReplyTo = currentReplyTo;
 
-console.log('✅ Complete Enhanced Community.js loaded - Simplified Reply System + Larger Messages Window + All Features!');
+console.log('✅ THREADED Community.js loaded - Replies now connect to original messages!');
