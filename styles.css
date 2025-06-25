@@ -4050,7 +4050,12 @@ mark {
     animation: replySlideIn 0.4s ease-out;
 }
 
-/* IMPROVED COMMUNITY LAYOUT - BIGGER MESSAGES */
+/* ================================= 
+   IMPROVED COMMUNITY LAYOUT - BIGGER MESSAGES + SIMPLIFIED REPLIES
+   Add this code to the BOTTOM of your styles.css file
+   ================================= */
+
+/* BIGGER MESSAGES WINDOW */
 .community-responsive-container {
     height: calc(100vh - 6rem) !important; /* Larger messages window */
 }
@@ -4065,6 +4070,7 @@ mark {
     position: relative !important;
 }
 
+/* Connection line for replies */
 .message-group.reply::before {
     content: '';
     position: absolute;
@@ -4076,6 +4082,7 @@ mark {
     border-radius: 1px;
 }
 
+/* Reply arrow */
 .message-group.reply::after {
     content: '↳';
     position: absolute;
@@ -4086,6 +4093,7 @@ mark {
     font-weight: bold;
 }
 
+/* Reply message styling */
 .message-group.reply .message-content {
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%) !important;
     border-left: 3px solid var(--primary) !important;
@@ -4096,7 +4104,59 @@ mark {
     font-weight: 700 !important;
 }
 
-/* Remove old reply reference boxes */
+/* Reply hover effect */
+.message-group.reply:hover {
+    background: rgba(196, 181, 253, 0.15) !important;
+    transform: translateX(4px) !important;
+}
+
+/* Hide old reply reference boxes - NO MORE CONFUSING BOXES */
 .reply-reference {
     display: none !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 1024px) {
+    .message-group.reply {
+        margin-left: 1rem !important;
+        padding-left: 0.75rem !important;
+    }
+    
+    .message-group.reply::before {
+        left: -1rem;
+    }
+    
+    .message-group.reply::after {
+        left: -1rem;
+        font-size: 1rem;
+        top: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .message-group.reply {
+        margin-left: 0.75rem !important;
+        padding-left: 0.5rem !important;
+    }
+    
+    .message-group.reply::after {
+        left: -0.75rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Animation for new replies */
+@keyframes replySlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.message-group.reply {
+    animation: replySlideIn 0.4s ease-out;
 }
