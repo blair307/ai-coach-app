@@ -5,35 +5,263 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Billing - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* RESPONSIVE BILLING FIXES */
+        @media (max-width: 1024px) {
+            .main-content {
+                margin-left: 0 !important;
+                padding: 1rem !important;
+            }
+            
+            .content-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 1rem !important;
+                text-align: center !important;
+            }
+            
+            .content-header h1 {
+                font-size: 1.75rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .header-actions {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+                align-items: stretch !important;
+            }
+            
+            .header-actions .btn {
+                width: 100% !important;
+                min-height: 44px !important;
+                font-size: 0.95rem !important;
+            }
+            
+            .billing-container {
+                gap: 1.5rem !important;
+            }
+            
+            .billing-card {
+                margin: 0 !important;
+                border-radius: var(--radius-lg) !important;
+            }
+            
+            .card-header {
+                padding: 1rem 1.5rem !important;
+                flex-direction: column !important;
+                gap: 1rem !important;
+                align-items: stretch !important;
+                text-align: center !important;
+            }
+            
+            .card-header h2 {
+                font-size: 1.25rem !important;
+                margin: 0 !important;
+            }
+            
+            .card-header .btn {
+                width: 100% !important;
+                min-height: 44px !important;
+            }
+            
+            .plan-details {
+                flex-direction: column !important;
+                gap: 1.5rem !important;
+                padding: 1.5rem !important;
+                text-align: center !important;
+            }
+            
+            .plan-info {
+                text-align: center !important;
+            }
+            
+            .plan-info h3 {
+                font-size: 1.25rem !important;
+            }
+            
+            .plan-price {
+                font-size: 1.75rem !important;
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .plan-actions {
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+                width: 100% !important;
+            }
+            
+            .plan-actions .btn {
+                width: 100% !important;
+                min-height: 44px !important;
+                font-size: 0.95rem !important;
+            }
+            
+            .billing-info {
+                padding: 1.5rem !important;
+            }
+            
+            .info-row {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 0.5rem !important;
+                padding: 1rem 0 !important;
+                text-align: left !important;
+            }
+            
+            .info-row span {
+                font-size: 0.875rem !important;
+                font-weight: 600 !important;
+                color: var(--text-primary) !important;
+            }
+            
+            .info-row strong {
+                font-size: 0.95rem !important;
+                font-weight: 500 !important;
+                color: var(--text-secondary) !important;
+            }
+            
+            /* Payment method card responsive */
+            .plan-details div[style*="display: flex"] {
+                flex-direction: column !important;
+                gap: 1rem !important;
+                align-items: center !important;
+                text-align: center !important;
+            }
+            
+            .plan-details div[style*="width: 60px"] {
+                width: 80px !important;
+                height: 50px !important;
+                font-size: 1rem !important;
+            }
+            
+            /* Billing history table responsive */
+            .billing-card table {
+                font-size: 0.875rem !important;
+            }
+            
+            .billing-card th,
+            .billing-card td {
+                padding: 0.75rem 0.5rem !important;
+            }
+            
+            .billing-card th {
+                font-size: 0.8rem !important;
+            }
+            
+            .billing-card td {
+                font-size: 0.85rem !important;
+            }
+            
+            /* Responsive table on very small screens */
+            @media (max-width: 600px) {
+                .billing-card table,
+                .billing-card thead,
+                .billing-card tbody,
+                .billing-card th,
+                .billing-card td,
+                .billing-card tr {
+                    display: block !important;
+                }
+                
+                .billing-card thead tr {
+                    position: absolute !important;
+                    top: -9999px !important;
+                    left: -9999px !important;
+                }
+                
+                .billing-card tr {
+                    background: var(--surface) !important;
+                    border-radius: var(--radius) !important;
+                    margin-bottom: 1rem !important;
+                    padding: 1rem !important;
+                    border: 1px solid var(--border) !important;
+                }
+                
+                .billing-card td {
+                    border: none !important;
+                    position: relative !important;
+                    padding: 0.5rem 0 !important;
+                    display: flex !important;
+                    justify-content: space-between !important;
+                    align-items: center !important;
+                }
+                
+                .billing-card td:before {
+                    content: attr(data-label) !important;
+                    font-weight: 600 !important;
+                    color: var(--text-primary) !important;
+                    flex-shrink: 0 !important;
+                    margin-right: 1rem !important;
+                }
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 0.75rem !important;
+            }
+            
+            .content-header {
+                margin-bottom: 1.5rem !important;
+                padding-bottom: 0.75rem !important;
+            }
+            
+            .content-header h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .billing-container {
+                gap: 1rem !important;
+            }
+            
+            .card-header {
+                padding: 1rem !important;
+            }
+            
+            .plan-details {
+                padding: 1rem !important;
+            }
+            
+            .billing-info {
+                padding: 1rem !important;
+            }
+            
+            .plan-price {
+                font-size: 1.5rem !important;
+            }
+            
+            .notification-icon-container {
+                order: 1 !important;
+            }
+            
+            .header-actions {
+                order: 2 !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- Universal Hamburger Menu -->
+        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
         <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>EEH</h2>
-                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">
-                    Dashboard
-                </a></li>
-                <li><a href="ai-coach.html" class="menu-item">
-                    AI Coach
-                </a></li>
-                <li><a href="community.html" class="menu-item">
-                    Community
-                </a></li>
-               <li><a href="goals.html" class="menu-item">Goals</a></li>
-<li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
-<li><a href="billing.html" class="menu-item">Billing</a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">
-                    Logout
-                </a></li>
+                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
+                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
+                <li><a href="community.html" class="menu-item">Community</a></li>
+                <li><a href="goals.html" class="menu-item">Goals</a></li>
+                <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
+                <li><a href="billing.html" class="menu-item active">Billing</a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
 
@@ -149,35 +377,35 @@
                             </thead>
                             <tbody>
                                 <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2025</td>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
-                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Date">Mar 15, 2025</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Description">Yearly Subscription</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;" data-label="Amount">$929.00</td>
+                                    <td style="padding: 1rem;" data-label="Status">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem;" data-label="Invoice">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2025-001')">Download</button>
                                     </td>
                                 </tr>
                                 <tr style="border-bottom: 1px solid var(--border);">
-                                    <td style="padding: 1rem; color: var(--text-primary);">Mar 15, 2024</td>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Yearly Subscription</td>
-                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$929.00</td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Date">Mar 15, 2024</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Description">Yearly Subscription</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;" data-label="Amount">$929.00</td>
+                                    <td style="padding: 1rem;" data-label="Status">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem;" data-label="Invoice">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2024-001')">Download</button>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Feb 10, 2024</td>
-                                    <td style="padding: 1rem; color: var(--text-primary);">Setup Fee</td>
-                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;">$0.00</td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Date">Feb 10, 2024</td>
+                                    <td style="padding: 1rem; color: var(--text-primary);" data-label="Description">Setup Fee</td>
+                                    <td style="padding: 1rem; color: var(--text-primary); font-weight: 600;" data-label="Amount">$0.00</td>
+                                    <td style="padding: 1rem;" data-label="Status">
                                         <span style="background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 0.25rem 0.75rem; border-radius: var(--radius); font-size: 0.875rem; font-weight: 600;">Paid</span>
                                     </td>
-                                    <td style="padding: 1rem;">
+                                    <td style="padding: 1rem;" data-label="Invoice">
                                         <button class="btn-link" onclick="downloadInvoice('INV-2024-000')">Download</button>
                                     </td>
                                 </tr>
@@ -256,6 +484,44 @@
 
     function downloadAllInvoices() {
         alert('Downloading all invoices...');
+    }
+
+    // Sidebar toggle functionality
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('.main-content');
+        
+        if (window.innerWidth <= 768) {
+            // Mobile behavior
+            sidebar.classList.toggle('open');
+            
+            // Add/remove overlay
+            let overlay = document.querySelector('.mobile-overlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'mobile-overlay';
+                overlay.onclick = () => {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('active');
+                };
+                document.body.appendChild(overlay);
+            }
+            
+            if (sidebar.classList.contains('open')) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        } else {
+            // Desktop behavior
+            if (mainContent.classList.contains('shifted')) {
+                mainContent.classList.remove('shifted');
+                sidebar.style.transform = 'translateX(-280px)';
+            } else {
+                mainContent.classList.add('shifted');
+                sidebar.style.transform = 'translateX(0)';
+            }
+        }
     }
 
     // Update count when page loads and every 30 seconds
