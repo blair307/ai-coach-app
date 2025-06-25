@@ -1,4 +1,647 @@
-<!DOCTYPE html>
+<script>
+    // DETECTIVE MODE PROGRESS TRACKER - Finds the REAL data sources
+
+    class DetectiveProgressTracker {
+        constructor() {
+            this.storageKey = 'eeh_detective_progress';
+            this.debugMode = true; // Enable for debugging
+            this.initializeData();
+            this.updateDisplay();
+            this.startTracking();
+        }
+
+        initializeData() {
+            const stored = localStorage.getItem(this.storageKey);
+            
+            if (stored) {
+                this.data = JSON.parse(stored);
+            } else {
+                this.data = {
+                    coachingSessions: 0,
+                    activeDays: new Set(),
+                    communityPosts: 0,
+                    activeGoals: 0,
+                    firstActiveDate: new Date().toISOString().split('T')[0],
+                    lastActiveDate: null
+                };
+            }
+
+            // Convert activeDays array back to Set if needed
+            if (Array.isArray(this.data.activeDays)) {
+                this.data.activeDays = new Set(this.data.activeDays);
+            } else if (!this.data.activeDays) {
+                this.data.activeDays = new Set();
+            }
+
+            // Mark today as active
+            this.markActiveToday();
+        }
+
+        save() {
+            const dataToStore = {
+                ...this.data,
+                activeDays: Array.from(this.data.activeDays)
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
+        }
+
+        markActiveToday() {
+            const today = new Date().toISOString().split('T')[0];
+            
+            if (!this.data.activeDays.has(today)) {
+                this.data.activeDays.add(today);
+                this.data.lastActiveDate = today;
+                this.save();
+                if (this.debugMode) console.log('📅 Marked today as active:', today);
+            }
+        }
+
+        // DETECTIVE METHOD: Find coaching sessions from MULTIPLE sources
+        async getCoachingSessions() {
+            if (this.debugMode) console.log('🕵️ Investigating coaching sessions...');
+            
+            let maxSessions = 0;
+            const sources = [];
+
+            try {
+                // Method 1: Check for API chat history
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (token) {
+                    try {
+                        const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            signal: AbortSignal.timeout(5000)
+                        });
+                        
+                        if (response.ok) {
+                            const chatData = await response.json();
+                            const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
+                            const apiSessions = userMessages.length;
+                            sources.push(`API: ${apiSessions} messages`);
+                            maxSessions = Math.max(maxSessions, Math.ceil(apiSessions / 2)); // Every 2 messages = 1 session
+                        }
+                    } catch (apiError) {
+                        if (this.debugMode) console.log('API chat history not available');
+                    }
+                }
+
+                // Method 2: Check localStorage with multiple possible keys
+                const possibleKeys = [
+                    'eeh_chat_history',
+                    'chatHistory', 
+                    'ai_coach_conversation',
+                    'aiCoachHistory',
+                    'chat_messages',
+                    'conversationHistory'
+                ];
+
+                for (const key of possibleKeys) {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            const parsed = JSON.parse(data);
+                            let userMessages = 0;
+                            
+                            if (Array.isArray(parsed)) {
+                                userMessages = parsed.filter(msg => 
+                                    msg.role === 'user' || 
+                                    msg.type === 'user' || 
+                                    msg.sender === 'user' ||
+                                    msg.from === 'user'
+                                ).length;
+                            } else if (parsed.messages && Array.isArray(parsed.messages)) {
+                                userMessages = parsed.messages.filter(msg => 
+                                    msg.role === 'user' || 
+                                    msg.type === 'user'
+                                ).length;
+                            }
+                            
+                            if (userMessages > 0) {
+                                const sessions = Math.ceil(userMessages / 2);
+                                sources.push(`${key}: ${userMessages} messages (${sessions} sessions)`);
+                                maxSessions = Math.max(maxSessions, sessions);
+                            }
+                        } catch (e) {
+                            if (this.debugMode) console.log(`Could not parse ${key}`);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                if (this.debugMode) console.error('Error investigating coaching sessions:', error);
+            }
+
+            if (this.debugMode) {
+                console.log('🕵️ Coaching session sources found:', sources);
+                console.log('🎯 Max coaching sessions:', maxSessions);
+            }
+
+            return maxSessions;
+        }
+
+        // DETECTIVE METHOD: Find community posts from MULTIPLE sources
+        async getCommunityPosts() {
+            if (this.debugMode) console.log('🕵️ Investigating community posts...');
+            
+            let maxPosts = 0;
+            const sources = [];
+
+            try {
+                // Method 1: Check current room messages via API
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (token) {
+                    try {
+                        // Get current user info
+                        const user = this.getCurrentUser();
+                        if (user) {
+                            // Try to get messages from all rooms
+                            const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                signal: AbortSignal.timeout(5000)
+                            });
+                            
+                            if (roomsResponse.ok) {
+                                const rooms = await roomsResponse.json();
+                                let totalUserMessages = 0;
+                                
+                                for (const room of rooms.slice(0, 3)) { // Check first 3 rooms to avoid too many requests
+                                    try {
+                                        const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${room._id}/messages`, {
+                                            headers: {
+                                                'Authorization': `Bearer ${token}`,
+                                                'Content-Type': 'application/json'
+                                            },
+                                            signal: AbortSignal.timeout(3000)
+                                        });
+                                        
+                                        if (messagesResponse.ok) {
+                                            const messages = await messagesResponse.json();
+                                            const userMessages = messages.filter(msg => 
+                                                msg.userId === user.id || 
+                                                msg.username === user.name ||
+                                                msg.username === `${user.firstName} ${user.lastName}`
+                                            ).length;
+                                            totalUserMessages += userMessages;
+                                        }
+                                    } catch (roomError) {
+                                        // Skip this room if error
+                                    }
+                                }
+                                
+                                if (totalUserMessages > 0) {
+                                    sources.push(`API rooms: ${totalUserMessages} messages`);
+                                    maxPosts = Math.max(maxPosts, totalUserMessages);
+                                }
+                            }
+                        }
+                    } catch (apiError) {
+                        if (this.debugMode) console.log('API community data not available');
+                    }
+                }
+
+                // Method 2: Check localStorage with multiple possible keys
+                const possibleKeys = [
+                    'eeh_community_messages',
+                    'community_messages',
+                    'communityMessages',
+                    'communityHistory',
+                    'room_messages'
+                ];
+
+                for (const key of possibleKeys) {
+                    const data = localStorage.getItem(key);
+                    if (data) {
+                        try {
+                            const parsed = JSON.parse(data);
+                            let userMessages = 0;
+                            
+                            if (Array.isArray(parsed)) {
+                                userMessages = parsed.filter(msg => 
+                                    msg.type === 'user' || 
+                                    msg.role === 'user' || 
+                                    msg.sender === 'user' ||
+                                    msg.isUserMessage === true
+                                ).length;
+                            }
+                            
+                            if (userMessages > 0) {
+                                sources.push(`${key}: ${userMessages} messages`);
+                                maxPosts = Math.max(maxPosts, userMessages);
+                            }
+                        } catch (e) {
+                            if (this.debugMode) console.log(`Could not parse ${key}`);
+                        }
+                    }
+                }
+
+            } catch (error) {
+                if (this.debugMode) console.error('Error investigating community posts:', error);
+            }
+
+            if (this.debugMode) {
+                console.log('🕵️ Community post sources found:', sources);
+                console.log('💬 Max community posts:', maxPosts);
+            }
+
+            return maxPosts;
+        }
+
+        // Get current user info
+        getCurrentUser() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return null;
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return {
+                    id: payload.userId,
+                    email: payload.email,
+                    name: localStorage.getItem('userName') || 'User',
+                    firstName: localStorage.getItem('userFirstName') || '',
+                    lastName: localStorage.getItem('userLastName') || ''
+                };
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // IMPROVED: Get active goals from API (matching the Life Goals section)
+        async getActiveGoals() {
+            if (this.debugMode) console.log('🕵️ Investigating active goals...');
+            
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                
+                if (token) {
+                    try {
+                        const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            signal: AbortSignal.timeout(8000)
+                        });
+                        
+                        if (response.ok) {
+                            const goals = await response.json();
+                            
+                            // Count active goals (not completed) - SAME LOGIC AS LIFE GOALS SECTION
+                            const activeGoals = goals.filter(goal => !goal.completed).length;
+                            const totalGoals = goals.length;
+                            
+                            if (this.debugMode) {
+                                console.log('✅ Goals from API:', { 
+                                    total: totalGoals, 
+                                    active: activeGoals,
+                                    completed: totalGoals - activeGoals 
+                                });
+                            }
+                            
+                            return activeGoals;
+                        } else {
+                            if (this.debugMode) console.log('⚠️ Goals API returned error:', response.status);
+                            return 0;
+                        }
+                        
+                    } catch (apiError) {
+                        if (this.debugMode) console.log('📡 Goals API unavailable:', apiError.message);
+                        return 0;
+                    }
+                } else {
+                    if (this.debugMode) console.log('🔐 No auth token for goals');
+                    return 0;
+                }
+                
+            } catch (error) {
+                if (this.debugMode) console.error('❌ Error in getActiveGoals:', error);
+                return 0;
+            }
+        }
+
+        // Get days active count
+        getDaysActive() {
+            return this.data.activeDays.size;
+        }
+
+        // Update all numbers and display
+        async updateDisplay() {
+            try {
+                if (this.debugMode) console.log('🔄 Starting detective update...');
+                
+                const coachingSessions = await this.getCoachingSessions();
+                const daysActive = this.getDaysActive();
+                const communityPosts = await this.getCommunityPosts();
+                const activeGoals = await this.getActiveGoals();
+
+                if (this.debugMode) {
+                    console.log('📊 DETECTIVE RESULTS:', {
+                        coachingSessions,
+                        daysActive, 
+                        communityPosts,
+                        activeGoals
+                    });
+                }
+
+                // Update the DOM elements
+                const statNumbers = document.querySelectorAll('.stat-number');
+                if (statNumbers.length >= 4) {
+                    statNumbers.forEach(el => {
+                        el.style.transition = 'all 0.3s ease';
+                    });
+
+                    statNumbers[0].textContent = coachingSessions;
+                    statNumbers[1].textContent = daysActive;
+                    statNumbers[2].textContent = communityPosts;
+                    statNumbers[3].textContent = activeGoals;
+
+                    // Add bounce effect
+                    statNumbers.forEach((el, index) => {
+                        setTimeout(() => {
+                            el.style.transform = 'scale(1.1)';
+                            setTimeout(() => {
+                                el.style.transform = 'scale(1)';
+                            }, 200);
+                        }, index * 100);
+                    });
+                }
+
+                // Update stored values
+                this.data.coachingSessions = coachingSessions;
+                this.data.communityPosts = communityPosts;
+                this.data.activeGoals = activeGoals;
+                this.save();
+
+                if (this.debugMode) console.log('✅ Detective update complete!');
+                
+            } catch (error) {
+                console.error('❌ Error in detective update:', error);
+            }
+        }
+
+        startTracking() {
+            // Update display every 30 seconds
+            setInterval(() => {
+                this.updateDisplay();
+            }, 30000);
+
+            // Update when page becomes visible
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    this.markActiveToday();
+                    setTimeout(() => this.updateDisplay(), 1000);
+                }
+            });
+        }
+
+        // Manual refresh method
+        async forceUpdate() {
+            console.log('🔄 Force detective update...');
+            await this.updateDisplay();
+        }
+
+        // Get summary for debugging
+        getSummary() {
+            return {
+                coachingSessions: this.data.coachingSessions,
+                daysActive: this.getDaysActive(),
+                communityPosts: this.data.communityPosts,
+                activeGoals: this.data.activeGoals,
+                activeDaysArray: Array.from(this.data.activeDays),
+                debugMode: this.debugMode
+            };
+        }
+
+        // Toggle debug mode
+        toggleDebug() {
+            this.debugMode = !this.debugMode;
+            console.log(`🐛 Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
+        }
+    }
+
+    // Enhanced coaching session function that tracks progress
+    function enhancedStartCoachingSession() {
+        // Navigate to AI coach
+        window.location.href = 'ai-coach.html';
+    }
+
+    // Helper function to simulate some activity for testing
+    function simulateActivity() {
+        if (!window.detectiveProgressTracker) {
+            console.error('Detective tracker not initialized');
+            return;
+        }
+        
+        console.log('🧪 Simulating activity...');
+        
+        // Simulate chat messages
+        const chatHistory = [
+            { role: 'user', content: 'Hello coach', timestamp: new Date().toISOString() },
+            { role: 'assistant', content: 'Hello!', timestamp: new Date().toISOString() },
+            { role: 'user', content: 'How can I improve my business?', timestamp: new Date().toISOString() },
+            { role: 'assistant', content: 'Great question!', timestamp: new Date().toISOString() },
+            { role: 'user', content: 'Tell me more about stress management', timestamp: new Date().toISOString() }
+        ];
+        localStorage.setItem('eeh_chat_history', JSON.stringify(chatHistory));
+        
+        // Simulate community posts
+        const communityMessages = [
+            { type: 'user', content: 'Great discussion!', timestamp: new Date().toISOString() },
+            { type: 'user', content: 'Thanks for sharing!', timestamp: new Date().toISOString() },
+            { type: 'user', content: 'This helped me a lot', timestamp: new Date().toISOString() },
+            { type: 'user', content: 'Looking forward to the next session', timestamp: new Date().toISOString() }
+        ];
+        localStorage.setItem('eeh_community_messages', JSON.stringify(communityMessages));
+        
+        // Update display
+        setTimeout(() => {
+            window.detectiveProgressTracker.updateDisplay();
+            console.log('📊 Updated progress:', window.detectiveProgressTracker.getSummary());
+        }, 500);
+    }
+
+    // Dashboard Goals Loading Function
+    async function loadDashboardGoals() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) {
+                document.getElementById('goalsCardContent').innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Please log in to view your goals</p>';
+                return;
+            }
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load goals');
+            }
+
+            const goals = await response.json();
+            const goalsCardContent = document.getElementById('goalsCardContent');
+            
+            if (goals.length === 0) {
+                goalsCardContent.innerHTML = `
+                    <div style="text-align: center; padding: 1rem;">
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">No goals set yet</p>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Start your journey by creating your first life goal!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculate stats
+            const totalGoals = goals.length;
+            const totalStreak = goals.reduce((sum, goal) => sum + (goal.streak || 0), 0);
+            const activeGoals = goals.filter(goal => (goal.streak || 0) > 0).length;
+
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">${totalGoals}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Goals</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success);">${activeGoals}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Active Streaks</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning);">${totalStreak}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Days</div>
+                    </div>
+                </div>
+            `;
+
+            // Show recent goals (limit to 3)
+            const recentGoals = goals.slice(0, 3);
+            html += '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+            
+            recentGoals.forEach(goal => {
+                const areaColors = {
+                    mind: '#8b5cf6',
+                    spirit: '#06b6d4', 
+                    body: '#10b981',
+                    work: '#f59e0b',
+                    relationships: '#ec4899',
+                    fun: '#f97316',
+                    finances: '#059669'
+                };
+                
+                const color = areaColors[goal.area] || '#6366f1';
+                
+                html += `
+                    <div style="padding: 0.75rem; background: var(--surface); border-radius: 8px; border-left: 3px solid ${color};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem; text-transform: capitalize; margin-bottom: 0.25rem;">${goal.area}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.8rem; line-height: 1.3;">${goal.dailyAction}</div>
+                            </div>
+                            <div style="text-align: center; margin-left: 1rem;">
+                                <div style="font-size: 1.2rem; font-weight: 700; color: ${color};">${goal.streak || 0}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">streak</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+
+            if (goals.length > 3) {
+                html += `<div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <a href="goals.html" style="color: var(--primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">View all ${goals.length} goals →</a>
+                </div>`;
+            }
+
+            goalsCardContent.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading dashboard goals:', error);
+            document.getElementById('goalsCardContent').innerHTML = '<p style="text-align: center; color: var(--error); padding: 1rem;">Error loading goals</p>';
+        }
+    }
+
+    // Simple notification counter
+    async function updateNotificationCount() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return;
+            
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const count = data.count || 0;
+                const countElement = document.getElementById('headerNotificationCount');
+                
+                if (countElement) {
+                    countElement.textContent = count;
+                    countElement.setAttribute('data-count', count);
+                    countElement.style.display = count > 0 ? 'flex' : 'none';
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching notification count:', error);
+        }
+    }
+
+    function goToNotifications() {
+        window.location.href = 'notifications.html';
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    // Initialize the detective tracker when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+            window.detectiveProgressTracker = new DetectiveProgressTracker();
+            
+            // Make methods available globally for testing
+            window.updateProgress = () => window.detectiveProgressTracker.forceUpdate();
+            window.getProgressSummary = () => window.detectiveProgressTracker.getSummary();
+            window.simulateActivity = simulateActivity;
+            window.toggleDebug = () => window.detectiveProgressTracker.toggleDebug();
+            
+            // Override the original startCoachingSession function
+            window.startCoachingSession = enhancedStartCoachingSession;
+            
+            console.log('🕵️ Detective Progress Tracker initialized!');
+            console.log('📊 Use getProgressSummary() to see current data');
+            console.log('🧪 Use simulateActivity() to test with fake data');
+            console.log('🐛 Use toggleDebug() to turn debug mode on/off');
+            
+            // Update display after a short delay to ensure everything is loaded
+            setTimeout(() => {
+                window.detectiveProgressTracker.updateDisplay();
+            }, 2000);
+            
+        }, 500);
+
+        // Update notification count
+        updateNotificationCount();
+        setInterval(updateNotificationCount, 30000);
+        
+        // Load dashboard goals
+        setTimeout(loadDashboardGoals, 1000);
+    });<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
