@@ -6,93 +6,30 @@
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* MOBILE DESIGN FIX ONLY - Keep all original functionality */
-        @media (max-width: 1024px) {
-            /* Remove margins and make full width */
-            .main-content {
-                margin-left: 0 !important;
-                padding: 0 !important;
-                width: 100vw !important;
-                max-width: 100vw !important;
-                height: 100vh !important;
-                display: flex !important;
-                flex-direction: column !important;
-            }
-            
-            /* Hide header on mobile to save space */
-            .content-header {
-                display: none !important;
-            }
-            
-            /* Chat container - full screen */
-            .chat-container {
-                height: 100vh !important;
-                width: 100vw !important;
-                max-width: 100vw !important;
-                margin: 0 !important;
-                border-radius: 0 !important;
-                border: none !important;
-                flex: 1 !important;
-                display: flex !important;
-                flex-direction: column !important;
-                overflow: hidden !important;
-            }
-            
-            /* Hide sidebar on mobile */
-            .coaching-sidebar {
-                display: none !important;
-            }
-            
-            /* Chat header - compact */
-            .chat-header {
-                padding: 1rem !important;
-                flex-shrink: 0 !important;
-                background: var(--surface) !important;
-                border-bottom: 1px solid var(--border) !important;
-                text-align: center !important;
-            }
-            
-            /* Messages area - scrollable middle */
-            .chat-messages {
-                flex: 1 !important;
-                padding: 1rem !important;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch !important;
-                background: var(--surface) !important;
-                width: 100% !important;
-            }
-            
-            /* Input container - fixed at bottom */
-            .chat-input-container {
-                position: sticky !important;
-                bottom: 0 !important;
-                width: 100% !important;
-                padding: 1rem !important;
-                background: var(--background) !important;
-                border-top: 2px solid var(--border) !important;
-                flex-shrink: 0 !important;
-                z-index: 1000 !important;
-                box-shadow: 0 -2px 10px rgba(0,0,0,0.1) !important;
-            }
-            
-            /* Input styling */
-            .chat-input textarea {
-                width: 100% !important;
-                font-size: 16px !important;
-                min-height: 44px !important;
-                box-sizing: border-box !important;
-            }
-            
-            /* Button styling */
-            .input-actions .btn {
-                min-height: 44px !important;
-                touch-action: manipulation !important;
-            }
-            
-            /* Safe area for notched devices */
-            .chat-input-container {
-                padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
-            }
+        /* Override problematic card styles directly */
+        .feature::before,
+        .pricing-card::before {
+            display: none !important;
+        }
+        
+        /* Settings button styling */
+        .modern-settings-btn {
+            background: rgba(99, 102, 241, 0.1) !important;
+            border: 2px solid rgba(99, 102, 241, 0.2) !important;
+            color: #6366f1 !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
+        }
+        
+        .modern-settings-btn:hover {
+            background: rgba(99, 102, 241, 0.15) !important;
+            border-color: rgba(99, 102, 241, 0.3) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2) !important;
         }
     </style>
 </head>
@@ -130,158 +67,322 @@
         <!-- Main Content -->
         <main class="main-content">
             <header class="content-header">
-                <h1>AI Coach</h1>
+                <h1>AI Emotional Health Coach</h1>
                 <div class="header-actions">
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
-                         <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> </svg>
+                           <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> </svg>
                             <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
                         </div>
                     </div>
                     
-                    <button class="btn btn-outline" onclick="clearChat()">
-                        Clear Chat
-                    </button>
-                    <button class="btn btn-primary" onclick="newSession()">
+                    <button class="btn btn-secondary" onclick="clearConversation()">
                         New Session
+                    </button>
+                    <button class="btn btn-outline" onclick="exportChat()">
+                        Export Chat
                     </button>
                 </div>
             </header>
 
-            <div class="chat-container">
-                <!-- Chat Header -->
-                <div class="chat-header">
-                    <div class="coach-info">
-                        <div class="coach-avatar">
-                            AI
+            <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
+                <!-- Chat Container -->
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <div class="coach-info">
+                            <div class="coach-avatar">AI</div>
+                            <div class="coach-details">
+                                <h2>EEH Coach</h2>
+                                <div class="coach-status">
+                                    <span class="status-dot"></span>
+                                    Always available to help
+                                </div>
+                            </div>
                         </div>
-                        <div class="coach-details">
-                            <h2>Your AI Coach</h2>
-                            <div class="coach-status">
-                                <div class="status-dot online"></div>
-                                <span>Ready to help</span>
+                        <div class="chat-actions">
+                            <button class="modern-settings-btn" onclick="toggleSettings()">
+                                Settings
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Welcome Message -->
+                        <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 80%;">
+                            <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
+                                Welcome! I'm your AI Emotional Health Coach, specialized in helping entrepreneurs manage stress, build emotional intelligence, and achieve work-life balance. 
+                                
+                                How are you feeling today? What challenges would you like to work on?
+                            </div>
+                            <div style="color: var(--text-muted); font-size: 0.875rem;">Just now</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-container">
+                        <div class="chat-input">
+                            <textarea 
+                                id="messageInput" 
+                                placeholder="Share what's on your mind... Ask about stress management, team dynamics, emotional wellness, or any entrepreneurial challenges."
+                                rows="3"
+                                onkeypress="handleKeyPress(event)"
+                            ></textarea>
+                            <div class="input-actions">
+                                <button class="btn btn-primary" onclick="sendMessage()" id="sendButton">
+                                    Send Message
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="chat-actions">
-                        <button class="btn btn-small btn-outline" onclick="exportChat()">
-                            Export
-                        </button>
-                    </div>
                 </div>
 
-                <!-- Messages -->
-                <div class="chat-messages" id="chatMessages">
-                    <div class="message">
-                        <div class="coach-avatar">AI</div>
-                        <div class="message-content">
-                            <div class="message-text">Hello! I'm your AI Coach, here to support you on your entrepreneurial journey. Whether you're dealing with stress, looking to improve work-life balance, or exploring new strategies for growth, I'm ready to engage in meaningful conversations that can help you thrive.
-
-Feel free to share what's on your mind, ask about stress management techniques, discuss business challenges, or explore any aspect of your personal and professional development. How can I support you today?</div>
-                            <div class="message-time">Just now</div>
+                <!-- Coaching Sidebar -->
+                <div class="coaching-sidebar">
+                    <!-- Current Goals -->
+                    <div class="sidebar-section">
+                        <h3>Your Goals</h3>
+                        <div class="goals-list">
+                            <div class="goal-item">
+                                <input type="checkbox" checked id="goal1">
+                                <label for="goal1">Reduce work stress</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal2">
+                                <label for="goal2">Improve team communication</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal3">
+                                <label for="goal3">Better work-life balance</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" checked id="goal4">
+                                <label for="goal4">Increase emotional awareness</label>
+                            </div>
                         </div>
+                        <button class="btn btn-outline btn-small" onclick="addGoal()">Add Goal</button>
                     </div>
-                </div>
 
-                <!-- Chat Input -->
-                <div class="chat-input-container">
-                    <div class="chat-input">
-                        <textarea 
-                            id="messageInput" 
-                            placeholder="Share what's on your mind... Ask about stress management, business dynamics, emotional wellness, or any entrepreneurial challenges."
-                            onkeypress="handleKeyPress(event)"
-                        ></textarea>
-                        <div class="input-actions">
-                            <button class="btn btn-small btn-outline" onclick="attachFile()">
-                                📎
+                    <!-- Quick Topics -->
+                    <div class="sidebar-section">
+                        <h3>Quick Topics</h3>
+                        <div class="topic-buttons">
+                            <button class="topic-btn" onclick="quickTopic('stress')">
+                                Stress Management
                             </button>
-                            <button class="btn btn-small btn-outline" onclick="addEmoji()">
-                                😊
+                            <button class="topic-btn" onclick="quickTopic('leadership')">
+                                Leadership Skills
                             </button>
-                            <button class="btn btn-primary" onclick="sendMessage()">
-                                Send
+                            <button class="topic-btn" onclick="quickTopic('burnout')">
+                                Preventing Burnout
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('communication')">
+                                Team Communication
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('decision')">
+                                Decision Making
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('confidence')">
+                                Building Confidence
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            <!-- Coaching Sidebar -->
-            <div class="coaching-sidebar">
-                <!-- Quick Goals -->
-                <div class="sidebar-section">
-                    <h3>Today's Goals</h3>
-                    <div class="goals-list">
-                        <div class="goal-item">
-                            <input type="checkbox" id="goal1">
-                            <label for="goal1">Practice deep breathing exercise</label>
-                        </div>
-                        <div class="goal-item">
-                            <input type="checkbox" id="goal2">
-                            <label for="goal2">Review business priorities</label>
-                        </div>
-                        <div class="goal-item">
-                            <input type="checkbox" id="goal3">
-                            <label for="goal3">Take a 15-minute break</label>
+                    <!-- Recent Insights -->
+                    <div class="sidebar-section">
+                        <h3>Recent Insights</h3>
+                        <div class="insights-list">
+                            <div class="insight-item">
+                                <p>"Your stress levels peak during afternoon meetings. Consider scheduling them in the morning."</p>
+                                <small>Yesterday</small>
+                            </div>
+                            <div class="insight-item">
+                                <p>"You communicate most effectively when you take a moment to pause before responding."</p>
+                                <small>2 days ago</small>
+                            </div>
+                            <div class="insight-item">
+                                <p>"Your energy increases significantly after short meditation breaks."</p>
+                                <small>3 days ago</small>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Suggested Topics -->
-                <div class="sidebar-section">
-                    <h3>Suggested Topics</h3>
-                    <div class="topic-buttons">
-                        <button class="topic-btn" onclick="suggestTopic('stress')">
-                            Managing Startup Stress
-                        </button>
-                        <button class="topic-btn" onclick="suggestTopic('balance')">
-                            Work-Life Balance
-                        </button>
-                        <button class="topic-btn" onclick="suggestTopic('decisions')">
-                            Decision Making
-                        </button>
-                        <button class="topic-btn" onclick="suggestTopic('growth')">
-                            Personal Growth
-                        </button>
-                        <button class="topic-btn" onclick="suggestTopic('leadership')">
-                            Leadership Skills
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Recent Insights -->
-                <div class="sidebar-section">
-                    <h3>Recent Insights</h3>
-                    <div class="insights-list">
-                        <div class="insight-item">
-                            <p>"Taking regular breaks can increase productivity by up to 25%"</p>
-                            <small>2 days ago</small>
+                    <!-- Mood Tracker -->
+                    <div class="sidebar-section">
+                        <h3>How are you feeling?</h3>
+                        <div class="mood-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;">
+                            <button class="mood-btn" onclick="trackMood('great')" style="background: var(--success); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Great</button>
+                            <button class="mood-btn" onclick="trackMood('good')" style="background: var(--primary-light); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Good</button>
+                            <button class="mood-btn" onclick="trackMood('okay')" style="background: var(--warning); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Okay</button>
+                            <button class="mood-btn" onclick="trackMood('stressed')" style="background: var(--error); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Stressed</button>
                         </div>
-                        <div class="insight-item">
-                            <p>"Mindful breathing reduces stress hormones significantly"</p>
-                            <small>3 days ago</small>
-                        </div>
+                        <small style="color: var(--text-muted); text-align: center; display: block;">Track your daily emotional state</small>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
+    <!-- COMPLETELY NEW SETTINGS MODAL WITH INLINE STYLES -->
+    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+            <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
+                
+                <!-- Header -->
+                <div style="background: #f8fafc; padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b;">AI Coach Settings</h3>
+                    <button onclick="closeSettings()" style="background: #f1f5f9; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #64748b;">×</button>
+                </div>
+                
+                <!-- Body -->
+                <div style="max-height: 60vh; overflow-y: auto;">
+                    
+                    <!-- Chat Preferences -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Chat Preferences</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="autoSave" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Auto-save conversations
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="typingIndicator" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Show typing indicator
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="soundNotifications" style="width: 40px; height: 20px; background: #d1d5db; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Sound notifications
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Coaching Style -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Coaching Style</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response tone:</label>
+                            <select id="coachingTone" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="supportive">Supportive & Encouraging</option>
+                                <option value="direct">Direct & Practical</option>
+                                <option value="analytical">Analytical & Detailed</option>
+                                <option value="gentle">Gentle & Patient</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response length:</label>
+                            <select id="responseLength" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="concise">Concise</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy & Data -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Privacy & Data</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="dataAnalytics" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Allow usage analytics for improvement
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="personalizedInsights" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Generate personalized insights
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Management -->
+                    <div style="padding: 1.5rem 2rem;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Session Management</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Session reminders:</label>
+                            <select id="sessionReminder" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="none">None</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <button onclick="clearChatHistory()" style="width: 100%; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                                Clear Chat History
+                            </button>
+                            <small style="display: block; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280; font-style: italic;">This action cannot be undone</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f8fafc; padding: 1rem 2rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button onclick="closeSettings()" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Cancel</button>
+                    <button onclick="saveSettings()" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Save Settings</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom checkbox styles -->
+    <style>
+        input[type="checkbox"]:checked {
+            background: #3b82f6 !important;
+        }
+        
+        input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        input[type="checkbox"]:checked::after {
+            transform: translateX(20px);
+        }
+    </style>
+
+    <!-- Typing Indicator (Hidden by default) -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>AI Coach is thinking...</span>
+    </div>
+
     <script src="api-service.js"></script>
     <script src="sidebar-toggle.js"></script>
-    <script src="notifications.js"></script>
+    <script src="ai-coach.js"></script>
     
     <script>
-    // Keep ALL original JavaScript functionality
-
     // Simple notification counter
     async function updateNotificationCount() {
         try {
             const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
             if (!token) return;
             
-            const response = await fetch('https://ai-coach-backend-PBSE.onrender.com/api/notifications/unread-count', {
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -308,198 +409,10 @@ Feel free to share what's on your mind, ask about stress management techniques, 
         window.location.href = 'notifications.html';
     }
 
-    function logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('eeh_token');
-        localStorage.removeItem('userData');
-        window.location.href = 'login.html';
-    }
-
-    // AI Coach functionality
-    let messageCount = 1;
-    let isTyping = false;
-
-    function handleKeyPress(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            sendMessage();
-        }
-    }
-
-    function sendMessage() {
-        const messageInput = document.getElementById('messageInput');
-        const chatMessages = document.getElementById('chatMessages');
-        
-        if (!messageInput || !chatMessages) return;
-        
-        const messageText = messageInput.value.trim();
-        if (!messageText || isTyping) return;
-
-        // Add user message
-        const userMessage = document.createElement('div');
-        userMessage.className = 'message user-message';
-        userMessage.innerHTML = `
-            <div class="message-content">
-                <div class="message-text">${escapeHtml(messageText)}</div>
-                <div class="message-time">Just now</div>
-            </div>
-        `;
-        
-        chatMessages.appendChild(userMessage);
-        messageInput.value = '';
-        
-        // Scroll to bottom
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        
-        // Show typing indicator and simulate AI response
-        showTypingIndicator();
-        
-        setTimeout(() => {
-            hideTypingIndicator();
-            addAIResponse(generateAIResponse(messageText));
-        }, 1000 + Math.random() * 2000);
-    }
-
-    function showTypingIndicator() {
-        isTyping = true;
-        const chatMessages = document.getElementById('chatMessages');
-        
-        const typingDiv = document.createElement('div');
-        typingDiv.id = 'typingIndicator';
-        typingDiv.className = 'message';
-        typingDiv.innerHTML = `
-            <div class="coach-avatar">AI</div>
-            <div class="message-content">
-                <div class="message-text" style="font-style: italic; opacity: 0.7;">
-                    AI Coach is typing...
-                </div>
-            </div>
-        `;
-        
-        chatMessages.appendChild(typingDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typingIndicator');
-        if (typingIndicator) {
-            typingIndicator.remove();
-        }
-        isTyping = false;
-    }
-
-    function addAIResponse(responseText) {
-        const chatMessages = document.getElementById('chatMessages');
-        
-        const aiMessage = document.createElement('div');
-        aiMessage.className = 'message';
-        aiMessage.innerHTML = `
-            <div class="coach-avatar">AI</div>
-            <div class="message-content">
-                <div class="message-text">${responseText}</div>
-                <div class="message-time">Just now</div>
-            </div>
-        `;
-        
-        chatMessages.appendChild(aiMessage);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        messageCount++;
-    }
-
-    function generateAIResponse(userMessage) {
-        const responses = [
-            "That's a really insightful perspective. As an entrepreneur, dealing with these challenges requires both emotional intelligence and practical strategies. Let me share some approaches that might help...",
-            "I understand the pressure you're experiencing. Many successful entrepreneurs face similar situations. Here are some evidence-based techniques that can help you navigate this...",
-            "Thank you for sharing that with me. It takes courage to be vulnerable about these challenges. Let's explore some strategies that can support you through this...",
-            "What you're describing is quite common in the entrepreneurial journey. The key is developing resilience while maintaining your well-being. Consider these approaches...",
-            "I appreciate you opening up about this. Managing both business demands and personal wellness is crucial for long-term success. Here's what I'd recommend..."
-        ];
-        
-        return responses[Math.floor(Math.random() * responses.length)];
-    }
-
-    function suggestTopic(topic) {
-        const messageInput = document.getElementById('messageInput');
-        const topics = {
-            'stress': "I've been feeling overwhelmed with startup stress lately. Can you help me develop some coping strategies?",
-            'balance': "I'm struggling to maintain work-life balance while building my business. What approaches would you recommend?",
-            'decisions': "I have some difficult business decisions to make and I'm feeling uncertain. Can we talk through some decision-making frameworks?",
-            'growth': "I want to focus on personal growth and building resilience as an entrepreneur. Where should I start?",
-            'leadership': "I'm having challenges leading and motivating my team effectively. Can you share some leadership strategies?"
-        };
-        
-        if (messageInput && topics[topic]) {
-            messageInput.value = topics[topic];
-            messageInput.focus();
-        }
-    }
-
-    function clearChat() {
-        if (confirm('Are you sure you want to clear the chat history?')) {
-            const chatMessages = document.getElementById('chatMessages');
-            chatMessages.innerHTML = `
-                <div class="message">
-                    <div class="coach-avatar">AI</div>
-                    <div class="message-content">
-                        <div class="message-text">Hello! I'm your AI Coach, here to support you on your entrepreneurial journey. Whether you're dealing with stress, looking to improve work-life balance, or exploring new strategies for growth, I'm ready to engage in meaningful conversations that can help you thrive.
-
-Feel free to share what's on your mind, ask about stress management techniques, discuss business challenges, or explore any aspect of your personal and professional development. How can I support you today?</div>
-                        <div class="message-time">Just now</div>
-                    </div>
-                </div>
-            `;
-            messageCount = 1;
-        }
-    }
-
-    function newSession() {
-        clearChat();
-    }
-
-    function exportChat() {
-        alert('Export feature coming soon!');
-    }
-
-    function attachFile() {
-        alert('File attachment feature coming soon!');
-    }
-
-    function addEmoji() {
-        const messageInput = document.getElementById('messageInput');
-        const emojis = ['😊', '🤔', '💪', '🎯', '🚀', '💡', '❤️', '👍'];
-        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-        
-        if (messageInput) {
-            const cursorPos = messageInput.selectionStart || messageInput.value.length;
-            const textBefore = messageInput.value.substring(0, cursorPos);
-            const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
-            messageInput.value = textBefore + randomEmoji + textAfter;
-            
-            const newPos = cursorPos + randomEmoji.length;
-            messageInput.setSelectionRange(newPos, newPos);
-            messageInput.focus();
-        }
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
     // Update count when page loads and every 30 seconds
     document.addEventListener('DOMContentLoaded', function() {
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
-        
-        // Auto-resize textarea
-        const messageInput = document.getElementById('messageInput');
-        if (messageInput) {
-            messageInput.addEventListener('input', function() {
-                this.style.height = 'auto';
-                this.style.height = (this.scrollHeight) + 'px';
-            });
-        }
     });
     </script>
 </body>
