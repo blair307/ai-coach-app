@@ -189,77 +189,6 @@
             <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
                 
                 <!-- Modal Header -->
-                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
-                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
-                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
-                </div>
-                
-                <!-- Modal Body -->
-                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
-                    
-                    <!-- Step 1: Big Goal Question -->
-                    <div id="step1" class="wizard-step">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
-                        
-                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
-                        
-                        <div style="margin-top: 1.5rem;">
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
-                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2: Choose ONE Daily Action -->
-                    <div id="step2" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
-                        
-                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
-                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3: Confirmation and Tracker Setup -->
-                    <div id="step3" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
-                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
-                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
-        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
-                
-                <!-- Modal Header -->
                 <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
                     <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
                     <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
@@ -282,19 +211,12 @@
         </div>
     </div>
 
-    <!-- Basic Scripts -->
-    <script src="sidebar-toggle.js"></script>
     <script>
-
-        function goToDailyTracker() {
-            window.location.href = 'daily-tracker.html';
-        }
-
-        // Goal Wizard JavaScript with Backend Storage + Delete Functionality
+        // Global variables
         let currentStep = 1;
         let currentArea = '';
         let wizardData = {};
-        let goalToDelete = null; // Store goal data for deletion
+        let goalToDelete = null;
 
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -394,29 +316,24 @@
             }
         };
 
+        // Goal Wizard Functions
         function openGoalWizard(area) {
             currentArea = area;
             currentStep = 1;
             const config = areaConfig[area];
             
-            // Update header
             document.getElementById('wizardTitle').textContent = config.title;
             document.getElementById('wizardSubtitle').textContent = config.subtitle;
             document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
-            
-            // Update step 1 description
             document.getElementById('stepDescription').textContent = config.description;
             
-            // Reset form
             document.getElementById('bigGoalInput').value = '';
             document.getElementById('dailyActionInput').value = '';
             showStep(1);
             
-            // Show modal
             document.getElementById('goalWizardModal').style.display = 'block';
             document.body.style.overflow = 'hidden';
             
-            // Focus on textarea
             setTimeout(() => {
                 document.getElementById('bigGoalInput').focus();
             }, 100);
@@ -425,130 +342,16 @@
         function closeWizard() {
             document.getElementById('goalWizardModal').style.display = 'none';
             document.body.style.overflow = '';
-            
-            // Reset wizard
             currentStep = 1;
             currentArea = '';
             wizardData = {};
         }
 
-        // NEW: Delete goal functions
-        function openDeleteModal(goalId, goalData) {
-            // Store the goal info for deletion
-            goalToDelete = { 
-                id: goalId, 
-                data: goalData 
-            };
-            
-            // Populate goal details in modal
-            const goalToDeleteElement = document.getElementById('goalToDelete');
-            const area = goalData.area || 'Unknown';
-            const bigGoal = goalData.bigGoal || 'No description';
-            const dailyAction = goalData.dailyAction || 'No daily action';
-            const streak = goalData.streak || 0;
-            
-            goalToDeleteElement.innerHTML = `
-                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
-                <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${bigGoal}</p>
-                <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${dailyAction}</p>
-                ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
-            `;
-            
-            // Show modal
-            document.getElementById('deleteConfirmModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteConfirmModal').style.display = 'none';
-            document.body.style.overflow = '';
-            goalToDelete = null;
-        }
-
-        async function confirmDeleteGoal() {
-            if (!goalToDelete || !goalToDelete.data) {
-                console.error('No goal selected for deletion');
-                showErrorMessage('Error: No goal selected for deletion.');
-                return;
-            }
-
-            try {
-                // Show loading state
-                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
-                if (deleteBtn) {
-                    const originalText = deleteBtn.textContent;
-                    deleteBtn.textContent = 'Deleting...';
-                    deleteBtn.disabled = true;
-                }
-
-                // Delete from backend
-                await deleteGoalFromBackend(goalToDelete.id);
-
-                // Close modal
-                closeDeleteModal();
-
-                // Show success message
-                const area = goalToDelete.data.area || 'goal';
-                showSuccessMessage(`Your ${area} goal has been deleted.`);
-
-                // Refresh goals display
-                await loadGoalsOverview();
-
-            } catch (error) {
-                console.error('Error deleting goal:', error);
-                showErrorMessage('There was an error deleting your goal. Please try again.');
-
-                // Reset button state
-                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
-                if (deleteBtn) {
-                    deleteBtn.textContent = 'Delete Goal';
-                    deleteBtn.disabled = false;
-                }
-            }
-        }
-
-        async function deleteGoalFromBackend(goalId) {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
-
-                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete goal from backend');
-                }
-
-                console.log('Goal deleted successfully from backend');
-                
-            } catch (error) {
-                console.error('Backend delete failed, using localStorage fallback:', error);
-                
-                // Fallback to localStorage
-                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                Object.keys(existingGoals).forEach(area => {
-                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId);
-                });
-                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
-            }
-        }
-
         function showStep(step) {
-            // Hide all steps
             document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
-            
-            // Show current step
             document.getElementById(`step${step}`).style.display = 'block';
             currentStep = step;
             
-            // Update examples for step 2
             if (step === 2) {
                 updateExamples();
             }
@@ -575,7 +378,6 @@
                 
                 exampleBtn.onclick = () => {
                     document.getElementById('dailyActionInput').value = example;
-                    // Highlight selected example
                     examplesList.querySelectorAll('button').forEach(btn => {
                         btn.style.background = 'var(--background)';
                         btn.style.borderColor = 'var(--border)';
@@ -621,7 +423,6 @@
                 }
                 wizardData.dailyAction = dailyAction;
                 
-                // Update step 3 summary
                 document.getElementById('bigGoalSummary').textContent = wizardData.bigGoal;
                 document.getElementById('dailyActionSummary').textContent = wizardData.dailyAction;
                 
@@ -637,13 +438,11 @@
 
         async function createGoals() {
             try {
-                // Show loading state
                 const button = event.target;
                 const originalText = button.textContent;
                 button.textContent = 'Creating Goal...';
                 button.disabled = true;
                 
-                // Prepare goal data
                 const goalData = {
                     area: currentArea,
                     bigGoal: wizardData.bigGoal,
@@ -651,29 +450,86 @@
                     createdAt: new Date().toISOString()
                 };
                 
-                // Save to backend
                 await saveGoalToBackend(goalData);
-                
-                // Close wizard
                 closeWizard();
-                
-                // Show success message
                 showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress.`);
-                
-                // Refresh goals display
                 await loadGoalsOverview();
                 
             } catch (error) {
                 console.error('Error creating goal:', error);
                 showErrorMessage('There was an error creating your goal. Please try again.');
                 
-                // Reset button
                 const button = event.target;
                 button.textContent = 'Create My Goal! 🎯';
                 button.disabled = false;
             }
         }
 
+        // Delete Functions
+        function openDeleteModal(goalId, goalData) {
+            goalToDelete = { 
+                id: goalId, 
+                data: goalData 
+            };
+            
+            const goalToDeleteElement = document.getElementById('goalToDelete');
+            const area = goalData.area || 'Unknown';
+            const bigGoal = goalData.bigGoal || 'No description';
+            const dailyAction = goalData.dailyAction || 'No daily action';
+            const streak = goalData.streak || 0;
+            
+            goalToDeleteElement.innerHTML = `
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
+                <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${bigGoal}</p>
+                <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${dailyAction}</p>
+                ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
+            `;
+            
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            document.body.style.overflow = '';
+            goalToDelete = null;
+        }
+
+        async function confirmDeleteGoal() {
+            if (!goalToDelete || !goalToDelete.data) {
+                console.error('No goal selected for deletion');
+                showErrorMessage('Error: No goal selected for deletion.');
+                return;
+            }
+
+            try {
+                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
+                if (deleteBtn) {
+                    const originalText = deleteBtn.textContent;
+                    deleteBtn.textContent = 'Deleting...';
+                    deleteBtn.disabled = true;
+                }
+
+                await deleteGoalFromBackend(goalToDelete.id);
+                closeDeleteModal();
+
+                const area = goalToDelete.data.area || 'goal';
+                showSuccessMessage(`Your ${area} goal has been deleted.`);
+                await loadGoalsOverview();
+
+            } catch (error) {
+                console.error('Error deleting goal:', error);
+                showErrorMessage('There was an error deleting your goal. Please try again.');
+
+                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
+                if (deleteBtn) {
+                    deleteBtn.textContent = 'Delete Goal';
+                    deleteBtn.disabled = false;
+                }
+            }
+        }
+
+        // Backend Functions
         async function saveGoalToBackend(goalData) {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -701,7 +557,6 @@
             } catch (error) {
                 console.error('Backend save failed, using localStorage fallback:', error);
                 
-                // Fallback to localStorage
                 const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
                 if (!existingGoals[goalData.area]) {
                     existingGoals[goalData.area] = [];
@@ -709,6 +564,38 @@
                 existingGoals[goalData.area].push({
                     ...goalData,
                     id: Date.now().toString()
+                });
+                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
+            }
+        }
+
+        async function deleteGoalFromBackend(goalId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete goal from backend');
+                }
+
+                console.log('Goal deleted successfully from backend');
+                
+            } catch (error) {
+                console.error('Backend delete failed, using localStorage fallback:', error);
+                
+                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                Object.keys(existingGoals).forEach(area => {
+                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId);
                 });
                 localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
             }
@@ -730,7 +617,6 @@
 
                         if (response.ok) {
                             const backendGoals = await response.json();
-                            // Convert array to grouped object
                             backendGoals.forEach(goal => {
                                 if (!goals[goal.area]) goals[goal.area] = [];
                                 goals[goal.area].push(goal);
@@ -741,7 +627,6 @@
                     }
                 }
 
-                // Fallback to localStorage if backend fails
                 if (Object.keys(goals).length === 0) {
                     goals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
                 }
@@ -762,12 +647,10 @@
                             <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
                     `;
                     
-                    // Show ALL goals with delete buttons
                     areaGoals.forEach((goal, index) => {
                         const streakDisplay = goal.streak || 0;
                         const goalId = goal._id || goal.id || `${area}-${index}`;
                         
-                        // Create a safe goal object for passing to the modal
                         const safeGoal = {
                             area: goal.area || area,
                             bigGoal: goal.bigGoal || 'No description',
@@ -777,8 +660,7 @@
                         
                         html += `
                             <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
-                                <!-- Delete button in top right -->
-                                <button onclick="openDeleteModal('${goalId}', ${JSON.stringify(safeGoal)})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                <button onclick="deleteGoalClick('${goalId}', '${JSON.stringify(safeGoal).replace(/'/g, "\\'")}');" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
                                 
                                 <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${goal.bigGoal}</p>
                                 <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
@@ -797,8 +679,6 @@
                     });
                     
                     html += `</div>`;
-                        
-                    // Update card stats
                     updateAreaStats(area, areaGoals);
                 });
                 
@@ -810,6 +690,17 @@
             }
         }
 
+        // Safe delete function to handle JSON parsing
+        function deleteGoalClick(goalId, goalDataString) {
+            try {
+                const goalData = JSON.parse(goalDataString);
+                openDeleteModal(goalId, goalData);
+            } catch (error) {
+                console.error('Error parsing goal data:', error);
+                showErrorMessage('Error processing goal data. Please refresh the page.');
+            }
+        }
+
         function updateAreaStats(area, goals) {
             const goalsCount = goals.length;
             const goalsElement = document.getElementById(`${area}-goals`);
@@ -817,7 +708,6 @@
             
             if (goalsElement) goalsElement.textContent = goalsCount;
             if (progressElement) {
-                // Calculate progress as X/Y format instead of percentage
                 let completedToday = 0;
                 const totalGoals = goals.length;
                 
@@ -827,7 +717,6 @@
                         const today = new Date();
                         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
                         
-                        // If completed today or has active streak, count as completed
                         if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
                             completedToday++;
                         }
@@ -838,6 +727,7 @@
             }
         }
 
+        // Utility Functions
         function showSuccessMessage(message) {
             showToast(message, 'success');
         }
@@ -878,14 +768,6 @@
             }, 4000);
         }
 
-        function viewGoalDetails(area) {
-            window.location.href = 'daily-tracker.html';
-        }
-
-        function openDailyTracker(area) {
-            window.location.href = 'daily-tracker.html';
-        }
-
         function adjustBrightness(color, percent) {
             const num = parseInt(color.replace('#', ''), 16);
             const amt = Math.round(2.55 * percent);
@@ -895,6 +777,11 @@
             return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
                 (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
                 (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        // Navigation Functions
+        function goToDailyTracker() {
+            window.location.href = 'daily-tracker.html';
         }
 
         function goToNotifications() {
@@ -917,7 +804,7 @@
             }
         }
 
-        // Simple notification counter
+        // Notification Functions
         async function updateNotificationCount() {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -961,7 +848,7 @@
         `;
         document.head.appendChild(style);
 
-        // Handle keyboard navigation
+        // Event Listeners
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && e.target.id === 'bigGoalInput') {
                 e.preventDefault();
@@ -983,7 +870,6 @@
             }
         });
 
-        // Close modals when clicking outside
         document.addEventListener('click', function(e) {
             const goalWizardModal = document.getElementById('goalWizardModal');
             const deleteModal = document.getElementById('deleteConfirmModal');
@@ -997,7 +883,7 @@
             }
         });
 
-        // Load goals and notifications when page loads
+        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadGoalsOverview();
             updateNotificationCount();
@@ -1006,4 +892,75 @@
 
     </script>
 </body>
-</html>
+</html> -->
+                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
+                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
+                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
+                    
+                    <!-- Step 1: Big Goal Question -->
+                    <div id="step1" class="wizard-step">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
+                        
+                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
+                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Choose ONE Daily Action -->
+                    <div id="step2" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
+                        
+                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
+                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Confirmation and Tracker Setup -->
+                    <div id="step3" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
+                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
+                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+                
+                <!-- Modal Header
