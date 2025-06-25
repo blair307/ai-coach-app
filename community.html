@@ -37,6 +37,15 @@
             <header class="content-header">
                 <h1>Community</h1>
                 <div class="header-actions">
+                    <!-- Desktop Search Bar -->
+                    <div class="desktop-search-container desktop-only">
+                        <input 
+                            type="text" 
+                            id="desktopSearchInput" 
+                            placeholder="Search messages..." 
+                            onkeyup="performSearch(this.value)"
+                        />
+                    </div>
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
@@ -81,26 +90,6 @@
                     <div class="rooms-header">
                         <h3>Chat Rooms</h3>
                         <button class="btn btn-small" onclick="createRoom()">New</button>
-                    </div>
-                    
-                    <!-- Desktop Search Bar -->
-                    <div class="search-container desktop-only" style="padding: 1rem; border-bottom: 1px solid var(--border);">
-                        <input 
-                            type="text" 
-                            id="searchInput" 
-                            placeholder="Search messages..." 
-                            onkeyup="performSearch(this.value)"
-                            style="
-                                width: 100%;
-                                padding: 0.75rem;
-                                border: 2px solid var(--border);
-                                border-radius: var(--radius);
-                                background: var(--background);
-                                color: var(--text-primary);
-                                font-size: 0.9rem;
-                                font-family: inherit;
-                            "
-                        />
                     </div>
                     
                     <div class="rooms-list" id="roomsList">
@@ -161,7 +150,7 @@
                 </div>
             </div>
 
-            <!-- Emoji Modal (Desktop Only) - FIXED: Hidden by default -->
+            <!-- Emoji Modal (Desktop Only) - FIXED POSITIONING -->
             <div id="emojiModal" class="emoji-modal desktop-only" style="display: none;">
                 <div class="emoji-grid">
                     <button onclick="insertEmoji('😀')" class="emoji-btn">😀</button>
@@ -331,7 +320,7 @@
 
         function closeSearch() {
             const searchResults = document.getElementById('searchResults');
-            const searchInput = document.getElementById('searchInput');
+            const searchInput = document.getElementById('desktopSearchInput');
             
             if (searchResults) {
                 searchResults.style.display = 'none';
@@ -487,7 +476,7 @@
 
             // Close search results when clicking outside
             const searchResults = document.getElementById('searchResults');
-            const searchContainer = document.querySelector('.search-container');
+            const searchContainer = document.querySelector('.desktop-search-container');
             
             if (searchResults && !searchResults.contains(event.target) && !searchContainer?.contains(event.target)) {
                 closeSearch();
@@ -528,3 +517,7 @@
         setInterval(updateNotificationCount, 30000);
 
         // Make functions globally available
+    </script>
+
+</body>
+</html>
