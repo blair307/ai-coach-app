@@ -3,93 +3,382 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Community - Entrepreneur Emotional Health</title>
+    <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* FULL-SCREEN COMMUNITY LAYOUT FIXES */
+        /* RESPONSIVE AI COACH LAYOUT */
         
-        /* Base community container - full width always */
-        .community-responsive-container {
+        /* Base layout - full width */
+        .main-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            padding: 2rem !important;
+        }
+        
+        .content-header {
+            margin-bottom: 2rem;
+        }
+        
+        /* AI Coach Container - Full Screen Layout */
+        .ai-coach-container {
             display: flex;
-            height: calc(100vh - 8rem);
+            height: calc(100vh - 10rem);
             background: var(--background);
             border-radius: var(--radius-xl);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--border);
             overflow: hidden;
-            margin-right: 0 !important; /* Remove right margin */
-            width: 100% !important; /* Full width */
-        }
-
-        /* Mobile room selector improvements */
-        .mobile-room-selector {
-            display: none;
             width: 100%;
-            padding: 1rem;
-            border-bottom: 2px solid var(--border);
+            max-width: 100%;
+        }
+        
+        /* Chat Container - Takes Most Space */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+            background: var(--background);
+            overflow: hidden;
+        }
+        
+        /* Chat Header */
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            flex-shrink: 0;
+        }
+        
+        .coach-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .coach-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .coach-details h2 {
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+        
+        .coach-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        /* Messages Area */
+        .chat-messages {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background: var(--surface);
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .message {
+            display: flex;
+            gap: 1rem;
+            max-width: 85%;
+            animation: messageSlide 0.3s ease-out;
+        }
+        
+        .message.user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .message-avatar.coach {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+        }
+        
+        .message-avatar.user {
+            background: var(--text-primary);
+            color: white;
+        }
+        
+        .message-content {
+            background: var(--background);
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius-lg);
+            flex: 1;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .message.user-message .message-content {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .message-text {
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        
+        .message-time {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+        
+        /* Chat Input Container */
+        .chat-input-container {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
             background: var(--background);
             flex-shrink: 0;
         }
-
-        /* Desktop sidebar takes up proper width */
-        .rooms-sidebar {
-            width: 280px;
-            background: var(--surface);
-            border-right: 1px solid var(--border);
+        
+        .chat-input {
             display: flex;
             flex-direction: column;
-            flex-shrink: 0;
+            gap: 1rem;
         }
-
-        /* Chat area takes remaining space */
-        .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
+        
+        .chat-input textarea {
             width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            font-family: inherit;
+            font-size: 1rem;
+            resize: none;
+            min-height: 60px;
+            max-height: 150px;
+            transition: all 0.3s ease;
+            background: var(--surface);
+            color: var(--text-primary);
         }
-
-        /* MOBILE RESPONSIVE OVERRIDES */
+        
+        .chat-input textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .chat-input textarea::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .input-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .input-tools {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .tool-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+        }
+        
+        .tool-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Sidebar for Desktop */
+        .coaching-sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            flex-shrink: 0;
+            padding: 1.5rem;
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            overflow-y: auto;
+        }
+        
+        .sidebar-section {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+        
+        .sidebar-section h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .goals-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .goal-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            transition: background-color 0.2s ease;
+            border: 1px solid var(--border);
+            background: var(--surface);
+        }
+        
+        .goal-item:hover {
+            background: var(--background);
+        }
+        
+        .goal-item input[type="checkbox"] {
+            accent-color: var(--primary);
+        }
+        
+        .goal-item label {
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            flex: 1;
+            line-height: 1.4;
+        }
+        
+        .topic-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .topic-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        
+        .topic-btn:hover {
+            background: var(--background);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
+        
+        .typing-indicator.show {
+            display: block;
+        }
+        
+        /* MOBILE RESPONSIVE DESIGN */
         @media (max-width: 1024px) {
-            /* Main content removes margin and takes full width */
             .main-content {
-                margin-left: 0 !important;
                 padding: 1rem !important;
-                width: 100% !important;
-                max-width: 100% !important;
             }
             
-            /* Community container full screen */
-            .community-responsive-container {
+            .content-header {
+                margin-bottom: 1rem !important;
+                text-align: center !important;
+            }
+            
+            .content-header h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .header-actions {
+                justify-content: center !important;
+                flex-wrap: wrap !important;
+                gap: 0.75rem !important;
+            }
+            
+            /* Mobile Layout - Full Screen Chat */
+            .ai-coach-container {
                 height: calc(100vh - 6rem) !important;
-                margin: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
                 flex-direction: column !important;
                 border-radius: var(--radius) !important;
             }
             
-            /* Hide desktop sidebar, show mobile selector */
-            .rooms-sidebar {
+            /* Hide sidebar on mobile */
+            .coaching-sidebar {
                 display: none !important;
             }
             
-            .mobile-room-selector {
-                display: block !important;
-                order: 1 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                flex-shrink: 0 !important;
-            }
-            
-            /* Chat area takes remaining space */
-            .chat-area {
-                order: 2 !important;
+            /* Chat takes full space */
+            .chat-container {
                 flex: 1 !important;
-                min-height: 0 !important;
                 width: 100% !important;
-                max-width: 100% !important;
             }
             
             /* Mobile chat header */
@@ -98,278 +387,178 @@
                 flex-direction: column !important;
                 gap: 0.75rem !important;
                 text-align: center !important;
-                border-bottom: 2px solid var(--border) !important;
             }
             
-            .room-title h2 {
-                font-size: 1.25rem !important;
-                margin: 0 !important;
+            .coach-info {
+                justify-content: center !important;
             }
             
-            .room-title p {
-                font-size: 0.875rem !important;
-                margin: 0.25rem 0 0 0 !important;
-                opacity: 0.8 !important;
+            .coach-avatar {
+                width: 40px !important;
+                height: 40px !important;
+                font-size: 1rem !important;
             }
             
-            /* Desktop search hidden on mobile */
-            .desktop-search-container {
-                display: none !important;
+            .coach-details h2 {
+                font-size: 1.1rem !important;
             }
             
-            /* Mobile messages take full available space */
-            .chat-messages-container {
-                flex: 1 !important;
-                min-height: 0 !important;
-                overflow: hidden !important;
-                position: relative !important;
-                width: 100% !important;
-            }
-            
+            /* Mobile messages */
             .chat-messages {
-                height: 100% !important;
-                overflow-y: auto !important;
-                -webkit-overflow-scrolling: touch !important;
                 padding: 1rem !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                bottom: 0 !important;
-                width: 100% !important;
+                gap: 1rem !important;
             }
             
-            /* Mobile input area */
-            .chat-input-area {
-                flex-shrink: 0 !important;
+            .message {
+                max-width: 90% !important;
+                gap: 0.75rem !important;
+            }
+            
+            .message-avatar {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.875rem !important;
+            }
+            
+            .message-content {
+                padding: 0.875rem 1rem !important;
+                font-size: 0.95rem !important;
+            }
+            
+            .message-text {
+                font-size: 0.9rem !important;
+                line-height: 1.5 !important;
+            }
+            
+            /* Mobile input */
+            .chat-input-container {
                 padding: 1rem !important;
                 background: var(--background) !important;
                 border-top: 2px solid var(--border) !important;
                 position: relative !important;
                 z-index: 10 !important;
-                width: 100% !important;
             }
             
             .chat-input {
-                background: var(--surface) !important;
-                border: 2px solid var(--border) !important;
-                border-radius: var(--radius-lg) !important;
-                padding: 1rem !important;
-                display: flex !important;
-                flex-direction: column !important;
                 gap: 0.75rem !important;
-                width: 100% !important;
             }
             
-            #communityMessageInput {
+            .chat-input textarea {
+                font-size: 16px !important; /* Prevent zoom on iOS */
                 min-height: 44px !important;
                 max-height: 120px !important;
-                resize: none !important;
-                border: none !important;
-                outline: none !important;
-                background: transparent !important;
-                font-size: 16px !important;
-                line-height: 1.4 !important;
-                color: var(--text-primary) !important;
-                width: 100% !important;
+                padding: 0.875rem 1rem !important;
+                border-radius: var(--radius) !important;
             }
             
             .input-actions {
-                display: flex !important;
+                flex-direction: row !important;
                 justify-content: space-between !important;
-                gap: 0.75rem !important;
-                width: 100% !important;
+                align-items: center !important;
             }
             
-            .input-actions .btn {
-                flex: 1 !important;
+            .input-tools {
+                gap: 0.75rem !important;
+            }
+            
+            .tool-btn {
+                min-width: 44px !important;
+                height: 44px !important;
+                font-size: 1.1rem !important;
+                touch-action: manipulation !important;
+            }
+            
+            .btn {
                 min-height: 44px !important;
+                padding: 0.75rem 1.5rem !important;
                 font-size: 0.95rem !important;
                 touch-action: manipulation !important;
             }
             
-            /* Mobile dropdown styling */
-            #roomDropdown {
-                background: var(--background) !important;
-                border: 2px solid var(--border) !important;
-                border-radius: var(--radius-lg) !important;
-                padding: 1rem !important;
-                font-size: 16px !important;
-                color: var(--text-primary) !important;
-                width: 100% !important;
-                margin-bottom: 1rem !important;
-                min-height: 44px !important;
-                -webkit-appearance: none !important;
-                appearance: none !important;
-                background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
-                background-repeat: no-repeat !important;
-                background-position: right 1rem center !important;
-                background-size: 1rem !important;
-            }
-            
-            #roomDropdown:focus {
-                border-color: var(--primary) !important;
-                outline: none !important;
-                box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-            }
-            
-            /* Message styling for mobile */
-            .message-group {
-                margin-bottom: 1rem !important;
-            }
-            
-            .message-header {
-                gap: 0.5rem !important;
-                margin-bottom: 0.5rem !important;
-            }
-            
-            .user-avatar {
-                width: 28px !important;
-                height: 28px !important;
-                font-size: 0.75rem !important;
-                flex-shrink: 0 !important;
-            }
-            
-            .username {
-                font-size: 0.9rem !important;
-                font-weight: 600 !important;
-            }
-            
-            .message-timestamp {
-                font-size: 0.8rem !important;
-                color: var(--text-muted) !important;
-                margin-left: auto !important;
-            }
-            
-            .message-content {
-                margin-left: 2rem !important;
-                padding: 0.75rem !important;
-                font-size: 0.95rem !important;
-                line-height: 1.4 !important;
-                background: var(--background) !important;
-                border: 1px solid var(--border) !important;
-                border-radius: var(--radius) !important;
-                word-wrap: break-word !important;
-                overflow-wrap: break-word !important;
-                width: calc(100% - 2rem) !important;
-            }
-            
-            /* Reply styling for mobile */
-            .message-group.reply {
-                margin-left: 1rem !important;
-                padding-left: 0.75rem !important;
-            }
-            
-            .message-group.reply::before {
-                left: -1rem !important;
-            }
-            
-            .message-group.reply::after {
-                left: -1rem !important;
-                font-size: 1rem !important;
-                top: 0.75rem !important;
-            }
-            
-            .message-group.reply .message-content {
-                margin-left: 1.75rem !important;
-                width: calc(100% - 1.75rem) !important;
-            }
-            
-            /* Hide desktop-only elements */
-            .desktop-only {
-                display: none !important;
-            }
-            
-            /* Mobile safe area padding */
-            .chat-input-area {
+            /* Safe area padding for devices with notches */
+            .chat-input-container {
                 padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
             }
             
-            /* Better touch targets */
-            button, .btn {
-                min-height: 44px !important;
-                min-width: 44px !important;
-                touch-action: manipulation !important;
+            /* Better touch scrolling */
+            .chat-messages {
+                -webkit-overflow-scrolling: touch !important;
             }
             
-            /* Prevent zoom on iOS */
-            input, textarea, select {
-                font-size: 16px !important;
-                transform: translateZ(0) !important;
-                -webkit-appearance: none !important;
+            /* Hide scrollbars on mobile */
+            .chat-messages::-webkit-scrollbar {
+                display: none;
+            }
+            
+            .chat-messages {
+                scrollbar-width: none;
             }
         }
         
-        /* Very small mobile screens */
         @media (max-width: 480px) {
             .main-content {
                 padding: 0.75rem !important;
             }
             
-            .community-responsive-container {
+            .ai-coach-container {
                 height: calc(100vh - 4rem) !important;
                 border-radius: var(--radius) !important;
-            }
-            
-            .mobile-room-selector {
-                padding: 0.75rem !important;
             }
             
             .chat-header {
                 padding: 0.75rem !important;
             }
             
-            .room-title h2 {
-                font-size: 1.1rem !important;
-            }
-            
             .chat-messages {
                 padding: 0.75rem !important;
             }
             
-            .chat-input-area {
+            .chat-input-container {
                 padding: 0.75rem !important;
             }
             
-            .input-actions {
-                gap: 0.5rem !important;
+            .message {
+                max-width: 95% !important;
             }
             
             .message-content {
-                margin-left: 1.5rem !important;
-                padding: 0.5rem 0.75rem !important;
-                font-size: 0.9rem !important;
-                width: calc(100% - 1.5rem) !important;
+                padding: 0.75rem !important;
+                font-size: 0.875rem !important;
             }
             
-            .message-group.reply .message-content {
-                margin-left: 1.25rem !important;
-                width: calc(100% - 1.25rem) !important;
+            .input-tools {
+                gap: 0.5rem !important;
             }
             
-            .user-avatar {
-                width: 24px !important;
-                height: 24px !important;
-                font-size: 0.7rem !important;
+            .tool-btn {
+                min-width: 40px !important;
+                height: 40px !important;
+                font-size: 1rem !important;
             }
         }
         
-        /* Desktop improvements - ensure full width usage */
+        /* Animation */
+        @keyframes messageSlide {
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+        
+        /* Desktop improvements */
         @media (min-width: 1025px) {
             .main-content {
                 width: 100% !important;
                 max-width: 100% !important;
             }
             
-            .community-responsive-container {
+            .ai-coach-container {
                 width: 100% !important;
                 max-width: 100% !important;
-                margin-right: 0 !important;
-            }
-            
-            .chat-area {
-                width: 100% !important;
-                flex: 1 !important;
             }
         }
     </style>
@@ -390,8 +579,8 @@
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
-                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
-                <li><a href="community.html" class="menu-item active">Community</a></li>
+                <li><a href="ai-coach.html" class="menu-item active">AI Coach</a></li>
+                <li><a href="community.html" class="menu-item">Community</a></li>
                 <li><a href="goals.html" class="menu-item">Goals</a></li>
                 <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
                 <li><a href="billing.html" class="menu-item">Billing</a></li>
@@ -401,19 +590,9 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="content-header">
-                <h1>Community</h1>
+                <h1>AI Coach</h1>
                 <div class="header-actions">
-                    <!-- Desktop Search Bar -->
-                    <div class="desktop-search-container desktop-only">
-                        <input 
-                            type="text" 
-                            id="desktopSearchInput" 
-                            placeholder="Search messages..." 
-                            onkeyup="performSearch(this.value)"
-                        />
-                    </div>
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
@@ -423,297 +602,137 @@
                             <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
                         </div>
                     </div>
-                    <button class="btn btn-primary desktop-only" onclick="createRoom()">New Room</button>
+                    <button class="btn btn-outline" onclick="clearChat()">Clear Chat</button>
+                    <button class="btn btn-primary" onclick="newSession()">New Session</button>
                 </div>
             </header>
 
-            <!-- Community Container - Mobile Responsive Layout -->
-            <div class="community-responsive-container">
-                
-                <!-- Mobile Room Selector -->
-                <div class="mobile-room-selector" style="display: none;">
-                    <div class="mobile-room-header">
-                        <label for="roomDropdown" style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">Choose Room:</label>
-                        <select id="roomDropdown" onchange="switchRoom(this.value)" style="
-                            width: 100%;
-                            padding: 1rem;
-                            border: 2px solid var(--border);
-                            border-radius: var(--radius);
-                            background: var(--background);
-                            color: var(--text-primary);
-                            font-size: 16px;
-                            font-family: inherit;
-                            margin-bottom: 1rem;
-                        ">
-                            <option value="">Select a room...</option>
-                        </select>
-                        <button onclick="createRoom()" class="btn btn-small" style="width: 100%; margin-bottom: 1rem;">
-                            Create New Room
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Desktop Rooms Sidebar -->
-                <div class="rooms-sidebar desktop-only">
-                    <div class="rooms-header">
-                        <h3>Chat Rooms</h3>
-                        <button class="btn btn-small" onclick="createRoom()">New</button>
-                    </div>
-                    
-                    <div class="rooms-list" id="roomsList">
-                        <!-- Rooms will be populated by JavaScript -->
-                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                            <p>Loading rooms...</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Area - Always Visible -->
-                <div class="chat-area">
+            <!-- AI Coach Container -->
+            <div class="ai-coach-container">
+                <!-- Chat Container -->
+                <div class="chat-container">
                     <!-- Chat Header -->
                     <div class="chat-header">
-                        <div class="room-title">
-                            <h2 id="currentRoomName">Select a Room</h2>
-                            <p id="currentRoomDescription">Choose a room to start chatting</p>
+                        <div class="coach-info">
+                            <div class="coach-avatar">
+                                AI
+                            </div>
+                            <div class="coach-details">
+                                <h2>Your AI Coach</h2>
+                                <div class="coach-status">
+                                    <div class="status-dot online"></div>
+                                    <span>Ready to help</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Messages Container -->
-                    <div class="chat-messages-container">
-                        <div class="chat-messages" id="communityMessages">
-                            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                                <h3>Welcome to Community Chat!</h3>
-                                <p>Select a room to start the conversation.</p>
+                    <!-- Messages Area -->
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Welcome Message -->
+                        <div class="message">
+                            <div class="message-avatar coach">AI</div>
+                            <div class="message-content">
+                                <div class="message-text">
+                                    Hello! I'm your AI Coach, here to support you on your entrepreneurial journey. Whether you're dealing with stress, looking to improve work-life balance, or exploring new strategies for growth, I'm ready to engage in meaningful conversations that can help you thrive.
+                                    <br><br>
+                                    Feel free to share what's on your mind, ask about stress management techniques, discuss business challenges, or explore any aspect of your personal and professional development. How can I support you today?
+                                </div>
+                                <div class="message-time">Just now</div>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Typing Indicator -->
+                    <div class="typing-indicator" id="typingIndicator">
+                        AI Coach is typing...
                     </div>
 
                     <!-- Message Input -->
-                    <div class="chat-input-area">
-                        <!-- Reply Banner (Hidden by default) -->
-                        <div id="replyBanner" class="reply-banner" style="display: none;">
-                            <div class="reply-content">
-                                <div class="reply-header">
-                                    <span style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">↳ Replying to</span>
-                                    <span id="replyToUser" style="font-weight: 600; color: var(--text-primary);"></span>
-                                    <button onclick="cancelReply()" class="cancel-reply-btn">×</button>
-                                </div>
-                                <div id="replyToMessage" class="reply-preview"></div>
-                            </div>
-                        </div>
-
+                    <div class="chat-input-container">
                         <div class="chat-input">
                             <textarea 
-                                id="communityMessageInput" 
-                                placeholder="Type your message..." 
-                                onkeypress="handleCommunityKeyPress(event)"
-                                style="font-size: 16px; resize: none; min-height: 44px; max-height: 120px;"
-                                disabled
+                                id="messageInput" 
+                                placeholder="Share what's on your mind... Ask about stress management, business dynamics, emotional wellness, or any entrepreneurial challenges."
+                                onkeypress="handleKeyPress(event)"
+                                style="font-size: 16px;"
                             ></textarea>
                             <div class="input-actions">
-                                <button class="btn btn-small btn-outline desktop-only" onclick="toggleEmoji()" disabled id="emojiBtn">😊</button>
-                                <button class="btn btn-primary" onclick="sendCommunityMessage()" disabled id="sendCommunityButton">Send</button>
+                                <div class="input-tools">
+                                    <button class="tool-btn" onclick="attachFile()" title="Attach file">📎</button>
+                                    <button class="tool-btn" onclick="addEmoji()" title="Add emoji">😊</button>
+                                </div>
+                                <button class="btn btn-primary" onclick="sendMessage()" id="sendButton">
+                                    Send Message
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Floating Search Results (Desktop Only) - EXPLICITLY HIDDEN -->
-            <div id="searchResults" class="floating-search-results desktop-only" style="display: none !important;">
-                <div class="search-results-header">
-                    <h3>Search Results</h3>
-                    <button onclick="closeSearch()" class="search-close-btn">×</button>
-                </div>
-                <div id="searchContent" class="search-results-content">
-                    <!-- Search results will be populated here -->
+                <!-- Coaching Sidebar - Desktop Only -->
+                <div class="coaching-sidebar">
+                    <!-- Quick Goals -->
+                    <div class="sidebar-section">
+                        <h3>Today's Goals</h3>
+                        <div class="goals-list">
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal1">
+                                <label for="goal1">Practice deep breathing exercise</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal2">
+                                <label for="goal2">Review business priorities</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal3">
+                                <label for="goal3">Take a 15-minute break</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suggested Topics -->
+                    <div class="sidebar-section">
+                        <h3>Suggested Topics</h3>
+                        <div class="topic-buttons">
+                            <button class="topic-btn" onclick="suggestTopic('stress')">
+                                Managing startup stress and pressure
+                            </button>
+                            <button class="topic-btn" onclick="suggestTopic('balance')">
+                                Work-life balance strategies
+                            </button>
+                            <button class="topic-btn" onclick="suggestTopic('decisions')">
+                                Making difficult business decisions
+                            </button>
+                            <button class="topic-btn" onclick="suggestTopic('growth')">
+                                Personal growth and resilience
+                            </button>
+                            <button class="topic-btn" onclick="suggestTopic('team')">
+                                Leading and motivating teams
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Recent Insights -->
+                    <div class="sidebar-section">
+                        <h3>Recent Insights</h3>
+                        <div class="insight-item">
+                            <p>"Taking regular breaks can increase productivity by up to 25%"</p>
+                            <small>2 days ago</small>
+                        </div>
+                        <div class="insight-item">
+                            <p>"Mindful breathing reduces stress hormones significantly"</p>
+                            <small>3 days ago</small>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <!-- Emoji Modal (Desktop Only) - EXPLICITLY HIDDEN -->
-            <div id="emojiModal" class="emoji-modal desktop-only" style="display: none !important;">
-                <div class="emoji-grid">
-                    <button onclick="insertEmoji('😀')" class="emoji-btn">😀</button>
-                    <button onclick="insertEmoji('😃')" class="emoji-btn">😃</button>
-                    <button onclick="insertEmoji('😄')" class="emoji-btn">😄</button>
-                    <button onclick="insertEmoji('😊')" class="emoji-btn">😊</button>
-                    <button onclick="insertEmoji('😎')" class="emoji-btn">😎</button>
-                    <button onclick="insertEmoji('🎉')" class="emoji-btn">🎉</button>
-                    <button onclick="insertEmoji('👍')" class="emoji-btn">👍</button>
-                    <button onclick="insertEmoji('👏')" class="emoji-btn">👏</button>
-                    <button onclick="insertEmoji('💪')" class="emoji-btn">💪</button>
-                    <button onclick="insertEmoji('🚀')" class="emoji-btn">🚀</button>
-                    <button onclick="insertEmoji('💡')" class="emoji-btn">💡</button>
-                    <button onclick="insertEmoji('❤️')" class="emoji-btn">❤️</button>
-                </div>
-            </div>
-
         </main>
     </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" style="display: none;">
-        <div style="text-align: center;">
-            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
-            <p>Loading community...</p>
-        </div>
-    </div>
-
-    <script src="sidebar-toggle.js"></script>
-    <script src="community.js"></script>
-
-    <style>
-        /* FIX HEARTS AND REPLY ARROWS */
-        
-        /* Message Actions Styling */
-        .message-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-            transition: all 0.2s ease;
-        }
-
-        .message-group:hover {
-            transform: translateX(2px);
-        }
-
-        .message-group:hover .message-actions {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .message-content {
-            position: relative;
-        }
-
-        /* Message Actions */
-        .message-actions {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.5rem;
-            display: flex;
-            gap: 0.25rem;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0.25rem;
-            border-radius: 6px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--border);
-        }
-
-        .action-btn {
-            background: none;
-            border: 1px solid var(--border);
-            padding: 0.375rem;
-            border-radius: 4px;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 32px;
-            height: 32px;
-            font-size: 1rem;
-            background: var(--background);
-        }
-
-        .action-btn:hover {
-            background: var(--surface);
-            color: var(--text-primary);
-            transform: scale(1.1);
-            border-color: var(--primary);
-        }
-
-        /* FIXED LIKE BUTTON - RED HEART */
-        .action-btn.like-btn {
-            color: #6b7280 !important;
-            font-family: system-ui, -apple-system, sans-serif !important;
-        }
-
-        .action-btn.like-btn:hover {
-            color: #ef4444 !important;
-            background: rgba(239, 68, 68, 0.1) !important;
-            border-color: #ef4444 !important;
-        }
-
-        .action-btn.like-btn.liked {
-            color: #ef4444 !important;
-            background: rgba(239, 68, 68, 0.1) !important;
-            border-color: #ef4444 !important;
-        }
-
-        /* FIXED REPLY BUTTON - NORMAL ARROW */
-        .action-btn.reply-btn {
-            color: #6b7280 !important;
-            font-family: system-ui, -apple-system, sans-serif !important;
-        }
-
-        .action-btn.reply-btn:hover {
-            color: var(--primary) !important;
-            background: rgba(99, 102, 241, 0.1) !important;
-            border-color: var(--primary) !important;
-        }
-
-        /* Message Footer (Like count) */
-        .message-footer {
-            margin-left: 2.5rem;
-            margin-top: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .like-count {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-
-        .like-count.has-likes {
-            color: #ef4444 !important;
-        }
-
-        /* Mobile responsive adjustments for actions */
-        @media (max-width: 1024px) {
-            .message-actions {
-                opacity: 1;
-                visibility: visible;
-                position: static;
-                background: var(--surface);
-                margin-top: 0.5rem;
-                justify-content: flex-end;
-                box-shadow: none;
-                border: none;
-                padding: 0.5rem;
-                border-radius: var(--radius);
-            }
-
-            .action-btn {
-                min-width: 36px;
-                height: 36px;
-                font-size: 1.1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .action-btn {
-                min-width: 40px;
-                height: 40px;
-                font-size: 1.2rem;
-            }
-
-            .message-footer {
-                margin-left: 1.5rem;
-            }
-        }
-    </style>
-
     <script>
+        let messageCount = 1;
+        
         // Sidebar toggle functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -752,7 +771,150 @@
             }
         }
 
-        // Navigation functions
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                const isMobile = window.innerWidth <= 1024;
+                
+                if (isMobile) {
+                    return; // Allow multi-line on mobile
+                } else {
+                    if (!event.shiftKey) {
+                        event.preventDefault();
+                        sendMessage();
+                    }
+                }
+            }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const sendButton = document.getElementById('sendButton');
+            const typingIndicator = document.getElementById('typingIndicator');
+            
+            const messageText = messageInput.value.trim();
+            if (!messageText) return;
+            
+            // Create user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user-message';
+            userMessage.innerHTML = `
+                <div class="message-avatar user">U</div>
+                <div class="message-content">
+                    <div class="message-text">${escapeHtml(messageText)}</div>
+                    <div class="message-time">Just now</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(userMessage);
+            
+            // Clear input and show typing
+            messageInput.value = '';
+            sendButton.disabled = true;
+            sendButton.textContent = 'Sending...';
+            typingIndicator.classList.add('show');
+            
+            // Scroll to bottom
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Simulate AI response
+            setTimeout(() => {
+                typingIndicator.classList.remove('show');
+                
+                const aiMessage = document.createElement('div');
+                aiMessage.className = 'message';
+                aiMessage.innerHTML = `
+                    <div class="message-avatar coach">AI</div>
+                    <div class="message-content">
+                        <div class="message-text">${generateAIResponse(messageText)}</div>
+                        <div class="message-time">Just now</div>
+                    </div>
+                `;
+                
+                chatMessages.appendChild(aiMessage);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                sendButton.disabled = false;
+                sendButton.textContent = 'Send Message';
+                messageCount++;
+            }, 2000 + Math.random() * 2000);
+        }
+
+        function generateAIResponse(userMessage) {
+            const responses = [
+                "That's a really insightful perspective. As an entrepreneur, dealing with these challenges requires both emotional intelligence and practical strategies. Let me share some approaches that might help...",
+                "I understand the pressure you're experiencing. Many successful entrepreneurs face similar situations. Here are some evidence-based techniques that can help you navigate this...",
+                "Thank you for sharing that with me. It takes courage to be vulnerable about these challenges. Let's explore some strategies that can support you through this...",
+                "What you're describing is quite common in the entrepreneurial journey. The key is developing resilience while maintaining your well-being. Consider these approaches...",
+                "I appreciate you opening up about this. Managing both business demands and personal wellness is crucial for long-term success. Here's what I'd recommend..."
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        function suggestTopic(topic) {
+            const messageInput = document.getElementById('messageInput');
+            const topics = {
+                'stress': "I've been feeling overwhelmed with startup stress lately. Can you help me develop some coping strategies?",
+                'balance': "I'm struggling to maintain work-life balance while building my business. What approaches would you recommend?",
+                'decisions': "I have some difficult business decisions to make and I'm feeling uncertain. Can we talk through some decision-making frameworks?",
+                'growth': "I want to focus on personal growth and building resilience as an entrepreneur. Where should I start?",
+                'team': "I'm having challenges leading and motivating my team effectively. Can you share some leadership strategies?"
+            };
+            
+            messageInput.value = topics[topic] || '';
+            messageInput.focus();
+        }
+
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat history?')) {
+                const chatMessages = document.getElementById('chatMessages');
+                chatMessages.innerHTML = `
+                    <div class="message">
+                        <div class="message-avatar coach">AI</div>
+                        <div class="message-content">
+                            <div class="message-text">
+                                Hello! I'm your AI Coach, here to support you on your entrepreneurial journey. Whether you're dealing with stress, looking to improve work-life balance, or exploring new strategies for growth, I'm ready to engage in meaningful conversations that can help you thrive.
+                                <br><br>
+                                Feel free to share what's on your mind, ask about stress management techniques, discuss business challenges, or explore any aspect of your personal and professional development. How can I support you today?
+                            </div>
+                            <div class="message-time">Just now</div>
+                        </div>
+                    </div>
+                `;
+                messageCount = 1;
+            }
+        }
+
+        function newSession() {
+            clearChat();
+        }
+
+        function attachFile() {
+            alert('File attachment feature coming soon!');
+        }
+
+        function addEmoji() {
+            const messageInput = document.getElementById('messageInput');
+            const emojis = ['😊', '🤔', '💪', '🎯', '🚀', '💡', '❤️', '👍'];
+            const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+            
+            const cursorPos = messageInput.selectionStart || messageInput.value.length;
+            const textBefore = messageInput.value.substring(0, cursorPos);
+            const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+            messageInput.value = textBefore + randomEmoji + textAfter;
+            
+            const newPos = cursorPos + randomEmoji.length;
+            messageInput.setSelectionRange(newPos, newPos);
+            messageInput.focus();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function goToNotifications() {
             window.location.href = 'notifications.html';
         }
@@ -791,12 +953,46 @@
             }
         }
 
+        // Auto-resize textarea
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('messageInput');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+                });
+            }
+        }
+
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateNotificationCount();
             setInterval(updateNotificationCount, 30000);
+            autoResizeTextarea();
+            
+            // Focus message input on desktop
+            if (window.innerWidth > 1024) {
+                const messageInput = document.getElementById('messageInput');
+                if (messageInput) {
+                    messageInput.focus();
+                }
+            }
         });
-    </script>
 
-</body>
-</html>
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            // Adjust layout if needed
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                setTimeout(() => {
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }, 100);
+            }
+        });
+
+        // Prevent form submission on enter in mobile
+        document.getElementById('messageInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && window.innerWidth <= 1024) {
+                e.stopPropagation();
+            }
+        });
