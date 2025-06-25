@@ -4435,3 +4435,245 @@ mark {
         font-size: 0.95rem !important;
     }
 }
+
+/* =================================
+   AI COACH MOBILE COMPLETE LAYOUT FIX
+   Add this CSS to the BOTTOM of your styles.css file
+   ================================= */
+
+/* Mobile-only fixes for AI Coach */
+@media (max-width: 768px) {
+    /* Make main app container full viewport */
+    .app-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+    
+    /* Main content takes full space */
+    .main-content {
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Header should be compact and fixed height */
+    .content-header {
+        padding: 1rem !important;
+        margin-bottom: 0 !important;
+        border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
+        background: var(--background) !important;
+        position: relative !important;
+        z-index: 100 !important;
+        height: auto !important;
+        min-height: 80px !important;
+    }
+    
+    /* Hide header actions on mobile for more space */
+    .header-actions {
+        display: none !important;
+    }
+    
+    /* Content header title */
+    .content-header h1 {
+        font-size: 1.5rem !important;
+        margin: 0 !important;
+    }
+    
+    /* Chat container takes remaining space */
+    .chat-container {
+        flex: 1 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+        background: var(--background) !important;
+    }
+    
+    /* Chat header - make it compact */
+    .chat-header {
+        padding: 1rem !important;
+        border-bottom: 1px solid var(--border) !important;
+        flex-shrink: 0 !important;
+        background: var(--surface) !important;
+        min-height: auto !important;
+    }
+    
+    /* Messages area - THIS IS THE KEY FIX */
+    .chat-messages {
+        flex: 1 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 1.5rem 1rem !important; /* More top padding to prevent cutoff */
+        background: var(--surface) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    /* Input container - FIXED AT BOTTOM */
+    .chat-input-container {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        padding: 1rem !important;
+        background: var(--background) !important;
+        border-top: 2px solid var(--border) !important;
+        z-index: 1000 !important;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* Chat input styling */
+    .chat-input {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        background: var(--surface) !important;
+        border: 2px solid var(--border) !important;
+        border-radius: 12px !important;
+        padding: 1rem !important;
+    }
+    
+    /* Textarea styling */
+    .chat-input textarea {
+        width: 100% !important;
+        min-height: 60px !important; /* Increased from 44px to show full placeholder */
+        max-height: 120px !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+        color: var(--text-primary) !important;
+        resize: none !important;
+        font-family: inherit !important;
+        padding: 8px 0 !important; /* Added vertical padding for better text display */
+    }
+    
+    /* Input actions */
+    .input-actions {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+        touch-action: manipulation !important;
+    }
+    
+    /* Add bottom padding to messages to account for fixed input */
+    .chat-messages {
+        padding-bottom: 220px !important; /* Increased from 200px for more space */
+    }
+    
+    /* Hide coaching sidebar on mobile completely */
+    .coaching-sidebar {
+        display: none !important;
+    }
+    
+    /* Remove the flex container that wraps chat and sidebar */
+    .main-content > div[style*="display: flex"] {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        gap: 0 !important;
+    }
+    
+    /* Message styling adjustments */
+    .message {
+        max-width: 95% !important;
+        gap: 0.75rem !important;
+    }
+    
+    .message-content {
+        padding: 1rem !important;
+        border-radius: 12px !important;
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* Prevent zoom on iOS */
+    input, textarea, select {
+        font-size: 16px !important;
+        transform: translateZ(0) !important;
+        -webkit-appearance: none !important;
+    }
+    
+    /* Safe area for devices with notches */
+    .chat-input-container {
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+    }
+    
+    /* Smooth scrolling */
+    .chat-messages {
+        scroll-behavior: smooth !important;
+    }
+    
+    /* Hide scrollbar but keep functionality */
+    .chat-messages::-webkit-scrollbar {
+        display: none !important;
+    }
+    
+    .chat-messages {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    /* Ensure hamburger menu is accessible */
+    .universal-hamburger {
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+        z-index: 99999 !important;
+    }
+}
+
+/* Very small screens additional adjustments */
+@media (max-width: 480px) {
+    .content-header {
+        min-height: 70px !important;
+    }
+    
+    .content-header h1 {
+        font-size: 1.3rem !important;
+    }
+    
+    .chat-header {
+        padding: 0.75rem !important;
+    }
+    
+    .chat-messages {
+        padding: 1.25rem 0.75rem !important; /* More top padding, adjusted sides */
+        padding-bottom: 200px !important; /* Increased from 180px */
+    }
+    
+    .chat-input-container {
+        padding: 0.75rem !important;
+    }
+    
+    .message-content {
+        padding: 0.75rem !important;
+        font-size: 0.95rem !important;
+    }
+}
