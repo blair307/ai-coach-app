@@ -8,23 +8,25 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Universal Hamburger Menu -->
+        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
         <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2>EEH</h2>
-                <button class="sidebar-toggle" aria-label="Toggle navigation menu">
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                    <span class="hamburger-line"></span>
-                </button>
             </div>
             <ul class="sidebar-menu">
                 <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
                 <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
                 <li><a href="community.html" class="menu-item">Community</a></li>
-               <li><a href="goals.html" class="menu-item">Goals</a></li>
-<li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
-<li><a href="billing.html" class="menu-item">Billing</a></li>
+                <li><a href="goals.html" class="menu-item active">Goals</a></li>
+                <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
+                <li><a href="billing.html" class="menu-item">Billing</a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
@@ -252,17 +254,47 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+                
+                <!-- Modal Header -->
+                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
+                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div style="padding: 2rem;">
+                    <p style="color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6;">Are you sure you want to delete this goal? All progress and streak data will be permanently lost.</p>
+                    
+                    <div id="goalToDelete" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                        <!-- Goal details will be populated here -->
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="closeDeleteModal()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500;">Cancel</button>
+                        <button onclick="confirmDeleteGoal()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Delete Goal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Basic Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
 
         function goToDailyTracker() {
-    window.location.href = 'daily-tracker.html';
-}
-        // Goal Wizard JavaScript with Backend Storage
+            window.location.href = 'daily-tracker.html';
+        }
+
+        // Goal Wizard JavaScript with Backend Storage + Delete Functionality
         let currentStep = 1;
         let currentArea = '';
         let wizardData = {};
+        let goalToDelete = null; // Store goal data for deletion
 
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -398,6 +430,100 @@
             currentStep = 1;
             currentArea = '';
             wizardData = {};
+        }
+
+        // NEW: Delete goal functions
+        function openDeleteModal(goalId, goalData) {
+            goalToDelete = { id: goalId, data: goalData };
+            
+            // Populate goal details in modal
+            const goalToDeleteElement = document.getElementById('goalToDelete');
+            goalToDeleteElement.innerHTML = `
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${goalData.area.charAt(0).toUpperCase() + goalData.area.slice(1)} Goal</h4>
+                <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${goalData.bigGoal}</p>
+                <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${goalData.dailyAction}</p>
+                ${goalData.streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${goalData.streak} days</p>` : ''}
+            `;
+            
+            // Show modal
+            document.getElementById('deleteConfirmModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            document.body.style.overflow = '';
+            goalToDelete = null;
+        }
+
+        async function confirmDeleteGoal() {
+            if (!goalToDelete) return;
+
+            try {
+                // Show loading state
+                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
+                const originalText = deleteBtn.textContent;
+                deleteBtn.textContent = 'Deleting...';
+                deleteBtn.disabled = true;
+
+                // Delete from backend
+                await deleteGoalFromBackend(goalToDelete.id);
+
+                // Close modal
+                closeDeleteModal();
+
+                // Show success message
+                showSuccessMessage(`Your ${goalToDelete.data.area} goal has been deleted.`);
+
+                // Refresh goals display
+                await loadGoalsOverview();
+
+                // Reset button state
+                deleteBtn.textContent = originalText;
+                deleteBtn.disabled = false;
+
+            } catch (error) {
+                console.error('Error deleting goal:', error);
+                showErrorMessage('There was an error deleting your goal. Please try again.');
+
+                // Reset button state
+                const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
+                deleteBtn.textContent = 'Delete Goal';
+                deleteBtn.disabled = false;
+            }
+        }
+
+        async function deleteGoalFromBackend(goalId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to delete goal from backend');
+                }
+
+                console.log('Goal deleted successfully from backend');
+                
+            } catch (error) {
+                console.error('Backend delete failed, using localStorage fallback:', error);
+                
+                // Fallback to localStorage
+                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                Object.keys(existingGoals).forEach(area => {
+                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId);
+                });
+                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
+            }
         }
 
         function showStep(step) {
@@ -614,37 +740,42 @@
                 }
                 
                 let html = '';
-Object.entries(goals).forEach(([area, areaGoals]) => {
-    const config = areaConfig[area];
-    
-    html += `
-        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
-            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
-    `;
-    
-    // Show ALL goals instead of just the latest one
-    areaGoals.forEach((goal, index) => {
-        const streakDisplay = goal.streak || 0;
-        html += `
-            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border);">
-                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4;">${goal.bigGoal}</p>
-                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
-                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; gap: 1rem;">
-                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
-                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
-                    </div>
-                    <div style="text-align: center;">
-                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
-                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += `</div>`;
+                Object.entries(goals).forEach(([area, areaGoals]) => {
+                    const config = areaConfig[area];
                     
+                    html += `
+                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
+                    `;
+                    
+                    // Show ALL goals with delete buttons
+                    areaGoals.forEach((goal, index) => {
+                        const streakDisplay = goal.streak || 0;
+                        const goalId = goal._id || goal.id || `${area}-${index}`;
+                        
+                        html += `
+                            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
+                                <!-- Delete button in top right -->
+                                <button onclick="openDeleteModal('${goalId}', ${JSON.stringify(goal).replace(/"/g, '&quot;')})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                
+                                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${goal.bigGoal}</p>
+                                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
+                                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
+                                    <div style="display: flex; gap: 1rem;">
+                                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
+                                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
+                        
                     // Update card stats
                     updateAreaStats(area, areaGoals);
                 });
@@ -657,33 +788,33 @@ Object.entries(goals).forEach(([area, areaGoals]) => {
             }
         }
 
-function updateAreaStats(area, goals) {
-    const goalsCount = goals.length;
-    const goalsElement = document.getElementById(`${area}-goals`);
-    const progressElement = document.getElementById(`${area}-progress`);
-    
-    if (goalsElement) goalsElement.textContent = goalsCount;
-    if (progressElement) {
-        // Calculate progress as X/Y format instead of percentage
-        let completedToday = 0;
-        const totalGoals = goals.length;
-        
-        goals.forEach(goal => {
-            if (goal.lastCompletedDate) {
-                const lastCompleted = new Date(goal.lastCompletedDate);
-                const today = new Date();
-                const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        function updateAreaStats(area, goals) {
+            const goalsCount = goals.length;
+            const goalsElement = document.getElementById(`${area}-goals`);
+            const progressElement = document.getElementById(`${area}-progress`);
+            
+            if (goalsElement) goalsElement.textContent = goalsCount;
+            if (progressElement) {
+                // Calculate progress as X/Y format instead of percentage
+                let completedToday = 0;
+                const totalGoals = goals.length;
                 
-                // If completed today or has active streak, count as completed
-                if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
-                    completedToday++;
-                }
+                goals.forEach(goal => {
+                    if (goal.lastCompletedDate) {
+                        const lastCompleted = new Date(goal.lastCompletedDate);
+                        const today = new Date();
+                        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                        
+                        // If completed today or has active streak, count as completed
+                        if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
+                            completedToday++;
+                        }
+                    }
+                });
+                
+                progressElement.textContent = `${completedToday}/${totalGoals}`;
             }
-        });
-        
-        progressElement.textContent = `${completedToday}/${totalGoals}`;
-    }
-}
+        }
 
         function showSuccessMessage(message) {
             showToast(message, 'success');
@@ -725,13 +856,13 @@ function updateAreaStats(area, goals) {
             }, 4000);
         }
 
-      function viewGoalDetails(area) {
-    window.location.href = 'daily-tracker.html';
-}
+        function viewGoalDetails(area) {
+            window.location.href = 'daily-tracker.html';
+        }
 
-function openDailyTracker(area) {
-    window.location.href = 'daily-tracker.html';
-}
+        function openDailyTracker(area) {
+            window.location.href = 'daily-tracker.html';
+        }
 
         function adjustBrightness(color, percent) {
             const num = parseInt(color.replace('#', ''), 16);
@@ -751,6 +882,17 @@ function openDailyTracker(area) {
         function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('open');
+            
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('shifted');
+            }
         }
 
         // Simple notification counter
@@ -809,8 +951,27 @@ function openDailyTracker(area) {
                 nextStep();
             }
             
-            if (e.key === 'Escape' && document.getElementById('goalWizardModal').style.display === 'block') {
+            if (e.key === 'Escape') {
+                if (document.getElementById('goalWizardModal').style.display === 'block') {
+                    closeWizard();
+                }
+                if (document.getElementById('deleteConfirmModal').style.display === 'block') {
+                    closeDeleteModal();
+                }
+            }
+        });
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            const goalWizardModal = document.getElementById('goalWizardModal');
+            const deleteModal = document.getElementById('deleteConfirmModal');
+            
+            if (e.target === goalWizardModal) {
                 closeWizard();
+            }
+            
+            if (e.target === deleteModal) {
+                closeDeleteModal();
             }
         });
 
