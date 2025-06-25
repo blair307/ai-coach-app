@@ -1,4 +1,739 @@
-<!DOCTYPE html>
+<!-- Modal Header -->
+                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
+                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
+                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div style="padding: 2rem;">
+                    <p style="color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6;">Are you sure you want to delete this goal? All progress and streak data will be permanently lost.</p>
+                    
+                    <div id="goalToDelete" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                        <!-- Goal details will be populated here -->
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button onclick="closeDeleteModal()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500;">Cancel</button>
+                        <button id="confirmDeleteBtn" onclick="confirmDeleteGoal()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Delete Goal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentStep = 1;
+        let currentArea = '';
+        let wizardData = {};
+        let allGoals = []; // Store all goals globally to avoid passing complex objects
+
+        // API Base URL
+        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+
+        // Area configurations
+        const areaConfig = {
+            mind: {
+                title: 'Set Your Mind Goals',
+                subtitle: "Let's create meaningful goals for your mental growth",
+                color: '#8b5cf6',
+                description: 'Think big! What would you love to achieve in your mind/mental development over the next year?',
+                examples: [
+                    'Read for 30 minutes every morning',
+                    'Meditate for 10 minutes daily',
+                    'Journal for 15 minutes each night',
+                    'Practice a new skill 3x per week',
+                    'Limit social media to 30 min/day'
+                ]
+            },
+            spirit: {
+                title: 'Set Your Spirit Goals',
+                subtitle: "Let's nurture your inner peace and purpose",
+                color: '#06b6d4',
+                description: 'What spiritual or purpose-driven goals would bring you more peace and fulfillment?',
+                examples: [
+                    'Practice gratitude journaling daily',
+                    'Attend spiritual services weekly',
+                    'Spend time in nature every day',
+                    'Practice mindfulness during meals',
+                    'Volunteer 2 hours per week'
+                ]
+            },
+            body: {
+                title: 'Set Your Body Goals',
+                subtitle: "Let's optimize your physical health and energy",
+                color: '#10b981',
+                description: 'What physical health and fitness goals would make you feel strongest and most energized?',
+                examples: [
+                    'Exercise 4 times per week',
+                    'Drink 8 glasses of water daily',
+                    'Sleep 7-8 hours every night',
+                    'Take a 20-minute walk daily',
+                    'Eat vegetables with every meal'
+                ]
+            },
+            work: {
+                title: 'Set Your Work Goals',
+                subtitle: "Let's advance your career and professional growth",
+                color: '#f59e0b',
+                description: 'What career or business goals would take your professional life to the next level?',
+                examples: [
+                    'Learn something new for 1 hour daily',
+                    'Network with 1 new person per week',
+                    'Complete one course monthly',
+                    'Set work boundaries at 6pm daily',
+                    'Review goals every morning'
+                ]
+            },
+            relationships: {
+                title: 'Set Your Relationship Goals',
+                subtitle: "Let's strengthen your connections with others",
+                color: '#ec4899',
+                description: 'How would you like to improve and deepen your relationships with family, friends, and loved ones?',
+                examples: [
+                    'Have one meaningful conversation daily',
+                    'Call family twice per week',
+                    'Practice active listening daily',
+                    'Say thank you to someone daily',
+                    'Plan quality time weekly'
+                ]
+            },
+            fun: {
+                title: 'Set Your Fun Goals',
+                subtitle: "Let's bring more joy and adventure into your life",
+                color: '#f97316',
+                description: 'What fun activities, hobbies, or adventures would make your life more enjoyable and fulfilling?',
+                examples: [
+                    'Try one new thing weekly',
+                    'Take photos of beautiful moments daily',
+                    'Play music for 30 minutes daily',
+                    'Learn a new hobby weekly',
+                    'Explore somewhere new monthly'
+                ]
+            },
+            finances: {
+                title: 'Set Your Finance Goals',
+                subtitle: "Let's build your financial security and freedom",
+                color: '#059669',
+                description: 'What financial goals would give you more security, freedom, and peace of mind?',
+                examples: [
+                    'Save $20 every day',
+                    'Track expenses for 5 minutes daily',
+                    'Read one financial article weekly',
+                    'Review budget every Sunday',
+                    'Learn about investing daily'
+                ]
+            }
+        };
+
+        // Goal Wizard Functions
+        function openGoalWizard(area) {
+            currentArea = area;
+            currentStep = 1;
+            const config = areaConfig[area];
+            
+            document.getElementById('wizardTitle').textContent = config.title;
+            document.getElementById('wizardSubtitle').textContent = config.subtitle;
+            document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
+            document.getElementById('stepDescription').textContent = config.description;
+            
+            document.getElementById('bigGoalInput').value = '';
+            document.getElementById('dailyActionInput').value = '';
+            showStep(1);
+            
+            document.getElementById('goalWizardModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            setTimeout(() => {
+                document.getElementById('bigGoalInput').focus();
+            }, 100);
+        }
+
+        function closeWizard() {
+            document.getElementById('goalWizardModal').style.display = 'none';
+            document.body.style.overflow = '';
+            currentStep = 1;
+            currentArea = '';
+            wizardData = {};
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
+            document.getElementById(`step${step}`).style.display = 'block';
+            currentStep = step;
+            
+            if (step === 2) {
+                updateExamples();
+            }
+        }
+
+        function updateExamples() {
+            const config = areaConfig[currentArea];
+            const examplesList = document.getElementById('examplesList');
+            
+            examplesList.innerHTML = '';
+            config.examples.forEach(example => {
+                const exampleBtn = document.createElement('button');
+                exampleBtn.textContent = example;
+                exampleBtn.style.cssText = `
+                    background: var(--background);
+                    border: 2px solid var(--border);
+                    color: var(--text-secondary);
+                    padding: 0.5rem 1rem;
+                    border-radius: 20px;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    transition: all 0.2s ease;
+                `;
+                
+                exampleBtn.onclick = () => {
+                    document.getElementById('dailyActionInput').value = example;
+                    examplesList.querySelectorAll('button').forEach(btn => {
+                        btn.style.background = 'var(--background)';
+                        btn.style.borderColor = 'var(--border)';
+                        btn.style.color = 'var(--text-secondary)';
+                    });
+                    exampleBtn.style.background = config.color;
+                    exampleBtn.style.borderColor = config.color;
+                    exampleBtn.style.color = 'white';
+                };
+                
+                exampleBtn.onmouseover = () => {
+                    if (exampleBtn.style.background !== config.color) {
+                        exampleBtn.style.borderColor = config.color;
+                        exampleBtn.style.color = config.color;
+                    }
+                };
+                
+                exampleBtn.onmouseout = () => {
+                    if (exampleBtn.style.background !== config.color) {
+                        exampleBtn.style.borderColor = 'var(--border)';
+                        exampleBtn.style.color = 'var(--text-secondary)';
+                    }
+                };
+                
+                examplesList.appendChild(exampleBtn);
+            });
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                const bigGoal = document.getElementById('bigGoalInput').value.trim();
+                if (!bigGoal) {
+                    alert('Please describe your big goal before continuing.');
+                    return;
+                }
+                wizardData.bigGoal = bigGoal;
+                showStep(2);
+            } else if (currentStep === 2) {
+                const dailyAction = document.getElementById('dailyActionInput').value.trim();
+                if (!dailyAction) {
+                    alert('Please choose a daily action before continuing.');
+                    return;
+                }
+                wizardData.dailyAction = dailyAction;
+                
+                document.getElementById('bigGoalSummary').textContent = wizardData.bigGoal;
+                document.getElementById('dailyActionSummary').textContent = wizardData.dailyAction;
+                
+                showStep(3);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                showStep(currentStep - 1);
+            }
+        }
+
+        async function createGoals() {
+            try {
+                const button = event.target;
+                const originalText = button.textContent;
+                button.textContent = 'Creating Goal...';
+                button.disabled = true;
+                
+                const goalData = {
+                    area: currentArea,
+                    bigGoal: wizardData.bigGoal,
+                    dailyAction: wizardData.dailyAction,
+                    createdAt: new Date().toISOString()
+                };
+                
+                await saveGoalToBackend(goalData);
+                closeWizard();
+                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress.`);
+                await loadGoalsOverview();
+                
+            } catch (error) {
+                console.error('Error creating goal:', error);
+                showErrorMessage('There was an error creating your goal. Please try again.');
+                
+                const button = event.target;
+                button.textContent = 'Create My Goal! 🎯';
+                button.disabled = false;
+            }
+        }
+
+        // NEW APPROACH: Use data attributes instead of passing complex objects
+        function deleteGoalClick(goalId) {
+            console.log('Delete goal clicked for ID:', goalId);
+            
+            try {
+                // Find the goal in our global array
+                const goal = allGoals.find(g => (g._id === goalId || g.id === goalId));
+                
+                if (!goal) {
+                    console.error('Goal not found in allGoals array');
+                    showErrorMessage('Goal not found. Please refresh the page.');
+                    return;
+                }
+                
+                // Store the ID and populate the modal
+                window.goalToDeleteId = goalId;
+                
+                const goalToDeleteElement = document.getElementById('goalToDelete');
+                const area = goal.area || 'Unknown';
+                const bigGoal = goal.bigGoal || 'No description';
+                const dailyAction = goal.dailyAction || 'No daily action';
+                const streak = goal.streak || 0;
+                
+                goalToDeleteElement.innerHTML = `
+                    <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
+                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${escapeHtml(bigGoal)}</p>
+                    <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${escapeHtml(dailyAction)}</p>
+                    ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
+                `;
+                
+                document.getElementById('deleteConfirmModal').style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                
+            } catch (error) {
+                console.error('Error opening delete modal:', error);
+                showErrorMessage('Error processing goal data. Please refresh the page.');
+            }
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteConfirmModal').style.display = 'none';
+            document.body.style.overflow = '';
+            window.goalToDeleteId = null;
+        }
+
+        async function confirmDeleteGoal() {
+            console.log('Confirm delete called for ID:', window.goalToDeleteId);
+            
+            if (!window.goalToDeleteId) {
+                console.error('No goal ID set for deletion');
+                showErrorMessage('Error: No goal selected for deletion.');
+                return;
+            }
+
+            try {
+                const deleteBtn = document.getElementById('confirmDeleteBtn');
+                if (deleteBtn) {
+                    deleteBtn.textContent = 'Deleting...';
+                    deleteBtn.disabled = true;
+                }
+
+                await deleteGoalFromBackend(window.goalToDeleteId);
+                closeDeleteModal();
+
+                // Find the goal in our array to get the area for the success message
+                const deletedGoal = allGoals.find(g => (g._id === window.goalToDeleteId || g.id === window.goalToDeleteId));
+                const area = deletedGoal ? deletedGoal.area : 'goal';
+                
+                showSuccessMessage(`Your ${area} goal has been deleted.`);
+                await loadGoalsOverview();
+
+            } catch (error) {
+                console.error('Error deleting goal:', error);
+                showErrorMessage('There was an error deleting your goal. Please try again.');
+
+                const deleteBtn = document.getElementById('confirmDeleteBtn');
+                if (deleteBtn) {
+                    deleteBtn.textContent = 'Delete Goal';
+                    deleteBtn.disabled = false;
+                }
+            }
+        }
+
+        // Utility Functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Backend Functions
+        async function saveGoalToBackend(goalData) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(goalData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save goal to backend');
+                }
+
+                const result = await response.json();
+                console.log('Goal saved successfully:', result);
+                return result;
+                
+            } catch (error) {
+                console.error('Backend save failed, using localStorage fallback:', error);
+                
+                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                if (!existingGoals[goalData.area]) {
+                    existingGoals[goalData.area] = [];
+                }
+                existingGoals[goalData.area].push({
+                    ...goalData,
+                    id: Date.now().toString()
+                });
+                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
+            }
+        }
+
+        async function deleteGoalFromBackend(goalId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+
+                console.log('Attempting to delete goal:', goalId);
+                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to delete goal from backend: ${response.status} ${response.statusText}`);
+                }
+
+                console.log('Goal deleted successfully from backend');
+                
+                // Remove from global array
+                allGoals = allGoals.filter(g => g._id !== goalId && g.id !== goalId);
+                
+            } catch (error) {
+                console.error('Backend delete failed, using localStorage fallback:', error);
+                
+                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                Object.keys(existingGoals).forEach(area => {
+                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId && goal._id !== goalId);
+                });
+                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
+                
+                // Remove from global array
+                allGoals = allGoals.filter(g => g._id !== goalId && g.id !== goalId);
+            }
+        }
+
+        async function loadGoalsOverview() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                let goals = {};
+
+                if (token) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const backendGoals = await response.json();
+                            console.log('Loaded goals from backend:', backendGoals);
+                            
+                            // Store all goals globally
+                            allGoals = backendGoals;
+                            
+                            backendGoals.forEach(goal => {
+                                if (!goals[goal.area]) goals[goal.area] = [];
+                                goals[goal.area].push(goal);
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Failed to load from backend:', error);
+                    }
+                }
+
+                if (Object.keys(goals).length === 0) {
+                    const localGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                    
+                    // Convert localStorage format to global array
+                    allGoals = [];
+                    Object.entries(localGoals).forEach(([area, areaGoals]) => {
+                        areaGoals.forEach(goal => {
+                            allGoals.push(goal);
+                        });
+                    });
+                    
+                    goals = localGoals;
+                }
+
+                const overviewContainer = document.getElementById('goalsOverview');
+                
+                if (Object.keys(goals).length === 0) {
+                    overviewContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>';
+                    return;
+                }
+                
+                let html = '';
+                Object.entries(goals).forEach(([area, areaGoals]) => {
+                    const config = areaConfig[area];
+                    
+                    html += `
+                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
+                    `;
+                    
+                    areaGoals.forEach((goal) => {
+                        const streakDisplay = goal.streak || 0;
+                        const goalId = goal._id || goal.id;
+                        
+                        html += `
+                            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
+                                <button onclick="deleteGoalClick('${goalId}')" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                
+                                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${escapeHtml(goal.bigGoal)}</p>
+                                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${escapeHtml(goal.dailyAction)}</p>
+                                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
+                                    <div style="display: flex; gap: 1rem;">
+                                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
+                                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div>`;
+                    updateAreaStats(area, areaGoals);
+                });
+                
+                overviewContainer.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error loading goals overview:', error);
+                document.getElementById('goalsOverview').innerHTML = '<p style="text-align: center; color: var(--error); padding: 2rem;">Error loading goals. Please refresh the page.</p>';
+            }
+        }
+
+        function updateAreaStats(area, goals) {
+            const goalsElement = document.getElementById(`${area}-goals`);
+            const progressElement = document.getElementById(`${area}-progress`);
+            
+            if (goalsElement) goalsElement.textContent = goals.length;
+            if (progressElement) {
+                let completedToday = 0;
+                const totalGoals = goals.length;
+                
+                goals.forEach(goal => {
+                    if (goal.lastCompletedDate) {
+                        const lastCompleted = new Date(goal.lastCompletedDate);
+                        const today = new Date();
+                        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                        
+                        if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
+                            completedToday++;
+                        }
+                    }
+                });
+                
+                progressElement.textContent = `${completedToday}/${totalGoals}`;
+            }
+        }
+
+        // Utility Functions
+        function showSuccessMessage(message) {
+            showToast(message, 'success');
+        }
+
+        function showErrorMessage(message) {
+            showToast(message, 'error');
+        }
+
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'var(--success)' : 'var(--error)';
+            
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 2rem;
+                right: 2rem;
+                background: ${bgColor};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 12px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 400px;
+                font-weight: 500;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        function adjustBrightness(color, percent) {
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = (num >> 16) + amt;
+            const G = (num >> 8 & 0x00FF) + amt;
+            const B = (num & 0x0000FF) + amt;
+            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
+        }
+
+        // Navigation Functions
+        function goToDailyTracker() {
+            window.location.href = 'daily-tracker.html';
+        }
+
+        function goToNotifications() {
+            window.location.href = 'notifications.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('open');
+            
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('shifted');
+            }
+        }
+
+        // Notification Functions
+        async function updateNotificationCount() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return;
+                
+                const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count || 0;
+                    const countElement = document.getElementById('headerNotificationCount');
+                    
+                    if (countElement) {
+                        countElement.textContent = count;
+                        countElement.setAttribute('data-count', count);
+                        countElement.style.display = count > 0 ? 'flex' : 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching notification count:', error);
+            }
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(100px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            
+            @keyframes slideOutRight {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(100px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event Listeners
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.id === 'bigGoalInput') {
+                e.preventDefault();
+                nextStep();
+            }
+            
+            if (e.key === 'Enter' && e.target.id === 'dailyActionInput') {
+                e.preventDefault();
+                nextStep();
+            }
+            
+            if (e.key === 'Escape') {
+                if (document.getElementById('goalWizardModal').style.display === 'block') {
+                    closeWizard();
+                }
+                if (document.getElementById('deleteConfirmModal').style.display === 'block') {
+                    closeDeleteModal();
+                }
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            const goalWizardModal = document.getElementById('goalWizardModal');
+            const deleteModal = document.getElementById('deleteConfirmModal');
+            
+            if (e.target === goalWizardModal) {
+                closeWizard();
+            }
+            
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Goals page loading...');
+            loadGoalsOverview();
+            updateNotificationCount();
+            setInterval(updateNotificationCount, 30000);
+            console.log('✅ Goals page initialized');
+        });
+
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -260,732 +995,3 @@
             <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
                 
                 <!-- Modal Header -->
-                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
-                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
-                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
-                </div>
-                
-                <!-- Modal Body -->
-                <div style="padding: 2rem;">
-                    <p style="color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6;">Are you sure you want to delete this goal? All progress and streak data will be permanently lost.</p>
-                    
-                    <div id="goalToDelete" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                        <!-- Goal details will be populated here -->
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button onclick="closeDeleteModal()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500;">Cancel</button>
-                        <button id="confirmDeleteBtn" onclick="confirmDeleteGoal()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Delete Goal</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Global variables
-        let currentStep = 1;
-        let currentArea = '';
-        let wizardData = {};
-        let goalToDelete = null;
-
-        // API Base URL
-        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
-
-        // Area configurations
-        const areaConfig = {
-            mind: {
-                title: 'Set Your Mind Goals',
-                subtitle: "Let's create meaningful goals for your mental growth",
-                color: '#8b5cf6',
-                description: 'Think big! What would you love to achieve in your mind/mental development over the next year?',
-                examples: [
-                    'Read for 30 minutes every morning',
-                    'Meditate for 10 minutes daily',
-                    'Journal for 15 minutes each night',
-                    'Practice a new skill 3x per week',
-                    'Limit social media to 30 min/day'
-                ]
-            },
-            spirit: {
-                title: 'Set Your Spirit Goals',
-                subtitle: "Let's nurture your inner peace and purpose",
-                color: '#06b6d4',
-                description: 'What spiritual or purpose-driven goals would bring you more peace and fulfillment?',
-                examples: [
-                    'Practice gratitude journaling daily',
-                    'Attend spiritual services weekly',
-                    'Spend time in nature every day',
-                    'Practice mindfulness during meals',
-                    'Volunteer 2 hours per week'
-                ]
-            },
-            body: {
-                title: 'Set Your Body Goals',
-                subtitle: "Let's optimize your physical health and energy",
-                color: '#10b981',
-                description: 'What physical health and fitness goals would make you feel strongest and most energized?',
-                examples: [
-                    'Exercise 4 times per week',
-                    'Drink 8 glasses of water daily',
-                    'Sleep 7-8 hours every night',
-                    'Take a 20-minute walk daily',
-                    'Eat vegetables with every meal'
-                ]
-            },
-            work: {
-                title: 'Set Your Work Goals',
-                subtitle: "Let's advance your career and professional growth",
-                color: '#f59e0b',
-                description: 'What career or business goals would take your professional life to the next level?',
-                examples: [
-                    'Learn something new for 1 hour daily',
-                    'Network with 1 new person per week',
-                    'Complete one course monthly',
-                    'Set work boundaries at 6pm daily',
-                    'Review goals every morning'
-                ]
-            },
-            relationships: {
-                title: 'Set Your Relationship Goals',
-                subtitle: "Let's strengthen your connections with others",
-                color: '#ec4899',
-                description: 'How would you like to improve and deepen your relationships with family, friends, and loved ones?',
-                examples: [
-                    'Have one meaningful conversation daily',
-                    'Call family twice per week',
-                    'Practice active listening daily',
-                    'Say thank you to someone daily',
-                    'Plan quality time weekly'
-                ]
-            },
-            fun: {
-                title: 'Set Your Fun Goals',
-                subtitle: "Let's bring more joy and adventure into your life",
-                color: '#f97316',
-                description: 'What fun activities, hobbies, or adventures would make your life more enjoyable and fulfilling?',
-                examples: [
-                    'Try one new thing weekly',
-                    'Take photos of beautiful moments daily',
-                    'Play music for 30 minutes daily',
-                    'Learn a new hobby weekly',
-                    'Explore somewhere new monthly'
-                ]
-            },
-            finances: {
-                title: 'Set Your Finance Goals',
-                subtitle: "Let's build your financial security and freedom",
-                color: '#059669',
-                description: 'What financial goals would give you more security, freedom, and peace of mind?',
-                examples: [
-                    'Save $20 every day',
-                    'Track expenses for 5 minutes daily',
-                    'Read one financial article weekly',
-                    'Review budget every Sunday',
-                    'Learn about investing daily'
-                ]
-            }
-        };
-
-        // Goal Wizard Functions
-        function openGoalWizard(area) {
-            currentArea = area;
-            currentStep = 1;
-            const config = areaConfig[area];
-            
-            document.getElementById('wizardTitle').textContent = config.title;
-            document.getElementById('wizardSubtitle').textContent = config.subtitle;
-            document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
-            document.getElementById('stepDescription').textContent = config.description;
-            
-            document.getElementById('bigGoalInput').value = '';
-            document.getElementById('dailyActionInput').value = '';
-            showStep(1);
-            
-            document.getElementById('goalWizardModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            setTimeout(() => {
-                document.getElementById('bigGoalInput').focus();
-            }, 100);
-        }
-
-        function closeWizard() {
-            document.getElementById('goalWizardModal').style.display = 'none';
-            document.body.style.overflow = '';
-            currentStep = 1;
-            currentArea = '';
-            wizardData = {};
-        }
-
-        function showStep(step) {
-            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
-            document.getElementById(`step${step}`).style.display = 'block';
-            currentStep = step;
-            
-            if (step === 2) {
-                updateExamples();
-            }
-        }
-
-        function updateExamples() {
-            const config = areaConfig[currentArea];
-            const examplesList = document.getElementById('examplesList');
-            
-            examplesList.innerHTML = '';
-            config.examples.forEach(example => {
-                const exampleBtn = document.createElement('button');
-                exampleBtn.textContent = example;
-                exampleBtn.style.cssText = `
-                    background: var(--background);
-                    border: 2px solid var(--border);
-                    color: var(--text-secondary);
-                    padding: 0.5rem 1rem;
-                    border-radius: 20px;
-                    cursor: pointer;
-                    font-size: 0.875rem;
-                    transition: all 0.2s ease;
-                `;
-                
-                exampleBtn.onclick = () => {
-                    document.getElementById('dailyActionInput').value = example;
-                    examplesList.querySelectorAll('button').forEach(btn => {
-                        btn.style.background = 'var(--background)';
-                        btn.style.borderColor = 'var(--border)';
-                        btn.style.color = 'var(--text-secondary)';
-                    });
-                    exampleBtn.style.background = config.color;
-                    exampleBtn.style.borderColor = config.color;
-                    exampleBtn.style.color = 'white';
-                };
-                
-                exampleBtn.onmouseover = () => {
-                    if (exampleBtn.style.background !== config.color) {
-                        exampleBtn.style.borderColor = config.color;
-                        exampleBtn.style.color = config.color;
-                    }
-                };
-                
-                exampleBtn.onmouseout = () => {
-                    if (exampleBtn.style.background !== config.color) {
-                        exampleBtn.style.borderColor = 'var(--border)';
-                        exampleBtn.style.color = 'var(--text-secondary)';
-                    }
-                };
-                
-                examplesList.appendChild(exampleBtn);
-            });
-        }
-
-        function nextStep() {
-            if (currentStep === 1) {
-                const bigGoal = document.getElementById('bigGoalInput').value.trim();
-                if (!bigGoal) {
-                    alert('Please describe your big goal before continuing.');
-                    return;
-                }
-                wizardData.bigGoal = bigGoal;
-                showStep(2);
-            } else if (currentStep === 2) {
-                const dailyAction = document.getElementById('dailyActionInput').value.trim();
-                if (!dailyAction) {
-                    alert('Please choose a daily action before continuing.');
-                    return;
-                }
-                wizardData.dailyAction = dailyAction;
-                
-                document.getElementById('bigGoalSummary').textContent = wizardData.bigGoal;
-                document.getElementById('dailyActionSummary').textContent = wizardData.dailyAction;
-                
-                showStep(3);
-            }
-        }
-
-        function prevStep() {
-            if (currentStep > 1) {
-                showStep(currentStep - 1);
-            }
-        }
-
-        async function createGoals() {
-            try {
-                const button = event.target;
-                const originalText = button.textContent;
-                button.textContent = 'Creating Goal...';
-                button.disabled = true;
-                
-                const goalData = {
-                    area: currentArea,
-                    bigGoal: wizardData.bigGoal,
-                    dailyAction: wizardData.dailyAction,
-                    createdAt: new Date().toISOString()
-                };
-                
-                await saveGoalToBackend(goalData);
-                closeWizard();
-                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress.`);
-                await loadGoalsOverview();
-                
-            } catch (error) {
-                console.error('Error creating goal:', error);
-                showErrorMessage('There was an error creating your goal. Please try again.');
-                
-                const button = event.target;
-                button.textContent = 'Create My Goal! 🎯';
-                button.disabled = false;
-            }
-        }
-
-        // FIXED Delete Functions - No more event.target issues
-        function deleteGoalClick(goalId, goalData) {
-            console.log('Delete goal clicked:', goalId, goalData);
-            
-            try {
-                // Store the goal info globally
-                goalToDelete = {
-                    id: goalId,
-                    data: goalData
-                };
-                
-                const goalToDeleteElement = document.getElementById('goalToDelete');
-                const area = goalData.area || 'Unknown';
-                const bigGoal = goalData.bigGoal || 'No description';
-                const dailyAction = goalData.dailyAction || 'No daily action';
-                const streak = goalData.streak || 0;
-                
-                goalToDeleteElement.innerHTML = `
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
-                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${escapeHtml(bigGoal)}</p>
-                    <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${escapeHtml(dailyAction)}</p>
-                    ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
-                `;
-                
-                document.getElementById('deleteConfirmModal').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                
-            } catch (error) {
-                console.error('Error opening delete modal:', error);
-                showErrorMessage('Error processing goal data. Please refresh the page.');
-            }
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteConfirmModal').style.display = 'none';
-            document.body.style.overflow = '';
-            goalToDelete = null;
-        }
-
-        async function confirmDeleteGoal() {
-            console.log('Confirm delete called, goalToDelete:', goalToDelete);
-            
-            if (!goalToDelete || !goalToDelete.data) {
-                console.error('No goal selected for deletion');
-                showErrorMessage('Error: No goal selected for deletion.');
-                return;
-            }
-
-            try {
-                // Get the button directly by ID instead of using event.target
-                const deleteBtn = document.getElementById('confirmDeleteBtn');
-                if (deleteBtn) {
-                    const originalText = deleteBtn.textContent;
-                    deleteBtn.textContent = 'Deleting...';
-                    deleteBtn.disabled = true;
-                    
-                    // Reset button after operation
-                    const resetButton = () => {
-                        deleteBtn.textContent = originalText;
-                        deleteBtn.disabled = false;
-                    };
-                    
-                    await deleteGoalFromBackend(goalToDelete.id);
-                    closeDeleteModal();
-
-                    const area = goalToDelete.data.area || 'goal';
-                    showSuccessMessage(`Your ${area} goal has been deleted.`);
-                    await loadGoalsOverview();
-                } else {
-                    console.error('Could not find delete button');
-                    await deleteGoalFromBackend(goalToDelete.id);
-                    closeDeleteModal();
-                    showSuccessMessage('Goal has been deleted.');
-                    await loadGoalsOverview();
-                }
-
-            } catch (error) {
-                console.error('Error deleting goal:', error);
-                showErrorMessage('There was an error deleting your goal. Please try again.');
-
-                // Reset button on error
-                const deleteBtn = document.getElementById('confirmDeleteBtn');
-                if (deleteBtn) {
-                    deleteBtn.textContent = 'Delete Goal';
-                    deleteBtn.disabled = false;
-                }
-            }
-        }
-
-        // Utility Functions
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Backend Functions
-        async function saveGoalToBackend(goalData) {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
-
-                const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(goalData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save goal to backend');
-                }
-
-                const result = await response.json();
-                console.log('Goal saved successfully:', result);
-                return result;
-                
-            } catch (error) {
-                console.error('Backend save failed, using localStorage fallback:', error);
-                
-                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                if (!existingGoals[goalData.area]) {
-                    existingGoals[goalData.area] = [];
-                }
-                existingGoals[goalData.area].push({
-                    ...goalData,
-                    id: Date.now().toString()
-                });
-                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
-            }
-        }
-
-        async function deleteGoalFromBackend(goalId) {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
-
-                console.log('Attempting to delete goal:', goalId);
-                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to delete goal from backend: ${response.status} ${response.statusText}`);
-                }
-
-                console.log('Goal deleted successfully from backend');
-                
-            } catch (error) {
-                console.error('Backend delete failed, using localStorage fallback:', error);
-                
-                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                Object.keys(existingGoals).forEach(area => {
-                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId && goal._id !== goalId);
-                });
-                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
-            }
-        }
-
-        async function loadGoalsOverview() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                let goals = {};
-
-                if (token) {
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        if (response.ok) {
-                            const backendGoals = await response.json();
-                            console.log('Loaded goals from backend:', backendGoals);
-                            backendGoals.forEach(goal => {
-                                if (!goals[goal.area]) goals[goal.area] = [];
-                                goals[goal.area].push(goal);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Failed to load from backend:', error);
-                    }
-                }
-
-                if (Object.keys(goals).length === 0) {
-                    goals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                }
-
-                const overviewContainer = document.getElementById('goalsOverview');
-                
-                if (Object.keys(goals).length === 0) {
-                    overviewContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>';
-                    return;
-                }
-                
-                let html = '';
-                Object.entries(goals).forEach(([area, areaGoals]) => {
-                    const config = areaConfig[area];
-                    
-                    html += `
-                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
-                    `;
-                    
-                    areaGoals.forEach((goal) => {
-                        const streakDisplay = goal.streak || 0;
-                        const goalId = goal._id || goal.id;
-                        
-                        // Create a clean goal object for passing to delete function
-                        const cleanGoal = {
-                            area: goal.area || area,
-                            bigGoal: goal.bigGoal || 'No description',
-                            dailyAction: goal.dailyAction || 'No daily action',
-                            streak: goal.streak || 0
-                        };
-                        
-                        html += `
-                            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
-                                <button onclick="deleteGoalClick('${goalId}', ${JSON.stringify(cleanGoal).replace(/"/g, '&quot;')})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
-                                
-                                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${escapeHtml(goal.bigGoal)}</p>
-                                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${escapeHtml(goal.dailyAction)}</p>
-                                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
-                                    <div style="display: flex; gap: 1rem;">
-                                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
-                                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
-                                    </div>
-                                    <div style="text-align: center;">
-                                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div>`;
-                    updateAreaStats(area, areaGoals);
-                });
-                
-                overviewContainer.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading goals overview:', error);
-                document.getElementById('goalsOverview').innerHTML = '<p style="text-align: center; color: var(--error); padding: 2rem;">Error loading goals. Please refresh the page.</p>';
-            }
-        }
-
-        function updateAreaStats(area, goals) {
-            const goalsElement = document.getElementById(`${area}-goals`);
-            const progressElement = document.getElementById(`${area}-progress`);
-            
-            if (goalsElement) goalsElement.textContent = goals.length;
-            if (progressElement) {
-                let completedToday = 0;
-                const totalGoals = goals.length;
-                
-                goals.forEach(goal => {
-                    if (goal.lastCompletedDate) {
-                        const lastCompleted = new Date(goal.lastCompletedDate);
-                        const today = new Date();
-                        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                        
-                        if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
-                            completedToday++;
-                        }
-                    }
-                });
-                
-                progressElement.textContent = `${completedToday}/${totalGoals}`;
-            }
-        }
-
-        // Utility Functions
-        function showSuccessMessage(message) {
-            showToast(message, 'success');
-        }
-
-        function showErrorMessage(message) {
-            showToast(message, 'error');
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'var(--success)' : 'var(--error)';
-            
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 2rem;
-                right: 2rem;
-                background: ${bgColor};
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                z-index: 10000;
-                max-width: 400px;
-                font-weight: 500;
-                animation: slideInRight 0.3s ease-out;
-            `;
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideOutRight 0.3s ease-out';
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        function adjustBrightness(color, percent) {
-            const num = parseInt(color.replace('#', ''), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-        }
-
-        // Navigation Functions
-        function goToDailyTracker() {
-            window.location.href = 'daily-tracker.html';
-        }
-
-        function goToNotifications() {
-            window.location.href = 'notifications.html';
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            sidebar.classList.toggle('open');
-            
-            if (window.innerWidth > 768) {
-                mainContent.classList.toggle('shifted');
-            }
-        }
-
-        // Notification Functions
-        async function updateNotificationCount() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return;
-                
-                const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count || 0;
-                    const countElement = document.getElementById('headerNotificationCount');
-                    
-                    if (countElement) {
-                        countElement.textContent = count;
-                        countElement.setAttribute('data-count', count);
-                        countElement.style.display = count > 0 ? 'flex' : 'none';
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching notification count:', error);
-            }
-        }
-
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from { opacity: 0; transform: translateX(100px); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-            
-            @keyframes slideOutRight {
-                from { opacity: 1; transform: translateX(0); }
-                to { opacity: 0; transform: translateX(100px); }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Event Listeners
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.id === 'bigGoalInput') {
-                e.preventDefault();
-                nextStep();
-            }
-            
-            if (e.key === 'Enter' && e.target.id === 'dailyActionInput') {
-                e.preventDefault();
-                nextStep();
-            }
-            
-            if (e.key === 'Escape') {
-                if (document.getElementById('goalWizardModal').style.display === 'block') {
-                    closeWizard();
-                }
-                if (document.getElementById('deleteConfirmModal').style.display === 'block') {
-                    closeDeleteModal();
-                }
-            }
-        });
-
-        document.addEventListener('click', function(e) {
-            const goalWizardModal = document.getElementById('goalWizardModal');
-            const deleteModal = document.getElementById('deleteConfirmModal');
-            
-            if (e.target === goalWizardModal) {
-                closeWizard();
-            }
-            
-            if (e.target === deleteModal) {
-                closeDeleteModal();
-            }
-        });
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Goals page loading...');
-            loadGoalsOverview();
-            updateNotificationCount();
-            setInterval(updateNotificationCount, 30000);
-            console.log('✅ Goals page initialized');
-        });
-
-    </script>
-</body>
-</html>
