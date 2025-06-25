@@ -631,4 +631,431 @@ async function createRoom() {
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             method: 'POST',
             headers: {
-                'Authorization': `
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: roomName.trim(),
+                description: roomDescription.trim()
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Failed to create room: ${response.status}`);
+        }
+
+        const newRoom = await response.json();
+        console.log('🆕 Room created successfully:', newRoom.name);
+
+        // Reload rooms
+        await loadRooms();
+        
+        // Switch to the new room
+        switchRoom(newRoom._id);
+
+    } catch (error) {
+        console.error('❌ Error creating room:', error);
+        showErrorMessage('Failed to create room. Please try again.');
+    }
+}
+
+// Delete a room - WITH TIMEOUT
+async function deleteRoom(roomId) {
+    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete room: ${response.status}`);
+        }
+
+        console.log('🗑️ Room deleted successfully');
+
+        // If we were in the deleted room, switch to General Discussion
+        if (currentRoomId === roomId) {
+            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+            if (generalRoom) {
+                switchRoom(generalRoom._id);
+            }
+        }
+
+        // Reload rooms
+        await loadRooms();
+
+    } catch (error) {
+        console.error('❌ Error deleting room:', error);
+        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
+    }
+}
+
+// Error message function
+function showErrorMessage(message) {
+    const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 1024;
+    
+    toast.style.cssText = `
+        position: fixed;
+        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
+        background: #ef4444;
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-weight: 500;
+    `;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 4000);
+}
+
+// FIXED EMOJI FUNCTIONS - Proper positioning
+function toggleEmoji() {
+    const emojiModal = document.getElementById('emojiModal');
+    if (!emojiModal) return;
+    
+    const isVisible = emojiModal.style.display === 'block';
+    
+    if (isVisible) {
+        emojiModal.style.display = 'none';
+    } else {
+        // Position emoji modal properly
+        emojiModal.style.display = 'block';
+        
+        // Make sure it's positioned correctly
+        emojiModal.style.position = 'fixed';
+        emojiModal.style.bottom = '120px';
+        emojiModal.style.right = '20px';
+        emojiModal.style.zIndex = '9998';
+    }
+}
+
+function insertEmoji(emoji) {
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const cursorPos = messageInput.selectionStart || messageInput.value.length;
+        const textBefore = messageInput.value.substring(0, cursorPos);
+        const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+        messageInput.value = textBefore + emoji + textAfter;
+        
+        const newPos = cursorPos + emoji.length;
+        messageInput.setSelectionRange(newPos, newPos);
+        messageInput.focus();
+    }
+    
+    // Close emoji modal
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+    }
+}
+
+// FIXED SEARCH FUNCTIONALITY - Instant results with proper positioning
+let searchTimeout;
+let allMessages = [];
+
+async function performSearch(query) {
+    // Clear previous timeout
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    // If empty query, hide results
+    if (!query || query.trim().length === 0) {
+        closeSearch();
+        return;
+    }
+
+    // Debounce search for instant feel
+    searchTimeout = setTimeout(async () => {
+        await executeSearch(query.trim());
+    }, 200); // Reduced delay for more instant feel
+}
+
+async function executeSearch(query) {
+    try {
+        const searchResults = document.getElementById('searchResults');
+        const searchContent = document.getElementById('searchContent');
+        
+        if (!searchResults || !searchContent) return;
+
+        // Show loading in search results with proper positioning
+        searchResults.style.display = 'block';
+        searchResults.style.position = 'fixed';
+        searchResults.style.top = '120px';
+        searchResults.style.right = '20px';
+        searchResults.style.zIndex = '9999';
+        
+        searchContent.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                <p>🔍 Searching...</p>
+            </div>
+        `;
+
+        // Get all messages from current room
+        if (!currentRoomId) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                    <p>Please select a room first</p>
+                </div>
+            `;
+            return;
+        }
+
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        // Add timeout for search request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch messages for search');
+        }
+
+        allMessages = await response.json();
+
+        // Filter messages based on query (case-insensitive)
+        const filteredMessages = allMessages.filter(message => {
+            const content = (message.content || message.message || '').toLowerCase();
+            const username = (message.username || '').toLowerCase();
+            const queryLower = query.toLowerCase();
+            return content.includes(queryLower) || username.includes(queryLower);
+        });
+
+        // Display results
+        if (filteredMessages.length === 0) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                    <p>❌ No messages found for "${query}"</p>
+                    <small style="opacity: 0.7;">Try different keywords</small>
+                </div>
+            `;
+        } else {
+            searchContent.innerHTML = '';
+            
+            // Show results counter
+            const header = document.createElement('div');
+            header.style.cssText = 'padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.1); border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--primary); font-weight: 600;';
+            header.textContent = `Found ${filteredMessages.length} result${filteredMessages.length !== 1 ? 's' : ''}`;
+            searchContent.appendChild(header);
+            
+            // Show up to 8 results for better performance
+            filteredMessages.slice(0, 8).forEach(message => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                
+                const content = message.content || message.message || '';
+                
+                // Highlight search terms (improved)
+                const highlightedContent = content.replace(
+                    new RegExp(`(${query})`, 'gi'), 
+                    `<mark style="background: #ffd700; color: #000; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600;">$1</mark>`
+                );
+                
+                const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+                const username = message.username || 'User';
+                
+                resultItem.innerHTML = `
+                    <div style="padding: 0.875rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;" 
+                         onclick="scrollToMessage('${message._id}')"
+                         onmouseover="this.style.background='rgba(99, 102, 241, 0.05)'; this.style.transform='translateX(4px)'"
+                         onmouseout="this.style.background=''; this.style.transform='translateX(0)'">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <strong style="color: var(--primary); font-size: 0.9rem;">${username}</strong>
+                            <span style="color: var(--text-muted); font-size: 0.75rem;">${timestamp}</span>
+                        </div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.85rem; line-height: 1.4; word-break: break-word;">${highlightedContent}</p>
+                    </div>
+                `;
+                
+                searchContent.appendChild(resultItem);
+            });
+
+            // Show "more results" if applicable
+            if (filteredMessages.length > 8) {
+                const moreResults = document.createElement('div');
+                moreResults.style.cssText = 'text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); background: var(--surface);';
+                moreResults.textContent = `... and ${filteredMessages.length - 8} more results`;
+                searchContent.appendChild(moreResults);
+            }
+        }
+
+    } catch (error) {
+        console.error('Search error:', error);
+        const searchContent = document.getElementById('searchContent');
+        if (searchContent) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1.5rem; color: var(--error);">
+                    <p>⚠️ Search failed</p>
+                    <small style="opacity: 0.8;">Please try again</small>
+                </div>
+            `;
+        }
+    }
+}
+
+function scrollToMessage(messageId) {
+    // Close search first
+    closeSearch();
+    
+    // In the future, you could implement actual scrolling to specific messages
+    console.log('Scrolling to message:', messageId);
+    
+    // For now, just show a toast
+    showErrorMessage('Message found! (Scroll-to feature coming soon)');
+}
+
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('desktopSearchInput');
+    
+    if (searchResults) {
+        searchResults.style.display = 'none';
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Clear search data
+    allMessages = [];
+}
+
+// Logout function
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+// Enhanced event listeners with proper cleanup
+function initializeEventListeners() {
+    console.log('🚀 Initializing event listeners');
+    
+    // Close modals when clicking outside (improved)
+    document.addEventListener('click', function(event) {
+        // Close emoji modal
+        const emojiModal = document.getElementById('emojiModal');
+        const emojiBtn = event.target.closest('#emojiBtn');
+        
+        if (emojiModal && emojiModal.style.display === 'block' && 
+            !emojiModal.contains(event.target) && !emojiBtn) {
+            emojiModal.style.display = 'none';
+        }
+
+        // Close search results when clicking outside
+        const searchResults = document.getElementById('searchResults');
+        const searchContainer = event.target.closest('.desktop-search-container');
+        
+        if (searchResults && searchResults.style.display === 'block' && 
+            !searchResults.contains(event.target) && !searchContainer) {
+            closeSearch();
+        }
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(event) {
+        // Escape key closes modals
+        if (event.key === 'Escape') {
+            closeSearch();
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+            }
+        }
+        
+        // Ctrl/Cmd + K focuses search (desktop only)
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k' && window.innerWidth > 1024) {
+            event.preventDefault();
+            const searchInput = document.getElementById('desktopSearchInput');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+    });
+    
+    console.log('✅ Event listeners initialized');
+}
+
+// Auto-refresh messages every 30 seconds (only if initialized)
+setInterval(async () => {
+    if (currentRoomId && isInitialized) {
+        try {
+            await loadMessages(currentRoomId);
+        } catch (error) {
+            console.log('⚠️ Auto-refresh failed, will try again next time');
+        }
+    }
+}, 30000);
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEventListeners);
+} else {
+    initializeEventListeners();
+}
+
+// Export functions for global access
+window.updateRoomsList = updateRoomsList;
+window.switchRoom = switchRoom;
+window.sendCommunityMessage = sendCommunityMessage;
+window.handleCommunityKeyPress = handleCommunityKeyPress;
+window.createRoom = createRoom;
+window.deleteRoom = deleteRoom;
+window.toggleEmoji = toggleEmoji;
+window.insertEmoji = insertEmoji;
+window.performSearch = performSearch;
+window.closeSearch = closeSearch;
+window.initializeCommunity = initializeCommunity;
+window.retryInitialization = retryInitialization;
+window.logout = logout;
+window.formatMessageTime = formatMessageTime;
+window.scrollToMessage = scrollToMessage;
+
+// Export global variables
+window.currentRoomId = currentRoomId;
+window.rooms = rooms;
+
+console.log('✅ Community.js loaded - FIXED VERSION with proper emoji positioning, desktop search, and mobile scrolling!');
