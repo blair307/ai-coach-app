@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life Goals - Entrepreneur Emotional Health</title>
+    <title>Dashboard - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -21,10 +21,10 @@
                 <h2>EEH</h2>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
+                <li><a href="dashboard.html" class="menu-item active">Dashboard</a></li>
                 <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
                 <li><a href="community.html" class="menu-item">Community</a></li>
-                <li><a href="goals.html" class="menu-item active">Goals</a></li>
+                <li><a href="goals.html" class="menu-item">Goals</a></li>
                 <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
                 <li><a href="billing.html" class="menu-item">Billing</a></li>
                 <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
@@ -33,959 +33,1003 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <!-- Header -->
             <header class="content-header">
-                <h1>Life Goals</h1>
+                <h1>Dashboard</h1>
                 <div class="header-actions">
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
                            <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> 
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
-                           </svg>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
+                            </svg>
                             <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
                         </div>
                     </div>
+                    
+                    <button class="btn btn-primary" onclick="startCoachingSession()">
+                        Start Coaching Session
+                    </button>
                 </div>
             </header>
 
-            <!-- Goals Hero Section -->
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; margin: -2rem -2rem 3rem -2rem; border-radius: 0 0 16px 16px;">
-                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 800;">Transform Your Life</h1>
-                <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Set meaningful goals across all areas of your life and track your daily progress toward becoming your best self.</p>
+         <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- 1. Progress Overview - FIXED -->
+                <div class="dashboard-card">
+                    <h3>Your Progress</h3>
+                    <div class="stats-grid">
+                        <div class="stat">
+                            <div class="stat-number" id="coachingSessionsCount">0</div>
+                            <div class="stat-label">Coaching Sessions</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="activeDaysCount">1</div>
+                            <div class="stat-label">Days Active</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="communityPostsCount">0</div>
+                            <div class="stat-label">Community Posts</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number" id="activeGoalsCount">0</div>
+                            <div class="stat-label">Total Goals</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Combined Timer and Calendar Section -->
+                <div class="dashboard-card">
+                    <h3>Timer & Schedule</h3>
+                    
+                    <!-- Countdown Timer Display -->
+                    <div class="timer-display">
+                        <div class="countdown-container" id="countdownContainer">
+                            <div class="countdown-label">Next Meeting In:</div>
+                            <div class="countdown-timer" id="countdownTimer">--:--:--</div>
+                            <div class="countdown-date" id="countdownDate">Loading...</div>
+                        </div>
+                        <div class="no-meeting" id="noMeeting" style="display: none;">
+                            <div class="no-meeting-text">No upcoming meetings</div>
+                            <div class="current-time" id="currentTime">--:--:-- --</div>
+                            <div class="current-date" id="currentDate">Loading...</div>
+                        </div>
+                        <div class="timezone">Central Time (CST/CDT)</div>
+                    </div>
+                    
+                    <!-- Compact Calendar -->
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <button class="calendar-nav" id="prevMonth">‹</button>
+                            <h4 id="currentMonth">July 2025</h4>
+                            <button class="calendar-nav" id="nextMonth">›</button>
+                        </div>
+                        <div class="compact-calendar">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">S</div>
+                                <div class="weekday">M</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">W</div>
+                                <div class="weekday">T</div>
+                                <div class="weekday">F</div>
+                                <div class="weekday">S</div>
+                            </div>
+                            <div class="calendar-days" id="calendarDays">
+                                <!-- Days will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        <div class="meeting-legend">
+                            <span class="legend-item">
+                                <span class="legend-dot meeting-day"></span>
+                                Meeting Day
+                            </span>
+                            <span class="legend-item">
+                                <span class="legend-dot today"></span>
+                                Today
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Life Goals Card -->
+                <div class="dashboard-card">
+                    <h3>Life Goals</h3>
+                    <div id="goalsCardContent">
+                        <p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading goals...</p>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <button onclick="window.location.href='goals.html'" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem;">
+                            Create a Goal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. Recent Activity -->
+                <div class="dashboard-card">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list">
+                        <div class="activity-item">
+                            <div class="activity-content">
+                                <p>Visited dashboard today</p>
+                                <small>Just now</small>
+                            </div>
+                        </div>
+                        <div class="activity-item" id="lastCoachingActivity" style="display: none;">
+                            <div class="activity-content">
+                                <p>Had coaching session</p>
+                                <small>Recently</small>
+                            </div>
+                        </div>
+                        <div class="activity-item" id="lastCommunityActivity" style="display: none;">
+                            <div class="activity-content">
+                                <p>Posted in community</p>
+                                <small>Recently</small>
+                            </div>
+                        </div>
+                        <div class="activity-item" id="lastGoalActivity" style="display: none;">
+                            <div class="activity-content">
+                                <p>Updated goals</p>
+                                <small>Recently</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#" class="view-all-link">View All Activity</a>
+                </div>
+
+                <!-- 5. Notifications Preview -->
+                <div class="dashboard-card">
+                    <h3>Recent Notifications</h3>
+                    <div class="notifications-preview">
+                        <div class="notification-item">
+                            <div class="notification-content">
+                                <p>Welcome to your dashboard!</p>
+                                <small>Just now</small>
+                            </div>
+                        </div>
+                        <div class="notification-item">
+                            <div class="notification-content">
+                                <p>Start by setting your first goal</p>
+                                <small>1 minute ago</small>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="notifications.html" class="view-all-link">View All Notifications</a>
+                </div>
+
+                <!-- 6. Weekly Insights -->
+                <div class="dashboard-card">
+                    <h3>Recent Insights</h3>
+                    <div class="insights-list" id="insightsList">
+                        <div class="empty-insights" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Start chatting with your AI coach to generate personalized insights!</p>
+                            <button class="btn btn-primary btn-small" onclick="startCoachingSession()" style="margin-top: 1rem;">
+                                Start Your First Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <!-- Life Areas Grid -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;" id="lifeAreasGrid">
-                
-                <!-- Mind Card -->
-                <div class="life-area-card" data-area="mind" onclick="openGoalWizard('mind')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #8b5cf6; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(139, 92, 246, 0.15)'; this.style.borderColor='#8b5cf6';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #8b5cf6;">Mind</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Mental clarity, learning, mindfulness, and intellectual growth</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="mind-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="mind-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Spirit Card -->
-                <div class="life-area-card" data-area="spirit" onclick="openGoalWizard('spirit')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #06b6d4; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(6, 182, 212, 0.15)'; this.style.borderColor='#06b6d4';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #06b6d4;">Spirit</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Purpose, values, inner peace, and spiritual connection</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #06b6d4; display: block;" id="spirit-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="spirit-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Body Card -->
-                <div class="life-area-card" data-area="body" onclick="openGoalWizard('body')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(16, 185, 129, 0.15)'; this.style.borderColor='#10b981';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #10b981;">Body</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Health, fitness, nutrition, and physical well-being</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #10b981; display: block;" id="body-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="body-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Work Card -->
-                <div class="life-area-card" data-area="work" onclick="openGoalWizard('work')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f59e0b; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(245, 158, 11, 0.15)'; this.style.borderColor='#f59e0b';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #f59e0b;">Work</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Career growth, business goals, and professional development</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #f59e0b; display: block;" id="work-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="work-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Relationships Card -->
-                <div class="life-area-card" data-area="relationships" onclick="openGoalWizard('relationships')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #ec4899; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(236, 72, 153, 0.15)'; this.style.borderColor='#ec4899';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #ec4899;">Relationships</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Family, friends, romantic relationships, and social connections</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #ec4899; display: block;" id="relationships-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="relationships-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fun Card -->
-                <div class="life-area-card" data-area="fun" onclick="openGoalWizard('fun')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #f97316; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(249, 115, 22, 0.15)'; this.style.borderColor='#f97316';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #f97316;">Fun</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Hobbies, recreation, adventure, and life enjoyment</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #f97316; display: block;" id="fun-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="fun-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Finances Card -->
-                <div class="life-area-card" data-area="finances" onclick="openGoalWizard('finances')" style="background: var(--background); border-radius: 16px; padding: 2rem; cursor: pointer; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); border: 2px solid transparent; min-height: 200px; display: flex; flex-direction: column; text-align: center; position: relative; border-top: 6px solid #059669; box-shadow: 0 4px 6px rgba(0,0,0,0.05);" onmouseover="this.style.transform='translateY(-8px)'; this.style.boxShadow='0 20px 40px rgba(5, 150, 105, 0.15)'; this.style.borderColor='#059669';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.05)'; this.style.borderColor='transparent';">
-                    <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1rem; color: #059669;">Finances</h3>
-                    <p style="color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem; flex: 1;">Money management, savings, investments, and financial freedom</p>
-                    <div style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border);">
-                        <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #059669; display: block;" id="finances-goals">0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
-                        </div>
-                        <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="finances-progress">0/0</span>
-                            <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Goals Overview Section -->
-            <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border);">
-                <h2 style="margin-bottom: 1.5rem; color: var(--text-primary);">Your Goals Overview</h2>
-                <div id="goalsOverview">
-                    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>
-                </div>
-            </div>
-
         </main>
     </div>
 
-    <!-- Goal Wizard Modal -->
-    <div id="goalWizardModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
-        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-            <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
-                
-                <!-- Modal Header -->
-                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
-                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
-                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
+    <!-- Meeting Card Modal -->
+    <div class="meeting-modal" id="meetingModal" style="display: none;">
+        <div class="meeting-card">
+            <div class="meeting-header">
+                <h3>Weekly Group Meeting</h3>
+                <button class="close-btn" onclick="closeMeetingCard()">×</button>
+            </div>
+            <div class="meeting-details">
+                <div class="meeting-time">
+                    <strong>Time:</strong> <span id="meetingTime">5:30 PM CST</span>
                 </div>
-                
-                <!-- Modal Body -->
-                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
-                    
-                    <!-- Step 1: Big Goal Question -->
-                    <div id="step1" class="wizard-step">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
-                        
-                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
-                        
-                        <div style="margin-top: 1.5rem;">
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
-                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2: Choose ONE Daily Action -->
-                    <div id="step2" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
-                        
-                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
-                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3: Confirmation and Tracker Setup -->
-                    <div id="step3" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
-                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
-                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
-                        </div>
-                    </div>
-                    
+                <div class="meeting-date">
+                    <strong>Date:</strong> <span id="meetingDate">--</span>
                 </div>
+                <div class="meeting-status" id="meetingStatus">
+                    Click to view meeting details
+                </div>
+            </div>
+            <div class="meeting-actions">
+                <button class="btn btn-primary" id="joinMeetingBtn" onclick="joinMeeting()">
+                    Join Meeting
+                </button>
+                <button class="btn btn-secondary" onclick="closeMeetingCard()">
+                    Close
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
-        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
-                
-                <!-- Modal Header -->
-                <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
-                    <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
-                    <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
-                </div>
-                
-                <!-- Modal Body -->
-                <div style="padding: 2rem;">
-                    <p style="color: var(--text-primary); margin-bottom: 1.5rem; line-height: 1.6;">Are you sure you want to delete this goal? All progress and streak data will be permanently lost.</p>
-                    
-                    <div id="goalToDelete" style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                        <!-- Goal details will be populated here -->
-                    </div>
-                    
-                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
-                        <button onclick="closeDeleteModal()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer; font-weight: 500;">Cancel</button>
-                        <button id="confirmDeleteBtn" onclick="confirmDeleteGoal()" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Delete Goal</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <script src="sidebar-toggle.js"></script>
+    <script src="notifications.js"></script>
+    
     <script>
-        // Global variables
-        let currentStep = 1;
-        let currentArea = '';
-        let wizardData = {};
-        let goalToDelete = null;
+    // SIMPLE PROGRESS TRACKER - No complex detective stuff, just working basics
 
-        // API Base URL
-        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
-
-        // Area configurations
-        const areaConfig = {
-            mind: {
-                title: 'Set Your Mind Goals',
-                subtitle: "Let's create meaningful goals for your mental growth",
-                color: '#8b5cf6',
-                description: 'Think big! What would you love to achieve in your mind/mental development over the next year?',
-                examples: [
-                    'Read for 30 minutes every morning',
-                    'Meditate for 10 minutes daily',
-                    'Journal for 15 minutes each night',
-                    'Practice a new skill 3x per week',
-                    'Limit social media to 30 min/day'
-                ]
-            },
-            spirit: {
-                title: 'Set Your Spirit Goals',
-                subtitle: "Let's nurture your inner peace and purpose",
-                color: '#06b6d4',
-                description: 'What spiritual or purpose-driven goals would bring you more peace and fulfillment?',
-                examples: [
-                    'Practice gratitude journaling daily',
-                    'Attend spiritual services weekly',
-                    'Spend time in nature every day',
-                    'Practice mindfulness during meals',
-                    'Volunteer 2 hours per week'
-                ]
-            },
-            body: {
-                title: 'Set Your Body Goals',
-                subtitle: "Let's optimize your physical health and energy",
-                color: '#10b981',
-                description: 'What physical health and fitness goals would make you feel strongest and most energized?',
-                examples: [
-                    'Exercise 4 times per week',
-                    'Drink 8 glasses of water daily',
-                    'Sleep 7-8 hours every night',
-                    'Take a 20-minute walk daily',
-                    'Eat vegetables with every meal'
-                ]
-            },
-            work: {
-                title: 'Set Your Work Goals',
-                subtitle: "Let's advance your career and professional growth",
-                color: '#f59e0b',
-                description: 'What career or business goals would take your professional life to the next level?',
-                examples: [
-                    'Learn something new for 1 hour daily',
-                    'Network with 1 new person per week',
-                    'Complete one course monthly',
-                    'Set work boundaries at 6pm daily',
-                    'Review goals every morning'
-                ]
-            },
-            relationships: {
-                title: 'Set Your Relationship Goals',
-                subtitle: "Let's strengthen your connections with others",
-                color: '#ec4899',
-                description: 'How would you like to improve and deepen your relationships with family, friends, and loved ones?',
-                examples: [
-                    'Have one meaningful conversation daily',
-                    'Call family twice per week',
-                    'Practice active listening daily',
-                    'Say thank you to someone daily',
-                    'Plan quality time weekly'
-                ]
-            },
-            fun: {
-                title: 'Set Your Fun Goals',
-                subtitle: "Let's bring more joy and adventure into your life",
-                color: '#f97316',
-                description: 'What fun activities, hobbies, or adventures would make your life more enjoyable and fulfilling?',
-                examples: [
-                    'Try one new thing weekly',
-                    'Take photos of beautiful moments daily',
-                    'Play music for 30 minutes daily',
-                    'Learn a new hobby weekly',
-                    'Explore somewhere new monthly'
-                ]
-            },
-            finances: {
-                title: 'Set Your Finance Goals',
-                subtitle: "Let's build your financial security and freedom",
-                color: '#059669',
-                description: 'What financial goals would give you more security, freedom, and peace of mind?',
-                examples: [
-                    'Save $20 every day',
-                    'Track expenses for 5 minutes daily',
-                    'Read one financial article weekly',
-                    'Review budget every Sunday',
-                    'Learn about investing daily'
-                ]
-            }
-        };
-
-        // Goal Wizard Functions
-        function openGoalWizard(area) {
-            currentArea = area;
-            currentStep = 1;
-            const config = areaConfig[area];
-            
-            document.getElementById('wizardTitle').textContent = config.title;
-            document.getElementById('wizardSubtitle').textContent = config.subtitle;
-            document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
-            document.getElementById('stepDescription').textContent = config.description;
-            
-            document.getElementById('bigGoalInput').value = '';
-            document.getElementById('dailyActionInput').value = '';
-            showStep(1);
-            
-            document.getElementById('goalWizardModal').style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            setTimeout(() => {
-                document.getElementById('bigGoalInput').focus();
-            }, 100);
+    class SimpleProgressTracker {
+        constructor() {
+            this.storageKey = 'eeh_simple_progress';
+            this.initializeData();
+            this.startTracking();
+            console.log('✅ Simple Progress Tracker initialized');
         }
 
-        function closeWizard() {
-            document.getElementById('goalWizardModal').style.display = 'none';
-            document.body.style.overflow = '';
-            currentStep = 1;
-            currentArea = '';
-            wizardData = {};
-        }
-
-        function showStep(step) {
-            document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
-            document.getElementById(`step${step}`).style.display = 'block';
-            currentStep = step;
+        initializeData() {
+            const stored = localStorage.getItem(this.storageKey);
             
-            if (step === 2) {
-                updateExamples();
-            }
-        }
-
-        function updateExamples() {
-            const config = areaConfig[currentArea];
-            const examplesList = document.getElementById('examplesList');
-            
-            examplesList.innerHTML = '';
-            config.examples.forEach(example => {
-                const exampleBtn = document.createElement('button');
-                exampleBtn.textContent = example;
-                exampleBtn.style.cssText = `
-                    background: var(--background);
-                    border: 2px solid var(--border);
-                    color: var(--text-secondary);
-                    padding: 0.5rem 1rem;
-                    border-radius: 20px;
-                    cursor: pointer;
-                    font-size: 0.875rem;
-                    transition: all 0.2s ease;
-                `;
-                
-                exampleBtn.onclick = () => {
-                    document.getElementById('dailyActionInput').value = example;
-                    examplesList.querySelectorAll('button').forEach(btn => {
-                        btn.style.background = 'var(--background)';
-                        btn.style.borderColor = 'var(--border)';
-                        btn.style.color = 'var(--text-secondary)';
-                    });
-                    exampleBtn.style.background = config.color;
-                    exampleBtn.style.borderColor = config.color;
-                    exampleBtn.style.color = 'white';
-                };
-                
-                exampleBtn.onmouseover = () => {
-                    if (exampleBtn.style.background !== config.color) {
-                        exampleBtn.style.borderColor = config.color;
-                        exampleBtn.style.color = config.color;
-                    }
-                };
-                
-                exampleBtn.onmouseout = () => {
-                    if (exampleBtn.style.background !== config.color) {
-                        exampleBtn.style.borderColor = 'var(--border)';
-                        exampleBtn.style.color = 'var(--text-secondary)';
-                    }
-                };
-                
-                examplesList.appendChild(exampleBtn);
-            });
-        }
-
-        function nextStep() {
-            if (currentStep === 1) {
-                const bigGoal = document.getElementById('bigGoalInput').value.trim();
-                if (!bigGoal) {
-                    alert('Please describe your big goal before continuing.');
-                    return;
+            if (stored) {
+                this.data = JSON.parse(stored);
+                // Convert activeDays array back to Set
+                if (Array.isArray(this.data.activeDays)) {
+                    this.data.activeDays = new Set(this.data.activeDays);
                 }
-                wizardData.bigGoal = bigGoal;
-                showStep(2);
-            } else if (currentStep === 2) {
-                const dailyAction = document.getElementById('dailyActionInput').value.trim();
-                if (!dailyAction) {
-                    alert('Please choose a daily action before continuing.');
-                    return;
-                }
-                wizardData.dailyAction = dailyAction;
-                
-                document.getElementById('bigGoalSummary').textContent = wizardData.bigGoal;
-                document.getElementById('dailyActionSummary').textContent = wizardData.dailyAction;
-                
-                showStep(3);
-            }
-        }
-
-        function prevStep() {
-            if (currentStep > 1) {
-                showStep(currentStep - 1);
-            }
-        }
-
-        async function createGoals() {
-            try {
-                const button = event.target;
-                const originalText = button.textContent;
-                button.textContent = 'Creating Goal...';
-                button.disabled = true;
-                
-                const goalData = {
-                    area: currentArea,
-                    bigGoal: wizardData.bigGoal,
-                    dailyAction: wizardData.dailyAction,
-                    createdAt: new Date().toISOString()
+            } else {
+                this.data = {
+                    coachingSessions: 0,
+                    activeDays: new Set(),
+                    communityPosts: 0,
+                    activeGoals: 0
                 };
-                
-                await saveGoalToBackend(goalData);
-                closeWizard();
-                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress.`);
-                await loadGoalsOverview();
-                
-            } catch (error) {
-                console.error('Error creating goal:', error);
-                showErrorMessage('There was an error creating your goal. Please try again.');
-                
-                const button = event.target;
-                button.textContent = 'Create My Goal! 🎯';
-                button.disabled = false;
+            }
+
+            // Mark today as active
+            this.markActiveToday();
+        }
+
+        save() {
+            const dataToStore = {
+                ...this.data,
+                activeDays: Array.from(this.data.activeDays)
+            };
+            localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
+        }
+
+        markActiveToday() {
+            const today = new Date().toISOString().split('T')[0];
+            if (!this.data.activeDays.has(today)) {
+                this.data.activeDays.add(today);
+                this.save();
+                console.log('📅 Marked today as active:', today);
             }
         }
 
-        // FIXED Delete Functions - No more event.target issues
-        function deleteGoalClick(goalId, goalData) {
-            console.log('Delete goal clicked:', goalId, goalData);
-            
-            try {
-                // Store the goal info globally
-                goalToDelete = {
-                    id: goalId,
-                    data: goalData
-                };
-                
-                const goalToDeleteElement = document.getElementById('goalToDelete');
-                const area = goalData.area || 'Unknown';
-                const bigGoal = goalData.bigGoal || 'No description';
-                const dailyAction = goalData.dailyAction || 'No daily action';
-                const streak = goalData.streak || 0;
-                
-                goalToDeleteElement.innerHTML = `
-                    <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
-                    <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${escapeHtml(bigGoal)}</p>
-                    <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${escapeHtml(dailyAction)}</p>
-                    ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
-                `;
-                
-                document.getElementById('deleteConfirmModal').style.display = 'block';
-                document.body.style.overflow = 'hidden';
-                
-            } catch (error) {
-                console.error('Error opening delete modal:', error);
-                showErrorMessage('Error processing goal data. Please refresh the page.');
-            }
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('deleteConfirmModal').style.display = 'none';
-            document.body.style.overflow = '';
-            goalToDelete = null;
-        }
-
-        async function confirmDeleteGoal() {
-            console.log('Confirm delete called, goalToDelete:', goalToDelete);
-            
-            if (!goalToDelete || !goalToDelete.data) {
-                console.error('No goal selected for deletion');
-                showErrorMessage('Error: No goal selected for deletion.');
-                return;
-            }
-
-            try {
-                // Get the button directly by ID instead of using event.target
-                const deleteBtn = document.getElementById('confirmDeleteBtn');
-                if (deleteBtn) {
-                    const originalText = deleteBtn.textContent;
-                    deleteBtn.textContent = 'Deleting...';
-                    deleteBtn.disabled = true;
-                    
-                    // Reset button after operation
-                    const resetButton = () => {
-                        deleteBtn.textContent = originalText;
-                        deleteBtn.disabled = false;
-                    };
-                    
-                    await deleteGoalFromBackend(goalToDelete.id);
-                    closeDeleteModal();
-
-                    const area = goalToDelete.data.area || 'goal';
-                    showSuccessMessage(`Your ${area} goal has been deleted.`);
-                    await loadGoalsOverview();
-                } else {
-                    console.error('Could not find delete button');
-                    await deleteGoalFromBackend(goalToDelete.id);
-                    closeDeleteModal();
-                    showSuccessMessage('Goal has been deleted.');
-                    await loadGoalsOverview();
-                }
-
-            } catch (error) {
-                console.error('Error deleting goal:', error);
-                showErrorMessage('There was an error deleting your goal. Please try again.');
-
-                // Reset button on error
-                const deleteBtn = document.getElementById('confirmDeleteBtn');
-                if (deleteBtn) {
-                    deleteBtn.textContent = 'Delete Goal';
-                    deleteBtn.disabled = false;
-                }
-            }
-        }
-
-        // Utility Functions
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        // Backend Functions
-        async function saveGoalToBackend(goalData) {
+        // Get coaching sessions from API
+        async getCoachingSessions() {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
+                if (!token) return 0;
 
-                const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
-                    method: 'POST',
+                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(goalData)
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to save goal to backend');
-                }
-
-                const result = await response.json();
-                console.log('Goal saved successfully:', result);
-                return result;
-                
-            } catch (error) {
-                console.error('Backend save failed, using localStorage fallback:', error);
-                
-                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                if (!existingGoals[goalData.area]) {
-                    existingGoals[goalData.area] = [];
-                }
-                existingGoals[goalData.area].push({
-                    ...goalData,
-                    id: Date.now().toString()
-                });
-                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
-            }
-        }
-
-        async function deleteGoalFromBackend(goalId) {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    throw new Error('No authentication token found');
-                }
-
-                console.log('Attempting to delete goal:', goalId);
-                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Failed to delete goal from backend: ${response.status} ${response.statusText}`);
-                }
-
-                console.log('Goal deleted successfully from backend');
-                
-            } catch (error) {
-                console.error('Backend delete failed, using localStorage fallback:', error);
-                
-                const existingGoals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                Object.keys(existingGoals).forEach(area => {
-                    existingGoals[area] = existingGoals[area].filter(goal => goal.id !== goalId && goal._id !== goalId);
-                });
-                localStorage.setItem('lifeGoals', JSON.stringify(existingGoals));
-            }
-        }
-
-        async function loadGoalsOverview() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                let goals = {};
-
-                if (token) {
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            }
-                        });
-
-                        if (response.ok) {
-                            const backendGoals = await response.json();
-                            console.log('Loaded goals from backend:', backendGoals);
-                            backendGoals.forEach(goal => {
-                                if (!goals[goal.area]) goals[goal.area] = [];
-                                goals[goal.area].push(goal);
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Failed to load from backend:', error);
-                    }
-                }
-
-                if (Object.keys(goals).length === 0) {
-                    goals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
-                }
-
-                const overviewContainer = document.getElementById('goalsOverview');
-                
-                if (Object.keys(goals).length === 0) {
-                    overviewContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>';
-                    return;
-                }
-                
-                let html = '';
-                Object.entries(goals).forEach(([area, areaGoals]) => {
-                    const config = areaConfig[area];
-                    
-                    html += `
-                        <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
-                    `;
-                    
-                    areaGoals.forEach((goal) => {
-                        const streakDisplay = goal.streak || 0;
-                        const goalId = goal._id || goal.id;
-                        
-                        // Create a clean goal object for passing to delete function
-                        const cleanGoal = {
-                            area: goal.area || area,
-                            bigGoal: goal.bigGoal || 'No description',
-                            dailyAction: goal.dailyAction || 'No daily action',
-                            streak: goal.streak || 0
-                        };
-                        
-                        html += `
-                            <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
-                                <button onclick="deleteGoalClick('${goalId}', ${JSON.stringify(cleanGoal).replace(/"/g, '&quot;')})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
-                                
-                                <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${escapeHtml(goal.bigGoal)}</p>
-                                <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${escapeHtml(goal.dailyAction)}</p>
-                                <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
-                                    <div style="display: flex; gap: 1rem;">
-                                        <button onclick="goToDailyTracker()" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">View Details</button>
-                                        <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
-                                    </div>
-                                    <div style="text-align: center;">
-                                        <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streakDisplay}</span>
-                                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    
-                    html += `</div>`;
-                    updateAreaStats(area, areaGoals);
-                });
-                
-                overviewContainer.innerHTML = html;
-                
-            } catch (error) {
-                console.error('Error loading goals overview:', error);
-                document.getElementById('goalsOverview').innerHTML = '<p style="text-align: center; color: var(--error); padding: 2rem;">Error loading goals. Please refresh the page.</p>';
-            }
-        }
-
-        function updateAreaStats(area, goals) {
-            const goalsElement = document.getElementById(`${area}-goals`);
-            const progressElement = document.getElementById(`${area}-progress`);
-            
-            if (goalsElement) goalsElement.textContent = goals.length;
-            if (progressElement) {
-                let completedToday = 0;
-                const totalGoals = goals.length;
-                
-                goals.forEach(goal => {
-                    if (goal.lastCompletedDate) {
-                        const lastCompleted = new Date(goal.lastCompletedDate);
-                        const today = new Date();
-                        const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-                        
-                        if (lastCompleted >= todayStart || (goal.streak && goal.streak > 0)) {
-                            completedToday++;
-                        }
-                    }
-                });
-                
-                progressElement.textContent = `${completedToday}/${totalGoals}`;
-            }
-        }
-
-        // Utility Functions
-        function showSuccessMessage(message) {
-            showToast(message, 'success');
-        }
-
-        function showErrorMessage(message) {
-            showToast(message, 'error');
-        }
-
-        function showToast(message, type) {
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'var(--success)' : 'var(--error)';
-            
-            toast.style.cssText = `
-                position: fixed;
-                bottom: 2rem;
-                right: 2rem;
-                background: ${bgColor};
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 12px;
-                box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-                z-index: 10000;
-                max-width: 400px;
-                font-weight: 500;
-                animation: slideInRight 0.3s ease-out;
-            `;
-            toast.textContent = message;
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.animation = 'slideOutRight 0.3s ease-out';
-                setTimeout(() => {
-                    if (toast.parentNode) {
-                        toast.parentNode.removeChild(toast);
-                    }
-                }, 300);
-            }, 4000);
-        }
-
-        function adjustBrightness(color, percent) {
-            const num = parseInt(color.replace('#', ''), 16);
-            const amt = Math.round(2.55 * percent);
-            const R = (num >> 16) + amt;
-            const G = (num >> 8 & 0x00FF) + amt;
-            const B = (num & 0x0000FF) + amt;
-            return '#' + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
-                (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
-                (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1);
-        }
-
-        // Navigation Functions
-        function goToDailyTracker() {
-            window.location.href = 'daily-tracker.html';
-        }
-
-        function goToNotifications() {
-            window.location.href = 'notifications.html';
-        }
-
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
-
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            sidebar.classList.toggle('open');
-            
-            if (window.innerWidth > 768) {
-                mainContent.classList.toggle('shifted');
-            }
-        }
-
-        // Notification Functions
-        async function updateNotificationCount() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return;
-                
-                const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                    signal: AbortSignal.timeout(5000)
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count || 0;
-                    const countElement = document.getElementById('headerNotificationCount');
-                    
-                    if (countElement) {
-                        countElement.textContent = count;
-                        countElement.setAttribute('data-count', count);
-                        countElement.style.display = count > 0 ? 'flex' : 'none';
-                    }
+                    const chatData = await response.json();
+                    const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
+                    const sessions = Math.ceil(userMessages.length / 2);
+                    console.log('🎯 Coaching sessions from API:', sessions);
+                    return sessions;
+                } else {
+                    console.log('API not available for coaching sessions');
+                    return 0;
                 }
             } catch (error) {
-                console.error('Error fetching notification count:', error);
+                console.log('Error getting coaching sessions:', error.message);
+                return 0;
             }
         }
 
-        // Add CSS animations
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideInRight {
-                from { opacity: 0; transform: translateX(100px); }
-                to { opacity: 1; transform: translateX(0); }
-            }
-            
-            @keyframes slideOutRight {
-                from { opacity: 1; transform: translateX(0); }
-                to { opacity: 0; transform: translateX(100px); }
-            }
-        `;
-        document.head.appendChild(style);
+        // Get community posts from API
+        async getCommunityPosts() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return 0;
 
-        // Event Listeners
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.id === 'bigGoalInput') {
-                e.preventDefault();
-                nextStep();
-            }
-            
-            if (e.key === 'Enter' && e.target.id === 'dailyActionInput') {
-                e.preventDefault();
-                nextStep();
-            }
-            
-            if (e.key === 'Escape') {
-                if (document.getElementById('goalWizardModal').style.display === 'block') {
-                    closeWizard();
+                // Get user info
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userId = payload.userId;
+
+                // Get rooms first
+                const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                if (!roomsResponse.ok) return 0;
+                
+                const rooms = await roomsResponse.json();
+                let totalPosts = 0;
+                
+                // Check first 3 rooms for user messages
+                for (const room of rooms.slice(0, 3)) {
+                    try {
+                        const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${room._id}/messages`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            signal: AbortSignal.timeout(3000)
+                        });
+                        
+                        if (messagesResponse.ok) {
+                            const messages = await messagesResponse.json();
+                            const userMessages = messages.filter(msg => msg.userId === userId).length;
+                            totalPosts += userMessages;
+                        }
+                    } catch (roomError) {
+                        // Skip this room
+                    }
                 }
-                if (document.getElementById('deleteConfirmModal').style.display === 'block') {
-                    closeDeleteModal();
+                
+                console.log('💬 Community posts from API:', totalPosts);
+                return totalPosts;
+            } catch (error) {
+                console.log('Error getting community posts:', error.message);
+                return 0;
+            }
+        }
+
+        // Get active goals from API - SAME LOGIC AS LIFE GOALS SECTION
+        async getActiveGoals() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return 0;
+
+                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: AbortSignal.timeout(8000)
+                });
+                
+                if (response.ok) {
+                    const goals = await response.json();
+                    
+                    // IMPORTANT: Count ALL goals, not just active ones
+                    // This matches what the Life Goals section shows in "Total Goals"
+                    const totalGoals = goals.length;
+                    
+                    console.log('🎯 Total goals from API:', totalGoals, '(same as Life Goals section)');
+                    return totalGoals;
+                } else {
+                    console.log('Goals API returned error:', response.status);
+                    return 0;
+                }
+            } catch (error) {
+                console.log('Error getting goals:', error.message);
+                return 0;
+            }
+        }
+
+        // Get days active
+        getDaysActive() {
+            return this.data.activeDays.size;
+        }
+
+        // Update display
+        async updateDisplay() {
+            try {
+                console.log('🔄 Updating progress display...');
+                
+                const coachingSessions = await this.getCoachingSessions();
+                const daysActive = this.getDaysActive();
+                const communityPosts = await this.getCommunityPosts();
+                const activeGoals = await this.getActiveGoals();
+
+                console.log('📊 Progress numbers:', {
+                    coachingSessions,
+                    daysActive, 
+                    communityPosts,
+                    activeGoals
+                });
+
+                // Update DOM
+                const elements = {
+                    coachingSessionsCount: coachingSessions,
+                    activeDaysCount: daysActive,
+                    communityPostsCount: communityPosts,
+                    activeGoalsCount: activeGoals
+                };
+
+                for (const [id, value] of Object.entries(elements)) {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.textContent = value;
+                        element.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            element.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                }
+
+                // Update stored values
+                this.data.coachingSessions = coachingSessions;
+                this.data.communityPosts = communityPosts;
+                this.data.activeGoals = activeGoals;
+                this.save();
+
+                console.log('✅ Progress display updated');
+                
+            } catch (error) {
+                console.error('❌ Error updating display:', error);
+            }
+        }
+
+        startTracking() {
+            // Update immediately
+            setTimeout(() => this.updateDisplay(), 1000);
+            
+            // Update every 30 seconds
+            setInterval(() => this.updateDisplay(), 30000);
+
+            // Update when page becomes visible
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    this.markActiveToday();
+                    setTimeout(() => this.updateDisplay(), 1000);
+                }
+            });
+        }
+
+        // Manual refresh
+        async forceUpdate() {
+            console.log('🔄 Force updating...');
+            await this.updateDisplay();
+        }
+
+        getSummary() {
+            return {
+                coachingSessions: this.data.coachingSessions,
+                daysActive: this.getDaysActive(),
+                communityPosts: this.data.communityPosts,
+                activeGoals: this.data.activeGoals
+            };
+        }
+    }
+
+    // Simple test function
+    function simulateActivity() {
+        console.log('🧪 Testing with fake data...');
+        
+        // Create fake chat history
+        const fakeChat = [
+            { role: 'user', content: 'Hello', timestamp: new Date().toISOString() },
+            { role: 'assistant', content: 'Hi!', timestamp: new Date().toISOString() },
+            { role: 'user', content: 'How are you?', timestamp: new Date().toISOString() },
+            { role: 'assistant', content: 'Good!', timestamp: new Date().toISOString() }
+        ];
+        localStorage.setItem('fake_chat_test', JSON.stringify(fakeChat));
+        
+        // Update display
+        if (window.progressTracker) {
+            window.progressTracker.forceUpdate();
+        }
+    }
+
+    // Dashboard Goals Loading
+    async function loadDashboardGoals() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const goalsCardContent = document.getElementById('goalsCardContent');
+            
+            if (!token) {
+                if (goalsCardContent) {
+                    goalsCardContent.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Please log in to view your goals</p>';
+                }
+                return;
+            }
+
+            if (goalsCardContent) {
+                goalsCardContent.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading goals...</p>';
+            }
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to load goals');
+            }
+
+            const goals = await response.json();
+            
+            if (!goalsCardContent) return;
+            
+            if (goals.length === 0) {
+                goalsCardContent.innerHTML = `
+                    <div style="text-align: center; padding: 1rem;">
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">No goals set yet</p>
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎯</div>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary);">Start your journey by creating your first life goal!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Calculate stats
+            const totalGoals = goals.length;
+            const totalStreak = goals.reduce((sum, goal) => sum + (goal.streak || 0), 0);
+            const activeGoals = goals.filter(goal => (goal.streak || 0) > 0).length;
+
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">${totalGoals}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Goals</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--success);">${activeGoals}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Active Streaks</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--warning);">${totalStreak}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Days</div>
+                    </div>
+                </div>
+            `;
+
+            // Show recent goals (limit to 3)
+            const recentGoals = goals.slice(0, 3);
+            html += '<div style="display: flex; flex-direction: column; gap: 0.75rem;">';
+            
+            recentGoals.forEach(goal => {
+                const areaColors = {
+                    mind: '#8b5cf6',
+                    spirit: '#06b6d4', 
+                    body: '#10b981',
+                    work: '#f59e0b',
+                    relationships: '#ec4899',
+                    fun: '#f97316',
+                    finances: '#059669'
+                };
+                
+                const color = areaColors[goal.area] || '#6366f1';
+                
+                html += `
+                    <div style="padding: 0.75rem; background: var(--surface); border-radius: 8px; border-left: 3px solid ${color};">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: var(--text-primary); font-size: 0.875rem; text-transform: capitalize; margin-bottom: 0.25rem;">${goal.area}</div>
+                                <div style="color: var(--text-secondary); font-size: 0.8rem; line-height: 1.3;">${goal.dailyAction}</div>
+                            </div>
+                            <div style="text-align: center; margin-left: 1rem;">
+                                <div style="font-size: 1.2rem; font-weight: 700; color: ${color};">${goal.streak || 0}</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted);">streak</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+
+            if (goals.length > 3) {
+                html += `<div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                    <a href="goals.html" style="color: var(--primary); text-decoration: none; font-size: 0.875rem; font-weight: 500;">View all ${goals.length} goals →</a>
+                </div>`;
+            }
+
+            goalsCardContent.innerHTML = html;
+
+        } catch (error) {
+            console.error('Error loading dashboard goals:', error);
+            const goalsCardContent = document.getElementById('goalsCardContent');
+            if (goalsCardContent) {
+                goalsCardContent.innerHTML = '<p style="text-align: center; color: var(--error); padding: 1rem;">Error loading goals</p>';
+            }
+        }
+    }
+
+    // Notification counter
+    async function updateNotificationCount() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return;
+            
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                const count = data.count || 0;
+                const countElement = document.getElementById('headerNotificationCount');
+                
+                if (countElement) {
+                    countElement.textContent = count;
+                    countElement.setAttribute('data-count', count);
+                    countElement.style.display = count > 0 ? 'flex' : 'none';
                 }
             }
-        });
+        } catch (error) {
+            console.error('Error fetching notification count:', error);
+        }
+    }
 
-        document.addEventListener('click', function(e) {
-            const goalWizardModal = document.getElementById('goalWizardModal');
-            const deleteModal = document.getElementById('deleteConfirmModal');
-            
-            if (e.target === goalWizardModal) {
-                closeWizard();
-            }
-            
-            if (e.target === deleteModal) {
-                closeDeleteModal();
-            }
-        });
+    // Navigation functions
+    function goToNotifications() {
+        window.location.href = 'notifications.html';
+    }
 
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Goals page loading...');
-            loadGoalsOverview();
+    function startCoachingSession() {
+        window.location.href = 'ai-coach.html';
+    }
+
+    function logout() {
+        localStorage.clear();
+        window.location.href = 'index.html';
+    }
+
+    // Initialize everything
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Dashboard loading...');
+        
+        try {
+            // Initialize progress tracker
+            window.progressTracker = new SimpleProgressTracker();
+            
+            // Make functions globally available
+            window.updateProgress = () => window.progressTracker.forceUpdate();
+            window.getProgressSummary = () => window.progressTracker.getSummary();
+            window.simulateActivity = simulateActivity;
+            
+            // Load other components
             updateNotificationCount();
             setInterval(updateNotificationCount, 30000);
-            console.log('✅ Goals page initialized');
-        });
+            
+            setTimeout(loadDashboardGoals, 1500);
+            
+            console.log('✅ Dashboard initialized successfully');
+            
+        } catch (error) {
+            console.error('❌ Error initializing dashboard:', error);
+        }
+    });
 
+    // Timer and Calendar Code - FULL MEETING FUNCTIONALITY
+    let currentDate = new Date();
+    let selectedMeetingDate = null;
+
+    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00'); // July 8th, 5:30 PM CST
+    const MEETING_DURATION = 80; // 80 minutes
+    const EARLY_ACCESS = 10; // 10 minutes early
+    const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
+
+    function getNextMeeting() {
+        const now = new Date();
+        let nextMeeting = new Date(MEETING_START_DATE);
+        
+        // Find next meeting (every 2 weeks)
+        while (nextMeeting <= now) {
+            nextMeeting.setDate(nextMeeting.getDate() + 14);
+        }
+        
+        return nextMeeting;
+    }
+
+    function updateCountdownTimer() {
+        const now = new Date();
+        const nextMeeting = getNextMeeting();
+        const timeDiff = nextMeeting - now;
+        
+        const countdownContainer = document.getElementById('countdownContainer');
+        const noMeetingContainer = document.getElementById('noMeeting');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownDate = document.getElementById('countdownDate');
+        
+        if (timeDiff > 0) {
+            if (countdownContainer) countdownContainer.style.display = 'block';
+            if (noMeetingContainer) noMeetingContainer.style.display = 'none';
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            if (countdownTimer) {
+                if (days > 0) {
+                    countdownTimer.textContent = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    countdownTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            if (countdownDate) {
+                const dateString = nextMeeting.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                countdownDate.textContent = dateString + ' at 5:30 PM CST';
+            }
+        } else {
+            if (countdownContainer) countdownContainer.style.display = 'none';
+            if (noMeetingContainer) noMeetingContainer.style.display = 'block';
+            updateCurrentTime();
+        }
+    }
+
+    function updateCurrentTime() {
+        const now = new Date();
+        
+        const timeOptions = {
+            timeZone: 'America/Chicago',
+            hour12: true,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        };
+        
+        const dateOptions = {
+            timeZone: 'America/Chicago',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+        
+        const timeString = now.toLocaleTimeString('en-US', timeOptions);
+        const dateString = now.toLocaleDateString('en-US', dateOptions);
+        
+        const timeElement = document.getElementById('currentTime');
+        const dateElement = document.getElementById('currentDate');
+        
+        if (timeElement) timeElement.textContent = timeString;
+        if (dateElement) dateElement.textContent = dateString;
+    }
+
+    function getMeetingDates(year, month) {
+        const meetings = [];
+        let currentMeeting = new Date(MEETING_START_DATE);
+        
+        // Generate meetings for the year (every 2 weeks)
+        while (currentMeeting.getFullYear() <= year + 1) {
+            if (currentMeeting.getFullYear() === year && currentMeeting.getMonth() === month) {
+                meetings.push(new Date(currentMeeting));
+            }
+            currentMeeting.setDate(currentMeeting.getDate() + 14);
+        }
+        
+        return meetings;
+    }
+
+    function isMeetingDay(date) {
+        const meetings = getMeetingDates(date.getFullYear(), date.getMonth());
+        return meetings.some(meeting => 
+            meeting.getDate() === date.getDate() &&
+            meeting.getMonth() === date.getMonth() &&
+            meeting.getFullYear() === date.getFullYear()
+        );
+    }
+
+    function generateCalendar(year, month) {
+        const calendarDays = document.getElementById('calendarDays');
+        if (!calendarDays) return;
+        
+        const firstDay = new Date(year, month, 1);
+        const startDate = new Date(firstDay);
+        startDate.setDate(startDate.getDate() - firstDay.getDay());
+        
+        calendarDays.innerHTML = '';
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        for (let i = 0; i < 42; i++) {
+            const cellDate = new Date(startDate);
+            cellDate.setDate(startDate.getDate() + i);
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            dayElement.textContent = cellDate.getDate();
+            
+            if (cellDate.getMonth() !== month) {
+                dayElement.classList.add('other-month');
+            }
+            
+            if (cellDate.getTime() === today.getTime()) {
+                dayElement.classList.add('today');
+            }
+            
+            if (isMeetingDay(cellDate)) {
+                dayElement.classList.add('meeting-day');
+                dayElement.addEventListener('click', () => showMeetingCard(cellDate));
+                dayElement.style.cursor = 'pointer';
+            }
+            
+            calendarDays.appendChild(dayElement);
+        }
+        
+        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'];
+        const monthElement = document.getElementById('currentMonth');
+        if (monthElement) {
+            monthElement.textContent = `${monthNames[month]} ${year}`;
+        }
+    }
+
+    function showMeetingCard(date) {
+        selectedMeetingDate = new Date(date);
+        selectedMeetingDate.setHours(17, 30, 0, 0); // 5:30 PM
+        
+        const dateString = selectedMeetingDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const meetingDate = document.getElementById('meetingDate');
+        const meetingModal = document.getElementById('meetingModal');
+        
+        if (meetingDate) meetingDate.textContent = dateString;
+        if (meetingModal) meetingModal.style.display = 'flex';
+        
+        updateMeetingStatus();
+    }
+
+    function updateMeetingStatus() {
+        if (!selectedMeetingDate) return;
+        
+        const now = new Date();
+        const meetingStart = new Date(selectedMeetingDate);
+        const meetingEnd = new Date(meetingStart);
+        meetingEnd.setMinutes(meetingEnd.getMinutes() + MEETING_DURATION);
+        const earlyAccess = new Date(meetingStart);
+        earlyAccess.setMinutes(earlyAccess.getMinutes() - EARLY_ACCESS);
+        
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        const statusDiv = document.getElementById('meetingStatus');
+        
+        if (now >= earlyAccess && now <= meetingEnd) {
+            // Meeting is available (10 minutes before to 80 minutes after)
+            if (joinBtn) {
+                joinBtn.disabled = false;
+                joinBtn.classList.add('active');
+            }
+            
+            if (statusDiv) {
+                if (now < meetingStart) {
+                    const minutesToStart = Math.ceil((meetingStart - now) / (1000 * 60));
+                    statusDiv.textContent = `Meeting starts in ${minutesToStart} minute${minutesToStart !== 1 ? 's' : ''}`;
+                    statusDiv.className = 'meeting-status waiting';
+                } else {
+                    const minutesLeft = Math.ceil((meetingEnd - now) / (1000 * 60));
+                    statusDiv.textContent = `Meeting in progress (${minutesLeft} minutes remaining)`;
+                    statusDiv.className = 'meeting-status active';
+                }
+            }
+        } else {
+            // Meeting is not available
+            if (joinBtn) {
+                joinBtn.disabled = true;
+                joinBtn.classList.remove('active');
+            }
+            
+            if (statusDiv) {
+                statusDiv.className = 'meeting-status';
+                
+                if (now < earlyAccess) {
+                    const timeToMeeting = earlyAccess - now;
+                    const hours = Math.floor(timeToMeeting / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeToMeeting % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    if (hours > 0) {
+                        statusDiv.textContent = `Meeting available in ${hours}h ${minutes}m`;
+                    } else {
+                        statusDiv.textContent = `Meeting available in ${minutes} minutes`;
+                    }
+                } else {
+                    statusDiv.textContent = 'Meeting has ended';
+                }
+            }
+        }
+    }
+
+    function navigateMonth(direction) {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+        generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+    }
+
+    function closeMeetingCard() {
+        const modal = document.getElementById('meetingModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+        selectedMeetingDate = null;
+    }
+
+    function joinMeeting() {
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        if (joinBtn && !joinBtn.disabled) {
+            window.open(ZOOM_LINK, '_blank');
+        }
+    }
+
+    // Initialize timer and calendar
+    function initializeTimerAndCalendar() {
+        try {
+            // Start countdown timer
+            updateCountdownTimer();
+            setInterval(updateCountdownTimer, 1000);
+            
+            // Generate calendar
+            generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
+            
+            // Add event listeners for navigation
+            const prevMonth = document.getElementById('prevMonth');
+            const nextMonth = document.getElementById('nextMonth');
+            
+            if (prevMonth) {
+                prevMonth.addEventListener('click', () => navigateMonth(-1));
+            }
+            if (nextMonth) {
+                nextMonth.addEventListener('click', () => navigateMonth(1));
+            }
+            
+            // Update meeting status every minute
+            setInterval(updateMeetingStatus, 60000);
+            
+            // Close modal when clicking outside
+            const meetingModal = document.getElementById('meetingModal');
+            if (meetingModal) {
+                meetingModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeMeetingCard();
+                    }
+                });
+            }
+            
+            console.log('✅ Timer and calendar with meetings initialized');
+            
+        } catch (error) {
+            console.error('❌ Error initializing timer/calendar:', error);
+        }
+    }
+
+    // Add timer/calendar initialization to DOMContentLoaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Dashboard loading...');
+        
+        try {
+            // Initialize progress tracker
+            window.progressTracker = new SimpleProgressTracker();
+            
+            // Make functions globally available
+            window.updateProgress = () => window.progressTracker.forceUpdate();
+            window.getProgressSummary = () => window.progressTracker.getSummary();
+            window.simulateActivity = simulateActivity;
+            
+            // Initialize timer and calendar
+            setTimeout(initializeTimerAndCalendar, 500);
+            
+            // Load other components
+            updateNotificationCount();
+            setInterval(updateNotificationCount, 30000);
+            
+            setTimeout(loadDashboardGoals, 1500);
+            
+            console.log('✅ Dashboard initialized successfully');
+            
+        } catch (error) {
+            console.error('❌ Error initializing dashboard:', error);
+        }
+    });
     </script>
 </body>
 </html>
