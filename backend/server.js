@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with OpenAI Assistant Integration + Password Reset + All Database Storage
+// Complete AI Coach Backend Server with Enhanced Reply Notifications
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -96,19 +96,21 @@ const goalSchema = new mongoose.Schema({
 
 const Goal = mongoose.model('Goal', goalSchema);
 
-// Notifications Schema - NEW ADDITION
+// Notifications Schema - ENHANCED FOR REPLIES
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
   title: { type: String, required: true },
   content: { type: String, required: true },
   read: { type: Boolean, default: false },
+  isReply: { type: Boolean, default: false }, // NEW: Mark reply notifications
+  priority: { type: String, enum: ['low', 'normal', 'high'], default: 'normal' }, // NEW: Priority level
   createdAt: { type: Date, default: Date.now }
 });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 
-// Chat Rooms Schema - NEW ADDITION
+// Chat Rooms Schema
 const roomSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -133,7 +135,7 @@ const chatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model('Chat', chatSchema);
 
-// Updated Community Message Schema - Enhanced for room support
+// ENHANCED Community Message Schema - WITH REPLY SUPPORT
 const messageSchema = new mongoose.Schema({
   // Legacy fields (keep for backward compatibility)
   room: String,
@@ -141,17 +143,24 @@ const messageSchema = new mongoose.Schema({
   userId: String,
   message: String,
   timestamp: { type: Date, default: Date.now },
-  // New fields for enhanced room support
+  // Enhanced fields for room support
   roomId: { type: mongoose.Schema.Types.ObjectId, ref: 'Room' },
   content: String,
   avatar: { type: String, default: 'U' },
   avatarColor: { type: String, default: '#6366f1' },
+  // NEW: Reply functionality fields
+  replyTo: {
+    messageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
+    userId: String,
+    username: String,
+    content: String
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
 
-// Life Goals Schema - NEW ADDITION
+// Life Goals Schema
 const lifeGoalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   area: { type: String, enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], required: true },
@@ -160,7 +169,6 @@ const lifeGoalSchema = new mongoose.Schema({
   completed: { type: Boolean, default: false },
   streak: { type: Number, default: 0 },
   lastCompletedDate: { type: Date },
-  // NEW: Store all completion dates
   completionHistory: [{ 
     date: { type: Date, required: true },
     completed: { type: Boolean, required: true }
@@ -168,7 +176,6 @@ const lifeGoalSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
-
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
@@ -267,7 +274,7 @@ app.get('/', (req, res) => {
 
 // Test route
 app.get('/test', (req, res) => {
-  res.json({ message: 'New code deployed!', timestamp: new Date() });
+  res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
 });
 
 // Register new user with payment
@@ -804,15 +811,25 @@ app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// NOTIFICATIONS API ROUTES - NEW ADDITION
+// ENHANCED NOTIFICATIONS API ROUTES
 // ==========================================
 
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
-    const notifications = await Notification.find({ userId: req.user.userId })
-      .sort({ createdAt: -1 });
+    const { type, limit = 50 } = req.query;
+    
+    let query = { userId: req.user.userId };
+    if (type && type !== 'all') {
+      query.type = type;
+    }
+    
+    const notifications = await Notification.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    
     res.json(notifications);
   } catch (error) {
+    console.error('Get notifications error:', error);
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 });
@@ -839,16 +856,29 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Updated notifications endpoints
+// ENHANCED: Notifications unread count with reply support
 app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
   try {
-    const count = await Notification.countDocuments({ 
+    const totalCount = await Notification.countDocuments({ 
       userId: req.user.userId, 
       read: false 
     });
-    res.json({ count });
+    
+    const replyCount = await Notification.countDocuments({ 
+      userId: req.user.userId, 
+      read: false,
+      type: 'community',
+      title: { $regex: 'replied', $options: 'i' }
+    });
+    
+    res.json({ 
+      count: totalCount,
+      replyCount: replyCount,
+      hasReplies: replyCount > 0
+    });
   } catch (error) {
-    res.json({ count: 0 });
+    console.error('Unread count error:', error);
+    res.json({ count: 0, replyCount: 0, hasReplies: false });
   }
 });
 
@@ -864,7 +894,7 @@ app.get('/api/notifications/recent', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// CHAT ROOMS API ROUTES - NEW ADDITION
+// ENHANCED CHAT ROOMS API ROUTES
 // ==========================================
 
 app.get('/api/rooms', authenticateToken, async (req, res) => {
@@ -899,32 +929,121 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
+// ENHANCED: Get messages with reply support
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const messages = await Message.find({ roomId: req.params.id })
       .sort({ createdAt: 1 })
       .limit(100);
-    res.json(messages);
+      
+    console.log(`📨 Retrieved ${messages.length} messages for room ${req.params.id}`);
+    
+    // Process messages to ensure proper reply structure
+    const processedMessages = messages.map(message => {
+      const messageObj = message.toObject();
+      
+      // Ensure backward compatibility
+      if (!messageObj.content && messageObj.message) {
+        messageObj.content = messageObj.message;
+      }
+      
+      return messageObj;
+    });
+    
+    res.json(processedMessages);
   } catch (error) {
+    console.error('Get messages error:', error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
 
+// ENHANCED: Send message with reply notifications
 app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    const message = new Message({
+    const username = user ? `${user.firstName} ${user.lastName}` : 'User';
+    
+    // Create the message
+    const messageData = {
       roomId: req.params.id,
       userId: req.user.userId,
-      username: user ? `${user.firstName} ${user.lastName}` : 'User',
-      avatar: req.body.avatar || 'U',
+      username: username,
+      avatar: req.body.avatar || user?.firstName?.charAt(0).toUpperCase() || 'U',
       content: req.body.content,
       message: req.body.content, // For compatibility
       avatarColor: req.body.avatarColor || '#6366f1'
-    });
+    };
+
+    // Handle reply data if this is a reply
+    if (req.body.replyTo) {
+      messageData.replyTo = {
+        messageId: req.body.replyTo.messageId,
+        userId: req.body.replyTo.userId || 'unknown',
+        username: req.body.replyTo.username,
+        content: req.body.replyTo.content
+      };
+
+      console.log('💬 Creating reply message:', {
+        replyingTo: req.body.replyTo.username,
+        from: username,
+        content: req.body.content.substring(0, 50) + '...'
+      });
+
+      // CREATE NOTIFICATION for the person being replied to
+      try {
+        // Find the user being replied to
+        const repliedToUser = await User.findOne({
+          $or: [
+            { _id: req.body.replyTo.userId }, // Try by ID first
+            { 
+              $expr: {
+                $eq: [
+                  { $concat: ['$firstName', ' ', '$lastName'] },
+                  req.body.replyTo.username
+                ]
+              }
+            } // Fallback to name matching
+          ]
+        });
+
+        if (repliedToUser && repliedToUser._id.toString() !== req.user.userId) {
+          // Don't notify yourself
+          const notification = new Notification({
+            userId: repliedToUser._id,
+            type: 'community',
+            title: `💬 ${username} replied to your message`,
+            content: `"${req.body.content.length > 100 ? req.body.content.substring(0, 100) + '...' : req.body.content}"`,
+            isReply: true, // Mark as reply notification
+            priority: 'high', // High priority for replies
+            createdAt: new Date()
+          });
+
+          await notification.save();
+          
+          console.log('🔔 Reply notification created for:', repliedToUser.email);
+        } else if (!repliedToUser) {
+          console.log('⚠️ Could not find user to notify for reply:', req.body.replyTo.username);
+        } else {
+          console.log('ℹ️ Skipping self-notification for reply');
+        }
+      } catch (notificationError) {
+        console.error('❌ Error creating reply notification:', notificationError);
+        // Don't fail the message send if notification fails
+      }
+    }
+
+    const message = new Message(messageData);
     await message.save();
+    
+    console.log('✅ Message saved successfully:', {
+      id: message._id,
+      isReply: !!message.replyTo,
+      room: req.params.id
+    });
+    
     res.json(message);
   } catch (error) {
+    console.error('❌ Send message error:', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
 });
@@ -939,17 +1058,26 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
     // Delete all messages in the room
     await Message.deleteMany({ roomId: req.params.id });
     
+    // Delete related notifications
+    await Notification.deleteMany({ 
+      type: 'community',
+      title: { $regex: room.name, $options: 'i' }
+    });
+    
     // Delete the room
     await Room.findByIdAndDelete(req.params.id);
     
+    console.log(`🗑️ Room "${room.name}" and related data deleted`);
+    
     res.json({ message: 'Room deleted successfully' });
   } catch (error) {
+    console.error('❌ Delete room error:', error);
     res.status(500).json({ error: 'Failed to delete room' });
   }
 });
 
 // ==========================================
-// LIFE GOALS API ROUTES - NEW ADDITION
+// LIFE GOALS API ROUTES
 // ==========================================
 
 // Get all life goals for a user
@@ -970,7 +1098,6 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
     const { area, bigGoal, dailyAction } = req.body;
     const userId = req.user.userId;
 
-    // Validation
     if (!area || !bigGoal || !dailyAction) {
       return res.status(400).json({ error: 'Area, big goal, and daily action are required' });
     }
@@ -980,7 +1107,6 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid area specified' });
     }
 
-    // Create new goal
     const lifeGoal = new LifeGoal({
       userId,
       area,
@@ -1004,7 +1130,6 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
       await notification.save();
     } catch (notifError) {
       console.error('Error creating notification:', notifError);
-      // Don't fail the whole request if notification fails
     }
 
     res.status(201).json(lifeGoal);
@@ -1020,31 +1145,24 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     const { bigGoal, dailyAction, completed, lastCompletedDate } = req.body;
     const userId = req.user.userId;
 
-    console.log(`🔄 Updating goal ${id}:`, { completed, lastCompletedDate });
-
     const goal = await LifeGoal.findOne({ _id: id, userId });
     if (!goal) {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
-    // Update fields
     if (bigGoal !== undefined) goal.bigGoal = bigGoal;
     if (dailyAction !== undefined) goal.dailyAction = dailyAction;
     
-    // ENHANCED: Handle completion with full history tracking
     if (completed !== undefined) {
       goal.completed = completed;
       
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      const todayString = today.toISOString().split('T')[0];
       
-      // Initialize completionHistory if it doesn't exist
       if (!goal.completionHistory) {
         goal.completionHistory = [];
       }
       
-      // Check if there's already an entry for today
       const existingTodayIndex = goal.completionHistory.findIndex(entry => {
         const entryDate = new Date(entry.date);
         entryDate.setHours(0, 0, 0, 0);
@@ -1052,10 +1170,8 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       });
       
       if (completed && lastCompletedDate) {
-        // COMPLETING the goal
         goal.lastCompletedDate = new Date(lastCompletedDate);
         
-        // Add or update today's completion in history
         if (existingTodayIndex >= 0) {
           goal.completionHistory[existingTodayIndex].completed = true;
         } else {
@@ -1065,7 +1181,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
           });
         }
         
-        // Calculate streak based on consecutive completed days
         const sortedHistory = goal.completionHistory
           .filter(entry => entry.completed)
           .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1078,14 +1193,12 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
           entryDate.setHours(0, 0, 0, 0);
           
           if (i === 0) {
-            // First entry (most recent)
             if (entryDate.getTime() === today.getTime()) {
               currentStreak = 1;
             } else {
-              break; // Not completed today, no current streak
+              break;
             }
           } else {
-            // Check if this date is consecutive with previous
             const prevDate = new Date(sortedHistory[i-1].date);
             prevDate.setHours(0, 0, 0, 0);
             const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
@@ -1093,7 +1206,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
             if (daysDiff === 1) {
               currentStreak++;
             } else {
-              break; // Gap in streak
+              break;
             }
           }
         }
@@ -1101,10 +1214,8 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
         goal.streak = currentStreak;
         
       } else if (!completed) {
-        // UNCOMPLETING the goal
         goal.lastCompletedDate = null;
         
-        // Add or update today's entry as incomplete
         if (existingTodayIndex >= 0) {
           goal.completionHistory[existingTodayIndex].completed = false;
         } else {
@@ -1114,7 +1225,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
           });
         }
         
-        // Recalculate streak without today
         const sortedCompletedHistory = goal.completionHistory
           .filter(entry => entry.completed && new Date(entry.date).getTime() !== today.getTime())
           .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1122,7 +1232,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
         if (sortedCompletedHistory.length === 0) {
           goal.streak = 0;
         } else {
-          // Find the most recent streak ending before today
           let streak = 0;
           const oneDay = 24 * 60 * 60 * 1000;
           const yesterday = new Date(today.getTime() - oneDay);
@@ -1132,7 +1241,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
             entryDate.setHours(0, 0, 0, 0);
             
             if (i === 0) {
-              // Check if most recent completion was yesterday
               if (entryDate.getTime() === yesterday.getTime()) {
                 streak = 1;
               } else {
@@ -1159,14 +1267,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     goal.updatedAt = new Date();
     await goal.save();
 
-    console.log(`✅ Goal updated:`, {
-      id: goal._id,
-      completed: goal.completed,
-      streak: goal.streak,
-      lastCompletedDate: goal.lastCompletedDate,
-      historyLength: goal.completionHistory ? goal.completionHistory.length : 0
-    });
-
     res.json(goal);
   } catch (error) {
     console.error('Update life goal error:', error);
@@ -1174,7 +1274,6 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete a life goal
 app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1192,7 +1291,6 @@ app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Track daily completion (for daily tracker feature)
 app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1204,7 +1302,6 @@ app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
-    // Check if already tracked today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const lastCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
@@ -1216,7 +1313,6 @@ app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
       }
     }
 
-    // Update completion status
     goal.completed = completed;
     goal.lastCompletedDate = new Date();
     
@@ -1240,7 +1336,6 @@ app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
   }
 });
 
-// Get goal statistics for dashboard
 app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -1257,7 +1352,6 @@ app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
     const activeStreaks = await LifeGoal.find({ userId, streak: { $gt: 0 } });
     const longestStreak = activeStreaks.length > 0 ? Math.max(...activeStreaks.map(g => g.streak)) : 0;
     
-    // Goals by area - FIXED ObjectId usage
     const goalsByArea = await LifeGoal.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $group: { _id: '$area', count: { $sum: 1 } } }
@@ -1278,7 +1372,7 @@ app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Migration function to convert existing goals to new history format
+// Migration function
 async function migrateGoalsToHistory() {
   try {
     console.log('🔄 Starting goal history migration...');
@@ -1292,7 +1386,6 @@ async function migrateGoalsToHistory() {
     for (const goal of goalsToMigrate) {
       goal.completionHistory = [];
       
-      // If there's a lastCompletedDate, add it to history
       if (goal.lastCompletedDate) {
         goal.completionHistory.push({
           date: goal.lastCompletedDate,
@@ -1309,7 +1402,7 @@ async function migrateGoalsToHistory() {
   }
 }
 
-// Health check endpoint for monitoring
+// Enhanced health check with reply system status
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -1319,6 +1412,12 @@ app.get('/health', (req, res) => {
       openai: openai ? 'available' : 'unavailable',
       stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
       email: transporter ? 'configured' : 'not configured'
+    },
+    features: {
+      replySystem: 'enabled',
+      replyNotifications: 'enabled',
+      communityRooms: 'enabled',
+      lifeGoals: 'enabled'
     }
   });
 });
@@ -1340,7 +1439,7 @@ app.use((req, res) => {
 // Initialize default rooms after MongoDB connection
 mongoose.connection.once('open', () => {
   createDefaultRooms();
-  migrateGoalsToHistory(); // ADD THIS LINE
+  migrateGoalsToHistory();
 });
 
 // Start server
@@ -1352,4 +1451,5 @@ app.listen(PORT, () => {
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
+  console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
 });
