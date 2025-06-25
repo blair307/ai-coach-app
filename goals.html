@@ -611,6 +611,10 @@
                 return;
             }
 
+            // FIXED: Store the area name BEFORE we do anything that might clear goalToDelete
+            const areaName = goalToDelete.data.area || 'goal';
+            const goalIdToDelete = goalToDelete.id;
+
             try {
                 const deleteBtn = document.getElementById('confirmDeleteBtn');
                 if (deleteBtn) {
@@ -618,20 +622,20 @@
                     deleteBtn.textContent = 'Deleting...';
                     deleteBtn.disabled = true;
                     
-                    console.log('Attempting to delete goal with ID:', goalToDelete.id);
-                    await deleteGoalFromBackend(goalToDelete.id);
+                    console.log('Attempting to delete goal with ID:', goalIdToDelete);
+                    await deleteGoalFromBackend(goalIdToDelete);
                     
                     // Also remove from our global array immediately
                     allGoals = allGoals.filter(g => {
                         const goalId = g._id || g.id;
-                        return goalId !== goalToDelete.id;
+                        return goalId !== goalIdToDelete;
                     });
                     console.log('Updated allGoals array:', allGoals);
                     
                     closeDeleteModal();
 
-                    const area = goalToDelete.data.area || 'goal';
-                    showSuccessMessage(`Your ${area} goal has been deleted.`);
+                    // FIXED: Use the stored area name instead of trying to access goalToDelete.data.area
+                    showSuccessMessage(`Your ${areaName} goal has been deleted.`);
                     await loadGoalsOverview();
                     
                     // Reset button
@@ -640,12 +644,12 @@
                     
                 } else {
                     console.error('Could not find delete button, proceeding anyway...');
-                    await deleteGoalFromBackend(goalToDelete.id);
+                    await deleteGoalFromBackend(goalIdToDelete);
                     
                     // Remove from global array
                     allGoals = allGoals.filter(g => {
                         const goalId = g._id || g.id;
-                        return goalId !== goalToDelete.id;
+                        return goalId !== goalIdToDelete;
                     });
                     
                     closeDeleteModal();
