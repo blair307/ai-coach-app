@@ -3946,3 +3946,376 @@ mark {
         margin-left: 1.5rem !important;
     }
 }
+
+/* ================================= 
+   ENHANCED REPLY SYSTEM STYLES
+   Add these styles to the END of your styles.css file
+   ================================= */
+
+/* Regular message styling (no changes needed) */
+.message-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+/* VISUAL DISTINCTION: Reply message styling */
+.message-group.reply-message {
+    margin-left: 2rem !important;
+    padding-left: 1rem !important;
+    border-left: 4px solid #a855f7 !important; /* Purple border for replies */
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%) !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.08) !important;
+}
+
+/* Reply indicator arrow */
+.message-group.reply-message::before {
+    content: "↳";
+    position: absolute;
+    left: -1.5rem;
+    top: 0.5rem;
+    color: #a855f7;
+    font-size: 1.2rem;
+    font-weight: bold;
+    z-index: 1;
+}
+
+/* Thread connection line */
+.message-group.reply-message::after {
+    content: "";
+    position: absolute;
+    left: -2rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #a855f7, transparent);
+    opacity: 0.3;
+}
+
+/* Enhanced reply reference styling */
+.reply-reference {
+    background: rgba(168, 85, 247, 0.1) !important;
+    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+    border-left: 4px solid #a855f7 !important;
+    padding: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
+    border-radius: 6px !important;
+    font-size: 0.875rem !important;
+    position: relative !important;
+}
+
+.reply-reference::before {
+    content: "💬";
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    opacity: 0.7;
+    font-size: 0.9rem;
+}
+
+.reply-author {
+    font-weight: 600 !important;
+    color: #a855f7 !important;
+    margin-bottom: 0.5rem !important;
+    font-size: 0.85rem !important;
+}
+
+.reply-text {
+    color: var(--text-secondary) !important;
+    line-height: 1.4 !important;
+    overflow: hidden !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 3 !important;
+    -webkit-box-orient: vertical !important;
+    font-style: italic !important;
+    opacity: 0.9 !important;
+}
+
+/* Reply message content styling */
+.reply-message .message-content {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border: 1px solid rgba(168, 85, 247, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.1) !important;
+}
+
+/* Reply username styling */
+.reply-message .username {
+    color: #a855f7 !important;
+    font-weight: 700 !important;
+}
+
+/* Reply hover effects */
+.reply-message:hover {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15) !important;
+}
+
+/* Enhanced reply banner styling */
+.reply-banner {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%) !important;
+    border: 2px solid rgba(168, 85, 247, 0.3) !important;
+    border-radius: var(--radius) var(--radius) 0 0 !important;
+    padding: 1rem !important;
+    border-bottom: none !important;
+    position: relative !important;
+}
+
+.reply-banner::before {
+    content: "💬";
+    position: absolute;
+    top: 0.5rem;
+    left: 0.75rem;
+    font-size: 1.2rem;
+}
+
+.reply-content {
+    margin-left: 2rem;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.reply-header span:first-child {
+    color: #a855f7 !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+}
+
+/* Enhanced action buttons */
+.action-btn.reply-btn {
+    background: rgba(168, 85, 247, 0.1) !important;
+    color: #a855f7 !important;
+    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+}
+
+.action-btn.reply-btn:hover {
+    background: rgba(168, 85, 247, 0.2) !important;
+    color: #7c3aed !important;
+    transform: scale(1.1) !important;
+    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3) !important;
+}
+
+/* Reply toast notifications */
+.reply-toast {
+    position: fixed;
+    bottom: 100px;
+    right: 20px;
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
+    z-index: 10001;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+}
+
+.reply-toast.show {
+    transform: translateX(0);
+}
+
+.reply-toast::before {
+    content: "💬";
+    font-size: 1.2rem;
+}
+
+/* Enhanced notification badge for replies */
+.notification-count.has-replies {
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important;
+    animation: pulseReply 2s infinite;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+}
+
+@keyframes pulseReply {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7), 0 0 0 2px rgba(168, 85, 247, 0.3);
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: 0 0 0 8px rgba(168, 85, 247, 0), 0 0 0 2px rgba(168, 85, 247, 0.3);
+        transform: scale(1.05);
+    }
+}
+
+/* Animation for new reply messages */
+@keyframes replySlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+        background: rgba(168, 85, 247, 0.15);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%);
+    }
+}
+
+.reply-message {
+    animation: replySlideIn 0.4s ease-out;
+}
+
+/* Mobile responsive adjustments for replies */
+@media (max-width: 1024px) {
+    .reply-message {
+        margin-left: 1rem !important;
+        padding-left: 0.75rem !important;
+    }
+    
+    .reply-message::before {
+        left: -1rem;
+        font-size: 1rem;
+        top: 0.75rem;
+    }
+    
+    .reply-message::after {
+        left: -1.5rem;
+        width: 1px;
+    }
+    
+    .reply-reference {
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .reply-reference::before {
+        font-size: 0.8rem;
+        top: 0.25rem;
+        right: 0.5rem;
+    }
+    
+    .reply-banner {
+        padding: 0.75rem !important;
+    }
+    
+    .reply-banner::before {
+        font-size: 1rem;
+        top: 0.5rem;
+        left: 0.5rem;
+    }
+    
+    .reply-content {
+        margin-left: 1.5rem;
+    }
+    
+    .reply-toast {
+        bottom: 80px;
+        left: 20px;
+        right: 20px;
+        font-size: 0.9rem;
+        padding: 0.875rem 1.25rem;
+    }
+}
+
+/* Very small mobile screens */
+@media (max-width: 480px) {
+    .reply-message {
+        margin-left: 0.75rem !important;
+        padding-left: 0.5rem !important;
+    }
+    
+    .reply-message::before {
+        left: -0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .reply-message::after {
+        left: -1rem;
+    }
+    
+    .reply-reference {
+        padding: 0.5rem !important;
+        font-size: 0.75rem !important;
+    }
+    
+    .reply-author {
+        font-size: 0.8rem !important;
+    }
+    
+    .reply-text {
+        font-size: 0.75rem !important;
+        -webkit-line-clamp: 2 !important;
+    }
+}
+
+/* Dark mode support for replies */
+@media (prefers-color-scheme: dark) {
+    .reply-message {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;
+    }
+    
+    .reply-message .message-content {
+        background: rgba(31, 41, 55, 0.95) !important;
+        border-color: rgba(168, 85, 247, 0.2) !important;
+    }
+    
+    .reply-reference {
+        background: rgba(168, 85, 247, 0.15) !important;
+        border-color: rgba(168, 85, 247, 0.3) !important;
+    }
+    
+    .reply-banner {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.08) 100%) !important;
+        border-color: rgba(168, 85, 247, 0.4) !important;
+    }
+}
+
+/* Focus and accessibility improvements */
+.reply-message:focus-within {
+    outline: 2px solid #a855f7;
+    outline-offset: 2px;
+}
+
+.action-btn.reply-btn:focus-visible {
+    outline: 2px solid #a855f7;
+    outline-offset: 2px;
+}
+
+/* Print styles - hide reply decorations */
+@media print {
+    .reply-message::before,
+    .reply-message::after,
+    .reply-reference::before,
+    .reply-banner::before {
+        display: none;
+    }
+    
+    .reply-message {
+        border-left: 2px solid #666 !important;
+        background: #f5f5f5 !important;
+        box-shadow: none !important;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .reply-message {
+        animation: none !important;
+    }
+    
+    .reply-toast {
+        transition: none !important;
+    }
+    
+    .notification-count.has-replies {
+        animation: none !important;
+    }
+    
+    .reply-message:hover {
+        transform: none !important;
+    }
+}
