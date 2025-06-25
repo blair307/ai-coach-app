@@ -1,4 +1,4 @@
-// Community.js - FIXED VERSION with proper search and emoji functionality
+// Community.js - QUICK FIX VERSION - No auto-opening modals
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -10,6 +10,22 @@ let isInitialized = false;
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Community page loading...');
+    
+    // FORCE HIDE modals immediately on page load
+    setTimeout(() => {
+        const searchResults = document.getElementById('searchResults');
+        const emojiModal = document.getElementById('emojiModal');
+        
+        if (searchResults) {
+            searchResults.style.display = 'none';
+            searchResults.style.visibility = 'hidden';
+        }
+        
+        if (emojiModal) {
+            emojiModal.style.display = 'none';
+            emojiModal.style.visibility = 'hidden';
+        }
+    }, 50);
     
     // Hide loading overlay immediately
     hideLoadingOverlay();
@@ -75,6 +91,20 @@ async function initializeCommunity() {
         }
 
         console.log('🚀 Starting community initialization...');
+        
+        // ENSURE modals are hidden during initialization
+        const searchResults = document.getElementById('searchResults');
+        const emojiModal = document.getElementById('emojiModal');
+        
+        if (searchResults) {
+            searchResults.style.display = 'none';
+            searchResults.style.visibility = 'hidden';
+        }
+        
+        if (emojiModal) {
+            emojiModal.style.display = 'none';
+            emojiModal.style.visibility = 'hidden';
+        }
         
         // Get current user info
         currentUser = getCurrentUser();
@@ -739,20 +769,23 @@ function showErrorMessage(message) {
     }, 4000);
 }
 
-// FIXED EMOJI FUNCTIONS - Proper positioning
+// FIXED EMOJI FUNCTIONS - No auto-opening
 function toggleEmoji() {
     const emojiModal = document.getElementById('emojiModal');
     if (!emojiModal) return;
     
-    const isVisible = emojiModal.style.display === 'block';
+    // EXPLICIT check to ensure we only show when user clicks
+    const isCurrentlyVisible = emojiModal.style.display === 'block' && emojiModal.style.visibility !== 'hidden';
     
-    if (isVisible) {
+    if (isCurrentlyVisible) {
         emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
     } else {
-        // Position emoji modal properly
+        // Only show if user actually clicked the button
         emojiModal.style.display = 'block';
+        emojiModal.style.visibility = 'visible';
         
-        // Make sure it's positioned correctly
+        // Ensure proper positioning
         emojiModal.style.position = 'fixed';
         emojiModal.style.bottom = '120px';
         emojiModal.style.right = '20px';
@@ -777,10 +810,11 @@ function insertEmoji(emoji) {
     const emojiModal = document.getElementById('emojiModal');
     if (emojiModal) {
         emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
     }
 }
 
-// FIXED SEARCH FUNCTIONALITY - Instant results with proper positioning
+// FIXED SEARCH FUNCTIONALITY - No auto-opening
 let searchTimeout;
 let allMessages = [];
 
@@ -799,7 +833,7 @@ async function performSearch(query) {
     // Debounce search for instant feel
     searchTimeout = setTimeout(async () => {
         await executeSearch(query.trim());
-    }, 200); // Reduced delay for more instant feel
+    }, 200);
 }
 
 async function executeSearch(query) {
@@ -809,8 +843,9 @@ async function executeSearch(query) {
         
         if (!searchResults || !searchContent) return;
 
-        // Show loading in search results with proper positioning
+        // EXPLICIT show (only when user searches)
         searchResults.style.display = 'block';
+        searchResults.style.visibility = 'visible';
         searchResults.style.position = 'fixed';
         searchResults.style.top = '120px';
         searchResults.style.right = '20px';
@@ -954,6 +989,7 @@ function closeSearch() {
     
     if (searchResults) {
         searchResults.style.display = 'none';
+        searchResults.style.visibility = 'hidden';
     }
     
     if (searchInput) {
@@ -970,6 +1006,11 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+// Enhanced navigation functions
+function goToNotifications() {
+    window.location.href = 'notifications.html';
+}
+
 // Enhanced event listeners with proper cleanup
 function initializeEventListeners() {
     console.log('🚀 Initializing event listeners');
@@ -980,16 +1021,17 @@ function initializeEventListeners() {
         const emojiModal = document.getElementById('emojiModal');
         const emojiBtn = event.target.closest('#emojiBtn');
         
-        if (emojiModal && emojiModal.style.display === 'block' && 
+        if (emojiModal && emojiModal.style.display === 'block' && emojiModal.style.visibility === 'visible' &&
             !emojiModal.contains(event.target) && !emojiBtn) {
             emojiModal.style.display = 'none';
+            emojiModal.style.visibility = 'hidden';
         }
 
         // Close search results when clicking outside
         const searchResults = document.getElementById('searchResults');
         const searchContainer = event.target.closest('.desktop-search-container');
         
-        if (searchResults && searchResults.style.display === 'block' && 
+        if (searchResults && searchResults.style.display === 'block' && searchResults.style.visibility === 'visible' &&
             !searchResults.contains(event.target) && !searchContainer) {
             closeSearch();
         }
@@ -1003,6 +1045,7 @@ function initializeEventListeners() {
             const emojiModal = document.getElementById('emojiModal');
             if (emojiModal) {
                 emojiModal.style.display = 'none';
+                emojiModal.style.visibility = 'hidden';
             }
         }
         
@@ -1053,9 +1096,10 @@ window.retryInitialization = retryInitialization;
 window.logout = logout;
 window.formatMessageTime = formatMessageTime;
 window.scrollToMessage = scrollToMessage;
+window.goToNotifications = goToNotifications;
 
 // Export global variables
 window.currentRoomId = currentRoomId;
 window.rooms = rooms;
 
-console.log('✅ Community.js loaded - FIXED VERSION with proper emoji positioning, desktop search, and mobile scrolling!');
+console.log('✅ Community.js loaded - QUICK FIX VERSION with no auto-opening modals!');
