@@ -4845,3 +4845,250 @@ mark {
         font-size: 0.9rem !important;
     }
 }
+
+/* =================================
+   AI COACH SPECIFIC LAYOUT FIX
+   Add this to your AI-Coach.html inline styles or to styles.css
+   ================================= */
+
+/* Fix the flex container that contains chat + sidebar */
+.main-content > div[style*="display: flex"] {
+    display: flex !important;
+    gap: 2rem !important;
+    height: calc(100vh - 12rem) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* On mobile, stack vertically and hide sidebar */
+@media (max-width: 1024px) {
+    .main-content > div[style*="display: flex"] {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        height: calc(100vh - 8rem) !important;
+    }
+    
+    /* Hide the coaching sidebar completely on mobile */
+    .coaching-sidebar {
+        display: none !important;
+    }
+}
+
+/* Ensure chat container takes full available width */
+.chat-container {
+    flex: 1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    margin-right: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--background) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden !important;
+}
+
+@media (max-width: 1024px) {
+    .chat-container {
+        border-radius: var(--radius) !important;
+        height: 100% !important;
+    }
+}
+
+/* Fix for the welcome message and messages area */
+.chat-messages {
+    flex: 1 !important;
+    padding: 1.5rem !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    background: var(--surface) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .chat-messages {
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+}
+
+/* Welcome message styling fix */
+.chat-messages .message-content[style*="background: var(--surface)"] {
+    background: var(--surface) !important;
+    padding: 1.5rem !important;
+    border-radius: var(--radius-lg) !important;
+    margin-bottom: 1.5rem !important;
+    border-left: 3px solid var(--primary) !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .chat-messages .message-content[style*="background: var(--surface)"] {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        font-size: 0.95rem !important;
+    }
+}
+
+/* Fix chat input container */
+.chat-input-container {
+    padding: 1.5rem !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--background) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .chat-input-container {
+        padding: 1rem !important;
+    }
+}
+
+/* Fix chat input */
+.chat-input {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    width: 100% !important;
+}
+
+.chat-input textarea {
+    width: 100% !important;
+    padding: 1rem !important;
+    border: 2px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    font-family: inherit !important;
+    font-size: 1rem !important;
+    resize: vertical !important;
+    min-height: 60px !important;
+    transition: all 0.3s ease !important;
+    background: var(--surface) !important;
+    box-sizing: border-box !important;
+    color: var(--text-primary) !important;
+}
+
+@media (max-width: 768px) {
+    .chat-input textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        min-height: 50px !important;
+    }
+}
+
+/* Fix input actions */
+.input-actions {
+    display: flex !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .input-actions {
+        justify-content: stretch !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+    }
+}
+
+/* Fix the settings modal positioning issues */
+#settingsModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9999 !important;
+    backdrop-filter: blur(4px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2rem !important;
+    box-sizing: border-box !important;
+}
+
+#settingsModal > div {
+    background: white !important;
+    border-radius: 12px !important;
+    width: 100% !important;
+    max-width: 500px !important;
+    max-height: 80vh !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
+}
+
+@media (max-width: 768px) {
+    #settingsModal {
+        padding: 1rem !important;
+    }
+    
+    #settingsModal > div {
+        max-width: 100% !important;
+        max-height: 90vh !important;
+    }
+}
+
+/* Additional mobile fixes for the entire page layout */
+@media (max-width: 768px) {
+    /* Ensure no horizontal overflow */
+    body, html {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+    }
+    
+    /* Fix main content */
+    .main-content {
+        width: 100% !important;
+        max-width: 100vw !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix content header */
+    .content-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 1rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .content-header h1 {
+        font-size: 1.75rem !important;
+        margin: 0 !important;
+    }
+    
+    .header-actions {
+        width: 100% !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 0.75rem !important;
+    }
+    
+    .header-actions .btn {
+        flex: 1 !important;
+        min-width: 120px !important;
+        max-width: 200px !important;
+    }
+    
+    /* Ensure notification icon stays in place */
+    .notification-icon-container {
+        order: -1 !important;
+        margin-bottom: 0.5rem !important;
+    }
+}
