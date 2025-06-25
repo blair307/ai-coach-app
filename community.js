@@ -1,4 +1,4 @@
-// Fixed Community.js - Enhanced Reply System (Error-Free)
+// Complete Enhanced Community.js - All Features + Simplified Replies + Bigger Messages Window
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -6,11 +6,11 @@ let currentRoomName = 'General Discussion';
 let currentUser = null;
 let rooms = [];
 let isInitialized = false;
-let currentReplyTo = null; // FIXED: Only declared once
+let currentReplyTo = null;
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Community with Reply System loading...');
+    console.log('🚀 Enhanced Community with simplified replies loading...');
     
     // FORCE HIDE modals immediately on page load
     setTimeout(() => {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 100);
 });
 
-// FIXED: Add missing hideLoadingOverlay function
+// Hide loading overlay
 function hideLoadingOverlay() {
     const loadingOverlay = document.getElementById('loadingOverlay');
     if (loadingOverlay) {
@@ -43,7 +43,7 @@ function hideLoadingOverlay() {
     }
 }
 
-// FIXED: Add missing showCommunityError function
+// Show error in community area
 function showCommunityError(message) {
     const messagesContainer = document.getElementById('communityMessages');
     if (messagesContainer) {
@@ -59,7 +59,7 @@ function showCommunityError(message) {
     }
 }
 
-// FIXED: Add missing retryInitialization function
+// Retry initialization
 function retryInitialization() {
     console.log('🔄 Retrying community initialization...');
     const messagesContainer = document.getElementById('communityMessages');
@@ -71,16 +71,13 @@ function retryInitialization() {
         `;
     }
     
-    // Reset initialization flag
     isInitialized = false;
-    
-    // Try again after a short delay
     setTimeout(() => {
         initializeCommunity();
     }, 1000);
 }
 
-// FIXED: Add missing setLayoutForScreenSize function
+// Set layout for screen size
 function setLayoutForScreenSize() {
     const isMobile = window.innerWidth <= 1024;
     console.log('📱 Setting layout for screen size:', { isMobile, width: window.innerWidth });
@@ -90,18 +87,15 @@ function setLayoutForScreenSize() {
     const desktopOnlyElements = document.querySelectorAll('.desktop-only');
 
     if (isMobile) {
-        // Show mobile layout
         if (mobileSelector) mobileSelector.style.display = 'block';
         if (desktopSidebar) desktopSidebar.style.display = 'none';
         
-        // Hide desktop-only elements
         desktopOnlyElements.forEach(el => {
             if (!el.classList.contains('rooms-sidebar')) {
                 el.style.display = 'none';
             }
         });
 
-        // Prevent iOS zoom on inputs
         const inputs = document.querySelectorAll('input, textarea, select');
         inputs.forEach(input => {
             if (input.style.fontSize !== '16px') {
@@ -110,18 +104,16 @@ function setLayoutForScreenSize() {
         });
 
     } else {
-        // Show desktop layout
         if (mobileSelector) mobileSelector.style.display = 'none';
         if (desktopSidebar) desktopSidebar.style.display = 'flex';
         
-        // Show desktop-only elements
         desktopOnlyElements.forEach(el => {
             el.style.display = '';
         });
     }
 }
 
-// Get current user info from token or localStorage
+// Get current user info
 function getCurrentUser() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -130,7 +122,6 @@ function getCurrentUser() {
             return null;
         }
         
-        // Decode JWT token to get user info (simple decode, not verification)
         const payload = JSON.parse(atob(token.split('.')[1]));
         const user = {
             id: payload.userId,
@@ -146,7 +137,7 @@ function getCurrentUser() {
     }
 }
 
-// Load all rooms from backend - WITH TIMEOUT
+// Load rooms from backend
 async function loadRooms() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -156,9 +147,8 @@ async function loadRooms() {
 
         console.log('📡 Fetching rooms from backend...');
 
-        // Add timeout to prevent hanging
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             headers: {
@@ -177,14 +167,12 @@ async function loadRooms() {
         rooms = await response.json();
         console.log('📁 Loaded rooms:', rooms.length);
         
-        // Update the rooms list in the UI
         updateRoomsList();
         return true;
         
     } catch (error) {
         console.error('❌ Error loading rooms:', error);
         
-        // Use fallback default rooms if backend fails
         console.log('🔄 Using fallback rooms...');
         rooms = [
             { _id: 'general', name: 'General Discussion', description: 'Open chat for everyone' },
@@ -192,18 +180,17 @@ async function loadRooms() {
             { _id: 'work-life-balance', name: 'Work-Life Balance', description: 'Managing entrepreneurial stress' }
         ];
         updateRoomsList();
-        return true; // Return true even with fallback rooms
+        return true;
     }
 }
 
-// Update rooms list for both desktop and mobile
+// Update rooms list UI
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
     const roomDropdown = document.getElementById('roomDropdown');
     
     console.log('🔄 Updating rooms list UI...');
     
-    // Update desktop rooms list
     if (roomsList && rooms && rooms.length > 0) {
         roomsList.innerHTML = '';
 
@@ -241,7 +228,6 @@ function updateRoomsList() {
         });
     }
     
-    // Update mobile dropdown
     if (roomDropdown && rooms && rooms.length > 0) {
         roomDropdown.innerHTML = '<option value="">Select a room...</option>';
         
@@ -257,7 +243,7 @@ function updateRoomsList() {
     console.log('✅ Rooms list updated');
 }
 
-// Switch to a different room
+// Switch to a room
 async function switchRoom(roomId) {
     try {
         if (!roomId) {
@@ -273,14 +259,11 @@ async function switchRoom(roomId) {
 
         console.log('🔄 Switching to room:', room.name);
 
-        // Cancel any active reply when switching rooms
         cancelReply();
 
-        // Update current room
         currentRoomId = roomId;
         currentRoomName = room.name;
 
-        // Update desktop UI
         document.querySelectorAll('.room-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -290,19 +273,16 @@ async function switchRoom(roomId) {
             currentRoomElement.classList.add('active');
         }
 
-        // Update mobile dropdown
         const roomDropdown = document.getElementById('roomDropdown');
         if (roomDropdown) {
             roomDropdown.value = roomId;
         }
 
-        // Update room title
         const roomNameElement = document.getElementById('currentRoomName');
         const roomDescElement = document.getElementById('currentRoomDescription');
         if (roomNameElement) roomNameElement.textContent = room.name;
         if (roomDescElement) roomDescElement.textContent = room.description;
 
-        // Enable message input and buttons
         const messageInput = document.getElementById('communityMessageInput');
         const sendButton = document.getElementById('sendCommunityButton');
         const emojiButton = document.getElementById('emojiBtn');
@@ -314,7 +294,6 @@ async function switchRoom(roomId) {
         if (sendButton) sendButton.disabled = false;
         if (emojiButton) emojiButton.disabled = false;
 
-        // Load messages for this room
         await loadMessages(roomId);
 
         console.log('✅ Successfully switched to room:', room.name);
@@ -324,17 +303,16 @@ async function switchRoom(roomId) {
     }
 }
 
-// ENHANCED: Create message element with visual reply styling
+// ENHANCED: Create message element with simplified reply styling
 function createMessageElement(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
     messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
     
-    // VISUAL DISTINCTION: Add reply class if this is a reply
+    // SIMPLIFIED: Add reply class if this is a reply
     if (message.replyTo) {
-        messageDiv.classList.add('reply-message');
-        messageDiv.setAttribute('data-reply-to', message.replyTo.messageId);
-        console.log('💬 Creating reply message visual styling');
+        messageDiv.classList.add('reply');
+        console.log('💬 Creating simplified reply message');
     }
 
     const username = message.username || 'User';
@@ -342,18 +320,9 @@ function createMessageElement(message) {
     const timestamp = formatMessageTime(message.createdAt || message.timestamp);
     const content = message.content || message.message || '';
     
-    // ENHANCED: Reply reference with better styling
-    let replyHtml = '';
-    if (message.replyTo) {
-        replyHtml = `
-            <div class="reply-reference">
-                <div class="reply-author">↳ Replying to ${escapeHtml(message.replyTo.username)}</div>
-                <div class="reply-text">${escapeHtml(message.replyTo.content)}</div>
-            </div>
-        `;
-    }
+    // NO MORE REPLY REFERENCE BOXES - Just simple styling
     
-    // Simulate like count (in real app, this would come from backend)
+    // Simulate like count
     const likes = message.likes || [];
     const likeCount = likes.length || Math.floor(Math.random() * 3);
     const isLikedByUser = likes.includes(currentUser?.id);
@@ -368,7 +337,6 @@ function createMessageElement(message) {
             <span class="message-timestamp">${timestamp}</span>
         </div>
         <div class="message-content">
-            ${replyHtml}
             <p>${escapeHtml(content)}</p>
             <div class="message-actions">
                 <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
@@ -395,7 +363,7 @@ function createMessageElement(message) {
     return messageDiv;
 }
 
-// Load messages with enhanced reply processing
+// Load messages for a room
 async function loadMessages(roomId) {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -445,7 +413,7 @@ async function loadMessages(roomId) {
     }
 }
 
-// Display messages with enhanced reply styling
+// Display messages with simplified reply styling
 function displayMessages(messages) {
     const messagesContainer = document.getElementById('communityMessages');
     if (!messagesContainer) return;
@@ -461,16 +429,13 @@ function displayMessages(messages) {
         return;
     }
 
-    // Process and display messages
     messages.forEach(message => {
         const messageElement = createMessageElement(message);
         messagesContainer.appendChild(messageElement);
     });
 
-    // Scroll to bottom
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
-    // Log reply statistics
     const replyCount = messages.filter(m => m.replyTo).length;
     console.log(`📊 Displayed ${messages.length} messages (${replyCount} replies)`);
 }
@@ -481,12 +446,11 @@ function replyToMessage(messageId, username, content, originalUserId) {
         messageId, 
         username, 
         content,
-        userId: originalUserId // Store original user ID for notifications
+        userId: originalUserId
     };
     
     console.log('💬 Replying to message:', { messageId, username, originalUserId });
     
-    // Show reply banner
     const replyBanner = document.getElementById('replyBanner');
     const replyToUser = document.getElementById('replyToUser');
     const replyToMessage = document.getElementById('replyToMessage');
@@ -499,16 +463,13 @@ function replyToMessage(messageId, username, content, originalUserId) {
         replyBanner.style.display = 'block';
         chatInput.classList.add('replying');
         
-        // Focus the input
         const messageInput = document.getElementById('communityMessageInput');
         if (messageInput) {
             messageInput.focus();
         }
         
-        // Show reply toast
         showReplyToast(`Replying to ${username}`);
         
-        // Add haptic feedback on mobile
         if (navigator.vibrate && window.innerWidth <= 1024) {
             navigator.vibrate(50);
         }
@@ -517,20 +478,34 @@ function replyToMessage(messageId, username, content, originalUserId) {
     }
 }
 
-// NEW: Reply toast notification
+// Reply toast notification
 function showReplyToast(message) {
     const toast = document.createElement('div');
     toast.className = 'reply-toast';
     toast.innerHTML = `💬 ${message}`;
     
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        z-index: 9999;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    `;
+    
     document.body.appendChild(toast);
     
-    // Trigger animation
-    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => toast.style.transform = 'translateY(0)', 100);
     
-    // Remove after 3 seconds
     setTimeout(() => {
-        toast.classList.remove('show');
+        toast.style.transform = 'translateY(100%)';
         setTimeout(() => {
             if (toast.parentNode) {
                 toast.parentNode.removeChild(toast);
@@ -539,7 +514,7 @@ function showReplyToast(message) {
     }, 3000);
 }
 
-// Cancel reply functionality
+// Cancel reply
 function cancelReply() {
     currentReplyTo = null;
     
@@ -557,7 +532,7 @@ function cancelReply() {
     console.log('✅ Reply cancelled');
 }
 
-// ENHANCED: Send message with reply support and notification creation
+// ENHANCED: Send message with reply support
 async function sendCommunityMessage() {
     try {
         const messageInput = document.getElementById('communityMessageInput');
@@ -573,13 +548,11 @@ async function sendCommunityMessage() {
             return;
         }
 
-        // Show loading state
         if (sendButton) {
             sendButton.disabled = true;
             sendButton.textContent = 'Sending...';
         }
 
-        // Add mobile haptic feedback
         if (navigator.vibrate && window.innerWidth <= 1024) {
             navigator.vibrate(30);
         }
@@ -589,7 +562,6 @@ async function sendCommunityMessage() {
             throw new Error('No authentication token');
         }
 
-        // Prepare message data
         const messageData = {
             content: messageText,
             avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U',
@@ -600,7 +572,7 @@ async function sendCommunityMessage() {
         if (currentReplyTo) {
             messageData.replyTo = {
                 messageId: currentReplyTo.messageId,
-                userId: currentReplyTo.userId, // IMPORTANT: Include original user ID
+                userId: currentReplyTo.userId,
                 username: currentReplyTo.username,
                 content: currentReplyTo.content
             };
@@ -610,11 +582,9 @@ async function sendCommunityMessage() {
             });
         }
 
-        // Add timeout to prevent hanging
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        // Send message to backend (which will create notification if it's a reply)
         const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
             method: 'POST',
             headers: {
@@ -638,28 +608,23 @@ async function sendCommunityMessage() {
             notificationCreated: !!newMessage.replyTo
         });
 
-        // Clear input and reply state
         messageInput.value = '';
         cancelReply();
 
-        // Hide mobile keyboard
         if (window.innerWidth <= 1024) {
             messageInput.blur();
         }
 
-        // Show success feedback for replies
         if (currentReplyTo) {
             showSuccessToast('Reply sent! Notification created.');
         }
 
-        // Reload messages to show the new one
         await loadMessages(currentRoomId);
 
     } catch (error) {
         console.error('❌ Error sending message:', error);
         showErrorMessage('Failed to send message. Please try again.');
     } finally {
-        // Re-enable send button
         const sendButton = document.getElementById('sendCommunityButton');
         if (sendButton) {
             sendButton.disabled = false;
@@ -668,7 +633,7 @@ async function sendCommunityMessage() {
     }
 }
 
-// NEW: Success toast for confirmation
+// Success toast for confirmation
 function showSuccessToast(message) {
     const toast = document.createElement('div');
     const isMobile = window.innerWidth <= 1024;
@@ -693,12 +658,10 @@ function showSuccessToast(message) {
     
     document.body.appendChild(toast);
     
-    // Trigger animation
     setTimeout(() => {
         toast.style.transform = 'translateY(0)';
     }, 100);
     
-    // Remove after 4 seconds
     setTimeout(() => {
         toast.style.transform = 'translateY(100%)';
         setTimeout(() => {
@@ -712,15 +675,26 @@ function showSuccessToast(message) {
 // Initialize the community system
 async function initializeCommunity() {
     try {
-        // Prevent multiple initializations
         if (isInitialized) {
             console.log('⚠️ Community already initialized, skipping...');
             return;
         }
 
-        console.log('🚀 Starting enhanced community with reply system...');
+        console.log('🚀 Starting enhanced community with simplified reply system...');
         
-        // Get current user info
+        const searchResults = document.getElementById('searchResults');
+        const emojiModal = document.getElementById('emojiModal');
+        
+        if (searchResults) {
+            searchResults.style.display = 'none';
+            searchResults.style.visibility = 'hidden';
+        }
+        
+        if (emojiModal) {
+            emojiModal.style.display = 'none';
+            emojiModal.style.visibility = 'hidden';
+        }
+        
         currentUser = getCurrentUser();
         if (!currentUser) {
             console.error('❌ No user found');
@@ -730,10 +704,8 @@ async function initializeCommunity() {
 
         console.log('✅ User found:', currentUser.email);
 
-        // Set layout based on screen size (ONE TIME ONLY)
         setLayoutForScreenSize();
 
-        // Show loading message in community area
         const messagesContainer = document.getElementById('communityMessages');
         if (messagesContainer) {
             messagesContainer.innerHTML = `
@@ -743,7 +715,6 @@ async function initializeCommunity() {
             `;
         }
 
-        // Load all rooms from backend
         const roomsLoaded = await loadRooms();
         
         if (!roomsLoaded) {
@@ -752,7 +723,6 @@ async function initializeCommunity() {
             return;
         }
 
-        // Set default room (General Discussion or first available)
         const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
         if (generalRoom) {
             currentRoomId = generalRoom._id;
@@ -760,7 +730,6 @@ async function initializeCommunity() {
             console.log('🏠 Setting default room:', currentRoomName);
             await switchRoom(generalRoom._id);
         } else {
-            // No rooms available
             const messagesContainer = document.getElementById('communityMessages');
             if (messagesContainer) {
                 messagesContainer.innerHTML = `
@@ -775,7 +744,6 @@ async function initializeCommunity() {
             }
         }
 
-        // Mark as initialized
         isInitialized = true;
         console.log('✅ Enhanced community initialized successfully');
         
@@ -832,70 +800,7 @@ function showErrorMessage(message) {
     }, 4000);
 }
 
-// Stub functions for features not implemented yet
-function toggleLike(messageId) {
-    console.log('Like toggled for:', messageId);
-    // TODO: Implement like functionality
-}
-
-function createRoom() {
-    const roomName = prompt('Enter room name:');
-    if (roomName && roomName.trim()) {
-        console.log('Creating room:', roomName);
-        // TODO: Implement room creation
-    }
-}
-
-function deleteRoom(roomId) {
-    if (confirm('Are you sure you want to delete this room?')) {
-        console.log('Deleting room:', roomId);
-        // TODO: Implement room deletion
-    }
-}
-
-function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter') {
-        const isMobile = window.innerWidth <= 1024;
-        
-        if (isMobile) {
-            return; // Allow multi-line on mobile
-        } else {
-            if (!event.shiftKey) {
-                event.preventDefault();
-                sendCommunityMessage();
-            }
-        }
-    }
-    
-    // Escape key cancels reply
-    if (event.key === 'Escape' && currentReplyTo) {
-        cancelReply();
-    }
-}
-
-// Export functions for global access
-window.initializeCommunity = initializeCommunity;
-window.retryInitialization = retryInitialization;
-window.sendCommunityMessage = sendCommunityMessage;
-window.handleCommunityKeyPress = handleCommunityKeyPress;
-window.loadMessages = loadMessages;
-window.displayMessages = displayMessages;
-window.createMessageElement = createMessageElement;
-window.replyToMessage = replyToMessage;
-window.cancelReply = cancelReply;
-window.toggleLike = toggleLike;
-window.createRoom = createRoom;
-window.deleteRoom = deleteRoom;
-window.switchRoom = switchRoom;
-window.updateRoomsList = updateRoomsList;
-window.showReplyToast = showReplyToast;
-window.showSuccessToast = showSuccessToast;
-window.showErrorMessage = showErrorMessage;
-window.formatMessageTime = formatMessageTime;
-
-console.log('✅ Fixed Community.js loaded - Reply System with Visual Styling + Notifications!');
-
-// FIXED: Working Like functionality
+// Like functionality
 function toggleLike(messageId) {
     try {
         console.log('❤️ Toggling like for message:', messageId);
@@ -912,13 +817,11 @@ function toggleLike(messageId) {
         const currentCount = parseInt(likeCount.dataset.count || '0');
         
         if (isCurrentlyLiked) {
-            // Unlike
             likeBtn.classList.remove('liked');
             likeBtn.innerHTML = '♡';
             const newCount = Math.max(0, currentCount - 1);
             updateLikeDisplay(likeCount, newCount);
         } else {
-            // Like
             likeBtn.classList.add('liked');
             likeBtn.innerHTML = '♥';
             const newCount = currentCount + 1;
@@ -947,5 +850,466 @@ function updateLikeDisplay(likeElement, count) {
     }
 }
 
+// Room management
+async function createRoom() {
+    try {
+        const roomName = prompt('Enter room name:');
+        if (!roomName || !roomName.trim()) return;
+
+        const roomDescription = prompt('Enter room description:');
+        if (!roomDescription || !roomDescription.trim()) return;
+
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: roomName.trim(),
+                description: roomDescription.trim()
+            }),
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Failed to create room: ${response.status}`);
+        }
+
+        const newRoom = await response.json();
+        console.log('🆕 Room created successfully:', newRoom.name);
+
+        await loadRooms();
+        switchRoom(newRoom._id);
+
+    } catch (error) {
+        console.error('❌ Error creating room:', error);
+        showErrorMessage('Failed to create room. Please try again.');
+    }
+}
+
+async function deleteRoom(roomId) {
+    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Failed to delete room: ${response.status}`);
+        }
+
+        console.log('🗑️ Room deleted successfully');
+
+        if (currentRoomId === roomId) {
+            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+            if (generalRoom) {
+                switchRoom(generalRoom._id);
+            }
+        }
+
+        await loadRooms();
+
+    } catch (error) {
+        console.error('❌ Error deleting room:', error);
+        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
+    }
+}
+
+function handleCommunityKeyPress(event) {
+    if (event.key === 'Enter') {
+        const isMobile = window.innerWidth <= 1024;
+        
+        if (isMobile) {
+            return; // Allow multi-line on mobile
+        } else {
+            if (!event.shiftKey) {
+                event.preventDefault();
+                sendCommunityMessage();
+            }
+        }
+    }
+    
+    if (event.key === 'Escape' && currentReplyTo) {
+        cancelReply();
+    }
+}
+
+// ENHANCED SEARCH FUNCTIONALITY
+let searchTimeout;
+let allMessages = [];
+
+async function performSearch(query) {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+
+    if (!query || query.trim().length === 0) {
+        closeSearch();
+        return;
+    }
+
+    searchTimeout = setTimeout(async () => {
+        await executeSearch(query.trim());
+    }, 200);
+}
+
+async function executeSearch(query) {
+    try {
+        const searchResults = document.getElementById('searchResults');
+        const searchContent = document.getElementById('searchContent');
+        
+        if (!searchResults || !searchContent) return;
+
+        searchResults.style.display = 'block';
+        searchResults.style.visibility = 'visible';
+        searchResults.style.position = 'fixed';
+        searchResults.style.top = '120px';
+        searchResults.style.right = '20px';
+        searchResults.style.zIndex = '9999';
+        
+        searchContent.innerHTML = `
+            <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                <p>🔍 Searching...</p>
+            </div>
+        `;
+
+        if (!currentRoomId) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                    <p>Please select a room first</p>
+                </div>
+            `;
+            return;
+        }
+
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch messages for search');
+        }
+
+        allMessages = await response.json();
+
+        const filteredMessages = allMessages.filter(message => {
+            const content = (message.content || message.message || '').toLowerCase();
+            const username = (message.username || '').toLowerCase();
+            const queryLower = query.toLowerCase();
+            return content.includes(queryLower) || username.includes(queryLower);
+        });
+
+        if (filteredMessages.length === 0) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
+                    <p>❌ No messages found for "${query}"</p>
+                    <small style="opacity: 0.7;">Try different keywords</small>
+                </div>
+            `;
+        } else {
+            searchContent.innerHTML = '';
+            
+            const header = document.createElement('div');
+            header.style.cssText = 'padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.1); border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--primary); font-weight: 600;';
+            header.textContent = `Found ${filteredMessages.length} result${filteredMessages.length !== 1 ? 's' : ''}`;
+            searchContent.appendChild(header);
+            
+            filteredMessages.slice(0, 8).forEach(message => {
+                const resultItem = document.createElement('div');
+                resultItem.className = 'search-result-item';
+                
+                const content = message.content || message.message || '';
+                
+                const highlightedContent = content.replace(
+                    new RegExp(`(${query})`, 'gi'), 
+                    `<mark style="background: #ffd700; color: #000; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600;">$1</mark>`
+                );
+                
+                const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+                const username = message.username || 'User';
+                
+                resultItem.innerHTML = `
+                    <div style="padding: 0.875rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;" 
+                         onclick="scrollToMessage('${message._id}')"
+                         onmouseover="this.style.background='rgba(99, 102, 241, 0.05)'; this.style.transform='translateX(4px)'"
+                         onmouseout="this.style.background=''; this.style.transform='translateX(0)'">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <strong style="color: var(--primary); font-size: 0.9rem;">${escapeHtml(username)}</strong>
+                            <span style="color: var(--text-muted); font-size: 0.75rem;">${timestamp}</span>
+                        </div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.85rem; line-height: 1.4; word-break: break-word;">${highlightedContent}</p>
+                    </div>
+                `;
+                
+                searchContent.appendChild(resultItem);
+            });
+
+            if (filteredMessages.length > 8) {
+                const moreResults = document.createElement('div');
+                moreResults.style.cssText = 'text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); background: var(--surface);';
+                moreResults.textContent = `... and ${filteredMessages.length - 8} more results`;
+                searchContent.appendChild(moreResults);
+            }
+        }
+
+    } catch (error) {
+        console.error('Search error:', error);
+        const searchContent = document.getElementById('searchContent');
+        if (searchContent) {
+            searchContent.innerHTML = `
+                <div style="text-align: center; padding: 1.5rem; color: var(--error);">
+                    <p>⚠️ Search failed</p>
+                    <small style="opacity: 0.8;">Please try again</small>
+                </div>
+            `;
+        }
+    }
+}
+
+function scrollToMessage(messageId) {
+    closeSearch();
+    console.log('Scrolling to message:', messageId);
+}
+
+function closeSearch() {
+    const searchResults = document.getElementById('searchResults');
+    const searchInput = document.getElementById('desktopSearchInput');
+    
+    if (searchResults) {
+        searchResults.style.display = 'none';
+        searchResults.style.visibility = 'hidden';
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    allMessages = [];
+}
+
+// EMOJI FUNCTIONALITY
+function toggleEmoji() {
+    const emojiModal = document.getElementById('emojiModal');
+    if (!emojiModal) return;
+    
+    const isCurrentlyVisible = emojiModal.style.display === 'block' && emojiModal.style.visibility !== 'hidden';
+    
+    if (isCurrentlyVisible) {
+        emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
+    } else {
+        emojiModal.style.display = 'block';
+        emojiModal.style.visibility = 'visible';
+        emojiModal.style.position = 'fixed';
+        emojiModal.style.bottom = '120px';
+        emojiModal.style.right = '20px';
+        emojiModal.style.zIndex = '9998';
+    }
+}
+
+function insertEmoji(emoji) {
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const cursorPos = messageInput.selectionStart || messageInput.value.length;
+        const textBefore = messageInput.value.substring(0, cursorPos);
+        const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+        messageInput.value = textBefore + emoji + textAfter;
+        
+        const newPos = cursorPos + emoji.length;
+        messageInput.setSelectionRange(newPos, newPos);
+        messageInput.focus();
+    }
+    
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
+    }
+}
+
+// Navigation functions
+function goToNotifications() {
+    window.location.href = 'notifications.html';
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
+
+// Enhanced event listeners
+function initializeEventListeners() {
+    console.log('🚀 Initializing enhanced event listeners');
+    
+    document.addEventListener('click', function(event) {
+        const emojiModal = document.getElementById('emojiModal');
+        const emojiBtn = event.target.closest('#emojiBtn');
+        
+        if (emojiModal && emojiModal.style.display === 'block' && emojiModal.style.visibility === 'visible' &&
+            !emojiModal.contains(event.target) && !emojiBtn) {
+            emojiModal.style.display = 'none';
+            emojiModal.style.visibility = 'hidden';
+        }
+
+        const searchResults = document.getElementById('searchResults');
+        const searchContainer = event.target.closest('.desktop-search-container');
+        
+        if (searchResults && searchResults.style.display === 'block' && searchResults.style.visibility === 'visible' &&
+            !searchResults.contains(event.target) && !searchContainer) {
+            closeSearch();
+        }
+    });
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeSearch();
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+                emojiModal.style.visibility = 'hidden';
+            }
+            if (currentReplyTo) {
+                cancelReply();
+            }
+        }
+        
+        if ((event.ctrlKey || event.metaKey) && event.key === 'k' && window.innerWidth > 1024) {
+            event.preventDefault();
+            const searchInput = document.getElementById('desktopSearchInput');
+            if (searchInput) {
+                searchInput.focus();
+            }
+        }
+    });
+    
+    console.log('✅ Enhanced event listeners initialized');
+}
+
+// Notification count functionality
+async function updateNotificationCount() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) return;
+        
+        const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const count = data.count || 0;
+            const countElement = document.getElementById('headerNotificationCount');
+            
+            if (countElement) {
+                countElement.textContent = count;
+                countElement.setAttribute('data-count', count);
+                countElement.style.display = count > 0 ? 'flex' : 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching notification count:', error);
+    }
+}
+
+// Auto-refresh messages every 30 seconds
+setInterval(async () => {
+    if (currentRoomId && isInitialized) {
+        try {
+            await loadMessages(currentRoomId);
+        } catch (error) {
+            console.log('⚠️ Auto-refresh failed, will try again next time');
+        }
+    }
+}, 30000);
+
+// Update notification count periodically
+updateNotificationCount();
+setInterval(updateNotificationCount, 30000);
+
+// Initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeEventListeners);
+} else {
+    initializeEventListeners();
+}
+
+// Export functions for global access
+window.initializeCommunity = initializeCommunity;
+window.retryInitialization = retryInitialization;
+window.sendCommunityMessage = sendCommunityMessage;
+window.handleCommunityKeyPress = handleCommunityKeyPress;
+window.loadMessages = loadMessages;
+window.displayMessages = displayMessages;
+window.createMessageElement = createMessageElement;
+window.replyToMessage = replyToMessage;
+window.cancelReply = cancelReply;
 window.toggleLike = toggleLike;
+window.createRoom = createRoom;
+window.deleteRoom = deleteRoom;
+window.switchRoom = switchRoom;
+window.updateRoomsList = updateRoomsList;
+window.showReplyToast = showReplyToast;
+window.showSuccessToast = showSuccessToast;
+window.showErrorMessage = showErrorMessage;
+window.formatMessageTime = formatMessageTime;
+window.toggleEmoji = toggleEmoji;
+window.insertEmoji = insertEmoji;
+window.performSearch = performSearch;
+window.closeSearch = closeSearch;
+window.scrollToMessage = scrollToMessage;
+window.goToNotifications = goToNotifications;
+window.logout = logout;
 window.updateLikeDisplay = updateLikeDisplay;
+
+// Export global variables
+window.currentRoomId = currentRoomId;
+window.rooms = rooms;
+window.currentReplyTo = currentReplyTo;
+
+console.log('✅ Complete Enhanced Community.js loaded - Simplified Reply System + Larger Messages Window + All Features!');
