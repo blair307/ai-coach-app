@@ -700,23 +700,121 @@
         }
     });
 
-    // Timer and Calendar Code (basic version)
+    // Timer and Calendar Code - FULL MEETING FUNCTIONALITY
     let currentDate = new Date();
+    let selectedMeetingDate = null;
+
+    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00'); // July 8th, 5:30 PM CST
+    const MEETING_DURATION = 80; // 80 minutes
+    const EARLY_ACCESS = 10; // 10 minutes early
+    const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
+
+    function getNextMeeting() {
+        const now = new Date();
+        let nextMeeting = new Date(MEETING_START_DATE);
+        
+        // Find next meeting (every 2 weeks)
+        while (nextMeeting <= now) {
+            nextMeeting.setDate(nextMeeting.getDate() + 14);
+        }
+        
+        return nextMeeting;
+    }
+
+    function updateCountdownTimer() {
+        const now = new Date();
+        const nextMeeting = getNextMeeting();
+        const timeDiff = nextMeeting - now;
+        
+        const countdownContainer = document.getElementById('countdownContainer');
+        const noMeetingContainer = document.getElementById('noMeeting');
+        const countdownTimer = document.getElementById('countdownTimer');
+        const countdownDate = document.getElementById('countdownDate');
+        
+        if (timeDiff > 0) {
+            if (countdownContainer) countdownContainer.style.display = 'block';
+            if (noMeetingContainer) noMeetingContainer.style.display = 'none';
+            
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+            
+            if (countdownTimer) {
+                if (days > 0) {
+                    countdownTimer.textContent = `${days}d ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                } else {
+                    countdownTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }
+            
+            if (countdownDate) {
+                const dateString = nextMeeting.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                countdownDate.textContent = dateString + ' at 5:30 PM CST';
+            }
+        } else {
+            if (countdownContainer) countdownContainer.style.display = 'none';
+            if (noMeetingContainer) noMeetingContainer.style.display = 'block';
+            updateCurrentTime();
+        }
+    }
 
     function updateCurrentTime() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('en-US', {
+        
+        const timeOptions = {
             timeZone: 'America/Chicago',
             hour12: true,
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'
-        });
+        };
+        
+        const dateOptions = {
+            timeZone: 'America/Chicago',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        };
+        
+        const timeString = now.toLocaleTimeString('en-US', timeOptions);
+        const dateString = now.toLocaleDateString('en-US', dateOptions);
         
         const timeElement = document.getElementById('currentTime');
-        if (timeElement) {
-            timeElement.textContent = timeString;
+        const dateElement = document.getElementById('currentDate');
+        
+        if (timeElement) timeElement.textContent = timeString;
+        if (dateElement) dateElement.textContent = dateString;
+    }
+
+    function getMeetingDates(year, month) {
+        const meetings = [];
+        let currentMeeting = new Date(MEETING_START_DATE);
+        
+        // Generate meetings for the year (every 2 weeks)
+        while (currentMeeting.getFullYear() <= year + 1) {
+            if (currentMeeting.getFullYear() === year && currentMeeting.getMonth() === month) {
+                meetings.push(new Date(currentMeeting));
+            }
+            currentMeeting.setDate(currentMeeting.getDate() + 14);
         }
+        
+        return meetings;
+    }
+
+    function isMeetingDay(date) {
+        const meetings = getMeetingDates(date.getFullYear(), date.getMonth());
+        return meetings.some(meeting => 
+            meeting.getDate() === date.getDate() &&
+            meeting.getMonth() === date.getMonth() &&
+            meeting.getFullYear() === date.getFullYear()
+        );
     }
 
     function generateCalendar(year, month) {
@@ -748,6 +846,12 @@
                 dayElement.classList.add('today');
             }
             
+            if (isMeetingDay(cellDate)) {
+                dayElement.classList.add('meeting-day');
+                dayElement.addEventListener('click', () => showMeetingCard(cellDate));
+                dayElement.style.cursor = 'pointer';
+            }
+            
             calendarDays.appendChild(dayElement);
         }
         
@@ -756,6 +860,84 @@
         const monthElement = document.getElementById('currentMonth');
         if (monthElement) {
             monthElement.textContent = `${monthNames[month]} ${year}`;
+        }
+    }
+
+    function showMeetingCard(date) {
+        selectedMeetingDate = new Date(date);
+        selectedMeetingDate.setHours(17, 30, 0, 0); // 5:30 PM
+        
+        const dateString = selectedMeetingDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        
+        const meetingDate = document.getElementById('meetingDate');
+        const meetingModal = document.getElementById('meetingModal');
+        
+        if (meetingDate) meetingDate.textContent = dateString;
+        if (meetingModal) meetingModal.style.display = 'flex';
+        
+        updateMeetingStatus();
+    }
+
+    function updateMeetingStatus() {
+        if (!selectedMeetingDate) return;
+        
+        const now = new Date();
+        const meetingStart = new Date(selectedMeetingDate);
+        const meetingEnd = new Date(meetingStart);
+        meetingEnd.setMinutes(meetingEnd.getMinutes() + MEETING_DURATION);
+        const earlyAccess = new Date(meetingStart);
+        earlyAccess.setMinutes(earlyAccess.getMinutes() - EARLY_ACCESS);
+        
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        const statusDiv = document.getElementById('meetingStatus');
+        
+        if (now >= earlyAccess && now <= meetingEnd) {
+            // Meeting is available (10 minutes before to 80 minutes after)
+            if (joinBtn) {
+                joinBtn.disabled = false;
+                joinBtn.classList.add('active');
+            }
+            
+            if (statusDiv) {
+                if (now < meetingStart) {
+                    const minutesToStart = Math.ceil((meetingStart - now) / (1000 * 60));
+                    statusDiv.textContent = `Meeting starts in ${minutesToStart} minute${minutesToStart !== 1 ? 's' : ''}`;
+                    statusDiv.className = 'meeting-status waiting';
+                } else {
+                    const minutesLeft = Math.ceil((meetingEnd - now) / (1000 * 60));
+                    statusDiv.textContent = `Meeting in progress (${minutesLeft} minutes remaining)`;
+                    statusDiv.className = 'meeting-status active';
+                }
+            }
+        } else {
+            // Meeting is not available
+            if (joinBtn) {
+                joinBtn.disabled = true;
+                joinBtn.classList.remove('active');
+            }
+            
+            if (statusDiv) {
+                statusDiv.className = 'meeting-status';
+                
+                if (now < earlyAccess) {
+                    const timeToMeeting = earlyAccess - now;
+                    const hours = Math.floor(timeToMeeting / (1000 * 60 * 60));
+                    const minutes = Math.floor((timeToMeeting % (1000 * 60 * 60)) / (1000 * 60));
+                    
+                    if (hours > 0) {
+                        statusDiv.textContent = `Meeting available in ${hours}h ${minutes}m`;
+                    } else {
+                        statusDiv.textContent = `Meeting available in ${minutes} minutes`;
+                    }
+                } else {
+                    statusDiv.textContent = 'Meeting has ended';
+                }
+            }
         }
     }
 
@@ -769,18 +951,22 @@
         if (modal) {
             modal.style.display = 'none';
         }
+        selectedMeetingDate = null;
     }
 
     function joinMeeting() {
-        window.open('https://us02web.zoom.us/j/8974193947', '_blank');
+        const joinBtn = document.getElementById('joinMeetingBtn');
+        if (joinBtn && !joinBtn.disabled) {
+            window.open(ZOOM_LINK, '_blank');
+        }
     }
 
     // Initialize timer and calendar
     function initializeTimerAndCalendar() {
         try {
-            // Update time display
-            updateCurrentTime();
-            setInterval(updateCurrentTime, 1000);
+            // Start countdown timer
+            updateCountdownTimer();
+            setInterval(updateCountdownTimer, 1000);
             
             // Generate calendar
             generateCalendar(currentDate.getFullYear(), currentDate.getMonth());
@@ -796,14 +982,20 @@
                 nextMonth.addEventListener('click', () => navigateMonth(1));
             }
             
-            // Show current time instead of countdown for now
-            const countdownContainer = document.getElementById('countdownContainer');
-            const noMeetingContainer = document.getElementById('noMeeting');
+            // Update meeting status every minute
+            setInterval(updateMeetingStatus, 60000);
             
-            if (countdownContainer) countdownContainer.style.display = 'none';
-            if (noMeetingContainer) noMeetingContainer.style.display = 'block';
+            // Close modal when clicking outside
+            const meetingModal = document.getElementById('meetingModal');
+            if (meetingModal) {
+                meetingModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        closeMeetingCard();
+                    }
+                });
+            }
             
-            console.log('✅ Timer and calendar initialized');
+            console.log('✅ Timer and calendar with meetings initialized');
             
         } catch (error) {
             console.error('❌ Error initializing timer/calendar:', error);
