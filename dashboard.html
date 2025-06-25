@@ -72,7 +72,7 @@
                         </div>
                         <div class="stat">
                             <div class="stat-number" id="activeGoalsCount">0</div>
-                            <div class="stat-label">Active Goals</div>
+                            <div class="stat-label">Total Goals</div>
                         </div>
                     </div>
                     <!-- Debug buttons -->
@@ -385,7 +385,7 @@
             }
         }
 
-        // Get active goals from API
+        // Get active goals from API - SAME LOGIC AS LIFE GOALS SECTION
         async getActiveGoals() {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
@@ -401,9 +401,13 @@
                 
                 if (response.ok) {
                     const goals = await response.json();
-                    const activeGoals = goals.filter(goal => !goal.completed).length;
-                    console.log('🎯 Active goals from API:', activeGoals, 'out of', goals.length);
-                    return activeGoals;
+                    
+                    // IMPORTANT: Count ALL goals, not just active ones
+                    // This matches what the Life Goals section shows in "Total Goals"
+                    const totalGoals = goals.length;
+                    
+                    console.log('🎯 Total goals from API:', totalGoals, '(same as Life Goals section)');
+                    return totalGoals;
                 } else {
                     console.log('Goals API returned error:', response.status);
                     return 0;
