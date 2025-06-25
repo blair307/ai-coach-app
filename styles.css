@@ -4328,3 +4328,19 @@ mark {
         transform: none !important;
     }
 }
+
+/* FORCE the reply reference box to be light */
+.reply-reference {
+    background: #f3f0ff !important;
+    color: #1f2937 !important;
+    border: 1px solid #c4b5fd !important;
+    border-left: 4px solid #8b5cf6 !important;
+}
+
+.reply-author {
+    color: #6d28d9 !important;
+}
+
+.reply-text {
+    color: #374151 !important;
+}
