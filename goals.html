@@ -84,7 +84,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="spirit-progress">0/0</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #06b6d4; display: block;" id="spirit-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -100,7 +100,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="body-progress">0/0</span>
+                          <span style="font-size: 1.2rem; font-weight: 800; color: #10b981; display: block;" id="body-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -116,7 +116,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="work-progress">0/0</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #f59e0b; display: block;" id="work-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -132,7 +132,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                          <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="relationships-progress">0/0</span>
+                          <span style="font-size: 1.2rem; font-weight: 800; color: #ec4899; display: block;" id="relationships-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -148,7 +148,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                            <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="fun-progress">0/0</span>
+                            <span style="font-size: 1.2rem; font-weight: 800; color: #f97316; display: block;" id="fun-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -164,7 +164,7 @@
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Goals</small>
                         </div>
                         <div style="text-align: center; flex: 1;">
-                           <span style="font-size: 1.2rem; font-weight: 800; color: #8b5cf6; display: block;" id="finances-progress">0/0</span>
+                           <span style="font-size: 1.2rem; font-weight: 800; color: #059669; display: block;" id="finances-progress">0/0</span>
                             <small style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Progress</small>
                         </div>
                     </div>
@@ -283,11 +283,12 @@
     </div>
 
     <script>
-        // Global variables
+        // Global variables - FIXED: Added allGoals array to store all goals
         let currentStep = 1;
         let currentArea = '';
         let wizardData = {};
         let goalToDelete = null;
+        let allGoals = []; // NEW: Store all goals globally for easy access
 
         // API Base URL
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
@@ -536,22 +537,31 @@
             }
         }
 
-        // FIXED Delete Functions - No more event.target issues
-        function deleteGoalClick(goalId, goalData) {
-            console.log('Delete goal clicked:', goalId, goalData);
+        // FIXED Delete Functions - Much simpler approach
+        function deleteGoalClick(goalId) {
+            console.log('Delete goal clicked:', goalId);
             
             try {
+                // Find the goal in our global array
+                const goal = allGoals.find(g => (g._id === goalId || g.id === goalId));
+                
+                if (!goal) {
+                    console.error('Goal not found in allGoals array');
+                    showErrorMessage('Error: Goal not found. Please refresh the page.');
+                    return;
+                }
+                
                 // Store the goal info globally
                 goalToDelete = {
                     id: goalId,
-                    data: goalData
+                    data: goal
                 };
                 
                 const goalToDeleteElement = document.getElementById('goalToDelete');
-                const area = goalData.area || 'Unknown';
-                const bigGoal = goalData.bigGoal || 'No description';
-                const dailyAction = goalData.dailyAction || 'No daily action';
-                const streak = goalData.streak || 0;
+                const area = goal.area || 'Unknown';
+                const bigGoal = goal.bigGoal || 'No description';
+                const dailyAction = goal.dailyAction || 'No daily action';
+                const streak = goal.streak || 0;
                 
                 goalToDeleteElement.innerHTML = `
                     <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
@@ -585,7 +595,6 @@
             }
 
             try {
-                // Get the button directly by ID instead of using event.target
                 const deleteBtn = document.getElementById('confirmDeleteBtn');
                 if (deleteBtn) {
                     const originalText = deleteBtn.textContent;
@@ -722,6 +731,10 @@
                         if (response.ok) {
                             const backendGoals = await response.json();
                             console.log('Loaded goals from backend:', backendGoals);
+                            
+                            // FIXED: Store all goals in global array
+                            allGoals = backendGoals;
+                            
                             backendGoals.forEach(goal => {
                                 if (!goals[goal.area]) goals[goal.area] = [];
                                 goals[goal.area].push(goal);
@@ -734,6 +747,11 @@
 
                 if (Object.keys(goals).length === 0) {
                     goals = JSON.parse(localStorage.getItem('lifeGoals') || '{}');
+                    // Also store localStorage goals in allGoals array
+                    allGoals = [];
+                    Object.values(goals).forEach(areaGoals => {
+                        allGoals.push(...areaGoals);
+                    });
                 }
 
                 const overviewContainer = document.getElementById('goalsOverview');
@@ -756,17 +774,10 @@
                         const streakDisplay = goal.streak || 0;
                         const goalId = goal._id || goal.id;
                         
-                        // Create a clean goal object for passing to delete function
-                        const cleanGoal = {
-                            area: goal.area || area,
-                            bigGoal: goal.bigGoal || 'No description',
-                            dailyAction: goal.dailyAction || 'No daily action',
-                            streak: goal.streak || 0
-                        };
-                        
+                        // FIXED: Much simpler delete button - just pass the goalId
                         html += `
                             <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
-                                <button onclick="deleteGoalClick('${goalId}', ${JSON.stringify(cleanGoal).replace(/"/g, '&quot;')})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                <button onclick="deleteGoalClick('${goalId}')" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
                                 
                                 <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${escapeHtml(goal.bigGoal)}</p>
                                 <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${escapeHtml(goal.dailyAction)}</p>
