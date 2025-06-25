@@ -3948,41 +3948,34 @@ mark {
 }
 
 /* ================================= 
-   ENHANCED REPLY SYSTEM STYLES
-   Add these styles to the END of your styles.css file
+   LIGHTER PURPLE REPLY SYSTEM STYLES
+   Replace the previous reply styles with these lighter, more readable ones
    ================================= */
 
-/* Regular message styling (no changes needed) */
-.message-group {
-    position: relative;
-    margin-bottom: 1.5rem;
-    transition: all 0.2s ease;
-}
-
-/* VISUAL DISTINCTION: Reply message styling */
+/* VISUAL DISTINCTION: Reply message styling - LIGHTER COLORS */
 .message-group.reply-message {
     margin-left: 2rem !important;
     padding-left: 1rem !important;
-    border-left: 4px solid #a855f7 !important; /* Purple border for replies */
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%) !important;
+    border-left: 4px solid #c4b5fd !important; /* Much lighter purple border */
+    background: linear-gradient(135deg, rgba(196, 181, 253, 0.15) 0%, rgba(196, 181, 253, 0.08) 100%) !important; /* Lighter background */
     border-radius: 8px !important;
     position: relative !important;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.08) !important;
+    box-shadow: 0 2px 8px rgba(196, 181, 253, 0.2) !important; /* Lighter shadow */
 }
 
-/* Reply indicator arrow */
+/* Reply indicator arrow - lighter color */
 .message-group.reply-message::before {
     content: "↳";
     position: absolute;
     left: -1.5rem;
     top: 0.5rem;
-    color: #a855f7;
+    color: #8b5cf6 !important; /* Lighter purple */
     font-size: 1.2rem;
     font-weight: bold;
     z-index: 1;
 }
 
-/* Thread connection line */
+/* Thread connection line - lighter */
 .message-group.reply-message::after {
     content: "";
     position: absolute;
@@ -3990,15 +3983,15 @@ mark {
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(to bottom, #a855f7, transparent);
-    opacity: 0.3;
+    background: linear-gradient(to bottom, #c4b5fd, transparent) !important; /* Much lighter */
+    opacity: 0.5 !important; /* More transparent */
 }
 
-/* Enhanced reply reference styling */
+/* Enhanced reply reference styling - MUCH LIGHTER */
 .reply-reference {
-    background: rgba(168, 85, 247, 0.1) !important;
-    border: 1px solid rgba(168, 85, 247, 0.2) !important;
-    border-left: 4px solid #a855f7 !important;
+    background: rgba(196, 181, 253, 0.2) !important; /* Light lavender background */
+    border: 1px solid rgba(196, 181, 253, 0.4) !important; /* Light border */
+    border-left: 4px solid #c4b5fd !important; /* Light purple accent */
     padding: 0.75rem !important;
     margin-bottom: 0.75rem !important;
     border-radius: 6px !important;
@@ -4011,52 +4004,54 @@ mark {
     position: absolute;
     top: 0.5rem;
     right: 0.75rem;
-    opacity: 0.7;
+    opacity: 0.6;
     font-size: 0.9rem;
 }
 
+/* Reply author text - readable purple */
 .reply-author {
     font-weight: 600 !important;
-    color: #a855f7 !important;
+    color: #7c3aed !important; /* Medium purple, very readable */
     margin-bottom: 0.5rem !important;
     font-size: 0.85rem !important;
 }
 
+/* Reply text - dark gray for readability */
 .reply-text {
-    color: var(--text-secondary) !important;
+    color: #374151 !important; /* Dark gray instead of muted */
     line-height: 1.4 !important;
     overflow: hidden !important;
     display: -webkit-box !important;
     -webkit-line-clamp: 3 !important;
     -webkit-box-orient: vertical !important;
     font-style: italic !important;
-    opacity: 0.9 !important;
+    opacity: 0.8 !important;
 }
 
-/* Reply message content styling */
+/* Reply message content styling - lighter */
 .reply-message .message-content {
     background: rgba(255, 255, 255, 0.95) !important;
-    border: 1px solid rgba(168, 85, 247, 0.15) !important;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.1) !important;
+    border: 1px solid rgba(196, 181, 253, 0.3) !important; /* Much lighter border */
+    box-shadow: 0 2px 8px rgba(196, 181, 253, 0.15) !important; /* Lighter shadow */
 }
 
-/* Reply username styling */
+/* Reply username styling - readable purple */
 .reply-message .username {
-    color: #a855f7 !important;
+    color: #7c3aed !important; /* Medium purple, readable */
     font-weight: 700 !important;
 }
 
-/* Reply hover effects */
+/* Reply hover effects - lighter */
 .reply-message:hover {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;
+    background: linear-gradient(135deg, rgba(196, 181, 253, 0.2) 0%, rgba(196, 181, 253, 0.1) 100%) !important;
     transform: translateX(4px) !important;
-    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.15) !important;
+    box-shadow: 0 4px 12px rgba(196, 181, 253, 0.25) !important;
 }
 
-/* Enhanced reply banner styling */
+/* Enhanced reply banner styling - much lighter */
 .reply-banner {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%) !important;
-    border: 2px solid rgba(168, 85, 247, 0.3) !important;
+    background: linear-gradient(135deg, rgba(196, 181, 253, 0.2) 0%, rgba(196, 181, 253, 0.1) 100%) !important;
+    border: 2px solid rgba(196, 181, 253, 0.5) !important; /* Lighter border */
     border-radius: var(--radius) var(--radius) 0 0 !important;
     padding: 1rem !important;
     border-bottom: none !important;
@@ -4082,36 +4077,37 @@ mark {
     margin-bottom: 0.5rem;
 }
 
+/* Reply header text - readable purple */
 .reply-header span:first-child {
-    color: #a855f7 !important;
+    color: #7c3aed !important; /* Medium purple */
     font-weight: 700 !important;
     font-size: 0.9rem !important;
 }
 
-/* Enhanced action buttons */
+/* Enhanced action buttons - lighter colors */
 .action-btn.reply-btn {
-    background: rgba(168, 85, 247, 0.1) !important;
-    color: #a855f7 !important;
-    border: 1px solid rgba(168, 85, 247, 0.2) !important;
+    background: rgba(196, 181, 253, 0.2) !important; /* Light background */
+    color: #7c3aed !important; /* Medium purple text */
+    border: 1px solid rgba(196, 181, 253, 0.4) !important; /* Light border */
 }
 
 .action-btn.reply-btn:hover {
-    background: rgba(168, 85, 247, 0.2) !important;
-    color: #7c3aed !important;
+    background: rgba(196, 181, 253, 0.35) !important; /* Slightly darker on hover */
+    color: #6d28d9 !important; /* Darker purple on hover */
     transform: scale(1.1) !important;
-    box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3) !important;
+    box-shadow: 0 2px 8px rgba(196, 181, 253, 0.4) !important;
 }
 
-/* Reply toast notifications */
+/* Reply toast notifications - lighter */
 .reply-toast {
     position: fixed;
     bottom: 100px;
     right: 20px;
-    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%) !important; /* Lighter gradient */
     color: white;
     padding: 1rem 1.5rem;
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3) !important; /* Lighter shadow */
     z-index: 10001;
     font-weight: 600;
     display: flex;
@@ -4131,36 +4127,36 @@ mark {
     font-size: 1.2rem;
 }
 
-/* Enhanced notification badge for replies */
+/* Enhanced notification badge for replies - lighter */
 .notification-count.has-replies {
-    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%) !important;
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%) !important; /* Lighter purple gradient */
     animation: pulseReply 2s infinite;
     border: 2px solid white;
-    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3) !important;
 }
 
 @keyframes pulseReply {
     0%, 100% { 
-        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7), 0 0 0 2px rgba(168, 85, 247, 0.3);
+        box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.7), 0 0 0 2px rgba(139, 92, 246, 0.3);
         transform: scale(1);
     }
     50% { 
-        box-shadow: 0 0 0 8px rgba(168, 85, 247, 0), 0 0 0 2px rgba(168, 85, 247, 0.3);
+        box-shadow: 0 0 0 8px rgba(139, 92, 246, 0), 0 0 0 2px rgba(139, 92, 246, 0.3);
         transform: scale(1.05);
     }
 }
 
-/* Animation for new reply messages */
+/* Animation for new reply messages - lighter background */
 @keyframes replySlideIn {
     from {
         opacity: 0;
         transform: translateX(-20px);
-        background: rgba(168, 85, 247, 0.15);
+        background: rgba(196, 181, 253, 0.25);
     }
     to {
         opacity: 1;
         transform: translateX(0);
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(168, 85, 247, 0.02) 100%);
+        background: linear-gradient(135deg, rgba(196, 181, 253, 0.15) 0%, rgba(196, 181, 253, 0.08) 100%);
     }
 }
 
@@ -4179,17 +4175,20 @@ mark {
         left: -1rem;
         font-size: 1rem;
         top: 0.75rem;
+        color: #8b5cf6 !important; /* Ensure visibility on mobile */
     }
     
     .reply-message::after {
         left: -1.5rem;
         width: 1px;
+        background: linear-gradient(to bottom, #c4b5fd, transparent) !important;
     }
     
     .reply-reference {
         padding: 0.5rem !important;
         font-size: 0.8rem !important;
         margin-bottom: 0.5rem !important;
+        background: rgba(196, 181, 253, 0.25) !important; /* Slightly more visible on mobile */
     }
     
     .reply-reference::before {
@@ -4200,6 +4199,7 @@ mark {
     
     .reply-banner {
         padding: 0.75rem !important;
+        background: linear-gradient(135deg, rgba(196, 181, 253, 0.25) 0%, rgba(196, 181, 253, 0.15) 100%) !important;
     }
     
     .reply-banner::before {
@@ -4231,6 +4231,7 @@ mark {
     .reply-message::before {
         left: -0.75rem;
         font-size: 0.9rem;
+        color: #8b5cf6 !important;
     }
     
     .reply-message::after {
@@ -4240,48 +4241,55 @@ mark {
     .reply-reference {
         padding: 0.5rem !important;
         font-size: 0.75rem !important;
+        background: rgba(196, 181, 253, 0.3) !important; /* More visible on very small screens */
     }
     
     .reply-author {
         font-size: 0.8rem !important;
+        color: #6d28d9 !important; /* Darker purple for small screens */
     }
     
     .reply-text {
         font-size: 0.75rem !important;
         -webkit-line-clamp: 2 !important;
+        color: #1f2937 !important; /* Darker gray for readability */
     }
 }
 
-/* Dark mode support for replies */
+/* Dark mode support for replies - adjust for better contrast */
 @media (prefers-color-scheme: dark) {
     .reply-message {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%) !important;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.08) 100%) !important;
     }
     
     .reply-message .message-content {
         background: rgba(31, 41, 55, 0.95) !important;
-        border-color: rgba(168, 85, 247, 0.2) !important;
+        border-color: rgba(139, 92, 246, 0.3) !important;
     }
     
     .reply-reference {
-        background: rgba(168, 85, 247, 0.15) !important;
-        border-color: rgba(168, 85, 247, 0.3) !important;
+        background: rgba(139, 92, 246, 0.2) !important;
+        border-color: rgba(139, 92, 246, 0.4) !important;
+    }
+    
+    .reply-text {
+        color: #d1d5db !important; /* Light gray for dark mode */
     }
     
     .reply-banner {
-        background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.08) 100%) !important;
-        border-color: rgba(168, 85, 247, 0.4) !important;
+        background: linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, rgba(139, 92, 246, 0.1) 100%) !important;
+        border-color: rgba(139, 92, 246, 0.5) !important;
     }
 }
 
 /* Focus and accessibility improvements */
 .reply-message:focus-within {
-    outline: 2px solid #a855f7;
+    outline: 2px solid #8b5cf6;
     outline-offset: 2px;
 }
 
 .action-btn.reply-btn:focus-visible {
-    outline: 2px solid #a855f7;
+    outline: 2px solid #8b5cf6;
     outline-offset: 2px;
 }
 
