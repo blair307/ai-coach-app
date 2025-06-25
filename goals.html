@@ -537,25 +537,35 @@
             }
         }
 
-        // FIXED Delete Functions - Much simpler approach
+        // FIXED Delete Functions - Enhanced with better error handling
         function deleteGoalClick(goalId) {
             console.log('Delete goal clicked:', goalId);
+            console.log('Available goals in allGoals:', allGoals);
             
             try {
-                // Find the goal in our global array
-                const goal = allGoals.find(g => (g._id === goalId || g.id === goalId));
+                // Find the goal in our global array with better logging
+                const goal = allGoals.find(g => {
+                    const foundById = g._id === goalId;
+                    const foundByLegacyId = g.id === goalId;
+                    console.log('Checking goal:', g._id || g.id, 'vs', goalId, 'Match:', foundById || foundByLegacyId);
+                    return foundById || foundByLegacyId;
+                });
+                
+                console.log('Found goal:', goal);
                 
                 if (!goal) {
-                    console.error('Goal not found in allGoals array');
-                    showErrorMessage('Error: Goal not found. Please refresh the page.');
+                    console.error('Goal not found in allGoals array. Available goals:', allGoals.map(g => ({id: g._id || g.id, area: g.area})));
+                    showErrorMessage('Error: Goal not found. Please refresh the page and try again.');
                     return;
                 }
                 
-                // Store the goal info globally
+                // Store the goal info globally - ensure data is not null
                 goalToDelete = {
                     id: goalId,
-                    data: goal
+                    data: goal || {} // Fallback to empty object if somehow null
                 };
+                
+                console.log('Set goalToDelete:', goalToDelete);
                 
                 const goalToDeleteElement = document.getElementById('goalToDelete');
                 const area = goal.area || 'Unknown';
@@ -588,9 +598,16 @@
         async function confirmDeleteGoal() {
             console.log('Confirm delete called, goalToDelete:', goalToDelete);
             
-            if (!goalToDelete || !goalToDelete.data) {
-                console.error('No goal selected for deletion');
+            // Enhanced validation
+            if (!goalToDelete) {
+                console.error('No goal selected for deletion - goalToDelete is null/undefined');
                 showErrorMessage('Error: No goal selected for deletion.');
+                return;
+            }
+            
+            if (!goalToDelete.data) {
+                console.error('Goal data is missing - goalToDelete.data is null/undefined');
+                showErrorMessage('Error: Goal data is missing. Please refresh the page and try again.');
                 return;
             }
 
@@ -601,21 +618,36 @@
                     deleteBtn.textContent = 'Deleting...';
                     deleteBtn.disabled = true;
                     
-                    // Reset button after operation
-                    const resetButton = () => {
-                        deleteBtn.textContent = originalText;
-                        deleteBtn.disabled = false;
-                    };
-                    
+                    console.log('Attempting to delete goal with ID:', goalToDelete.id);
                     await deleteGoalFromBackend(goalToDelete.id);
+                    
+                    // Also remove from our global array immediately
+                    allGoals = allGoals.filter(g => {
+                        const goalId = g._id || g.id;
+                        return goalId !== goalToDelete.id;
+                    });
+                    console.log('Updated allGoals array:', allGoals);
+                    
                     closeDeleteModal();
 
                     const area = goalToDelete.data.area || 'goal';
                     showSuccessMessage(`Your ${area} goal has been deleted.`);
                     await loadGoalsOverview();
+                    
+                    // Reset button
+                    deleteBtn.textContent = originalText;
+                    deleteBtn.disabled = false;
+                    
                 } else {
-                    console.error('Could not find delete button');
+                    console.error('Could not find delete button, proceeding anyway...');
                     await deleteGoalFromBackend(goalToDelete.id);
+                    
+                    // Remove from global array
+                    allGoals = allGoals.filter(g => {
+                        const goalId = g._id || g.id;
+                        return goalId !== goalToDelete.id;
+                    });
+                    
                     closeDeleteModal();
                     showSuccessMessage('Goal has been deleted.');
                     await loadGoalsOverview();
