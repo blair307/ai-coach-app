@@ -1,17 +1,17 @@
 /**
- * Fixed Goals.js - Properly integrates with backend API
- * Replace your existing goals.js with this
+ * Fixed Goals.js - Properly integrates with backend API for Life Goals
+ * This version matches the backend endpoints and fixes delete functionality
  */
 
 class GoalsManager {
     constructor() {
         this.goals = [];
-        this.baseURL = 'https://ai-coach-backend-PBSE.onrender.com/api';
+        this.baseURL = 'https://ai-coach-backend-pbse.onrender.com/api';
         this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         
         if (!this.token) {
             console.error('No auth token found');
-            window.location.href = 'login.html';
+            // Don't redirect here, let the page handle it
             return;
         }
         
@@ -33,11 +33,11 @@ class GoalsManager {
         };
     }
     
-    // Load goals from backend
+    // Load goals from backend - FIXED to use correct endpoint
     async loadGoals() {
         try {
             console.log('📡 Loading goals from backend...');
-            const response = await fetch(`${this.baseURL}/goals`, {
+            const response = await fetch(`${this.baseURL}/life-goals`, {
                 headers: this.getHeaders()
             });
             
@@ -54,14 +54,14 @@ class GoalsManager {
         }
     }
     
-    // Create new goal
-    async createGoal(title, frequency) {
+    // Create new goal - FIXED to use correct endpoint and data structure
+    async createGoal(area, bigGoal, dailyAction) {
         try {
-            console.log('🎯 Creating goal:', title, frequency);
-            const response = await fetch(`${this.baseURL}/goals`, {
+            console.log('🎯 Creating goal:', { area, bigGoal, dailyAction });
+            const response = await fetch(`${this.baseURL}/life-goals`, {
                 method: 'POST',
                 headers: this.getHeaders(),
-                body: JSON.stringify({ title, frequency })
+                body: JSON.stringify({ area, bigGoal, dailyAction })
             });
             
             if (!response.ok) {
@@ -80,13 +80,17 @@ class GoalsManager {
         }
     }
     
-    // Toggle goal completion
-    async toggleGoal(goalId) {
+    // Toggle goal completion - FIXED to use correct endpoint
+    async toggleGoal(goalId, completed) {
         try {
-            console.log('🔄 Toggling goal:', goalId);
-            const response = await fetch(`${this.baseURL}/goals/${goalId}/complete`, {
+            console.log('🔄 Toggling goal:', goalId, completed);
+            const response = await fetch(`${this.baseURL}/life-goals/${goalId}`, {
                 method: 'PUT',
-                headers: this.getHeaders()
+                headers: this.getHeaders(),
+                body: JSON.stringify({ 
+                    completed: completed,
+                    lastCompletedDate: completed ? new Date().toISOString() : null
+                })
             });
             
             if (!response.ok) {
@@ -110,11 +114,11 @@ class GoalsManager {
         }
     }
     
-    // Delete goal
+    // Delete goal - FIXED to use correct endpoint
     async deleteGoal(goalId) {
         try {
             console.log('🗑️ Deleting goal:', goalId);
-            const response = await fetch(`${this.baseURL}/goals/${goalId}`, {
+            const response = await fetch(`${this.baseURL}/life-goals/${goalId}`, {
                 method: 'DELETE',
                 headers: this.getHeaders()
             });
@@ -134,227 +138,188 @@ class GoalsManager {
         }
     }
     
-    // Group goals by frequency
-    getGoalsByFrequency() {
-        return {
-            daily: this.goals.filter(g => g.frequency === 'daily'),
-            weekly: this.goals.filter(g => g.frequency === 'weekly'),
-            monthly: this.goals.filter(g => g.frequency === 'monthly')
-        };
+    // Group goals by area instead of frequency
+    getGoalsByArea() {
+        const grouped = {};
+        this.goals.forEach(goal => {
+            if (!grouped[goal.area]) {
+                grouped[goal.area] = [];
+            }
+            grouped[goal.area].push(goal);
+        });
+        return grouped;
     }
     
-    // Render goals in UI
+    // Render goals in UI - UPDATED for life goals structure
     renderGoals() {
-        const grouped = this.getGoalsByFrequency();
+        const grouped = this.getGoalsByArea();
         
-        // Render each frequency group
-        this.renderGoalGroup('dailyGoals', grouped.daily);
-        this.renderGoalGroup('weeklyGoals', grouped.weekly);
-        this.renderGoalGroup('monthlyGoals', grouped.monthly);
+        // Update area stats
+        Object.entries(grouped).forEach(([area, goals]) => {
+            this.updateAreaStats(area, goals);
+        });
         
-        // Show/hide empty state
-        const emptyState = document.getElementById('emptyState');
-        if (emptyState) {
-            emptyState.style.display = this.goals.length === 0 ? 'block' : 'none';
+        // Render goals overview
+        this.renderGoalsOverview(grouped);
+    }
+    
+    // Update area statistics
+    updateAreaStats(area, goals) {
+        const goalsElement = document.getElementById(`${area}-goals`);
+        const progressElement = document.getElementById(`${area}-progress`);
+        
+        if (goalsElement) {
+            goalsElement.textContent = goals.length;
+        }
+        
+        if (progressElement) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const completedToday = goals.filter(goal => {
+                if (!goal.lastCompletedDate) return false;
+                const completedDate = new Date(goal.lastCompletedDate);
+                completedDate.setHours(0, 0, 0, 0);
+                return completedDate.getTime() === today.getTime();
+            }).length;
+            
+            progressElement.textContent = `${completedToday}/${goals.length}`;
         }
     }
     
-    // Render a specific goal group
-    renderGoalGroup(containerId, goals) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
+    // Render goals overview section
+    renderGoalsOverview(grouped) {
+        const overviewContainer = document.getElementById('goalsOverview');
+        if (!overviewContainer) return;
         
-        if (goals.length === 0) {
-            container.innerHTML = '<div class="no-goals">No goals yet. Create your first goal above!</div>';
+        if (Object.keys(grouped).length === 0) {
+            overviewContainer.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">Click on any life area above to start setting your first goals!</p>';
             return;
         }
         
-        container.innerHTML = goals.map(goal => `
-            <div class="goal-item ${goal.completed ? 'completed' : ''}">
-                <div class="goal-content">
-                    <div class="goal-text">
-                        <h4>${goal.title}</h4>
-                        <div class="goal-stats">
-                            <span>Streak: ${goal.streak || 0}</span>
-                            ${goal.lastCompleted ? `<span>Last: ${new Date(goal.lastCompleted).toLocaleDateString()}</span>` : ''}
+        const areaConfig = {
+            mind: { color: '#8b5cf6' },
+            spirit: { color: '#06b6d4' },
+            body: { color: '#10b981' },
+            work: { color: '#f59e0b' },
+            relationships: { color: '#ec4899' },
+            fun: { color: '#f97316' },
+            finances: { color: '#059669' }
+        };
+        
+        let html = '';
+        Object.entries(grouped).forEach(([area, goals]) => {
+            const config = areaConfig[area] || { color: '#6366f1' };
+            
+            html += `
+                <div style="border-left: 4px solid ${config.color}; padding: 1.5rem; margin-bottom: 1rem; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
+                    <h4 style="margin: 0 0 1rem 0; color: ${config.color}; text-transform: capitalize; font-size: 1.1rem; font-weight: 600;">${area}</h4>
+            `;
+            
+            goals.forEach(goal => {
+                const goalId = goal._id;
+                const streak = goal.streak || 0;
+                
+                html += `
+                    <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
+                        <button onclick="window.goalsManager.deleteGoalWithConfirm('${goalId}', '${area}')" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Delete goal">×</button>
+                        
+                        <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${goal.bigGoal}</p>
+                        <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
+                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; gap: 1rem;">
+                                <button onclick="window.goalsManager.toggleGoalCompletion('${goalId}')" style="background: ${config.color}; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">${goal.completed ? 'Completed Today' : 'Mark Complete'}</button>
+                                <button onclick="goToDailyTracker()" style="background: var(--background); border: 2px solid ${config.color}; color: ${config.color}; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">Daily Tracker</button>
+                            </div>
+                            <div style="text-align: center;">
+                                <span style="font-size: 1.2rem; font-weight: 700; color: ${config.color};">${streak}</span>
+                                <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">streak</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="goal-actions">
-                        <button class="btn ${goal.completed ? 'btn-completed' : 'btn-incomplete'}" 
-                                onclick="toggleGoal('${goal._id}')">
-                            ${goal.completed ? 'Completed' : 'Mark Complete'}
-                        </button>
-                        <button class="btn btn-delete" onclick="deleteGoal('${goal._id}')">
-                            Delete
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `).join('');
+                `;
+            });
+            
+            html += `</div>`;
+        });
+        
+        overviewContainer.innerHTML = html;
+    }
+    
+    // Delete goal with confirmation
+    async deleteGoalWithConfirm(goalId, area) {
+        if (!confirm(`Are you sure you want to delete this ${area} goal? This action cannot be undone.`)) {
+            return;
+        }
+        
+        try {
+            await this.deleteGoal(goalId);
+            this.renderGoals();
+            this.updateSummary();
+            window.showToast(`${area.charAt(0).toUpperCase() + area.slice(1)} goal deleted successfully!`, 'success');
+        } catch (error) {
+            console.error('Delete error:', error);
+            window.showToast('Error deleting goal: ' + error.message, 'error');
+        }
+    }
+    
+    // Toggle goal completion
+    async toggleGoalCompletion(goalId) {
+        try {
+            const goal = this.goals.find(g => g._id === goalId);
+            if (!goal) return;
+            
+            const newCompletedState = !goal.completed;
+            await this.toggleGoal(goalId, newCompletedState);
+            this.renderGoals();
+            this.updateSummary();
+            
+            const message = newCompletedState ? 'Goal completed! 🎉' : 'Goal marked as incomplete';
+            window.showToast(message, 'success');
+        } catch (error) {
+            console.error('Toggle error:', error);
+            window.showToast('Error updating goal: ' + error.message, 'error');
+        }
     }
     
     // Update summary statistics
     updateSummary() {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
         const completedToday = this.goals.filter(goal => {
-            if (!goal.lastCompleted) return false;
-            const lastCompleted = new Date(goal.lastCompleted);
-            const today = new Date();
-            return lastCompleted.toDateString() === today.toDateString();
+            if (!goal.lastCompletedDate) return false;
+            const completedDate = new Date(goal.lastCompletedDate);
+            completedDate.setHours(0, 0, 0, 0);
+            return completedDate.getTime() === today.getTime();
         }).length;
         
         const bestStreak = Math.max(...this.goals.map(g => g.streak || 0), 0);
         
-        document.getElementById('totalGoals').textContent = this.goals.length;
-        document.getElementById('completedToday').textContent = completedToday;
-        document.getElementById('currentStreak').textContent = bestStreak;
+        // Update dashboard stats if elements exist
+        const totalGoalsEl = document.getElementById('totalGoals');
+        const completedTodayEl = document.getElementById('completedToday');
+        const currentStreakEl = document.getElementById('currentStreak');
+        
+        if (totalGoalsEl) totalGoalsEl.textContent = this.goals.length;
+        if (completedTodayEl) completedTodayEl.textContent = completedToday;
+        if (currentStreakEl) currentStreakEl.textContent = bestStreak;
     }
 }
 
-// Initialize goals manager
+// Initialize goals manager when DOM is ready
 let goalsManager;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Goals page initializing...');
     
-    // Initialize goals manager
-    goalsManager = new GoalsManager();
-    
-    // Export to global scope for HTML onclick handlers
-    window.goalsManager = goalsManager;
-    
-    console.log('✅ Goals page ready');
+    // Check if we're on the goals page
+    if (document.getElementById('goalsOverview')) {
+        goalsManager = new GoalsManager();
+        window.goalsManager = goalsManager;
+        console.log('✅ Goals manager initialized');
+    }
 });
-
-// Global functions for HTML onclick handlers
-window.showAddGoalModal = function() {
-    const modal = document.getElementById('addGoalModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        document.getElementById('goalTitle').focus();
-    }
-};
-
-window.closeAddGoalModal = function() {
-    const modal = document.getElementById('addGoalModal');
-    if (modal) {
-        modal.style.display = 'none';
-        // Clear form
-        document.getElementById('goalForm').reset();
-        document.getElementById('goalError').style.display = 'none';
-    }
-};
-
-window.addGoal = async function(event) {
-    if (event) {
-        event.preventDefault();
-    }
-    
-    const title = document.getElementById('goalTitle').value.trim();
-    const frequency = document.getElementById('goalFrequency').value;
-    const errorDiv = document.getElementById('goalError');
-    
-    // Clear previous errors
-    errorDiv.style.display = 'none';
-    
-    // Validation
-    if (!title) {
-        errorDiv.textContent = 'Please enter a goal description';
-        errorDiv.style.display = 'block';
-        return;
-    }
-    
-    if (!frequency) {
-        errorDiv.textContent = 'Please select a frequency';
-        errorDiv.style.display = 'block';
-        return;
-    }
-    
-    if (!goalsManager) {
-        errorDiv.textContent = 'Goals system not ready. Please refresh the page.';
-        errorDiv.style.display = 'block';
-        return;
-    }
-    
-    try {
-        // Show loading state
-        const submitBtn = document.querySelector('#addGoalModal button[type="submit"]');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = 'Creating...';
-        submitBtn.disabled = true;
-        
-        await goalsManager.createGoal(title, frequency);
-        
-        // Refresh UI
-        goalsManager.renderGoals();
-        goalsManager.updateSummary();
-        
-        // Close modal
-        window.closeAddGoalModal();
-        
-        // Show success message
-        showToast('Goal created successfully!', 'success');
-        
-        // Restore button
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-        
-    } catch (error) {
-        console.error('Error creating goal:', error);
-        errorDiv.textContent = 'Error creating goal: ' + error.message;
-        errorDiv.style.display = 'block';
-        
-        // Restore button
-        const submitBtn = document.querySelector('#addGoalModal button[type="submit"]');
-        submitBtn.textContent = 'Add Goal';
-        submitBtn.disabled = false;
-    }
-};
-
-window.toggleGoal = async function(goalId) {
-    if (!goalsManager) {
-        console.error('GoalsManager not initialized');
-        return;
-    }
-    
-    try {
-        await goalsManager.toggleGoal(goalId);
-        
-        // Refresh UI
-        goalsManager.renderGoals();
-        goalsManager.updateSummary();
-        
-        showToast('Goal updated!', 'success');
-        
-    } catch (error) {
-        console.error('Error toggling goal:', error);
-        showToast('Error updating goal: ' + error.message, 'error');
-    }
-};
-
-window.deleteGoal = async function(goalId) {
-    if (!confirm('Are you sure you want to delete this goal?')) {
-        return;
-    }
-    
-    if (!goalsManager) {
-        console.error('GoalsManager not initialized');
-        return;
-    }
-    
-    try {
-        await goalsManager.deleteGoal(goalId);
-        
-        // Refresh UI
-        goalsManager.renderGoals();
-        goalsManager.updateSummary();
-        
-        showToast('Goal deleted!', 'success');
-        
-    } catch (error) {
-        console.error('Error deleting goal:', error);
-        showToast('Error deleting goal: ' + error.message, 'error');
-    }
-};
 
 // Toast notification helper
 window.showToast = function(message, type = 'info') {
@@ -385,6 +350,8 @@ window.showToast = function(message, type = 'info') {
         z-index: 10000;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         animation: slideInUp 0.3s ease;
+        max-width: 400px;
+        font-weight: 500;
     `;
     
     document.body.appendChild(toast);
@@ -393,20 +360,24 @@ window.showToast = function(message, type = 'info') {
         if (toast.parentNode) {
             toast.remove();
         }
-    }, 3000);
+    }, 4000);
 };
 
-// Close modal when clicking outside
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('addGoalModal');
-    if (event.target === modal) {
-        window.closeAddGoalModal();
+// Add CSS for toast animation
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-});
+`;
+document.head.appendChild(style);
 
-// Handle escape key to close modal
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        window.closeAddGoalModal();
-    }
-});
+// Export functions for global access
+window.GoalsManager = GoalsManager;
