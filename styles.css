@@ -4194,3 +4194,654 @@ mark {
 .reply-reference {
     display: none !important;
 }
+
+/* =================================
+   RESPONSIVE LAYOUT FIXES - ADD TO END OF STYLES.CSS
+   ================================= */
+
+/* MAIN CONTENT CONTAINER FIXES */
+.main-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    padding: 1rem !important;
+    background: var(--surface) !important;
+    min-height: 100vh !important;
+    box-sizing: border-box !important;
+}
+
+/* Desktop: Account for sidebar when open */
+@media (min-width: 769px) {
+    .main-content.shifted {
+        margin-left: 280px !important;
+        width: calc(100% - 280px) !important;
+    }
+}
+
+/* =================================
+   AI COACH RESPONSIVE FIXES
+   ================================= */
+
+/* AI Coach Container - Full Width */
+.chat-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    height: calc(100vh - 8rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: var(--background) !important;
+    border-radius: var(--radius-xl) !important;
+    border: 1px solid var(--border) !important;
+}
+
+/* AI Coach Layout Fix */
+@media (max-width: 1024px) {
+    .chat-container {
+        height: calc(100vh - 6rem) !important;
+        border-radius: var(--radius) !important;
+        margin: 0 !important;
+    }
+    
+    /* Hide coaching sidebar on mobile */
+    .coaching-sidebar {
+        display: none !important;
+    }
+    
+    /* Make chat full width */
+    .main-content > div[style*="display: flex"] {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .chat-container {
+        margin-right: 0 !important;
+        flex: 1 !important;
+    }
+}
+
+/* AI Coach Header Fix */
+.chat-header {
+    padding: 1.5rem !important;
+    border-bottom: 1px solid var(--border) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    background: var(--surface) !important;
+    flex-shrink: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .chat-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        text-align: center !important;
+    }
+    
+    .coach-info {
+        justify-content: center !important;
+    }
+    
+    .chat-actions {
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+}
+
+/* AI Coach Messages Area */
+.chat-messages {
+    flex: 1 !important;
+    padding: 1.5rem !important;
+    overflow-y: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+    background: var(--surface) !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+@media (max-width: 768px) {
+    .chat-messages {
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+}
+
+/* AI Coach Input Area */
+.chat-input-container {
+    padding: 1.5rem !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--background) !important;
+    flex-shrink: 0 !important;
+}
+
+.chat-input {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+}
+
+.chat-input textarea {
+    width: 100% !important;
+    padding: 1rem !important;
+    border: 2px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    font-family: inherit !important;
+    font-size: 1rem !important;
+    resize: vertical !important;
+    min-height: 60px !important;
+    transition: all 0.3s ease !important;
+    background: var(--surface) !important;
+    box-sizing: border-box !important;
+}
+
+@media (max-width: 768px) {
+    .chat-input-container {
+        padding: 1rem !important;
+    }
+    
+    .chat-input textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        min-height: 50px !important;
+    }
+    
+    .input-actions {
+        justify-content: stretch !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+    }
+}
+
+/* =================================
+   COMMUNITY RESPONSIVE FIXES  
+   ================================= */
+
+/* Community Container - Full Width */
+.community-responsive-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    height: calc(100vh - 8rem) !important;
+    background: var(--background) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+}
+
+/* Desktop Community Layout */
+@media (min-width: 1025px) {
+    .community-responsive-container {
+        flex-direction: row !important;
+    }
+    
+    .rooms-sidebar {
+        width: 280px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+    }
+    
+    .mobile-room-selector {
+        display: none !important;
+    }
+    
+    .chat-area {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+}
+
+/* Mobile Community Layout */
+@media (max-width: 1024px) {
+    .community-responsive-container {
+        height: calc(100vh - 6rem) !important;
+        flex-direction: column !important;
+        border-radius: var(--radius) !important;
+    }
+    
+    /* Hide desktop sidebar */
+    .rooms-sidebar {
+        display: none !important;
+    }
+    
+    /* Show mobile room selector */
+    .mobile-room-selector {
+        display: block !important;
+        flex-shrink: 0 !important;
+        padding: 1rem !important;
+        background: var(--background) !important;
+        border-bottom: 2px solid var(--border) !important;
+    }
+    
+    /* Chat area fills remaining space */
+    .chat-area {
+        flex: 1 !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        overflow: hidden !important;
+    }
+    
+    /* Mobile chat header */
+    .chat-area .chat-header {
+        padding: 1rem !important;
+        flex-shrink: 0 !important;
+        text-align: center !important;
+    }
+    
+    .room-title h2 {
+        font-size: 1.25rem !important;
+        margin: 0 !important;
+    }
+    
+    .room-title p {
+        font-size: 0.875rem !important;
+        margin: 0.25rem 0 0 0 !important;
+    }
+    
+    /* Mobile messages container */
+    .chat-messages-container {
+        flex: 1 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        position: relative !important;
+    }
+    
+    .chat-messages {
+        height: 100% !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 1rem !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Mobile input area */
+    .chat-input-area {
+        flex-shrink: 0 !important;
+        padding: 1rem !important;
+        background: var(--background) !important;
+        border-top: 2px solid var(--border) !important;
+    }
+    
+    .chat-input-area .chat-input {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        padding: 0.75rem !important;
+        background: var(--surface) !important;
+        border: 2px solid var(--border) !important;
+        border-radius: var(--radius-lg) !important;
+    }
+    
+    #communityMessageInput {
+        min-height: 44px !important;
+        max-height: 120px !important;
+        resize: none !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        font-size: 16px !important;
+        line-height: 1.4 !important;
+        color: var(--text-primary) !important;
+        box-sizing: border-box !important;
+    }
+    
+    .input-actions {
+        display: flex !important;
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+    }
+    
+    .input-actions .btn {
+        flex: 1 !important;
+        min-height: 44px !important;
+        font-size: 0.95rem !important;
+        touch-action: manipulation !important;
+    }
+    
+    /* Mobile room dropdown */
+    #roomDropdown {
+        background: var(--background) !important;
+        border: 2px solid var(--border) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 1rem !important;
+        font-size: 16px !important;
+        color: var(--text-primary) !important;
+        width: 100% !important;
+        min-height: 44px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        box-sizing: border-box !important;
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 1rem !important;
+    }
+}
+
+/* =================================
+   BILLING RESPONSIVE FIXES
+   ================================= */
+
+/* Billing Container - Full Width */
+.billing-container {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2rem !important;
+}
+
+.billing-card {
+    background: var(--background) !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: var(--shadow-sm) !important;
+    border: 1px solid var(--border) !important;
+    overflow: hidden !important;
+    width: 100% !important;
+}
+
+/* Billing Card Header */
+.card-header {
+    padding: 1.5rem !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+}
+
+@media (max-width: 768px) {
+    .card-header {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        text-align: center !important;
+    }
+    
+    .card-header h2 {
+        margin: 0 !important;
+        font-size: 1.25rem !important;
+    }
+}
+
+/* Plan Details Responsive */
+.plan-details {
+    padding: 1.5rem !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 1.5rem !important;
+}
+
+@media (max-width: 768px) {
+    .plan-details {
+        padding: 1rem !important;
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 1rem !important;
+    }
+    
+    .plan-actions {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    
+    .plan-actions .btn {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+}
+
+/* Billing Info Responsive */
+.billing-info {
+    padding: 1.5rem !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--surface) !important;
+}
+
+@media (max-width: 768px) {
+    .billing-info {
+        padding: 1rem !important;
+    }
+}
+
+.info-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.75rem 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+}
+
+@media (max-width: 768px) {
+    .info-row {
+        flex-direction: column !important;
+        text-align: center !important;
+        padding: 1rem 0 !important;
+    }
+    
+    .info-row span {
+        font-weight: 600 !important;
+        color: var(--text-secondary) !important;
+    }
+    
+    .info-row strong {
+        margin-top: 0.25rem !important;
+    }
+}
+
+/* Billing Table Responsive */
+@media (max-width: 768px) {
+    .billing-card table {
+        font-size: 0.875rem !important;
+    }
+    
+    .billing-card th,
+    .billing-card td {
+        padding: 0.75rem 0.5rem !important;
+    }
+    
+    /* Stack table on very small screens */
+    @media (max-width: 480px) {
+        .billing-card table,
+        .billing-card thead,
+        .billing-card tbody,
+        .billing-card th,
+        .billing-card td,
+        .billing-card tr {
+            display: block !important;
+        }
+        
+        .billing-card thead tr {
+            position: absolute !important;
+            top: -9999px !important;
+            left: -9999px !important;
+        }
+        
+        .billing-card tr {
+            border: 1px solid var(--border) !important;
+            border-radius: var(--radius) !important;
+            margin-bottom: 1rem !important;
+            padding: 1rem !important;
+        }
+        
+        .billing-card td {
+            border: none !important;
+            border-bottom: 1px solid var(--border) !important;
+            position: relative !important;
+            padding: 0.75rem 0 !important;
+            padding-left: 35% !important;
+            text-align: left !important;
+        }
+        
+        .billing-card td:before {
+            content: attr(data-label) !important;
+            position: absolute !important;
+            left: 0 !important;
+            width: 30% !important;
+            padding-right: 10px !important;
+            white-space: nowrap !important;
+            font-weight: 600 !important;
+            color: var(--text-secondary) !important;
+        }
+    }
+}
+
+/* =================================
+   GENERAL RESPONSIVE IMPROVEMENTS
+   ================================= */
+
+/* Content Header Responsive */
+.content-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 2rem !important;
+    padding-bottom: 1rem !important;
+    border-bottom: 1px solid var(--border) !important;
+    flex-wrap: wrap !important;
+    gap: 1rem !important;
+}
+
+@media (max-width: 768px) {
+    .content-header {
+        flex-direction: column !important;
+        text-align: center !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .content-header h1 {
+        font-size: 1.75rem !important;
+        margin: 0 !important;
+    }
+    
+    .header-actions {
+        width: 100% !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .header-actions .btn {
+        flex: 1 !important;
+        min-width: 120px !important;
+        margin: 0.25rem !important;
+    }
+}
+
+/* Button Improvements */
+.btn {
+    min-height: 44px !important;
+    padding: 0.75rem 1.5rem !important;
+    touch-action: manipulation !important;
+    white-space: nowrap !important;
+}
+
+@media (max-width: 768px) {
+    .btn {
+        font-size: 0.95rem !important;
+        padding: 0.875rem 1.25rem !important;
+    }
+    
+    .btn-small {
+        min-height: 40px !important;
+        padding: 0.625rem 1rem !important;
+        font-size: 0.875rem !important;
+    }
+}
+
+/* Notification Icon Responsive */
+.notification-icon-container {
+    position: relative !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+}
+
+.notification-bell {
+    width: 44px !important;
+    height: 44px !important;
+    background: rgba(99, 102, 241, 0.1) !important;
+    border: 2px solid rgba(99, 102, 241, 0.2) !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+    flex-shrink: 0 !important;
+}
+
+@media (max-width: 768px) {
+    .notification-bell {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .notification-count {
+        top: -6px !important;
+        right: -6px !important;
+        min-width: 18px !important;
+        height: 18px !important;
+        font-size: 0.7rem !important;
+        line-height: 14px !important;
+    }
+}
+
+/* Prevent iOS zoom */
+@media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    select {
+        font-size: 16px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+    }
+}
+
+/* Smooth scrolling */
+.chat-messages,
+.chat-messages-container {
+    scroll-behavior: smooth !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* Fix for small mobile screens */
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.75rem !important;
+    }
+    
+    .community-responsive-container,
+    .chat-container,
+    .billing-card {
+        border-radius: var(--radius) !important;
+    }
+    
+    .content-header h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .btn {
+        padding: 0.75rem 1rem !important;
+        font-size: 0.9rem !important;
+    }
+}
