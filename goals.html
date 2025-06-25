@@ -434,15 +434,24 @@
 
         // NEW: Delete goal functions
         function openDeleteModal(goalId, goalData) {
-            goalToDelete = { id: goalId, data: goalData };
+            // Store the goal info for deletion
+            goalToDelete = { 
+                id: goalId, 
+                data: goalData 
+            };
             
             // Populate goal details in modal
             const goalToDeleteElement = document.getElementById('goalToDelete');
+            const area = goalData.area || 'Unknown';
+            const bigGoal = goalData.bigGoal || 'No description';
+            const dailyAction = goalData.dailyAction || 'No daily action';
+            const streak = goalData.streak || 0;
+            
             goalToDeleteElement.innerHTML = `
-                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${goalData.area.charAt(0).toUpperCase() + goalData.area.slice(1)} Goal</h4>
-                <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${goalData.bigGoal}</p>
-                <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${goalData.dailyAction}</p>
-                ${goalData.streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${goalData.streak} days</p>` : ''}
+                <h4 style="margin: 0 0 0.5rem 0; color: var(--text-primary);">${area.charAt(0).toUpperCase() + area.slice(1)} Goal</h4>
+                <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-style: italic;">${bigGoal}</p>
+                <p style="margin: 0; color: var(--text-secondary);"><strong>Daily Action:</strong> ${dailyAction}</p>
+                ${streak > 0 ? `<p style="margin: 0.5rem 0 0 0; color: var(--success); font-weight: 600;">Current Streak: ${streak} days</p>` : ''}
             `;
             
             // Show modal
@@ -457,14 +466,20 @@
         }
 
         async function confirmDeleteGoal() {
-            if (!goalToDelete) return;
+            if (!goalToDelete || !goalToDelete.data) {
+                console.error('No goal selected for deletion');
+                showErrorMessage('Error: No goal selected for deletion.');
+                return;
+            }
 
             try {
                 // Show loading state
                 const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
-                const originalText = deleteBtn.textContent;
-                deleteBtn.textContent = 'Deleting...';
-                deleteBtn.disabled = true;
+                if (deleteBtn) {
+                    const originalText = deleteBtn.textContent;
+                    deleteBtn.textContent = 'Deleting...';
+                    deleteBtn.disabled = true;
+                }
 
                 // Delete from backend
                 await deleteGoalFromBackend(goalToDelete.id);
@@ -473,14 +488,11 @@
                 closeDeleteModal();
 
                 // Show success message
-                showSuccessMessage(`Your ${goalToDelete.data.area} goal has been deleted.`);
+                const area = goalToDelete.data.area || 'goal';
+                showSuccessMessage(`Your ${area} goal has been deleted.`);
 
                 // Refresh goals display
                 await loadGoalsOverview();
-
-                // Reset button state
-                deleteBtn.textContent = originalText;
-                deleteBtn.disabled = false;
 
             } catch (error) {
                 console.error('Error deleting goal:', error);
@@ -488,8 +500,10 @@
 
                 // Reset button state
                 const deleteBtn = document.querySelector('#deleteConfirmModal button[onclick="confirmDeleteGoal()"]');
-                deleteBtn.textContent = 'Delete Goal';
-                deleteBtn.disabled = false;
+                if (deleteBtn) {
+                    deleteBtn.textContent = 'Delete Goal';
+                    deleteBtn.disabled = false;
+                }
             }
         }
 
@@ -753,10 +767,18 @@
                         const streakDisplay = goal.streak || 0;
                         const goalId = goal._id || goal.id || `${area}-${index}`;
                         
+                        // Create a safe goal object for passing to the modal
+                        const safeGoal = {
+                            area: goal.area || area,
+                            bigGoal: goal.bigGoal || 'No description',
+                            dailyAction: goal.dailyAction || 'No daily action',
+                            streak: goal.streak || 0
+                        };
+                        
                         html += `
                             <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
                                 <!-- Delete button in top right -->
-                                <button onclick="openDeleteModal('${goalId}', ${JSON.stringify(goal).replace(/"/g, '&quot;')})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                <button onclick="openDeleteModal('${goalId}', ${JSON.stringify(safeGoal)})" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
                                 
                                 <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${goal.bigGoal}</p>
                                 <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
