@@ -3989,7 +3989,8 @@ mark {
 
 /* Enhanced reply reference styling - MUCH LIGHTER */
 .reply-reference {
-    background: rgba(196, 181, 253, 0.2) !important; /* Light lavender background */
+    background: rgba(232, 226, 255, 0.8) !important; /* Very light purple background */
+    background-color: #f3f0ff !important; /* Force light background */
     border: 1px solid rgba(196, 181, 253, 0.4) !important; /* Light border */
     border-left: 4px solid #c4b5fd !important; /* Light purple accent */
     padding: 0.75rem !important;
