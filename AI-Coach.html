@@ -6,66 +6,30 @@
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* CRITICAL FIXES FOR AI COACH */
-        .main-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 1rem !important;
-            box-sizing: border-box !important;
+        /* Override problematic card styles directly */
+        .feature::before,
+        .pricing-card::before {
+            display: none !important;
         }
         
-        .main-content > div {
-            display: flex !important;
-            gap: 2rem !important;
-            width: 100% !important;
-            height: calc(100vh - 8rem) !important;
+        /* Settings button styling */
+        .modern-settings-btn {
+            background: rgba(99, 102, 241, 0.1) !important;
+            border: 2px solid rgba(99, 102, 241, 0.2) !important;
+            color: #6366f1 !important;
+            padding: 0.5rem 1rem !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
         }
         
-        .chat-container {
-            flex: 1 !important;
-            width: 100% !important;
-            margin: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-        }
-        
-        /* Settings modal fix */
-        #settingsModal {
-            z-index: 1001 !important;
-        }
-        
-        /* Mobile fixes */
-        @media (max-width: 1024px) {
-            .main-content > div {
-                flex-direction: column !important;
-                height: calc(100vh - 6rem) !important;
-            }
-            
-            .coaching-sidebar {
-                display: none !important;
-            }
-            
-            .chat-container {
-                height: 100% !important;
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 0.75rem !important;
-            }
-            
-            .content-header {
-                flex-direction: column !important;
-                text-align: center !important;
-            }
-            
-            .header-actions {
-                width: 100% !important;
-                justify-content: center !important;
-                flex-wrap: wrap !important;
-            }
+        .modern-settings-btn:hover {
+            background: rgba(99, 102, 241, 0.15) !important;
+            border-color: rgba(99, 102, 241, 0.3) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2) !important;
         }
     </style>
 </head>
@@ -82,22 +46,23 @@
                 </button>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
-                <li><a href="ai-coach.html" class="menu-item active">AI Coach</a></li>
-                <li><a href="community.html" class="menu-item">Community</a></li>
-                <li><a href="goals.html" class="menu-item">Goals</a></li>
-                <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
-                <li><a href="billing.html" class="menu-item">Billing</a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item active">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+               <li><a href="goals.html" class="menu-item">Goals</a></li>
+<li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
+<li><a href="billing.html" class="menu-item">Billing</a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
             </ul>
         </nav>
-
-        <!-- Universal Hamburger Menu -->
-        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -107,19 +72,21 @@
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
-                           <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> 
-                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
-                           </svg>
+                           <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> </svg>
                             <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
                         </div>
                     </div>
                     
-                    <button class="btn btn-secondary" onclick="clearConversation()">New Session</button>
-                    <button class="btn btn-outline" onclick="exportChat()">Export Chat</button>
+                    <button class="btn btn-secondary" onclick="clearConversation()">
+                        New Session
+                    </button>
+                    <button class="btn btn-outline" onclick="exportChat()">
+                        Export Chat
+                    </button>
                 </div>
             </header>
 
-            <div>
+            <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
                 <!-- Chat Container -->
                 <div class="chat-container">
                     <div class="chat-header">
@@ -134,13 +101,15 @@
                             </div>
                         </div>
                         <div class="chat-actions">
-                            <button class="btn btn-outline" onclick="toggleSettings()">Settings</button>
+                            <button class="modern-settings-btn" onclick="toggleSettings()">
+                                Settings
+                            </button>
                         </div>
                     </div>
 
                     <div class="chat-messages" id="chatMessages">
                         <!-- Welcome Message -->
-                        <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 100%;">
+                        <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 80%;">
                             <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
                                 Welcome! I'm your AI Emotional Health Coach, specialized in helping entrepreneurs manage stress, build emotional intelligence, and achieve work-life balance. 
                                 
@@ -197,12 +166,24 @@
                     <div class="sidebar-section">
                         <h3>Quick Topics</h3>
                         <div class="topic-buttons">
-                            <button class="topic-btn" onclick="quickTopic('stress')">Stress Management</button>
-                            <button class="topic-btn" onclick="quickTopic('leadership')">Leadership Skills</button>
-                            <button class="topic-btn" onclick="quickTopic('burnout')">Preventing Burnout</button>
-                            <button class="topic-btn" onclick="quickTopic('communication')">Team Communication</button>
-                            <button class="topic-btn" onclick="quickTopic('decision')">Decision Making</button>
-                            <button class="topic-btn" onclick="quickTopic('confidence')">Building Confidence</button>
+                            <button class="topic-btn" onclick="quickTopic('stress')">
+                                Stress Management
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('leadership')">
+                                Leadership Skills
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('burnout')">
+                                Preventing Burnout
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('communication')">
+                                Team Communication
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('decision')">
+                                Decision Making
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('confidence')">
+                                Building Confidence
+                            </button>
                         </div>
                     </div>
 
@@ -241,8 +222,8 @@
         </main>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 1001; backdrop-filter: blur(4px);">
+    <!-- COMPLETELY NEW SETTINGS MODAL WITH INLINE STYLES -->
+    <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
             <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
                 
@@ -253,57 +234,98 @@
                 </div>
                 
                 <!-- Body -->
-                <div style="max-height: 60vh; overflow-y: auto; padding: 1.5rem 2rem;">
+                <div style="max-height: 60vh; overflow-y: auto;">
                     
-                    <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Chat Preferences</h4>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
-                            <input type="checkbox" id="autoSave" checked>
-                            Auto-save conversations
-                        </label>
+                    <!-- Chat Preferences -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Chat Preferences</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="autoSave" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Auto-save conversations
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="typingIndicator" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Show typing indicator
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="soundNotifications" style="width: 40px; height: 20px; background: #d1d5db; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Sound notifications
+                            </label>
+                        </div>
                     </div>
                     
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
-                            <input type="checkbox" id="typingIndicator" checked>
-                            Show typing indicator
-                        </label>
+                    <!-- Coaching Style -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Coaching Style</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response tone:</label>
+                            <select id="coachingTone" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="supportive">Supportive & Encouraging</option>
+                                <option value="direct">Direct & Practical</option>
+                                <option value="analytical">Analytical & Detailed</option>
+                                <option value="gentle">Gentle & Patient</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response length:</label>
+                            <select id="responseLength" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="concise">Concise</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
                     </div>
                     
-                    <div style="margin-bottom: 2rem;">
-                        <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
-                            <input type="checkbox" id="soundNotifications">
-                            Sound notifications
-                        </label>
+                    <!-- Privacy & Data -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Privacy & Data</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="dataAnalytics" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Allow usage analytics for improvement
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="personalizedInsights" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Generate personalized insights
+                            </label>
+                        </div>
                     </div>
                     
-                    <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Coaching Style</h4>
-                    
-                    <div style="margin-bottom: 1rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response tone:</label>
-                        <select id="coachingTone" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
-                            <option value="supportive">Supportive & Encouraging</option>
-                            <option value="direct">Direct & Practical</option>
-                            <option value="analytical">Analytical & Detailed</option>
-                            <option value="gentle">Gentle & Patient</option>
-                        </select>
+                    <!-- Session Management -->
+                    <div style="padding: 1.5rem 2rem;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Session Management</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Session reminders:</label>
+                            <select id="sessionReminder" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="none">None</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <button onclick="clearChatHistory()" style="width: 100%; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                                Clear Chat History
+                            </button>
+                            <small style="display: block; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280; font-style: italic;">This action cannot be undone</small>
+                        </div>
                     </div>
-                    
-                    <div style="margin-bottom: 2rem;">
-                        <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response length:</label>
-                        <select id="responseLength" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
-                            <option value="concise">Concise</option>
-                            <option value="moderate" selected>Moderate</option>
-                            <option value="detailed">Detailed</option>
-                        </select>
-                    </div>
-                    
-                    <button onclick="clearChatHistory()" style="width: 100%; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; font-weight: 500; cursor: pointer;">
-                        Clear Chat History
-                    </button>
-                    <small style="display: block; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280; font-style: italic; text-align: center;">This action cannot be undone</small>
-                    
                 </div>
                 
                 <!-- Footer -->
@@ -313,6 +335,40 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Custom checkbox styles -->
+    <style>
+        input[type="checkbox"]:checked {
+            background: #3b82f6 !important;
+        }
+        
+        input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        input[type="checkbox"]:checked::after {
+            transform: translateX(20px);
+        }
+    </style>
+
+    <!-- Typing Indicator (Hidden by default) -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>AI Coach is thinking...</span>
     </div>
 
     <script src="api-service.js"></script>
@@ -351,129 +407,6 @@
 
     function goToNotifications() {
         window.location.href = 'notifications.html';
-    }
-
-    // Settings functions
-    function toggleSettings() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-    }
-
-    function closeSettings() {
-        const modal = document.getElementById('settingsModal');
-        if (modal) {
-            modal.style.display = 'none';
-        }
-    }
-
-    function saveSettings() {
-        // Save settings logic here
-        closeSettings();
-        alert('Settings saved!');
-    }
-
-    function clearChatHistory() {
-        if (confirm('Are you sure you want to clear all chat history? This action cannot be undone.')) {
-            const chatMessages = document.getElementById('chatMessages');
-            if (chatMessages) {
-                // Keep only the welcome message
-                chatMessages.innerHTML = `
-                    <div class="message-content" style="background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); margin-bottom: 1.5rem; border-left: 3px solid var(--primary); max-width: 100%;">
-                        <div style="color: var(--text-primary); line-height: 1.6; margin-bottom: 0.5rem;">
-                            Welcome! I'm your AI Emotional Health Coach, specialized in helping entrepreneurs manage stress, build emotional intelligence, and achieve work-life balance. 
-                            
-                            How are you feeling today? What challenges would you like to work on?
-                        </div>
-                        <div style="color: var(--text-muted); font-size: 0.875rem;">Just now</div>
-                    </div>
-                `;
-            }
-            alert('Chat history cleared!');
-        }
-    }
-
-    function clearConversation() {
-        clearChatHistory();
-    }
-
-    function exportChat() {
-        alert('Export feature coming soon!');
-    }
-
-    function addGoal() {
-        const goal = prompt('Enter your new goal:');
-        if (goal && goal.trim()) {
-            alert('Goal added!');
-        }
-    }
-
-    function quickTopic(topic) {
-        const messageInput = document.getElementById('messageInput');
-        if (messageInput) {
-            const messages = {
-                stress: "I'm feeling stressed about work lately. Can you help me with some stress management techniques?",
-                leadership: "I want to improve my leadership skills. What are some key areas I should focus on?",
-                burnout: "I'm worried about burning out. How can I prevent burnout while still being productive?",
-                communication: "I'm having communication issues with my team. Can you help me improve this?",
-                decision: "I struggle with decision making under pressure. Can you give me some strategies?",
-                confidence: "I want to build more confidence in my abilities. Where should I start?"
-            };
-            messageInput.value = messages[topic] || `I'd like to discuss ${topic}`;
-        }
-    }
-
-    function trackMood(mood) {
-        alert(`Mood tracked: ${mood}`);
-    }
-
-    function handleKeyPress(event) {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            event.preventDefault();
-            sendMessage();
-        }
-    }
-
-    function sendMessage() {
-        const messageInput = document.getElementById('messageInput');
-        if (!messageInput) return;
-        
-        const message = messageInput.value.trim();
-        if (!message) return;
-        
-        // Add user message
-        addMessageToChat(message, 'user');
-        messageInput.value = '';
-        
-        // Simulate AI response
-        setTimeout(() => {
-            addMessageToChat("Thanks for sharing that with me. I'm here to help you work through this. Can you tell me more about what's specifically causing you stress?", 'ai');
-        }, 1000);
-    }
-
-    function addMessageToChat(message, type) {
-        const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
-        
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${type}-message`;
-        messageDiv.innerHTML = `
-            <div class="message-content" style="background: var(--background); padding: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--border); margin-bottom: 1rem; ${type === 'user' ? 'margin-left: auto; max-width: 80%; background: var(--primary); color: white;' : 'max-width: 90%;'}">
-                <div style="margin-bottom: 0.5rem; line-height: 1.6;">${message}</div>
-                <div style="font-size: 0.75rem; ${type === 'user' ? 'color: rgba(255,255,255,0.8);' : 'color: var(--text-muted);'}">${new Date().toLocaleTimeString()}</div>
-            </div>
-        `;
-        
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    function logout() {
-        if (confirm('Are you sure you want to logout?')) {
-            localStorage.clear();
-            window.location.href = 'login.html';
-        }
     }
 
     // Update count when page loads and every 30 seconds
