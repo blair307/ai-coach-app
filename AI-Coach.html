@@ -415,5 +415,199 @@
         setInterval(updateNotificationCount, 30000);
     });
     </script>
+    // Layout Fix JavaScript - Add to each page
+// This ensures proper responsive behavior
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Applying layout fixes...');
+    
+    // Fix main content width issues
+    function fixMainContentLayout() {
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.style.width = '100%';
+            mainContent.style.maxWidth = '100%';
+            mainContent.style.marginLeft = '0';
+            mainContent.style.padding = window.innerWidth <= 768 ? '1rem' : '2rem';
+        }
+    }
+    
+    // Fix AI Coach layout specifically
+    function fixAICoachLayout() {
+        const chatContainer = document.querySelector('.chat-container');
+        const coachingSidebar = document.querySelector('.coaching-sidebar');
+        const flexContainer = document.querySelector('.main-content > div[style*="display: flex"]');
+        
+        if (chatContainer) {
+            chatContainer.style.flex = '1';
+            chatContainer.style.width = '100%';
+            chatContainer.style.maxWidth = '100%';
+            chatContainer.style.marginRight = '0';
+        }
+        
+        // Hide coaching sidebar on mobile
+        if (coachingSidebar && window.innerWidth <= 1024) {
+            coachingSidebar.style.display = 'none';
+        } else if (coachingSidebar && window.innerWidth > 1024) {
+            coachingSidebar.style.display = 'flex';
+        }
+        
+        // Fix flex container
+        if (flexContainer) {
+            if (window.innerWidth <= 1024) {
+                flexContainer.style.flexDirection = 'column';
+                flexContainer.style.gap = '1rem';
+            } else {
+                flexContainer.style.flexDirection = 'row';
+                flexContainer.style.gap = '2rem';
+            }
+        }
+    }
+    
+    // Fix Community layout
+    function fixCommunityLayout() {
+        const communityContainer = document.querySelector('.community-responsive-container');
+        const mobileSelector = document.querySelector('.mobile-room-selector');
+        const roomsSidebar = document.querySelector('.rooms-sidebar');
+        
+        if (communityContainer) {
+            communityContainer.style.width = '100%';
+            communityContainer.style.maxWidth = '100%';
+            communityContainer.style.margin = '0';
+            
+            if (window.innerWidth <= 1024) {
+                communityContainer.style.flexDirection = 'column';
+                communityContainer.style.height = 'calc(100vh - 6rem)';
+                
+                if (mobileSelector) mobileSelector.style.display = 'block';
+                if (roomsSidebar) roomsSidebar.style.display = 'none';
+            } else {
+                communityContainer.style.flexDirection = 'row';
+                communityContainer.style.height = 'calc(100vh - 8rem)';
+                
+                if (mobileSelector) mobileSelector.style.display = 'none';
+                if (roomsSidebar) roomsSidebar.style.display = 'flex';
+            }
+        }
+    }
+    
+    // Fix Billing layout
+    function fixBillingLayout() {
+        const billingContainer = document.querySelector('.billing-container');
+        const billingCards = document.querySelectorAll('.billing-card');
+        
+        if (billingContainer) {
+            billingContainer.style.width = '100%';
+            billingContainer.style.maxWidth = '1200px';
+            billingContainer.style.margin = '0 auto';
+        }
+        
+        billingCards.forEach(card => {
+            card.style.width = '100%';
+            card.style.maxWidth = '100%';
+        });
+    }
+    
+    // Fix content header for mobile
+    function fixContentHeader() {
+        const contentHeader = document.querySelector('.content-header');
+        const headerActions = document.querySelector('.header-actions');
+        
+        if (contentHeader && window.innerWidth <= 768) {
+            contentHeader.style.flexDirection = 'column';
+            contentHeader.style.alignItems = 'center';
+            contentHeader.style.textAlign = 'center';
+            contentHeader.style.gap = '1rem';
+        } else if (contentHeader && window.innerWidth > 768) {
+            contentHeader.style.flexDirection = 'row';
+            contentHeader.style.alignItems = 'center';
+            contentHeader.style.textAlign = 'left';
+        }
+        
+        if (headerActions && window.innerWidth <= 768) {
+            headerActions.style.width = '100%';
+            headerActions.style.justifyContent = 'center';
+            headerActions.style.flexWrap = 'wrap';
+        }
+    }
+    
+    // Apply all fixes
+    function applyAllFixes() {
+        fixMainContentLayout();
+        fixAICoachLayout();
+        fixCommunityLayout();
+        fixBillingLayout();
+        fixContentHeader();
+        
+        console.log('✅ Layout fixes applied for screen width:', window.innerWidth);
+    }
+    
+    // Apply fixes immediately
+    applyAllFixes();
+    
+    // Apply fixes on window resize
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(applyAllFixes, 250);
+    });
+    
+    // Apply fixes on orientation change (mobile)
+    window.addEventListener('orientationchange', function() {
+        setTimeout(applyAllFixes, 300);
+    });
+    
+    // Force layout recalculation for iOS
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        setTimeout(() => {
+            const viewport = document.querySelector('meta[name=viewport]');
+            if (viewport) {
+                viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+            }
+            applyAllFixes();
+        }, 100);
+    }
+});
+
+// Additional utility functions for layout management
+window.layoutUtils = {
+    isMobile: () => window.innerWidth <= 768,
+    isTablet: () => window.innerWidth > 768 && window.innerWidth <= 1024,
+    isDesktop: () => window.innerWidth > 1024,
+    
+    hideDesktopElements: () => {
+        const desktopOnly = document.querySelectorAll('.desktop-only');
+        desktopOnly.forEach(el => el.style.display = 'none');
+    },
+    
+    showDesktopElements: () => {
+        const desktopOnly = document.querySelectorAll('.desktop-only');
+        desktopOnly.forEach(el => el.style.display = '');
+    },
+    
+    centerContent: () => {
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.style.width = '100%';
+            mainContent.style.maxWidth = '100%';
+            mainContent.style.margin = '0';
+            mainContent.style.display = 'flex';
+            mainContent.style.flexDirection = 'column';
+            mainContent.style.alignItems = 'center';
+        }
+    }
+};
+
+// Prevent zoom on iOS form inputs
+document.addEventListener('touchstart', function() {
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        if (input.style.fontSize !== '16px') {
+            input.style.fontSize = '16px';
+        }
+    });
+});
+
+console.log('📱 Layout management system loaded');
 </body>
 </html>
