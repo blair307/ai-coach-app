@@ -189,6 +189,77 @@
             <div style="background: white; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
                 
                 <!-- Modal Header -->
+                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
+                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
+                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
+                </div>
+                
+                <!-- Modal Body -->
+                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
+                    
+                    <!-- Step 1: Big Goal Question -->
+                    <div id="step1" class="wizard-step">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
+                        
+                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
+                        
+                        <div style="margin-top: 1.5rem;">
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
+                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Choose ONE Daily Action -->
+                    <div id="step2" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
+                        
+                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
+                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Confirmation and Tracker Setup -->
+                    <div id="step3" class="wizard-step" style="display: none;">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
+                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
+                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
+                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
+                        </div>
+                        
+                        <div style="display: flex; gap: 1rem;">
+                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
+                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
+        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
+            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
+                
+                <!-- Modal Header -->
                 <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; padding: 2rem; text-align: center; border-radius: 16px 16px 0 0;">
                     <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700;">Delete Goal</h2>
                     <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">This action cannot be undone</p>
@@ -465,8 +536,29 @@
             }
         }
 
-        // Delete Functions
+        // FIXED Delete Functions
+        function deleteGoalClick(goalId, goalData) {
+            try {
+                console.log('Delete button clicked:', { goalId, goalData });
+                
+                // Parse the goal data if it's a string
+                let parsedGoalData;
+                if (typeof goalData === 'string') {
+                    parsedGoalData = JSON.parse(goalData);
+                } else {
+                    parsedGoalData = goalData;
+                }
+                
+                openDeleteModal(goalId, parsedGoalData);
+            } catch (error) {
+                console.error('Error parsing goal data:', error);
+                showErrorMessage('Error processing goal data. Please refresh the page.');
+            }
+        }
+
         function openDeleteModal(goalId, goalData) {
+            console.log('Opening delete modal:', { goalId, goalData });
+            
             goalToDelete = { 
                 id: goalId, 
                 data: goalData 
@@ -651,16 +743,20 @@
                         const streakDisplay = goal.streak || 0;
                         const goalId = goal._id || goal.id || `${area}-${index}`;
                         
+                        // Create safe goal object for JSON stringification
                         const safeGoal = {
                             area: goal.area || area,
-                            bigGoal: goal.bigGoal || 'No description',
-                            dailyAction: goal.dailyAction || 'No daily action',
+                            bigGoal: (goal.bigGoal || 'No description').replace(/"/g, '&quot;'),
+                            dailyAction: (goal.dailyAction || 'No daily action').replace(/"/g, '&quot;'),
                             streak: goal.streak || 0
                         };
                         
+                        // Escape the JSON for safe HTML embedding
+                        const escapedGoalData = JSON.stringify(safeGoal).replace(/'/g, "\\'");
+                        
                         html += `
                             <div style="padding: 1rem; margin-bottom: 1rem; background: var(--background); border-radius: 8px; border: 1px solid var(--border); position: relative;">
-                                <button onclick="deleteGoalClick('${goalId}', '${JSON.stringify(safeGoal).replace(/'/g, "\\'")}');" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
+                                <button onclick="deleteGoalClick('${goalId}', '${escapedGoalData}');" style="position: absolute; top: 0.75rem; right: 0.75rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;" onmouseover="this.style.background='#ef4444'; this.style.color='white';" onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444';" title="Delete goal">×</button>
                                 
                                 <p style="margin: 0 0 0.5rem 0; color: var(--text-primary); font-weight: 500; line-height: 1.4; padding-right: 2rem;">${goal.bigGoal}</p>
                                 <p style="margin: 0 0 1rem 0; color: var(--text-secondary); font-size: 0.9rem;"><strong>Daily Action:</strong> ${goal.dailyAction}</p>
@@ -687,17 +783,6 @@
             } catch (error) {
                 console.error('Error loading goals overview:', error);
                 document.getElementById('goalsOverview').innerHTML = '<p style="text-align: center; color: var(--error); padding: 2rem;">Error loading goals. Please refresh the page.</p>';
-            }
-        }
-
-        // Safe delete function to handle JSON parsing
-        function deleteGoalClick(goalId, goalDataString) {
-            try {
-                const goalData = JSON.parse(goalDataString);
-                openDeleteModal(goalId, goalData);
-            } catch (error) {
-                console.error('Error parsing goal data:', error);
-                showErrorMessage('Error processing goal data. Please refresh the page.');
             }
         }
 
@@ -890,77 +975,9 @@
             setInterval(updateNotificationCount, 30000);
         });
 
+        // Make deleteGoalClick globally available
+        window.deleteGoalClick = deleteGoalClick;
+
     </script>
 </body>
-</html> -->
-                <div id="wizardHeader" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center;">
-                    <h2 id="wizardTitle" style="margin: 0; font-size: 1.75rem; font-weight: 700;">Set Your Mind Goals</h2>
-                    <p id="wizardSubtitle" style="margin: 0.5rem 0 0 0; opacity: 0.9;">Let's create meaningful goals for your mental growth</p>
-                </div>
-                
-                <!-- Modal Body -->
-                <div style="max-height: 60vh; overflow-y: auto; padding: 2rem;">
-                    
-                    <!-- Step 1: Big Goal Question -->
-                    <div id="step1" class="wizard-step">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">What's your biggest aspiration in this area?</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;" id="stepDescription">Think big! What would you love to achieve in your mind/mental development over the next year?</p>
-                        
-                        <textarea id="bigGoalInput" placeholder="Example: I want to read 24 books this year and develop a daily meditation practice to improve my focus and reduce stress..." style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 1rem; line-height: 1.5; resize: vertical;"></textarea>
-                        
-                        <div style="margin-top: 1.5rem;">
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem;">Continue</button>
-                            <button onclick="closeWizard()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-left: 1rem;">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 2: Choose ONE Daily Action -->
-                    <div id="step2" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Choose ONE daily action</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">What's the most important daily habit that will help you achieve your big goal? Choose just one thing you can commit to doing every day.</p>
-                        
-                        <input type="text" id="dailyActionInput" placeholder="Example: Read for 30 minutes every morning" style="width: 100%; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; font-size: 1rem; margin-bottom: 1.5rem;" />
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">💡 Examples for this area:</h4>
-                            <div id="examplesList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="nextStep()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Continue</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Step 3: Confirmation and Tracker Setup -->
-                    <div id="step3" class="wizard-step" style="display: none;">
-                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Perfect! Your goal is ready</h3>
-                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">We'll create a simple daily tracker to help you build this habit and achieve your big goal.</p>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">🎯 Your Big Goal:</h4>
-                            <p id="bigGoalSummary" style="color: var(--text-secondary); margin: 0; font-style: italic; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="background: var(--surface); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border);">
-                            <h4 style="margin: 0 0 1rem 0; color: var(--text-primary);">📅 Your Daily Action:</h4>
-                            <p id="dailyActionSummary" style="color: var(--text-secondary); margin: 0; font-weight: 500; line-height: 1.5;"></p>
-                        </div>
-                        
-                        <div style="display: flex; gap: 1rem;">
-                            <button onclick="prevStep()" style="background: var(--surface); border: 2px solid var(--border); color: var(--text-primary); padding: 0.75rem 1.5rem; border-radius: 8px; cursor: pointer;">Back</button>
-                            <button onclick="createGoals()" class="btn btn-primary" style="background: linear-gradient(135deg, var(--success) 0%, #059669 100%); color: white; padding: 0.75rem 2rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 1rem; flex: 1;">Create My Goal! 🎯</button>
-                        </div>
-                    </div>
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 10000; backdrop-filter: blur(4px);">
-        <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
-            <div style="background: white; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);">
-                
-                <!-- Modal Header
+</html>
