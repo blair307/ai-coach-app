@@ -750,7 +750,7 @@ body {
 }
 
 .stat-number {
-    font-size: 2.5rem;
+    font-size: ;
     font-weight: 800;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
     -webkit-background-clip: text;
@@ -4275,7 +4275,7 @@ mark {
         min-height: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 2.5rem 1rem 1rem 1rem !important; /* Much more top padding to prevent cutoff */
+        padding: 4.5rem 1rem 1rem 1rem !important; /* Much more top padding to prevent cutoff */
         background: var(--surface) !important;
         display: flex !important;
         flex-direction: column !important;
@@ -4423,7 +4423,7 @@ mark {
     }
     
     .chat-messages {
-        padding: 2rem 0.75rem 1rem 0.75rem !important; /* Much more top padding */
+        padding: 4rem 0.75rem 1rem 0.75rem !important; /* Much more top padding */
         padding-bottom: 200px !important; /* Increased from 180px */
     }
     
