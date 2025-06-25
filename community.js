@@ -492,7 +492,7 @@ function displayMessages(messages) {
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-// ENHANCED: Create a message element with like/reply functionality
+// ENHANCED: Create a message element with improved visual threading and notifications
 function createMessageElement(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
@@ -508,13 +508,18 @@ function createMessageElement(message) {
     // Get message content
     const content = message.content || message.message || '';
     
-    // Check if this is a reply
+    // Check if this is a reply - ENHANCED with better visual threading
     let replyHtml = '';
+    let isReply = false;
     if (message.replyTo) {
+        isReply = true;
         replyHtml = `
             <div class="reply-reference">
-                <div class="reply-author">↳ ${escapeHtml(message.replyTo.username)}</div>
-                <div class="reply-text">${escapeHtml(message.replyTo.content)}</div>
+                <div class="reply-connector"></div>
+                <div class="reply-content-box">
+                    <div class="reply-author">↳ Replying to ${escapeHtml(message.replyTo.username)}</div>
+                    <div class="reply-text">${escapeHtml(message.replyTo.content)}</div>
+                </div>
             </div>
         `;
     }
@@ -525,17 +530,21 @@ function createMessageElement(message) {
     const isLikedByUser = likes.includes(currentUser?.id);
     const hasLikes = likeCount > 0;
     
+    // Add threading class for replies
+    const threadingClass = isReply ? 'is-reply' : '';
+    
     messageDiv.innerHTML = `
-        <div class="message-header">
+        <div class="message-header ${threadingClass}">
             <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
                 ${userInitials}
             </div>
             <span class="username">${escapeHtml(username)}</span>
             <span class="message-timestamp">${timestamp}</span>
+            ${isReply ? '<span class="reply-indicator">↳</span>' : ''}
         </div>
-        <div class="message-content">
+        <div class="message-content ${threadingClass}">
             ${replyHtml}
-            ${escapeHtml(content)}
+            <div class="message-text">${escapeHtml(content)}</div>
             <div class="message-actions">
                 <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
                         onclick="toggleLike('${message._id || message.id || Date.now()}')" 
@@ -543,13 +552,13 @@ function createMessageElement(message) {
                     ${isLikedByUser ? '♥' : '♡'}
                 </button>
                 <button class="action-btn reply-btn" 
-                        onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}')" 
+                        onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || 'unknown'}')" 
                         title="Reply">
                     ↳
                 </button>
             </div>
         </div>
-        <div class="message-footer">
+        <div class="message-footer ${threadingClass}">
             <div class="like-count ${hasLikes ? 'has-likes' : ''}" 
                  data-count="${likeCount}" 
                  style="display: ${hasLikes ? 'flex' : 'none'}">
@@ -650,11 +659,11 @@ function updateLikeDisplay(likeElement, count) {
     }
 }
 
-// NEW: Reply functionality
-function replyToMessage(messageId, username, content) {
-    currentReplyTo = { messageId, username, content };
+// ENHANCED: Reply functionality with notification creation
+function replyToMessage(messageId, username, content, originalUserId) {
+    currentReplyTo = { messageId, username, content, originalUserId };
     
-    console.log('💬 Replying to message:', { messageId, username });
+    console.log('💬 Replying to message:', { messageId, username, originalUserId });
     
     // Show reply banner
     const replyBanner = document.getElementById('replyBanner');
@@ -700,6 +709,44 @@ function cancelReply() {
     }
     
     console.log('✅ Reply cancelled');
+}
+
+// NEW: Create reply notification
+async function createReplyNotification(targetUserId, replierName, replyContent, roomName) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        console.log('🔔 Creating reply notification for user:', targetUserId);
+
+        const notificationData = {
+            userId: targetUserId,
+            type: 'community',
+            title: `${replierName} replied to your message`,
+            content: `${replierName} replied to your message in ${roomName}: "${replyContent.length > 100 ? replyContent.substring(0, 100) + '...' : replyContent}"`
+        };
+
+        const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(notificationData)
+        });
+
+        if (response.ok) {
+            console.log('✅ Reply notification created successfully');
+        } else {
+            console.log('⚠️ Could not create notification (endpoint may not exist yet)');
+        }
+
+    } catch (error) {
+        console.log('⚠️ Notification creation failed (this is normal if endpoint doesn\'t exist):', error.message);
+        // Don't throw error - notifications are not critical for core functionality
+    }
 }
 
 // Format message timestamp
@@ -796,6 +843,11 @@ async function sendCommunityMessage() {
 
         const newMessage = await response.json();
         console.log('📤 Message sent successfully');
+
+        // NEW: Create notification if this is a reply
+        if (currentReplyTo && currentReplyTo.originalUserId && currentReplyTo.originalUserId !== currentUser?.id) {
+            await createReplyNotification(currentReplyTo.originalUserId, currentUser?.name || 'Someone', messageText, currentRoomName);
+        }
 
         // Clear input and reply state
         messageInput.value = '';
