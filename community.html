@@ -562,6 +562,157 @@
     <script src="sidebar-toggle.js"></script>
     <script src="community.js"></script>
 
+    <style>
+        /* FIX HEARTS AND REPLY ARROWS */
+        
+        /* Message Actions Styling */
+        .message-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .message-group:hover {
+            transform: translateX(2px);
+        }
+
+        .message-group:hover .message-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-content {
+            position: relative;
+        }
+
+        /* Message Actions */
+        .message-actions {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.25rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border);
+        }
+
+        .action-btn {
+            background: none;
+            border: 1px solid var(--border);
+            padding: 0.375rem;
+            border-radius: 4px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            font-size: 1rem;
+            background: var(--background);
+        }
+
+        .action-btn:hover {
+            background: var(--surface);
+            color: var(--text-primary);
+            transform: scale(1.1);
+            border-color: var(--primary);
+        }
+
+        /* FIXED LIKE BUTTON - RED HEART */
+        .action-btn.like-btn {
+            color: #6b7280 !important;
+            font-family: system-ui, -apple-system, sans-serif !important;
+        }
+
+        .action-btn.like-btn:hover {
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: #ef4444 !important;
+        }
+
+        .action-btn.like-btn.liked {
+            color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.1) !important;
+            border-color: #ef4444 !important;
+        }
+
+        /* FIXED REPLY BUTTON - NORMAL ARROW */
+        .action-btn.reply-btn {
+            color: #6b7280 !important;
+            font-family: system-ui, -apple-system, sans-serif !important;
+        }
+
+        .action-btn.reply-btn:hover {
+            color: var(--primary) !important;
+            background: rgba(99, 102, 241, 0.1) !important;
+            border-color: var(--primary) !important;
+        }
+
+        /* Message Footer (Like count) */
+        .message-footer {
+            margin-left: 2.5rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .like-count {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .like-count.has-likes {
+            color: #ef4444 !important;
+        }
+
+        /* Mobile responsive adjustments for actions */
+        @media (max-width: 1024px) {
+            .message-actions {
+                opacity: 1;
+                visibility: visible;
+                position: static;
+                background: var(--surface);
+                margin-top: 0.5rem;
+                justify-content: flex-end;
+                box-shadow: none;
+                border: none;
+                padding: 0.5rem;
+                border-radius: var(--radius);
+            }
+
+            .action-btn {
+                min-width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .action-btn {
+                min-width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .message-footer {
+                margin-left: 1.5rem;
+            }
+        }
+    </style>
+
     <script>
         // Sidebar toggle functionality
         function toggleSidebar() {
