@@ -4275,7 +4275,7 @@ mark {
         min-height: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 1.5rem 1rem !important; /* More top padding to prevent cutoff */
+        padding: 2.5rem 1rem 1rem 1rem !important; /* Much more top padding to prevent cutoff */
         background: var(--surface) !important;
         display: flex !important;
         flex-direction: column !important;
@@ -4423,7 +4423,7 @@ mark {
     }
     
     .chat-messages {
-        padding: 1.25rem 0.75rem !important; /* More top padding, adjusted sides */
+        padding: 2rem 0.75rem 1rem 0.75rem !important; /* Much more top padding */
         padding-bottom: 200px !important; /* Increased from 180px */
     }
     
