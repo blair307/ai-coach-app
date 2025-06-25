@@ -139,8 +139,8 @@
                 </div>
             </div>
 
-            <!-- Floating Search Results (Desktop Only) -->
-            <div id="searchResults" class="floating-search-results desktop-only" style="display: none;">
+            <!-- Floating Search Results (Desktop Only) - EXPLICITLY HIDDEN -->
+            <div id="searchResults" class="floating-search-results desktop-only" style="display: none !important;">
                 <div class="search-results-header">
                     <h3>Search Results</h3>
                     <button onclick="closeSearch()" class="search-close-btn">×</button>
@@ -150,8 +150,8 @@
                 </div>
             </div>
 
-            <!-- Emoji Modal (Desktop Only) - FIXED POSITIONING -->
-            <div id="emojiModal" class="emoji-modal desktop-only" style="display: none;">
+            <!-- Emoji Modal (Desktop Only) - EXPLICITLY HIDDEN -->
+            <div id="emojiModal" class="emoji-modal desktop-only" style="display: none !important;">
                 <div class="emoji-grid">
                     <button onclick="insertEmoji('😀')" class="emoji-btn">😀</button>
                     <button onclick="insertEmoji('😃')" class="emoji-btn">😃</button>
@@ -449,6 +449,20 @@
 
         // Initialize layout on load and resize
         document.addEventListener('DOMContentLoaded', function() {
+            // FORCE HIDE modals immediately
+            const searchResults = document.getElementById('searchResults');
+            const emojiModal = document.getElementById('emojiModal');
+            
+            if (searchResults) {
+                searchResults.style.display = 'none';
+                searchResults.style.visibility = 'hidden';
+            }
+            
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+                emojiModal.style.visibility = 'hidden';
+            }
+            
             initializeMobileLayout();
             
             // Wait for community.js to load
@@ -517,6 +531,14 @@
         setInterval(updateNotificationCount, 30000);
 
         // Make functions globally available
+        window.performSearch = performSearch;
+        window.closeSearch = closeSearch;
+        window.toggleEmoji = toggleEmoji;
+        window.insertEmoji = insertEmoji;
+        window.goToNotifications = goToNotifications;
+        window.logout = logout;
+        window.updateMobileRoomDropdown = updateMobileRoomDropdown;
+        window.formatMessageTime = formatMessageTime;
     </script>
 
 </body>
