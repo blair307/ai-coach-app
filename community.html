@@ -5,104 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* CRITICAL FIXES FOR COMMUNITY */
-        .main-content {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 1rem !important;
-            box-sizing: border-box !important;
-        }
-        
-        .community-responsive-container {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            display: flex !important;
-            height: calc(100vh - 8rem) !important;
-        }
-        
-        /* Desktop layout */
-        @media (min-width: 1025px) {
-            .community-responsive-container {
-                flex-direction: row !important;
-            }
-            
-            .mobile-room-selector {
-                display: none !important;
-            }
-            
-            .rooms-sidebar {
-                display: flex !important;
-                width: 280px !important;
-            }
-        }
-        
-        /* Mobile layout */
-        @media (max-width: 1024px) {
-            .main-content {
-                padding: 0.75rem !important;
-            }
-            
-            .community-responsive-container {
-                flex-direction: column !important;
-                height: calc(100vh - 6rem) !important;
-            }
-            
-            .rooms-sidebar {
-                display: none !important;
-            }
-            
-            .mobile-room-selector {
-                display: block !important;
-            }
-            
-            .content-header {
-                flex-direction: column !important;
-                text-align: center !important;
-            }
-            
-            .header-actions {
-                width: 100% !important;
-                justify-content: center !important;
-                flex-wrap: wrap !important;
-            }
-        }
-        
-        .chat-area {
-            flex: 1 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            min-height: 0 !important;
-        }
-        
-        .chat-messages-container {
-            flex: 1 !important;
-            overflow: hidden !important;
-            position: relative !important;
-        }
-        
-        .chat-messages {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            bottom: 0 !important;
-            overflow-y: auto !important;
-            padding: 1.5rem !important;
-            -webkit-overflow-scrolling: touch !important;
-        }
-        
-        @media (max-width: 1024px) {
-            .chat-messages {
-                padding: 1rem !important;
-            }
-        }
-    </style>
 </head>
 <body>
     <div class="app-container">
+        <!-- Universal Hamburger Menu -->
+        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
         <!-- Sidebar Navigation -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">
@@ -119,19 +31,21 @@
             </ul>
         </nav>
 
-        <!-- Universal Hamburger Menu -->
-        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-
         <!-- Main Content -->
         <main class="main-content">
             <!-- Header -->
             <header class="content-header">
                 <h1>Community</h1>
                 <div class="header-actions">
+                    <!-- Desktop Search Bar -->
+                    <div class="desktop-search-container desktop-only">
+                        <input 
+                            type="text" 
+                            id="desktopSearchInput" 
+                            placeholder="Search messages..." 
+                            onkeyup="performSearch(this.value)"
+                        />
+                    </div>
                     <!-- Notification Icon -->
                     <div class="notification-icon-container" onclick="goToNotifications()">
                         <div class="notification-bell">
@@ -162,12 +76,8 @@
                             font-size: 16px;
                             font-family: inherit;
                             margin-bottom: 1rem;
-                            min-height: 44px;
                         ">
                             <option value="">Select a room...</option>
-                            <option value="general">General Discussion</option>
-                            <option value="business-growth">Business Growth</option>
-                            <option value="work-life-balance">Work-Life Balance</option>
                         </select>
                         <button onclick="createRoom()" class="btn btn-small" style="width: 100%; margin-bottom: 1rem;">
                             Create New Room
@@ -183,24 +93,9 @@
                     </div>
                     
                     <div class="rooms-list" id="roomsList">
-                        <!-- Sample rooms -->
-                        <div class="room-item active" data-room="general" onclick="switchRoom('general')">
-                            <div class="room-info">
-                                <h4>General Discussion</h4>
-                                <p>Open chat for everyone</p>
-                            </div>
-                        </div>
-                        <div class="room-item" data-room="business-growth" onclick="switchRoom('business-growth')">
-                            <div class="room-info">
-                                <h4>Business Growth</h4>
-                                <p>Scaling strategies & challenges</p>
-                            </div>
-                        </div>
-                        <div class="room-item" data-room="work-life-balance" onclick="switchRoom('work-life-balance')">
-                            <div class="room-info">
-                                <h4>Work-Life Balance</h4>
-                                <p>Managing entrepreneurial stress</p>
-                            </div>
+                        <!-- Rooms will be populated by JavaScript -->
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Loading rooms...</p>
                         </div>
                     </div>
                 </div>
@@ -210,66 +105,17 @@
                     <!-- Chat Header -->
                     <div class="chat-header">
                         <div class="room-title">
-                            <h2 id="currentRoomName">General Discussion</h2>
-                            <p id="currentRoomDescription">Open chat for everyone</p>
+                            <h2 id="currentRoomName">Select a Room</h2>
+                            <p id="currentRoomDescription">Choose a room to start chatting</p>
                         </div>
                     </div>
 
                     <!-- Messages Container -->
                     <div class="chat-messages-container">
                         <div class="chat-messages" id="communityMessages">
-                            <!-- Sample messages -->
-                            <div class="message-group">
-                                <div class="message-header">
-                                    <div class="user-avatar" style="background-color: #6366f1">JD</div>
-                                    <span class="username">John Doe</span>
-                                    <span class="message-timestamp">2 minutes ago</span>
-                                </div>
-                                <div class="message-content">
-                                    <p>Hey everyone! Just wanted to share that I finally launched my new product today. The journey has been challenging but worth it!</p>
-                                    <div class="message-actions">
-                                        <button class="action-btn like-btn" onclick="toggleLike('msg1')" title="Like">♡</button>
-                                        <button class="action-btn reply-btn" onclick="replyToMessage('msg1', 'John Doe', 'Hey everyone! Just wanted to share that I finally launched my new product today.')" title="Reply">↳</button>
-                                    </div>
-                                </div>
-                                <div class="message-footer">
-                                    <div class="like-count" data-count="3" style="display: flex;">♥ 3</div>
-                                </div>
-                            </div>
-
-                            <div class="message-group">
-                                <div class="message-header">
-                                    <div class="user-avatar" style="background-color: #10b981">SM</div>
-                                    <span class="username">Sarah Miller</span>
-                                    <span class="message-timestamp">5 minutes ago</span>
-                                </div>
-                                <div class="message-content">
-                                    <p>That's amazing John! Congratulations on the launch. What was the biggest challenge you faced during development?</p>
-                                    <div class="message-actions">
-                                        <button class="action-btn like-btn" onclick="toggleLike('msg2')" title="Like">♡</button>
-                                        <button class="action-btn reply-btn" onclick="replyToMessage('msg2', 'Sarah Miller', 'That\\'s amazing John! Congratulations on the launch.')" title="Reply">↳</button>
-                                    </div>
-                                </div>
-                                <div class="message-footer">
-                                    <div class="like-count" data-count="1" style="display: flex;">♥ 1</div>
-                                </div>
-                            </div>
-
-                            <div class="message-group reply" style="margin-left: 2rem; position: relative;">
-                                <div style="content: ''; position: absolute; left: -1rem; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), var(--primary-light)); border-radius: 1px;"></div>
-                                <div style="content: '↳'; position: absolute; left: -2rem; top: 0.5rem; color: var(--primary); font-size: 1.2rem; font-weight: bold;">↳</div>
-                                <div class="message-header">
-                                    <div class="user-avatar" style="background-color: #6366f1">JD</div>
-                                    <span class="username" style="color: var(--primary); font-weight: 700;">John Doe</span>
-                                    <span class="message-timestamp">3 minutes ago</span>
-                                </div>
-                                <div class="message-content" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%); border-left: 3px solid var(--primary);">
-                                    <p>Thanks Sarah! The biggest challenge was definitely managing my time between development and marketing. I learned to focus on one thing at a time.</p>
-                                    <div class="message-actions">
-                                        <button class="action-btn like-btn" onclick="toggleLike('msg3')" title="Like">♡</button>
-                                        <button class="action-btn reply-btn" onclick="replyToMessage('msg3', 'John Doe', 'Thanks Sarah! The biggest challenge was definitely managing my time.')" title="Reply">↳</button>
-                                    </div>
-                                </div>
+                            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                <h3>Welcome to Community Chat!</h3>
+                                <p>Select a room to start the conversation.</p>
                             </div>
                         </div>
                     </div>
@@ -294,360 +140,59 @@
                                 placeholder="Type your message..." 
                                 onkeypress="handleCommunityKeyPress(event)"
                                 style="font-size: 16px; resize: none; min-height: 44px; max-height: 120px;"
+                                disabled
                             ></textarea>
                             <div class="input-actions">
-                                <button class="btn btn-primary" onclick="sendCommunityMessage()" id="sendCommunityButton">Send</button>
+                                <button class="btn btn-small btn-outline desktop-only" onclick="toggleEmoji()" disabled id="emojiBtn">😊</button>
+                                <button class="btn btn-primary" onclick="sendCommunityMessage()" disabled id="sendCommunityButton">Send</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Floating Search Results (Desktop Only) - EXPLICITLY HIDDEN -->
+            <div id="searchResults" class="floating-search-results desktop-only" style="display: none !important;">
+                <div class="search-results-header">
+                    <h3>Search Results</h3>
+                    <button onclick="closeSearch()" class="search-close-btn">×</button>
+                </div>
+                <div id="searchContent" class="search-results-content">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Emoji Modal (Desktop Only) - EXPLICITLY HIDDEN -->
+            <div id="emojiModal" class="emoji-modal desktop-only" style="display: none !important;">
+                <div class="emoji-grid">
+                    <button onclick="insertEmoji('😀')" class="emoji-btn">😀</button>
+                    <button onclick="insertEmoji('😃')" class="emoji-btn">😃</button>
+                    <button onclick="insertEmoji('😄')" class="emoji-btn">😄</button>
+                    <button onclick="insertEmoji('😊')" class="emoji-btn">😊</button>
+                    <button onclick="insertEmoji('😎')" class="emoji-btn">😎</button>
+                    <button onclick="insertEmoji('🎉')" class="emoji-btn">🎉</button>
+                    <button onclick="insertEmoji('👍')" class="emoji-btn">👍</button>
+                    <button onclick="insertEmoji('👏')" class="emoji-btn">👏</button>
+                    <button onclick="insertEmoji('💪')" class="emoji-btn">💪</button>
+                    <button onclick="insertEmoji('🚀')" class="emoji-btn">🚀</button>
+                    <button onclick="insertEmoji('💡')" class="emoji-btn">💡</button>
+                    <button onclick="insertEmoji('❤️')" class="emoji-btn">❤️</button>
+                </div>
+            </div>
+
         </main>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" style="display: none;">
+        <div style="text-align: center;">
+            <div style="width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+            <p>Loading community...</p>
+        </div>
     </div>
 
     <script src="sidebar-toggle.js"></script>
     <script src="community.js"></script>
-
-    <script>
-        let currentRoomId = 'general';
-        let currentReplyTo = null;
-
-        // Simple notification counter
-        async function updateNotificationCount() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return;
-                
-                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count || 0;
-                    const countElement = document.getElementById('headerNotificationCount');
-                    
-                    if (countElement) {
-                        countElement.textContent = count;
-                        countElement.setAttribute('data-count', count);
-                        countElement.style.display = count > 0 ? 'flex' : 'none';
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching notification count:', error);
-            }
-        }
-
-        function goToNotifications() {
-            window.location.href = 'notifications.html';
-        }
-
-        function createRoom() {
-            const roomName = prompt('Enter room name:');
-            if (roomName && roomName.trim()) {
-                alert('Room "' + roomName + '" created! (Feature in development)');
-            }
-        }
-
-        function switchRoom(roomId) {
-            if (!roomId) return;
-            
-            currentRoomId = roomId;
-            
-            // Update active room in sidebar
-            document.querySelectorAll('.room-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            
-            const currentRoomElement = document.querySelector(`[data-room="${roomId}"]`);
-            if (currentRoomElement) {
-                currentRoomElement.classList.add('active');
-            }
-            
-            // Update dropdown
-            const roomDropdown = document.getElementById('roomDropdown');
-            if (roomDropdown) {
-                roomDropdown.value = roomId;
-            }
-            
-            // Update room title
-            const roomNames = {
-                'general': 'General Discussion',
-                'business-growth': 'Business Growth',
-                'work-life-balance': 'Work-Life Balance'
-            };
-            
-            const roomDescriptions = {
-                'general': 'Open chat for everyone',
-                'business-growth': 'Scaling strategies & challenges',
-                'work-life-balance': 'Managing entrepreneurial stress'
-            };
-            
-            const roomNameElement = document.getElementById('currentRoomName');
-            const roomDescElement = document.getElementById('currentRoomDescription');
-            
-            if (roomNameElement) roomNameElement.textContent = roomNames[roomId] || 'Unknown Room';
-            if (roomDescElement) roomDescElement.textContent = roomDescriptions[roomId] || 'Chat room';
-            
-            // Clear messages and load new ones (simulated)
-            loadRoomMessages(roomId);
-        }
-
-        function loadRoomMessages(roomId) {
-            const messagesContainer = document.getElementById('communityMessages');
-            if (!messagesContainer) return;
-            
-            // Simulate loading different messages for different rooms
-            const sampleMessages = {
-                'general': `
-                    <div class="message-group">
-                        <div class="message-header">
-                            <div class="user-avatar" style="background-color: #6366f1">JD</div>
-                            <span class="username">John Doe</span>
-                            <span class="message-timestamp">2 minutes ago</span>
-                        </div>
-                        <div class="message-content">
-                            <p>Hey everyone! Just wanted to share that I finally launched my new product today.</p>
-                            <div class="message-actions">
-                                <button class="action-btn like-btn" onclick="toggleLike('msg1')" title="Like">♡</button>
-                                <button class="action-btn reply-btn" onclick="replyToMessage('msg1', 'John Doe', 'Hey everyone! Just wanted to share that I finally launched my new product today.')" title="Reply">↳</button>
-                            </div>
-                        </div>
-                        <div class="message-footer">
-                            <div class="like-count" data-count="3" style="display: flex;">♥ 3</div>
-                        </div>
-                    </div>
-                `,
-                'business-growth': `
-                    <div class="message-group">
-                        <div class="message-header">
-                            <div class="user-avatar" style="background-color: #10b981">SM</div>
-                            <span class="username">Sarah Miller</span>
-                            <span class="message-timestamp">10 minutes ago</span>
-                        </div>
-                        <div class="message-content">
-                            <p>What strategies have worked best for you when scaling your team?</p>
-                            <div class="message-actions">
-                                <button class="action-btn like-btn" onclick="toggleLike('msg2')" title="Like">♡</button>
-                                <button class="action-btn reply-btn" onclick="replyToMessage('msg2', 'Sarah Miller', 'What strategies have worked best for you when scaling your team?')" title="Reply">↳</button>
-                            </div>
-                        </div>
-                    </div>
-                `,
-                'work-life-balance': `
-                    <div class="message-group">
-                        <div class="message-header">
-                            <div class="user-avatar" style="background-color: #f59e0b">MJ</div>
-                            <span class="username">Mike Johnson</span>
-                            <span class="message-timestamp">15 minutes ago</span>
-                        </div>
-                        <div class="message-content">
-                            <p>I've been struggling with setting boundaries between work and personal time. Any tips?</p>
-                            <div class="message-actions">
-                                <button class="action-btn like-btn" onclick="toggleLike('msg3')" title="Like">♡</button>
-                                <button class="action-btn reply-btn" onclick="replyToMessage('msg3', 'Mike Johnson', 'I\\'ve been struggling with setting boundaries between work and personal time.')" title="Reply">↳</button>
-                            </div>
-                        </div>
-                    </div>
-                `
-            };
-            
-            messagesContainer.innerHTML = sampleMessages[roomId] || '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No messages yet. Start the conversation!</p>';
-        }
-
-        function toggleLike(messageId) {
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`) || 
-                                 document.querySelector('.message-group'); // Fallback
-            
-            if (messageElement) {
-                const likeBtn = messageElement.querySelector('.like-btn');
-                const likeCount = messageElement.querySelector('.like-count');
-                
-                if (likeBtn && likeCount) {
-                    const isLiked = likeBtn.classList.contains('liked');
-                    const currentCount = parseInt(likeCount.dataset.count || '0');
-                    
-                    if (isLiked) {
-                        likeBtn.classList.remove('liked');
-                        likeBtn.innerHTML = '♡';
-                        const newCount = Math.max(0, currentCount - 1);
-                        updateLikeDisplay(likeCount, newCount);
-                    } else {
-                        likeBtn.classList.add('liked');
-                        likeBtn.innerHTML = '♥';
-                        const newCount = currentCount + 1;
-                        updateLikeDisplay(likeCount, newCount);
-                    }
-                }
-            }
-        }
-
-        function updateLikeDisplay(likeElement, count) {
-            likeElement.dataset.count = count;
-            
-            if (count > 0) {
-                likeElement.innerHTML = `♥ ${count}`;
-                likeElement.classList.add('has-likes');
-                likeElement.style.display = 'flex';
-            } else {
-                likeElement.innerHTML = '';
-                likeElement.classList.remove('has-likes');
-                likeElement.style.display = 'none';
-            }
-        }
-
-        function replyToMessage(messageId, username, content) {
-            currentReplyTo = { messageId, username, content };
-            
-            const replyBanner = document.getElementById('replyBanner');
-            const replyToUser = document.getElementById('replyToUser');
-            const replyToMessage = document.getElementById('replyToMessage');
-            const chatInput = document.querySelector('.chat-input');
-            
-            if (replyBanner && replyToUser && replyToMessage && chatInput) {
-                replyToUser.textContent = username;
-                replyToMessage.textContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
-                
-                replyBanner.style.display = 'block';
-                chatInput.classList.add('replying');
-                
-                const messageInput = document.getElementById('communityMessageInput');
-                if (messageInput) {
-                    messageInput.focus();
-                }
-            }
-        }
-
-        function cancelReply() {
-            currentReplyTo = null;
-            
-            const replyBanner = document.getElementById('replyBanner');
-            const chatInput = document.querySelector('.chat-input');
-            
-            if (replyBanner) {
-                replyBanner.style.display = 'none';
-            }
-            
-            if (chatInput) {
-                chatInput.classList.remove('replying');
-            }
-        }
-
-        function handleCommunityKeyPress(event) {
-            if (event.key === 'Enter') {
-                const isMobile = window.innerWidth <= 1024;
-                
-                if (isMobile) {
-                    return; // Allow multi-line on mobile
-                } else {
-                    if (!event.shiftKey) {
-                        event.preventDefault();
-                        sendCommunityMessage();
-                    }
-                }
-            }
-            
-            if (event.key === 'Escape' && currentReplyTo) {
-                cancelReply();
-            }
-        }
-
-        function sendCommunityMessage() {
-            const messageInput = document.getElementById('communityMessageInput');
-            if (!messageInput) return;
-            
-            const messageText = messageInput.value.trim();
-            if (!messageText) return;
-            
-            // Create new message element
-            const messagesContainer = document.getElementById('communityMessages');
-            if (messagesContainer) {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = currentReplyTo ? 'message-group reply' : 'message-group';
-                
-                if (currentReplyTo) {
-                    messageDiv.style.cssText = 'margin-left: 2rem; position: relative;';
-                    messageDiv.innerHTML = `
-                        <div style="content: ''; position: absolute; left: -1rem; top: 0; bottom: 0; width: 2px; background: linear-gradient(to bottom, var(--primary), var(--primary-light)); border-radius: 1px;"></div>
-                        <div style="content: '↳'; position: absolute; left: -2rem; top: 0.5rem; color: var(--primary); font-size: 1.2rem; font-weight: bold;">↳</div>
-                        <div class="message-header">
-                            <div class="user-avatar" style="background-color: #ef4444">YU</div>
-                            <span class="username" style="color: var(--primary); font-weight: 700;">You</span>
-                            <span class="message-timestamp">Just now</span>
-                        </div>
-                        <div class="message-content" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%); border-left: 3px solid var(--primary);">
-                            <p>${messageText}</p>
-                            <div class="message-actions">
-                                <button class="action-btn like-btn" onclick="toggleLike('new-msg')" title="Like">♡</button>
-                                <button class="action-btn reply-btn" onclick="replyToMessage('new-msg', 'You', '${messageText}')" title="Reply">↳</button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    messageDiv.innerHTML = `
-                        <div class="message-header">
-                            <div class="user-avatar" style="background-color: #ef4444">YU</div>
-                            <span class="username">You</span>
-                            <span class="message-timestamp">Just now</span>
-                        </div>
-                        <div class="message-content">
-                            <p>${messageText}</p>
-                            <div class="message-actions">
-                                <button class="action-btn like-btn" onclick="toggleLike('new-msg')" title="Like">♡</button>
-                                <button class="action-btn reply-btn" onclick="replyToMessage('new-msg', 'You', '${messageText}')" title="Reply">↳</button>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                messagesContainer.appendChild(messageDiv);
-                messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            }
-            
-            messageInput.value = '';
-            cancelReply();
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                localStorage.clear();
-                window.location.href = 'login.html';
-            }
-        }
-
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            updateNotificationCount();
-            setInterval(updateNotificationCount, 30000);
-            
-            // Set mobile layout if needed
-            if (window.innerWidth <= 1024) {
-                const mobileSelector = document.querySelector('.mobile-room-selector');
-                if (mobileSelector) {
-                    mobileSelector.style.display = 'block';
-                }
-            }
-        });
-
-        // Handle responsive layout
-        window.addEventListener('resize', function() {
-            if (window.innerWidth <= 1024) {
-                const mobileSelector = document.querySelector('.mobile-room-selector');
-                const roomsSidebar = document.querySelector('.rooms-sidebar');
-                if (mobileSelector) mobileSelector.style.display = 'block';
-                if (roomsSidebar) roomsSidebar.style.display = 'none';
-            } else {
-                const mobileSelector = document.querySelector('.mobile-room-selector');
-                const roomsSidebar = document.querySelector('.rooms-sidebar');
-                if (mobileSelector) mobileSelector.style.display = 'none';
-                if (roomsSidebar) roomsSidebar.style.display = 'flex';
-            }
-        });
-    </script>
 
     <style>
         /* Enhanced Message Styling with Like & Reply */
@@ -708,6 +253,31 @@
             border-radius: var(--radius);
             border: 1px solid var(--border);
             position: relative;
+        }
+
+        /* Reply Styling */
+        .reply-reference {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--primary);
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.75rem;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.875rem;
+        }
+
+        .reply-author {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .reply-text {
+            color: var(--text-secondary);
+            line-height: 1.4;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
         }
 
         /* Message Actions */
@@ -780,6 +350,14 @@
             color: #ef4444;
         }
 
+        .reply-count {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
         /* Reply Banner Styling */
         .reply-banner {
             background: rgba(99, 102, 241, 0.05);
@@ -833,13 +411,7 @@
             -webkit-box-orient: vertical;
         }
 
-        /* Enhanced chat input when replying */
-        .chat-input.replying {
-            border-top: none;
-            border-radius: 0 0 var(--radius) var(--radius);
-        }
-
-        /* Mobile responsive adjustments */
+        /* Mobile Responsive Adjustments */
         @media (max-width: 1024px) {
             .message-actions {
                 opacity: 1;
@@ -875,6 +447,767 @@
                 font-size: 0.75rem;
             }
         }
+
+        /* Animation for new messages */
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-group {
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        /* Enhanced chat input when replying */
+        .chat-input.replying {
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
     </style>
+
+    <script>
+        // Enhanced message interactions
+        let currentReplyTo = null;
+
+        // Search functionality (keeping existing)
+        let searchTimeout;
+        let allMessages = [];
+
+        async function performSearch(query) {
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+
+            if (!query || query.trim().length === 0) {
+                closeSearch();
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                await executeSearch(query.trim());
+            }, 300);
+        }
+
+        async function executeSearch(query) {
+            try {
+                const searchResults = document.getElementById('searchResults');
+                const searchContent = document.getElementById('searchContent');
+                
+                if (!searchResults || !searchContent) return;
+
+                searchResults.style.display = 'block';
+                searchContent.innerHTML = `
+                    <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                        <p>Searching...</p>
+                    </div>
+                `;
+
+                if (!currentRoomId) {
+                    searchContent.innerHTML = `
+                        <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                            <p>Please select a room first</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token');
+                }
+
+                const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${currentRoomId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch messages for search');
+                }
+
+                allMessages = await response.json();
+
+                const filteredMessages = allMessages.filter(message => {
+                    const content = (message.content || message.message || '').toLowerCase();
+                    const username = (message.username || '').toLowerCase();
+                    return content.includes(query.toLowerCase()) || username.includes(query.toLowerCase());
+                });
+
+                if (filteredMessages.length === 0) {
+                    searchContent.innerHTML = `
+                        <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
+                            <p>No messages found for "${query}"</p>
+                        </div>
+                    `;
+                } else {
+                    searchContent.innerHTML = '';
+                    
+                    filteredMessages.slice(0, 10).forEach(message => {
+                        const resultItem = document.createElement('div');
+                        resultItem.className = 'search-result-item';
+                        
+                        const content = message.content || message.message || '';
+                        const highlightedContent = content.replace(
+                            new RegExp(query, 'gi'), 
+                            `<mark style="background: #ffd700; color: #000;">${query}</mark>`
+                        );
+                        
+                        const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+                        
+                        resultItem.innerHTML = `
+                            <div style="padding: 0.75rem; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="scrollToMessage('${message._id}')">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                                    <strong style="color: var(--primary);">${message.username || 'User'}</strong>
+                                    <span style="color: var(--text-muted); font-size: 0.8rem;">${timestamp}</span>
+                                </div>
+                                <p style="margin: 0; color: var(--text-primary); font-size: 0.9rem; line-height: 1.4;">${highlightedContent}</p>
+                            </div>
+                        `;
+                        
+                        searchContent.appendChild(resultItem);
+                    });
+
+                    if (filteredMessages.length > 10) {
+                        const moreResults = document.createElement('div');
+                        moreResults.style.cssText = 'text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.8rem;';
+                        moreResults.textContent = `... and ${filteredMessages.length - 10} more results`;
+                        searchContent.appendChild(moreResults);
+                    }
+                }
+
+            } catch (error) {
+                console.error('Search error:', error);
+                const searchContent = document.getElementById('searchContent');
+                if (searchContent) {
+                    searchContent.innerHTML = `
+                        <div style="text-align: center; padding: 1rem; color: var(--error);">
+                            <p>Search failed. Please try again.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function scrollToMessage(messageId) {
+            closeSearch();
+            console.log('Scrolling to message:', messageId);
+        }
+
+        function closeSearch() {
+            const searchResults = document.getElementById('searchResults');
+            const searchInput = document.getElementById('desktopSearchInput');
+            
+            if (searchResults) {
+                searchResults.style.display = 'none';
+            }
+            
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }
+
+        // Enhanced emoji functions (keeping existing)
+        function toggleEmoji() {
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) {
+                const isVisible = emojiModal.style.display === 'block';
+                emojiModal.style.display = isVisible ? 'none' : 'block';
+            }
+        }
+
+        function insertEmoji(emoji) {
+            const messageInput = document.getElementById('communityMessageInput');
+            if (messageInput) {
+                const cursorPos = messageInput.selectionStart || messageInput.value.length;
+                const textBefore = messageInput.value.substring(0, cursorPos);
+                const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+                messageInput.value = textBefore + emoji + textAfter;
+                
+                const newPos = cursorPos + emoji.length;
+                messageInput.setSelectionRange(newPos, newPos);
+                messageInput.focus();
+            }
+            
+            const emojiModal = document.getElementById('emojiModal');
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+            }
+        }
+
+        // NEW: Like functionality
+        async function toggleLike(messageId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token');
+                }
+
+                // Note: This would need a backend endpoint for likes
+                // For now, we'll simulate it locally
+                console.log('Toggling like for message:', messageId);
+                
+                // Find the message element and update the like button
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    const likeBtn = messageElement.querySelector('.like-btn');
+                    const likeCount = messageElement.querySelector('.like-count');
+                    
+                    if (likeBtn && likeCount) {
+                        const isLiked = likeBtn.classList.contains('liked');
+                        const currentCount = parseInt(likeCount.dataset.count || '0');
+                        
+                        if (isLiked) {
+                            likeBtn.classList.remove('liked');
+                            likeBtn.innerHTML = '♡';
+                            const newCount = Math.max(0, currentCount - 1);
+                            updateLikeDisplay(likeCount, newCount);
+                        } else {
+                            likeBtn.classList.add('liked');
+                            likeBtn.innerHTML = '♥';
+                            const newCount = currentCount + 1;
+                            updateLikeDisplay(likeCount, newCount);
+                            
+                            // Add haptic feedback on mobile
+                            if (navigator.vibrate && window.innerWidth <= 1024) {
+                                navigator.vibrate(30);
+                            }
+                        }
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        function updateLikeDisplay(likeElement, count) {
+            likeElement.dataset.count = count;
+            
+            if (count > 0) {
+                likeElement.innerHTML = `♥ ${count}`;
+                likeElement.classList.add('has-likes');
+                likeElement.style.display = 'flex';
+            } else {
+                likeElement.innerHTML = '';
+                likeElement.classList.remove('has-likes');
+                likeElement.style.display = 'none';
+            }
+        }
+
+        // NEW: Reply functionality
+        function replyToMessage(messageId, username, content) {
+            currentReplyTo = { messageId, username, content };
+            
+            // Show reply banner
+            const replyBanner = document.getElementById('replyBanner');
+            const replyToUser = document.getElementById('replyToUser');
+            const replyToMessage = document.getElementById('replyToMessage');
+            const chatInput = document.querySelector('.chat-input');
+            
+            if (replyBanner && replyToUser && replyToMessage && chatInput) {
+                replyToUser.textContent = username;
+                replyToMessage.textContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
+                
+                replyBanner.style.display = 'block';
+                chatInput.classList.add('replying');
+                
+                // Focus the input
+                const messageInput = document.getElementById('communityMessageInput');
+                if (messageInput) {
+                    messageInput.focus();
+                }
+                
+                // Add haptic feedback on mobile
+                if (navigator.vibrate && window.innerWidth <= 1024) {
+                    navigator.vibrate(50);
+                }
+            }
+        }
+
+        function cancelReply() {
+            currentReplyTo = null;
+            
+            const replyBanner = document.getElementById('replyBanner');
+            const chatInput = document.querySelector('.chat-input');
+            
+            if (replyBanner) {
+                replyBanner.style.display = 'none';
+            }
+            
+            if (chatInput) {
+                chatInput.classList.remove('replying');
+            }
+        }
+
+        // Enhanced message creation with like/reply support
+        function createEnhancedMessageElement(message) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message-group';
+            messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
+
+            const username = message.username || 'User';
+            const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+            const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+            const content = message.content || message.message || '';
+            
+            // Check if this is a reply
+            let replyHtml = '';
+            if (message.replyTo) {
+                replyHtml = `
+                    <div class="reply-reference">
+                        <div class="reply-author">↳ ${message.replyTo.username}</div>
+                        <div class="reply-text">${message.replyTo.content}</div>
+                    </div>
+                `;
+            }
+            
+            // Simulate like count (in real app, this would come from backend)
+            const likeCount = Math.floor(Math.random() * 3); // Random likes for demo
+            const hasLikes = likeCount > 0;
+            
+            messageDiv.innerHTML = `
+                <div class="message-header">
+                    <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
+                        ${userInitials}
+                    </div>
+                    <span class="username">${username}</span>
+                    <span class="message-timestamp">${timestamp}</span>
+                </div>
+                <div class="message-content">
+                    ${replyHtml}
+                    ${escapeHtml(content)}
+                    <div class="message-actions">
+                        <button class="action-btn like-btn" onclick="toggleLike('${message._id || message.id || Date.now()}')" title="Like">
+                            ♡
+                        </button>
+                        <button class="action-btn reply-btn" onclick="replyToMessage('${message._id || message.id || Date.now()}', '${username}', '${escapeHtml(content)}')" title="Reply">
+                            ↳
+                        </button>
+                    </div>
+                </div>
+                <div class="message-footer">
+                    <div class="like-count" data-count="${likeCount}" style="display: ${hasLikes ? 'flex' : 'none'}">
+                        ${hasLikes ? `♥ ${likeCount}` : ''}
+                    </div>
+                </div>
+            `;
+
+            return messageDiv;
+        }
+
+        // Enhanced send message function with reply support
+        async function sendEnhancedCommunityMessage() {
+            try {
+                const messageInput = document.getElementById('communityMessageInput');
+                const sendButton = document.getElementById('sendCommunityButton');
+                
+                if (!messageInput || !currentRoomId) {
+                    console.error('Missing required elements or room not selected');
+                    return;
+                }
+
+                const messageText = messageInput.value.trim();
+                if (!messageText) {
+                    return;
+                }
+
+                // Show loading state
+                if (sendButton) {
+                    sendButton.disabled = true;
+                    sendButton.textContent = 'Sending...';
+                }
+
+                // Add mobile haptic feedback
+                if (navigator.vibrate && window.innerWidth <= 1024) {
+                    navigator.vibrate(30);
+                }
+
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token');
+                }
+
+                // Prepare message data with reply information
+                const messageData = {
+                    content: messageText,
+                    avatar: getCurrentUser()?.name?.substring(0, 2).toUpperCase() || 'U',
+                    avatarColor: '#6366f1'
+                };
+
+                // Add reply data if replying
+                if (currentReplyTo) {
+                    messageData.replyTo = {
+                        messageId: currentReplyTo.messageId,
+                        username: currentReplyTo.username,
+                        content: currentReplyTo.content
+                    };
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+                // Send message to backend
+                const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${currentRoomId}/messages`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(messageData),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to send message: ${response.status}`);
+                }
+
+                const newMessage = await response.json();
+                console.log('Message sent successfully');
+
+                // Clear input and reply state
+                messageInput.value = '';
+                cancelReply();
+
+                // Hide mobile keyboard
+                if (window.innerWidth <= 1024) {
+                    messageInput.blur();
+                }
+
+                // Reload messages to show the new one
+                await loadEnhancedMessages(currentRoomId);
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showErrorMessage('Failed to send message. Please try again.');
+            } finally {
+                // Re-enable send button
+                const sendButton = document.getElementById('sendCommunityButton');
+                if (sendButton) {
+                    sendButton.disabled = false;
+                    sendButton.textContent = 'Send';
+                }
+            }
+        }
+
+        // Enhanced message loading with like/reply support
+        async function loadEnhancedMessages(roomId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) {
+                    throw new Error('No authentication token');
+                }
+
+                console.log('Loading enhanced messages for room:', roomId);
+
+                const messagesContainer = document.getElementById('communityMessages');
+                if (messagesContainer) {
+                    messagesContainer.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            <p>Loading messages...</p>
+                        </div>
+                    `;
+                }
+
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+                const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${roomId}/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to load messages: ${response.status}`);
+                }
+
+                const messages = await response.json();
+                console.log('Loaded enhanced messages for room:', roomId, messages.length);
+                
+                displayEnhancedMessages(messages);
+                
+            } catch (error) {
+                console.error('Error loading enhanced messages:', error);
+                displayEnhancedMessages([]);
+            }
+        }
+
+        // Enhanced message display
+        function displayEnhancedMessages(messages) {
+            const messagesContainer = document.getElementById('communityMessages');
+            if (!messagesContainer) return;
+
+            messagesContainer.innerHTML = '';
+
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        <p>No messages yet. Be the first to start the conversation!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            messages.forEach(message => {
+                const messageElement = createEnhancedMessageElement(message);
+                messagesContainer.appendChild(messageElement);
+            });
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Utility functions (keeping existing)
+        function getCurrentUser() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return null;
+                
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return {
+                    id: payload.userId,
+                    email: payload.email,
+                    name: localStorage.getItem('userName') || 'User'
+                };
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatMessageTime(timestamp) {
+            if (!timestamp) return 'Now';
+            
+            const messageDate = new Date(timestamp);
+            const now = new Date();
+            const diffInMinutes = Math.floor((now - messageDate) / (1000 * 60));
+            
+            if (diffInMinutes < 1) return 'Just now';
+            if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+            if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+            
+            return messageDate.toLocaleDateString();
+        }
+
+        function showErrorMessage(message) {
+            const toast = document.createElement('div');
+            const isMobile = window.innerWidth <= 1024;
+            
+            toast.style.cssText = `
+                position: fixed;
+                ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
+                background: #ef4444;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                z-index: 10000;
+                font-weight: 500;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 4000);
+        }
+
+        // Mobile-specific responsive fixes (keeping existing)
+        function initializeMobileLayout() {
+            const isMobile = window.innerWidth <= 1024;
+            const mobileSelector = document.querySelector('.mobile-room-selector');
+            const desktopSidebar = document.querySelector('.rooms-sidebar');
+            const desktopOnlyElements = document.querySelectorAll('.desktop-only');
+
+            if (isMobile) {
+                if (mobileSelector) mobileSelector.style.display = 'block';
+                if (desktopSidebar) desktopSidebar.style.display = 'none';
+                
+                desktopOnlyElements.forEach(el => {
+                    if (!el.classList.contains('rooms-sidebar')) {
+                        el.style.display = 'none';
+                    }
+                });
+
+                const chatArea = document.querySelector('.chat-area');
+                if (chatArea) {
+                    chatArea.style.width = '100%';
+                    chatArea.style.flex = '1';
+                }
+
+                const messageInput = document.getElementById('communityMessageInput');
+                if (messageInput) {
+                    messageInput.style.fontSize = '16px';
+                }
+
+            } else {
+                if (mobileSelector) mobileSelector.style.display = 'none';
+                if (desktopSidebar) desktopSidebar.style.display = 'flex';
+                
+                desktopOnlyElements.forEach(el => {
+                    el.style.display = '';
+                });
+            }
+
+            console.log('Mobile layout initialized:', { isMobile, width: window.innerWidth });
+        }
+
+        // Enhanced keyboard handling
+        function handleCommunityKeyPress(event) {
+            if (event.key === 'Enter') {
+                const isMobile = window.innerWidth <= 1024;
+                
+                if (isMobile) {
+                    return; // Allow multi-line on mobile
+                } else {
+                    if (!event.shiftKey) {
+                        event.preventDefault();
+                        sendEnhancedCommunityMessage();
+                    }
+                }
+            }
+            
+            // Escape key cancels reply
+            if (event.key === 'Escape' && currentReplyTo) {
+                cancelReply();
+            }
+        }
+
+        // Navigation functions (keeping existing)
+        function goToNotifications() {
+            window.location.href = 'notifications.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        // Initialize layout on load and resize (keeping existing)
+        document.addEventListener('DOMContentLoaded', function() {
+            // FORCE HIDE modals immediately
+            const searchResults = document.getElementById('searchResults');
+            const emojiModal = document.getElementById('emojiModal');
+            
+            if (searchResults) {
+                searchResults.style.display = 'none';
+                searchResults.style.visibility = 'hidden';
+            }
+            
+            if (emojiModal) {
+                emojiModal.style.display = 'none';
+                emojiModal.style.visibility = 'hidden';
+            }
+            
+            initializeMobileLayout();
+            
+            // Wait for community.js to load
+            setTimeout(() => {
+                if (window.initializeCommunity) {
+                    initializeCommunity();
+                }
+            }, 100);
+        });
+
+        window.addEventListener('resize', initializeMobileLayout);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(initializeMobileLayout, 100);
+        });
+
+        // Close modals when clicking outside (keeping existing)
+        document.addEventListener('click', function(event) {
+            const emojiModal = document.getElementById('emojiModal');
+            const emojiBtn = event.target.closest('#emojiBtn');
+            
+            if (emojiModal && !emojiModal.contains(event.target) && !emojiBtn) {
+                emojiModal.style.display = 'none';
+            }
+
+            const searchResults = document.getElementById('searchResults');
+            const searchContainer = document.querySelector('.desktop-search-container');
+            
+            if (searchResults && !searchResults.contains(event.target) && !searchContainer?.contains(event.target)) {
+                closeSearch();
+            }
+        });
+
+        // Add notification count functionality (keeping existing)
+        async function updateNotificationCount() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return;
+                
+                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count || 0;
+                    const countElement = document.getElementById('headerNotificationCount');
+                    
+                    if (countElement) {
+                        countElement.textContent = count;
+                        countElement.setAttribute('data-count', count);
+                        countElement.style.display = count > 0 ? 'flex' : 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching notification count:', error);
+            }
+        }
+
+        // Update notification count periodically (keeping existing)
+        updateNotificationCount();
+        setInterval(updateNotificationCount, 30000);
+
+        // Override community.js functions to use enhanced versions
+        window.sendCommunityMessage = sendEnhancedCommunityMessage;
+        window.loadMessages = loadEnhancedMessages;
+        window.displayMessages = displayEnhancedMessages;
+        window.createMessageElement = createEnhancedMessageElement;
+        window.handleCommunityKeyPress = handleCommunityKeyPress;
+
+        // Make new functions globally available
+        window.toggleLike = toggleLike;
+        window.replyToMessage = replyToMessage;
+        window.cancelReply = cancelReply;
+        window.performSearch = performSearch;
+        window.closeSearch = closeSearch;
+        window.toggleEmoji = toggleEmoji;
+        window.insertEmoji = insertEmoji;
+        window.goToNotifications = goToNotifications;
+        window.logout = logout;
+        window.formatMessageTime = formatMessageTime;
+        window.showErrorMessage = showErrorMessage;
+
+        console.log('✅ Enhanced Community with Like & Reply loaded!');
+    </script>
+
 </body>
 </html>
