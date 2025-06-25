@@ -4049,3 +4049,54 @@ mark {
 .reply-message {
     animation: replySlideIn 0.4s ease-out;
 }
+
+/* IMPROVED COMMUNITY LAYOUT - BIGGER MESSAGES */
+.community-responsive-container {
+    height: calc(100vh - 6rem) !important; /* Larger messages window */
+}
+
+.rooms-sidebar {
+    width: 240px !important; /* Smaller sidebar = more space for messages */
+}
+
+/* SIMPLIFIED REPLY STYLING - NO MORE BOXES IN BOXES */
+.message-group.reply {
+    margin-left: 2rem !important;
+    position: relative !important;
+}
+
+.message-group.reply::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary), var(--primary-light));
+    border-radius: 1px;
+}
+
+.message-group.reply::after {
+    content: '↳';
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    color: var(--primary);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.message-group.reply .message-content {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%) !important;
+    border-left: 3px solid var(--primary) !important;
+}
+
+.message-group.reply .username {
+    color: var(--primary) !important;
+    font-weight: 700 !important;
+}
+
+/* Remove old reply reference boxes */
+.reply-reference {
+    display: none !important;
+}
