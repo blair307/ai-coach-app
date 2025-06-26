@@ -236,6 +236,188 @@
     
     <script>
 
+        // Force timer initialization fix - Add this to your dashboard.html script section
+
+// Enhanced timer initialization with error handling
+function forceInitializeTimer() {
+    console.log('🔧 Force initializing timer...');
+    
+    try {
+        // Ensure elements are visible
+        const timerElements = [
+            'timerDisplay', 'countdownContainer', 'countdownLabel', 
+            'countdownTimer', 'countdownDate', 'noMeeting', 
+            'noMeetingText', 'currentTime', 'currentDate', 'timezone'
+        ];
+        
+        timerElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'block';
+                element.style.visibility = 'visible';
+                element.style.opacity = '1';
+            }
+        });
+        
+        // Force update countdown immediately
+        updateCountdownTimer();
+        
+        // Set up interval if not already running
+        if (window.countdownInterval) {
+            clearInterval(window.countdownInterval);
+        }
+        
+        window.countdownInterval = setInterval(updateCountdownTimer, 1000);
+        
+        console.log('✅ Timer force initialized');
+        
+    } catch (error) {
+        console.error('❌ Error force initializing timer:', error);
+    }
+}
+
+// Call this after your existing initialization
+document.addEventListener('DOMContentLoaded', function() {
+    // Your existing code...
+    
+    // Add this at the end of your DOMContentLoaded handler:
+    setTimeout(() => {
+        forceInitializeTimer();
+    }, 1000);
+    
+    // Also force it again after 3 seconds to be sure
+    setTimeout(() => {
+        forceInitializeTimer();
+    }, 3000);
+});
+
+// Fix for loadDashboardNotifications to remove timestamps
+async function loadDashboardNotificationsFixed() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const notificationsPreview = document.querySelector('.notifications-preview');
+        
+        if (!token) {
+            if (notificationsPreview) {
+                notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Please log in to view notifications</p>';
+            }
+            return;
+        }
+
+        if (notificationsPreview) {
+            notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading notifications...</p>';
+        }
+
+        // Create the same notifications that appear on the notifications page
+        const notifications = [
+            {
+                id: '1',
+                type: 'coaching',
+                title: 'New Coaching Insights Available',
+                message: 'Your AI coach has generated new insights based on your recent conversations.',
+                isRead: false
+            },
+            {
+                id: '2', 
+                type: 'community',
+                title: 'New Messages in Business Growth',
+                message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
+                isRead: false
+            },
+            {
+                id: '3',
+                type: 'system',
+                title: 'Weekly Progress Report Ready',
+                message: 'Your weekly emotional health and business progress report is now available.',
+                isRead: false
+            }
+        ];
+
+        if (!notificationsPreview) return;
+
+        if (notifications.length === 0) {
+            notificationsPreview.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <p>No notifications yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        notificationsPreview.innerHTML = '';
+        
+        notifications.forEach(notification => {
+            const notificationElement = document.createElement('div');
+            notificationElement.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
+            
+            // Get icon based on type
+            let iconText = 'SY';
+            let iconClass = 'system';
+            
+            switch(notification.type) {
+                case 'coaching':
+                    iconText = 'AI';
+                    iconClass = 'coaching';
+                    break;
+                case 'community':
+                    iconText = 'CM';
+                    iconClass = 'community';
+                    break;
+                case 'billing':
+                    iconText = 'BI';
+                    iconClass = 'billing';
+                    break;
+                default:
+                    iconText = 'SY';
+                    iconClass = 'system';
+            }
+            
+            // REMOVED TIMESTAMP TO FIX OVERLAP
+            notificationElement.innerHTML = `
+                <div class="notification-icon ${iconClass}" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0; background: ${getIconColor(notification.type)};">
+                    ${iconText}
+                </div>
+                <div class="notification-content" style="flex: 1; min-width: 0;">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); line-height: 1.3;">${notification.title}</h4>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${notification.message}</p>
+                    ${!notification.isRead ? '<div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; margin-top: 0.5rem;"></div>' : ''}
+                </div>
+            `;
+            
+            // Add click handler to navigate to full notifications
+            notificationElement.style.cursor = 'pointer';
+            notificationElement.addEventListener('click', () => {
+                window.location.href = 'notifications.html';
+            });
+            
+            // Add hover effect
+            notificationElement.addEventListener('mouseenter', () => {
+                notificationElement.style.background = 'var(--surface)';
+                notificationElement.style.transform = 'translateY(-1px)';
+            });
+            
+            notificationElement.addEventListener('mouseleave', () => {
+                notificationElement.style.background = '';
+                notificationElement.style.transform = 'translateY(0)';
+            });
+            
+            notificationsPreview.appendChild(notificationElement);
+        });
+
+    } catch (error) {
+        console.error('Error loading dashboard notifications:', error);
+        const notificationsPreview = document.querySelector('.notifications-preview');
+        if (notificationsPreview) {
+            notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--error); padding: 1rem;">Error loading notifications</p>';
+        }
+    }
+}
+
+// Replace the original function call
+// Replace this line in your DOMContentLoaded:
+// setTimeout(loadDashboardNotifications, 2000);
+// With this:
+// setTimeout(loadDashboardNotificationsFixed, 2000);
         // Dynamic Recent Activity System for Dashboard
 // Add this code to your dashboard.html script section
 
