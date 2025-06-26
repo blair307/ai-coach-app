@@ -3289,3 +3289,84 @@ body {
         font-size: 1.75rem;
     }
 }
+
+/* =================================
+   FIX: RESTORE MISSING FONT-SIZE FOR STAT NUMBERS
+   Add this to your styles.css file
+   ================================= */
+
+.stat-number {
+    font-size: 1.75rem !important; /* This was missing! */
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    min-height: 1.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+/* Also fix the timer display */
+.timer-display,
+#timerDisplay,
+.countdown-container,
+#countdownContainer {
+    display: block !important;
+    visibility: visible !important;
+    text-align: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+
+.countdown-timer,
+#countdownTimer {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 2rem !important;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Fix for Recent Notifications overlapping text */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.notification-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+    min-width: fit-content;
+}
