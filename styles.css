@@ -4831,3 +4831,137 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
         margin-top: 0 !important;
     }
 }
+
+        /* =================================
+   COMMUNITY LAYOUT FIXES - CLEAN VERSION
+   Add this CSS to the BOTTOM of your styles.css file to override all conflicts
+   ================================= */
+
+/* 1. FORCE HIDE ROOM DESCRIPTION EVERYWHERE */
+.chat-header .room-title p,
+#currentRoomDescription {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 2. COMPACT CHAT HEADER - MORE SPACE FOR MESSAGES */
+.chat-header {
+    padding: 0.75rem 1.5rem !important;
+    min-height: auto !important;
+    border-bottom: 1px solid var(--border) !important;
+    background: var(--background) !important;
+}
+
+.chat-header .room-title h2,
+#currentRoomName {
+    margin: 0 !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
+
+/* 3. SINGLE-LINE INPUT THAT EXPANDS */
+#communityMessageInput {
+    min-height: 44px !important;
+    max-height: 120px !important;
+    height: 44px !important;
+    resize: none !important;
+    overflow-y: hidden !important;
+    line-height: 1.4 !important;
+    padding: 0.75rem !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 16px !important;
+    color: var(--text-primary) !important;
+    transition: height 0.2s ease !important;
+    font-family: inherit !important;
+}
+
+/* 4. AUTO-EXPAND WHEN CONTENT INCREASES */
+#communityMessageInput.expanded {
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+/* 5. COMPACT INPUT AREA */
+.chat-input-area {
+    padding: 1rem 1.5rem !important;
+    border-top: 2px solid var(--border) !important;
+    background: var(--background) !important;
+}
+
+.chat-input {
+    background: var(--surface) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 0.75rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+}
+
+.chat-input:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* 6. MOBILE RESPONSIVE OVERRIDES */
+@media (max-width: 1024px) {
+    .chat-header {
+        padding: 0.75rem 1rem !important;
+        text-align: center !important;
+    }
+    
+    .chat-header .room-title h2,
+    #currentRoomName {
+        font-size: 1.1rem !important;
+    }
+    
+    .chat-input-area {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    /* Ensure room description is hidden on mobile too */
+    .chat-header .room-title p,
+    #currentRoomDescription {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-header {
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    .chat-header .room-title h2,
+    #currentRoomName {
+        font-size: 1rem !important;
+    }
+}
+
+/* 7. OVERRIDE ANY EXISTING CONFLICTING RULES */
+.community-responsive-container .chat-header .room-title p {
+    display: none !important;
+}
+
+.community-responsive-container #currentRoomDescription {
+    display: none !important;
+}
+
+/* 8. ENSURE MESSAGES CONTAINER GETS MORE SPACE */
+.chat-messages-container {
+    flex: 1 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.chat-messages {
+    height: 100% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 1.5rem !important;
+}
