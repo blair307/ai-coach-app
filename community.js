@@ -342,11 +342,10 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
                         onclick="toggleLike('${message._id || message.id || Date.now()}')" 
                         title="Like">
                     ${isLikedByUser ? '♥' : '♡'}
-                </button>
-                <button class="action-btn reply-btn" 
+<button class="action-btn reply-btn" 
                         onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
                         title="Reply">
-                    ↳
+                    →
                 </button>
             </div>
         </div>
