@@ -4631,6 +4631,52 @@ mark {
         font-size: 2rem !important;
         min-height: 2rem !important;
     }
+
+    /* =================================
+   SMALLER YOUR PROGRESS NUMBERS FIX
+   Add this CSS to the BOTTOM of your styles.css file
+   ================================= */
+
+/* Make progress numbers 1/3 smaller */
+.stat-number {
+    font-size: 1.75rem !important; /* Was 2.5rem, now about 30% smaller */
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+    min-height: 1.75rem !important; /* Adjusted to match font size */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+/* Desktop improvements - also smaller */
+@media (min-width: 769px) {
+    .stat-number {
+        font-size: 2.5rem !important; /* Was 3.5rem, now about 30% smaller */
+        min-height: 2.5rem !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .stat-number {
+        font-size: 2.75rem !important; /* Was 4rem, now about 30% smaller */
+        min-height: 2.75rem !important;
+    }
+}
+
+/* Mobile responsive - also smaller */
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 1.5rem !important; /* Was 2rem, now about 25% smaller */
+        min-height: 1.5rem !important;
+    }
+}
     
     .stat-label {
         font-size: 0.8rem !important;
