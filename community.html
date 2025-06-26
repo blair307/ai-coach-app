@@ -796,6 +796,68 @@
             updateNotificationCount();
             setInterval(updateNotificationCount, 30000);
         });
+        /* =================================
+   SIMPLE VERTICAL SPACE FIX
+   Add this CSS to the BOTTOM of your community.html <style> section
+   ================================= */
+
+/* 1. Hide room description in chat header (keep it compact) */
+.chat-header .room-title p {
+    display: none !important;
+}
+
+/* 2. Make chat header more compact */
+.chat-header {
+    padding: 1rem 1.5rem !important; /* Reduced from default */
+    min-height: auto !important;
+}
+
+.chat-header .room-title h2 {
+    margin: 0 !important; /* Remove any margin */
+    font-size: 1.25rem !important; /* Slightly smaller */
+}
+
+/* 3. Single-line input that expands when typing */
+#communityMessageInput {
+    min-height: 44px !important; /* Single line height */
+    max-height: 120px !important; /* Can expand when typing */
+    resize: none !important;
+    transition: min-height 0.2s ease !important;
+    overflow-y: hidden !important; /* Hide scrollbar initially */
+    line-height: 1.4 !important;
+    padding: 0.75rem !important;
+}
+
+/* 4. Auto-expand textarea when content increases */
+#communityMessageInput:focus,
+#communityMessageInput.has-content {
+    overflow-y: auto !important; /* Show scrollbar when needed */
+}
+
+/* 5. More compact input area */
+.chat-input-area {
+    padding: 1rem 1.5rem !important; /* Reduced padding */
+}
+
+.chat-input {
+    padding: 0.75rem !important; /* Reduced padding */
+}
+
+/* 6. Mobile adjustments */
+@media (max-width: 1024px) {
+    .chat-header {
+        padding: 0.75rem 1rem !important;
+        text-align: center !important;
+    }
+    
+    .chat-header .room-title h2 {
+        font-size: 1.1rem !important;
+    }
+    
+    .chat-input-area {
+        padding: 0.75rem 1rem !important;
+    }
+}
     </script>
 
 </body>
