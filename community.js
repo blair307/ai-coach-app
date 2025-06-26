@@ -1459,26 +1459,48 @@ window.currentReplyTo = currentReplyTo;
 
 console.log('✅ Enhanced Community.js loaded with MESSAGE DELETION feature!');
 
-// Auto-expand textarea - add this to community.js
+// Enhanced Auto-Expand Textarea Function
 function setupAutoExpandTextarea() {
     const textarea = document.getElementById('communityMessageInput');
-    if (!textarea) return;
+    if (!textarea) {
+        console.log('⚠️ Textarea not found for auto-expand setup');
+        return;
+    }
     
-    textarea.addEventListener('input', function() {
-        // Reset height to measure content
-        this.style.height = '44px';
+    console.log('🔧 Setting up auto-expand textarea');
+    
+    // Function to adjust height
+    function adjustHeight() {
+        // Reset to minimum height first
+        textarea.style.height = '44px';
         
-        // Expand to fit content
-        if (this.scrollHeight > 44) {
-            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-        }
-        
-        // Add class when has content
-        if (this.value.trim()) {
-            this.classList.add('has-content');
+        // If there's content that overflows, expand
+        if (textarea.scrollHeight > 44) {
+            const newHeight = Math.min(textarea.scrollHeight, 120);
+            textarea.style.height = newHeight + 'px';
+            textarea.classList.add('expanded');
         } else {
-            this.classList.remove('has-content');
+            textarea.classList.remove('expanded');
         }
+        
+        // Add visual feedback for content
+        if (textarea.value.trim()) {
+            textarea.classList.add('has-content');
+        } else {
+            textarea.classList.remove('has-content');
+        }
+    }
+    
+    // Event listeners
+    textarea.addEventListener('input', adjustHeight);
+    textarea.addEventListener('paste', () => {
+        // Small delay to allow paste content to be processed
+        setTimeout(adjustHeight, 10);
     });
+    
+    // Initial adjustment
+    adjustHeight();
+    
+    console.log('✅ Auto-expand textarea setup complete');
 }
 
