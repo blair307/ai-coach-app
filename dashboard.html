@@ -1126,24 +1126,6 @@ function resetDaysActive() {
 // Export for global access
 window.simulateActivity = simulateActivity;
 window.resetDaysActive = resetDaysActive;
-    // Simple test function
-    function simulateActivity() {
-        console.log('🧪 Testing with fake data...');
-        
-        // Create fake chat history
-        const fakeChat = [
-            { role: 'user', content: 'Hello', timestamp: new Date().toISOString() },
-            { role: 'assistant', content: 'Hi!', timestamp: new Date().toISOString() },
-            { role: 'user', content: 'How are you?', timestamp: new Date().toISOString() },
-            { role: 'assistant', content: 'Good!', timestamp: new Date().toISOString() }
-        ];
-        localStorage.setItem('fake_chat_test', JSON.stringify(fakeChat));
-        
-        // Update display
-        if (window.progressTracker) {
-            window.progressTracker.forceUpdate();
-        }
-    }
 
     // Dashboard Goals Loading
     async function loadDashboardGoals() {
