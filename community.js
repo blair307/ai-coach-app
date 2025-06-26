@@ -1457,3 +1457,30 @@ window.rooms = rooms;
 window.currentReplyTo = currentReplyTo;
 
 console.log('✅ Enhanced Community.js loaded with MESSAGE DELETION feature!');
+
+// Auto-expand textarea - add this to community.js
+function setupAutoExpandTextarea() {
+    const textarea = document.getElementById('communityMessageInput');
+    if (!textarea) return;
+    
+    textarea.addEventListener('input', function() {
+        // Reset height to measure content
+        this.style.height = '44px';
+        
+        // Expand to fit content
+        if (this.scrollHeight > 44) {
+            this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        }
+        
+        // Add class when has content
+        if (this.value.trim()) {
+            this.classList.add('has-content');
+        } else {
+            this.classList.remove('has-content');
+        }
+    });
+}
+
+// Call this function in your initializeCommunity function
+// Add this line inside initializeCommunity():
+setupAutoExpandTextarea();
