@@ -4436,3 +4436,62 @@ mark {
         font-size: 0.95rem !important;
     }
 }
+
+/* =================================
+   DASHBOARD STAT NUMBERS SIZE FIX
+   Add this CSS to the BOTTOM of your styles.css file
+   ================================= */
+
+/* Desktop-only fix for stat numbers */
+@media (min-width: 769px) {
+    .stat-number {
+        font-size: 3.5rem !important; /* Bigger than the original 2.5rem */
+        font-weight: 800 !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.02em !important;
+        line-height: 1 !important;
+    }
+    
+    /* Also make the countdown timer bigger on desktop */
+    .countdown-timer {
+        font-size: 2.5rem !important; /* Bigger countdown timer */
+        font-weight: 800 !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin-bottom: 0.5rem !important;
+        letter-spacing: -0.02em !important;
+    }
+    
+    /* Ensure stats have proper spacing on desktop */
+    .stat {
+        min-height: 140px !important; /* Taller stat cards */
+        padding: 2rem 1rem !important; /* More padding */
+    }
+    
+    .stat-label {
+        font-size: 0.95rem !important; /* Slightly bigger labels */
+        font-weight: 500 !important;
+    }
+}
+
+/* Large desktop screens - even bigger numbers */
+@media (min-width: 1200px) {
+    .stat-number {
+        font-size: 4rem !important; /* Even bigger on large screens */
+    }
+    
+    .countdown-timer {
+        font-size: 3rem !important; /* Bigger countdown on large screens */
+    }
+    
+    .stat {
+        min-height: 160px !important; /* Even taller stat cards */
+        padding: 2.5rem 1rem !important;
+    }
+}
