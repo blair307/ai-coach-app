@@ -4746,3 +4746,41 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     font-weight: bold;
     font-family: system-ui, -apple-system, Arial, sans-serif;
 }
+
+        /* MOBILE SCROLLING FIX - Override AI Coach fixes for other pages */
+@media (max-width: 768px) {
+    /* Only apply AI coach fixes to AI coach page */
+    body:not(.ai-coach-page) .app-container {
+        height: auto !important;
+        overflow: visible !important;
+    }
+    
+    body:not(.ai-coach-page) .main-content {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 1rem !important;
+        padding-bottom: 3rem !important;
+    }
+    
+    /* Ensure dashboard, billing, goals can scroll */
+    .dashboard-grid,
+    .billing-container,
+    .goals-container {
+        margin-bottom: 3rem !important;
+    }
+    
+    /* Fix for timer and calendar sections */
+    .dashboard-card,
+    .billing-card {
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Ensure body can scroll on non-AI coach pages */
+    body:not(.ai-coach-page) {
+        height: auto !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+}
