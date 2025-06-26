@@ -1,4 +1,4 @@
-// Enhanced Community.js - PROPER THREADED REPLIES (Connected to Original Messages)
+// Enhanced Community.js - WITH MESSAGE DELETION FOR OWN MESSAGES
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -10,7 +10,7 @@ let currentReplyTo = null;
 
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Community with THREADED replies loading...');
+    console.log('🚀 Enhanced Community with MESSAGE DELETION loading...');
     
     // FORCE HIDE modals immediately on page load
     setTimeout(() => {
@@ -303,7 +303,82 @@ async function switchRoom(roomId) {
     }
 }
 
-// ENHANCED: Create message element with PROPER THREADING - FIXED CHARACTERS
+// NEW: Delete message function
+async function deleteMessage(messageId) {
+    try {
+        // Show confirmation dialog
+        const confirmDelete = confirm('Are you sure you want to delete this message? This action cannot be undone.');
+        if (!confirmDelete) {
+            return;
+        }
+
+        console.log('🗑️ Deleting message:', messageId);
+
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            throw new Error('No authentication token');
+        }
+
+        // Add loading state to delete button
+        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '⏳';
+            deleteBtn.style.opacity = '0.6';
+        }
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `Failed to delete message: ${response.status}`);
+        }
+
+        console.log('✅ Message deleted successfully');
+
+        // Show success message
+        showSuccessToast('Message deleted successfully');
+
+        // Reload messages to update the UI
+        if (currentRoomId) {
+            await loadMessages(currentRoomId);
+        }
+
+    } catch (error) {
+        console.error('❌ Error deleting message:', error);
+        
+        // Reset button state
+        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.style.opacity = '1';
+        }
+
+        // Show error message
+        if (error.message.includes('permission')) {
+            showErrorMessage('You can only delete your own messages.');
+        } else if (error.message.includes('not found')) {
+            showErrorMessage('Message not found or already deleted.');
+        } else {
+            showErrorMessage('Failed to delete message. Please try again.');
+        }
+    }
+}
+
+// ENHANCED: Create message element with DELETE BUTTON for own messages
 function createMessageElement(message, isReply = false, parentIndex = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
@@ -321,33 +396,52 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     const timestamp = formatMessageTime(message.createdAt || message.timestamp);
     const content = message.content || message.message || '';
     
+    // Check if this message belongs to the current user
+    const isOwnMessage = message.userId === currentUser?.id;
+    
     // Simulate like count
     const likes = message.likes || [];
     const likeCount = likes.length || Math.floor(Math.random() * 3);
     const isLikedByUser = likes.includes(currentUser?.id);
     const hasLikes = likeCount > 0;
     
+    // Build action buttons - include delete button for own messages
+    let actionButtons = `
+        <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
+                onclick="toggleLike('${message._id || message.id || Date.now()}')" 
+                title="Like">
+            ${isLikedByUser ? '♥' : '♡'}
+        </button>
+        <button class="action-btn reply-btn" 
+                onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
+                title="Reply">
+            ↳
+        </button>
+    `;
+
+    // Add delete button if it's the user's own message
+    if (isOwnMessage) {
+        actionButtons += `
+            <button class="action-btn delete-btn" 
+                    onclick="deleteMessage('${message._id || message.id || Date.now()}')" 
+                    title="Delete your message">
+                🗑️
+            </button>
+        `;
+    }
+    
     messageDiv.innerHTML = `
         <div class="message-header">
             <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
                 ${userInitials}
             </div>
-            <span class="username">${escapeHtml(username)}</span>
+            <span class="username ${isOwnMessage ? 'own-message-username' : ''}">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
             <span class="message-timestamp">${timestamp}</span>
         </div>
-        <div class="message-content">
+        <div class="message-content ${isOwnMessage ? 'own-message-content' : ''}">
             <p>${escapeHtml(content)}</p>
             <div class="message-actions">
-                <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
-                        onclick="toggleLike('${message._id || message.id || Date.now()}')" 
-                        title="Like">
-                    ${isLikedByUser ? '♥' : '♡'}
-                </button>
-                <button class="action-btn reply-btn" 
-                        onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
-                        title="Reply">
-                    Reply
-                </button>
+                ${actionButtons}
             </div>
         </div>
         <div class="message-footer">
@@ -728,7 +822,7 @@ async function initializeCommunity() {
             return;
         }
 
-        console.log('🚀 Starting enhanced community with THREADED reply system...');
+        console.log('🚀 Starting enhanced community with THREADED reply system and MESSAGE DELETION...');
         
         const searchResults = document.getElementById('searchResults');
         const emojiModal = document.getElementById('emojiModal');
@@ -793,7 +887,7 @@ async function initializeCommunity() {
         }
 
         isInitialized = true;
-        console.log('✅ Enhanced community with THREADED replies initialized successfully');
+        console.log('✅ Enhanced community with THREADED replies and MESSAGE DELETION initialized successfully');
         
     } catch (error) {
         console.error('❌ Error initializing community:', error);
@@ -1341,6 +1435,7 @@ window.cancelReply = cancelReply;
 window.toggleLike = toggleLike;
 window.createRoom = createRoom;
 window.deleteRoom = deleteRoom;
+window.deleteMessage = deleteMessage; // NEW: Export delete message function
 window.switchRoom = switchRoom;
 window.updateRoomsList = updateRoomsList;
 window.showReplyToast = showReplyToast;
@@ -1361,4 +1456,4 @@ window.currentRoomId = currentRoomId;
 window.rooms = rooms;
 window.currentReplyTo = currentReplyTo;
 
-console.log('✅ FIXED Community.js loaded - Reply buttons now show "Reply" instead of corrupted characters!');
+console.log('✅ Enhanced Community.js loaded with MESSAGE DELETION feature!');
