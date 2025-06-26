@@ -1481,6 +1481,27 @@ function setupAutoExpandTextarea() {
     });
 }
 
-// Call this function in your initializeCommunity function
-// Add this line inside initializeCommunity():
-setupAutoExpandTextarea();
+// Initialize the community system
+async function initializeCommunity() {
+    try {
+        if (isInitialized) {
+            console.log('⚠️ Community already initialized, skipping...');
+            return;
+        }
+
+        console.log('🚀 Starting enhanced community with THREADED reply system and MESSAGE DELETION...');
+        
+        // ... existing code ...
+        
+        isInitialized = true;
+        
+        // ADD THIS LINE RIGHT HERE:
+        setupAutoExpandTextarea();
+        
+        console.log('✅ Enhanced community with THREADED replies and MESSAGE DELETION initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Error initializing community:', error);
+        showCommunityError('Failed to initialize community. Please refresh the page or try again later.');
+    }
+}
