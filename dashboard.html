@@ -743,257 +743,389 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('❌ Error initializing dashboard:', error);
     }
 });
-    // SIMPLE PROGRESS TRACKER - No complex detective stuff, just working basics
+// FIXED DAYS ACTIVE TRACKER - Replace the existing SimpleProgressTracker class
 
-    class SimpleProgressTracker {
-        constructor() {
-            this.storageKey = 'eeh_simple_progress';
-            this.initializeData();
-            this.startTracking();
-            console.log('✅ Simple Progress Tracker initialized');
-        }
+class SimpleProgressTracker {
+    constructor() {
+        this.storageKey = 'eeh_simple_progress';
+        this.activeDaysKey = 'eeh_active_days'; // Separate key for active days
+        this.initializeData();
+        this.startTracking();
+        console.log('✅ Fixed Progress Tracker initialized');
+    }
 
-        initializeData() {
+    initializeData() {
+        try {
+            // Load existing progress data
             const stored = localStorage.getItem(this.storageKey);
-            
             if (stored) {
                 this.data = JSON.parse(stored);
-                // Convert activeDays array back to Set
-                if (Array.isArray(this.data.activeDays)) {
-                    this.data.activeDays = new Set(this.data.activeDays);
-                }
             } else {
                 this.data = {
                     coachingSessions: 0,
-                    activeDays: new Set(),
                     communityPosts: 0,
                     activeGoals: 0
                 };
             }
 
-            // Mark today as active
+            // Load active days separately as an array of date strings
+            const storedDays = localStorage.getItem(this.activeDaysKey);
+            if (storedDays) {
+                this.activeDays = JSON.parse(storedDays);
+            } else {
+                this.activeDays = [];
+            }
+
+            // Mark today as active immediately
             this.markActiveToday();
-        }
-
-        save() {
-            const dataToStore = {
-                ...this.data,
-                activeDays: Array.from(this.data.activeDays)
-            };
-            localStorage.setItem(this.storageKey, JSON.stringify(dataToStore));
-        }
-
-        markActiveToday() {
-            const today = new Date().toISOString().split('T')[0];
-            if (!this.data.activeDays.has(today)) {
-                this.data.activeDays.add(today);
-                this.save();
-                console.log('📅 Marked today as active:', today);
-            }
-        }
-
-        // Get coaching sessions from API
-        async getCoachingSessions() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return 0;
-
-                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: AbortSignal.timeout(5000)
-                });
-                
-                if (response.ok) {
-                    const chatData = await response.json();
-                    const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
-                    const sessions = Math.ceil(userMessages.length / 2);
-                    console.log('🎯 Coaching sessions from API:', sessions);
-                    return sessions;
-                } else {
-                    console.log('API not available for coaching sessions');
-                    return 0;
-                }
-            } catch (error) {
-                console.log('Error getting coaching sessions:', error.message);
-                return 0;
-            }
-        }
-
-        // Get community posts from API
-        async getCommunityPosts() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return 0;
-
-                // Get user info
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                const userId = payload.userId;
-
-                // Get rooms first
-                const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: AbortSignal.timeout(5000)
-                });
-                
-                if (!roomsResponse.ok) return 0;
-                
-                const rooms = await roomsResponse.json();
-                let totalPosts = 0;
-                
-                // Check first 3 rooms for user messages
-                for (const room of rooms.slice(0, 3)) {
-                    try {
-                        const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${room._id}/messages`, {
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            signal: AbortSignal.timeout(3000)
-                        });
-                        
-                        if (messagesResponse.ok) {
-                            const messages = await messagesResponse.json();
-                            const userMessages = messages.filter(msg => msg.userId === userId).length;
-                            totalPosts += userMessages;
-                        }
-                    } catch (roomError) {
-                        // Skip this room
-                    }
-                }
-                
-                console.log('💬 Community posts from API:', totalPosts);
-                return totalPosts;
-            } catch (error) {
-                console.log('Error getting community posts:', error.message);
-                return 0;
-            }
-        }
-
-        // Get active goals from API - SAME LOGIC AS LIFE GOALS SECTION
-        async getActiveGoals() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) return 0;
-
-                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: AbortSignal.timeout(8000)
-                });
-                
-                if (response.ok) {
-                    const goals = await response.json();
-                    
-                    // IMPORTANT: Count ALL goals, not just active ones
-                    // This matches what the Life Goals section shows in "Total Goals"
-                    const totalGoals = goals.length;
-                    
-                    console.log('🎯 Total goals from API:', totalGoals, '(same as Life Goals section)');
-                    return totalGoals;
-                } else {
-                    console.log('Goals API returned error:', response.status);
-                    return 0;
-                }
-            } catch (error) {
-                console.log('Error getting goals:', error.message);
-                return 0;
-            }
-        }
-
-        // Get days active
-        getDaysActive() {
-            return this.data.activeDays.size;
-        }
-
-        // Update display
-        async updateDisplay() {
-            try {
-                console.log('🔄 Updating progress display...');
-                
-                const coachingSessions = await this.getCoachingSessions();
-                const daysActive = this.getDaysActive();
-                const communityPosts = await this.getCommunityPosts();
-                const activeGoals = await this.getActiveGoals();
-
-                console.log('📊 Progress numbers:', {
-                    coachingSessions,
-                    daysActive, 
-                    communityPosts,
-                    activeGoals
-                });
-
-                // Update DOM
-                const elements = {
-                    coachingSessionsCount: coachingSessions,
-                    activeDaysCount: daysActive,
-                    communityPostsCount: communityPosts,
-                    activeGoalsCount: activeGoals
-                };
-
-                for (const [id, value] of Object.entries(elements)) {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.textContent = value;
-                        element.style.transform = 'scale(1.1)';
-                        setTimeout(() => {
-                            element.style.transform = 'scale(1)';
-                        }, 200);
-                    }
-                }
-
-                // Update stored values
-                this.data.coachingSessions = coachingSessions;
-                this.data.communityPosts = communityPosts;
-                this.data.activeGoals = activeGoals;
-                this.save();
-
-                console.log('✅ Progress display updated');
-                
-            } catch (error) {
-                console.error('❌ Error updating display:', error);
-            }
-        }
-
-        startTracking() {
-            // Update immediately
-            setTimeout(() => this.updateDisplay(), 1000);
             
-            // Update every 30 seconds
-            setInterval(() => this.updateDisplay(), 30000);
-
-            // Update when page becomes visible
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    this.markActiveToday();
-                    setTimeout(() => this.updateDisplay(), 1000);
-                }
-            });
-        }
-
-        // Manual refresh
-        async forceUpdate() {
-            console.log('🔄 Force updating...');
-            await this.updateDisplay();
-        }
-
-        getSummary() {
-            return {
-                coachingSessions: this.data.coachingSessions,
-                daysActive: this.getDaysActive(),
-                communityPosts: this.data.communityPosts,
-                activeGoals: this.data.activeGoals
+            console.log('📅 Loaded active days:', this.activeDays.length, 'days');
+            
+        } catch (error) {
+            console.error('Error loading progress data:', error);
+            this.data = {
+                coachingSessions: 0,
+                communityPosts: 0,
+                activeGoals: 0
             };
+            this.activeDays = [];
+            this.markActiveToday();
         }
     }
 
+    save() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+            localStorage.setItem(this.activeDaysKey, JSON.stringify(this.activeDays));
+            console.log('💾 Progress data saved');
+        } catch (error) {
+            console.error('Error saving progress data:', error);
+        }
+    }
+
+    markActiveToday() {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        if (!this.activeDays.includes(today)) {
+            this.activeDays.push(today);
+            console.log('📅 Marked today as active:', today);
+            
+            // Keep only last 365 days to prevent unlimited growth
+            if (this.activeDays.length > 365) {
+                this.activeDays = this.activeDays.slice(-365);
+            }
+            
+            this.save();
+            return true; // New day added
+        }
+        return false; // Day already tracked
+    }
+
+    // Get coaching sessions from API
+    async getCoachingSessions() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (response.ok) {
+                const chatData = await response.json();
+                const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
+                const sessions = Math.ceil(userMessages.length / 2);
+                console.log('🎯 Coaching sessions from API:', sessions);
+                return sessions;
+            } else {
+                console.log('API not available for coaching sessions');
+                return 0;
+            }
+        } catch (error) {
+            console.log('Error getting coaching sessions:', error.message);
+            return 0;
+        }
+    }
+
+    // Get community posts from API
+    async getCommunityPosts() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            // Get user info
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.userId;
+
+            // Get rooms first
+            const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (!roomsResponse.ok) return 0;
+            
+            const rooms = await roomsResponse.json();
+            let totalPosts = 0;
+            
+            // Check first 3 rooms for user messages
+            for (const room of rooms.slice(0, 3)) {
+                try {
+                    const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${room._id}/messages`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        signal: AbortSignal.timeout(3000)
+                    });
+                    
+                    if (messagesResponse.ok) {
+                        const messages = await messagesResponse.json();
+                        const userMessages = messages.filter(msg => msg.userId === userId).length;
+                        totalPosts += userMessages;
+                    }
+                } catch (roomError) {
+                    // Skip this room
+                }
+            }
+            
+            console.log('💬 Community posts from API:', totalPosts);
+            return totalPosts;
+        } catch (error) {
+            console.log('Error getting community posts:', error.message);
+            return 0;
+        }
+    }
+
+    // Get active goals from API
+    async getActiveGoals() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(8000)
+            });
+            
+            if (response.ok) {
+                const goals = await response.json();
+                const totalGoals = goals.length;
+                console.log('🎯 Total goals from API:', totalGoals);
+                return totalGoals;
+            } else {
+                console.log('Goals API returned error:', response.status);
+                return 0;
+            }
+        } catch (error) {
+            console.log('Error getting goals:', error.message);
+            return 0;
+        }
+    }
+
+    // Get days active - THIS IS THE KEY FIX
+    getDaysActive() {
+        // Clean up old dates (optional - remove dates older than 1 year)
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const oneYearAgoString = oneYearAgo.toISOString().split('T')[0];
+        
+        // Filter out very old dates
+        this.activeDays = this.activeDays.filter(date => date >= oneYearAgoString);
+        
+        const count = this.activeDays.length;
+        console.log('📅 Current active days count:', count);
+        return count;
+    }
+
+    // Update display with better error handling
+    async updateDisplay() {
+        try {
+            console.log('🔄 Updating progress display...');
+            
+            // Always mark today as active when updating
+            const newDay = this.markActiveToday();
+            if (newDay) {
+                console.log('🎉 New active day recorded!');
+            }
+            
+            const coachingSessions = await this.getCoachingSessions();
+            const daysActive = this.getDaysActive();
+            const communityPosts = await this.getCommunityPosts();
+            const activeGoals = await this.getActiveGoals();
+
+            console.log('📊 Progress numbers:', {
+                coachingSessions,
+                daysActive, 
+                communityPosts,
+                activeGoals
+            });
+
+            // Update DOM with animation
+            const elements = {
+                coachingSessionsCount: coachingSessions,
+                activeDaysCount: daysActive,
+                communityPostsCount: communityPosts,
+                activeGoalsCount: activeGoals
+            };
+
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Only animate if the value changed
+                    const currentValue = parseInt(element.textContent) || 0;
+                    if (currentValue !== value) {
+                        element.style.transform = 'scale(1.1)';
+                        element.style.transition = 'all 0.3s ease';
+                        
+                        setTimeout(() => {
+                            element.textContent = value;
+                            element.style.transform = 'scale(1)';
+                        }, 150);
+                    } else {
+                        element.textContent = value;
+                    }
+                }
+            }
+
+            // Update stored values
+            this.data.coachingSessions = coachingSessions;
+            this.data.communityPosts = communityPosts;
+            this.data.activeGoals = activeGoals;
+            this.save();
+
+            console.log('✅ Progress display updated - Days Active:', daysActive);
+            
+        } catch (error) {
+            console.error('❌ Error updating display:', error);
+        }
+    }
+
+    startTracking() {
+        // Update immediately
+        setTimeout(() => this.updateDisplay(), 1000);
+        
+        // Update every 30 seconds
+        setInterval(() => this.updateDisplay(), 30000);
+
+        // Update when page becomes visible (user switches back to tab)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('👀 Page became visible - checking for new day');
+                this.markActiveToday();
+                setTimeout(() => this.updateDisplay(), 1000);
+            }
+        });
+
+        // Update when user performs actions
+        this.setupActivityListeners();
+    }
+
+    // NEW: Track user activity to mark days as active
+    setupActivityListeners() {
+        // Track clicks anywhere on the page
+        document.addEventListener('click', () => {
+            this.markActiveToday();
+        });
+
+        // Track form submissions
+        document.addEventListener('submit', () => {
+            this.markActiveToday();
+        });
+
+        // Track navigation
+        window.addEventListener('popstate', () => {
+            this.markActiveToday();
+        });
+
+        // Track when user types in inputs
+        document.addEventListener('input', () => {
+            this.markActiveToday();
+        });
+
+        console.log('👂 Activity listeners set up');
+    }
+
+    // Manual refresh
+    async forceUpdate() {
+        console.log('🔄 Force updating...');
+        this.markActiveToday();
+        await this.updateDisplay();
+    }
+
+    getSummary() {
+        return {
+            coachingSessions: this.data.coachingSessions,
+            daysActive: this.getDaysActive(),
+            communityPosts: this.data.communityPosts,
+            activeGoals: this.data.activeGoals,
+            activeDaysHistory: this.activeDays
+        };
+    }
+
+    // NEW: Method to manually add previous days (for testing or backfill)
+    addActiveDays(daysAgo = 0) {
+        const date = new Date();
+        date.setDate(date.getDate() - daysAgo);
+        const dateString = date.toISOString().split('T')[0];
+        
+        if (!this.activeDays.includes(dateString)) {
+            this.activeDays.push(dateString);
+            this.activeDays.sort(); // Keep dates in order
+            this.save();
+            console.log('📅 Added active day:', dateString);
+            this.updateDisplay();
+        }
+    }
+
+    // NEW: Reset active days (for testing)
+    resetActiveDays() {
+        this.activeDays = [];
+        this.save();
+        console.log('🗑️ Reset active days');
+        this.markActiveToday(); // Start fresh with today
+        this.updateDisplay();
+    }
+}
+
+// Enhanced test function that also tests days active
+function simulateActivity() {
+    console.log('🧪 Testing progress tracker...');
+    
+    if (window.progressTracker) {
+        // Add some fake previous days for testing
+        window.progressTracker.addActiveDays(1); // Yesterday
+        window.progressTracker.addActiveDays(2); // 2 days ago
+        window.progressTracker.addActiveDays(5); // 5 days ago
+        
+        // Force update display
+        window.progressTracker.forceUpdate();
+        
+        console.log('📊 Current summary:', window.progressTracker.getSummary());
+    }
+}
+
+// Make reset function available for testing
+function resetDaysActive() {
+    if (window.progressTracker) {
+        window.progressTracker.resetActiveDays();
+        console.log('🔄 Days active counter reset');
+    }
+}
+
+// Export for global access
+window.simulateActivity = simulateActivity;
+window.resetDaysActive = resetDaysActive;
     // Simple test function
     function simulateActivity() {
         console.log('🧪 Testing with fake data...');
