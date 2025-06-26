@@ -4785,167 +4785,49 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     }
 }
 
-        /* =================================
-   MOBILE HEADER OVERLAP FIX
-   Add this CSS to the BOTTOM of your styles.css file
+/* =================================
+   SIMPLE WELCOME MESSAGE FIX
+   Replace the previous mobile fixes with this clean version
    ================================= */
 
+/* Remove the previous mobile header fixes and use this instead */
 @media (max-width: 768px) {
-    /* MAIN FIX: Position headers with proper z-index and make room for messages */
+    /* SIMPLE FIX: Just add margin to the welcome message specifically */
+    .chat-messages > div:first-child,
+    .chat-messages > .message-content:first-child {
+        margin-top: 2rem !important;
+        padding-top: 1rem !important;
+    }
     
-    /* Make sure headers are properly positioned and don't overlap content */
+    /* OR: Add top padding to the entire messages container */
+    .chat-messages {
+        padding-top: 3rem !important; /* Simple top padding */
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        padding-bottom: 200px !important; /* Keep bottom padding for input */
+    }
+    
+    /* Remove any fixed positioning that was added */
     .content-header {
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100vw !important;
-        z-index: 200 !important;
-        background: var(--background) !important;
-        border-bottom: 1px solid var(--border) !important;
-        padding: 1rem !important;
-        margin: 0 !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        z-index: auto !important;
     }
     
     .chat-header {
-        position: fixed !important;
-        top: 80px !important; /* Position below content header */
-        left: 0 !important;
-        right: 0 !important;
-        width: 100vw !important;
-        z-index: 190 !important;
-        background: var(--surface) !important;
-        border-bottom: 1px solid var(--border) !important;
-        padding: 1rem !important;
-        margin: 0 !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        z-index: auto !important;
     }
     
-    /* CRITICAL: Push chat messages down below both fixed headers */
+    /* Reset any margin-top that was added */
     .chat-messages {
-        margin-top: 160px !important; /* Space for both headers (80px + 80px) */
-        padding: 1rem !important;
-        padding-bottom: 200px !important; /* Space for fixed input */
-        height: calc(100vh - 160px - 120px) !important; /* Full height minus headers and input */
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        background: var(--surface) !important;
-        position: relative !important;
-        z-index: 10 !important;
-    }
-    
-    /* Make sure the first message (welcome) has no extra margin */
-    .chat-messages > *:first-child {
         margin-top: 0 !important;
-        padding-top: 0 !important;
-    }
-    
-    /* Keep input fixed at bottom */
-    .chat-input-container {
-        position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        width: 100vw !important;
-        padding: 1rem !important;
-        background: var(--background) !important;
-        border-top: 2px solid var(--border) !important;
-        z-index: 1000 !important;
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1) !important;
-    }
-    
-    /* Make sure main content doesn't have conflicting positioning */
-    .main-content {
-        position: relative !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        height: 100vh !important;
-        overflow: hidden !important;
-    }
-    
-    /* Chat container adjustments */
-    .chat-container {
-        position: relative !important;
-        height: 100vh !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
-        background: var(--surface) !important;
-    }
-    
-    /* Ensure hamburger menu stays on top */
-    .universal-hamburger {
-        z-index: 99999 !important;
-        position: fixed !important;
-        top: 20px !important;
-        left: 20px !important;
-    }
-}
-
-/* Alternative approach if the above is too aggressive */
-@media (max-width: 768px) {
-    /* ALTERNATIVE: Non-fixed headers with proper spacing */
-    .alternative-fix .content-header {
-        position: relative !important;
-        width: 100% !important;
-        padding: 1rem !important;
-        margin: 0 !important;
-        background: var(--background) !important;
-        border-bottom: 1px solid var(--border) !important;
-        flex-shrink: 0 !important;
-    }
-    
-    .alternative-fix .chat-header {
-        position: relative !important;
-        width: 100% !important;
-        padding: 1rem !important;
-        margin: 0 !important;
-        background: var(--surface) !important;
-        border-bottom: 1px solid var(--border) !important;
-        flex-shrink: 0 !important;
-    }
-    
-    .alternative-fix .chat-messages {
-        flex: 1 !important;
-        padding: 1rem !important;
-        padding-bottom: 200px !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        margin-top: 0 !important;
-    }
-    
-    .alternative-fix .main-content {
-        display: flex !important;
-        flex-direction: column !important;
-        height: 100vh !important;
-        overflow: hidden !important;
-    }
-    
-    .alternative-fix .chat-container {
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        overflow: hidden !important;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-    .content-header {
-        top: 0 !important;
-        padding: 0.75rem !important;
-    }
-    
-    .chat-header {
-        top: 70px !important; /* Adjust for smaller content header */
-        padding: 0.75rem !important;
-    }
-    
-    .chat-messages {
-        margin-top: 140px !important; /* Adjust for smaller headers */
-        height: calc(100vh - 140px - 120px) !important;
     }
 }
