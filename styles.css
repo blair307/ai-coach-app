@@ -4082,15 +4082,9 @@ mark {
     border-radius: 1px;
 }
 
-/* Reply arrow */
 .message-group.reply::after {
-    content: 'Ã¢â€ Â³';
-    position: absolute;
-    left: -2rem;
-    top: 0.5rem;
-    color: var(--primary);
-    font-size: 1.2rem;
-    font-weight: bold;
+    content: ''; /* Empty - no text */
+    display: none; /* Hide it completely */
 }
 
 /* Reply message styling */
