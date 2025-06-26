@@ -1459,7 +1459,9 @@ window.currentReplyTo = currentReplyTo;
 
 console.log('✅ Enhanced Community.js loaded with MESSAGE DELETION feature!');
 
-// Enhanced Auto-Expand Textarea Function
+// UPDATED: Enhanced Auto-Expand Textarea Function
+// Replace your existing setupAutoExpandTextarea function with this:
+
 function setupAutoExpandTextarea() {
     const textarea = document.getElementById('communityMessageInput');
     if (!textarea) {
@@ -1469,18 +1471,31 @@ function setupAutoExpandTextarea() {
     
     console.log('🔧 Setting up auto-expand textarea');
     
+    // Set initial single-line height
+    textarea.style.height = '20px';
+    textarea.style.minHeight = '20px';
+    textarea.style.lineHeight = '20px';
+    textarea.style.padding = '12px';
+    textarea.style.overflow = 'hidden';
+    
     // Function to adjust height
     function adjustHeight() {
         // Reset to minimum height first
-        textarea.style.height = '44px';
+        textarea.style.height = '20px';
         
-        // If there's content that overflows, expand
-        if (textarea.scrollHeight > 44) {
-            const newHeight = Math.min(textarea.scrollHeight, 120);
+        // Calculate total height including padding
+        const totalHeight = textarea.scrollHeight;
+        
+        // If content needs more space, expand
+        if (totalHeight > 44) { // 20px + 24px padding
+            const newHeight = Math.min(totalHeight, 120);
             textarea.style.height = newHeight + 'px';
             textarea.classList.add('expanded');
+            textarea.style.overflow = 'auto';
         } else {
+            textarea.style.height = '20px';
             textarea.classList.remove('expanded');
+            textarea.style.overflow = 'hidden';
         }
         
         // Add visual feedback for content
@@ -1498,9 +1513,15 @@ function setupAutoExpandTextarea() {
         setTimeout(adjustHeight, 10);
     });
     
+    // Force initial height on focus
+    textarea.addEventListener('focus', () => {
+        if (!textarea.value.trim()) {
+            textarea.style.height = '20px';
+        }
+    });
+    
     // Initial adjustment
     adjustHeight();
     
-    console.log('✅ Auto-expand textarea setup complete');
+    console.log('✅ Auto-expand textarea setup complete - TRUE single line');
 }
-
