@@ -4682,3 +4682,62 @@ mark {
         font-size: 0.8rem !important;
     }
 }
+
+// Fixed reply button HTML with proper arrow
+function createMessageElement(message, isReply = false, parentIndex = null) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message-group';
+    messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
+    
+    // THREADED: Add reply class and proper styling
+    if (isReply) {
+        messageDiv.classList.add('reply');
+        messageDiv.setAttribute('data-parent-id', parentIndex);
+        console.log('💬 Creating THREADED reply message connected to parent');
+    }
+
+    const username = message.username || 'User';
+    const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+    const content = message.content || message.message || '';
+    
+    // Simulate like count
+    const likes = message.likes || [];
+    const likeCount = likes.length || Math.floor(Math.random() * 3);
+    const isLikedByUser = likes.includes(currentUser?.id);
+    const hasLikes = likeCount > 0;
+    
+    messageDiv.innerHTML = `
+        <div class="message-header">
+            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
+                ${userInitials}
+            </div>
+            <span class="username">${escapeHtml(username)}</span>
+            <span class="message-timestamp">${timestamp}</span>
+        </div>
+        <div class="message-content">
+            <p>${escapeHtml(content)}</p>
+            <div class="message-actions">
+                <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
+                        onclick="toggleLike('${message._id || message.id || Date.now()}')" 
+                        title="Like">
+                    ${isLikedByUser ? '♥' : '♡'}
+                </button>
+                <button class="action-btn reply-btn" 
+                        onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
+                        title="Reply">
+                    ↳
+                </button>
+            </div>
+        </div>
+        <div class="message-footer">
+            <div class="like-count ${hasLikes ? 'has-likes' : ''}" 
+                 data-count="${likeCount}" 
+                 style="display: ${hasLikes ? 'flex' : 'none'}">
+                ${hasLikes ? `♥ ${likeCount}` : ''}
+            </div>
+        </div>
+    `;
+
+    return messageDiv;
+}
