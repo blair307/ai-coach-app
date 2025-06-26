@@ -4526,3 +4526,113 @@ mark {
 .notification-icon {
     flex-shrink: 0;
 }
+
+/* =================================
+   YOUR PROGRESS NUMBERS ALIGNMENT FIX
+   Add this CSS to the BOTTOM of your styles.css file
+   ================================= */
+
+/* Fix for Your Progress section - perfectly aligned numbers */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 1.5rem !important;
+}
+
+.stat {
+    text-align: center !important;
+    padding: 1.5rem 1rem !important;
+    background: var(--surface) !important;
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border) !important;
+    transition: all 0.3s ease !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.stat:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.stat-number {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+    min-height: 2.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+.stat-label {
+    color: var(--text-secondary) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Desktop improvements */
+@media (min-width: 769px) {
+    .stat-number {
+        font-size: 3.5rem !important;
+        min-height: 3.5rem !important;
+    }
+    
+    .stat {
+        min-height: 140px !important;
+        padding: 2rem 1rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.95rem !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    .stat-number {
+        font-size: 4rem !important;
+        min-height: 4rem !important;
+    }
+    
+    .stat {
+        min-height: 160px !important;
+        padding: 2.5rem 1rem !important;
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    .stat {
+        min-height: 100px !important;
+        padding: 1rem 0.5rem !important;
+    }
+    
+    .stat-number {
+        font-size: 2rem !important;
+        min-height: 2rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem !important;
+    }
+}
