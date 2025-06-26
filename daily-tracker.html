@@ -181,7 +181,7 @@
     <!-- Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
-// SIMPLIFIED Daily Tracker - Server Only Approach
+// ENHANCED Daily Tracker - Server Only Approach with Fixed Progress Calculation
 let currentGoals = [];
 let selectedGoal = null;
 let progressView = 'weekly';
@@ -220,7 +220,7 @@ function formatDateForComparison(date) {
     return pstDate.toISOString().split('T')[0];
 }
 
-// FIXED: Simplified and reliable goal completion checker
+// ENHANCED: Goal completion checker that handles goals without completion data
 function isGoalCompletedToday(goal) {
     const todayPST = formatDateForComparison(new Date());
     
@@ -229,7 +229,8 @@ function isGoalCompletedToday(goal) {
         todayPST: todayPST,
         lastCompletedDate: goal.lastCompletedDate,
         hasCompletionHistory: !!goal.completionHistory,
-        historyLength: goal.completionHistory?.length || 0
+        historyLength: goal.completionHistory?.length || 0,
+        completed: goal.completed // Check the basic completed field too
     });
 
     // METHOD 1: Check new completion history system first
@@ -262,8 +263,14 @@ function isGoalCompletedToday(goal) {
         return isCompletedToday;
     }
 
-    console.log(`❌ No completion data found for goal ${goal._id}`);
-    return false;
+    // METHOD 3: NEW - Check basic 'completed' field as final fallback
+    if (goal.hasOwnProperty('completed')) {
+        console.log(`🔄 Using basic completed field:`, goal.completed);
+        return goal.completed;
+    }
+
+    console.log(`❌ No completion data found for goal ${goal._id} - defaulting to false`);
+    return false; // Default to not completed if no data exists
 }
 
 // Initialize page
@@ -442,17 +449,36 @@ function renderDailyGoals() {
     container.innerHTML = html;
 }
 
+// ENHANCED: Progress calculation with better debugging
 function updateProgressStats() {
+    console.log('📊 === CALCULATING PROGRESS STATS ===');
+    
+    // Log each goal's completion status for debugging
+    currentGoals.forEach((goal, index) => {
+        const isCompleted = isGoalCompletedToday(goal);
+        console.log(`Goal ${index + 1} (${goal.area}): ${isCompleted ? 'COMPLETED' : 'NOT COMPLETED'}`);
+    });
+    
     const completedToday = currentGoals.filter(goal => isGoalCompletedToday(goal)).length;
     const totalGoals = currentGoals.length;
     const longestStreak = currentGoals.length > 0 ? Math.max(...currentGoals.map(g => g.streak || 0)) : 0;
     const progressPercentage = totalGoals > 0 ? Math.round((completedToday / totalGoals) * 100) : 0;
     
+    console.log('📊 Final progress calculation:', {
+        completedToday,
+        totalGoals,
+        progressPercentage,
+        longestStreak
+    });
+    
+    // Update the UI
     document.getElementById('completedToday').textContent = completedToday;
     document.getElementById('totalGoals').textContent = totalGoals;
     document.getElementById('longestStreak').textContent = longestStreak;
     document.getElementById('progressPercentage').textContent = `${progressPercentage}%`;
     document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+    
+    console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
 function calculateDayCompletion(date) {
@@ -675,7 +701,7 @@ function renderGoalsByArea() {
     container.innerHTML = html;
 }
 
-// FIXED: Enhanced server update with explicit PST date handling
+// ENHANCED: Server update function that ensures completion data is created
 async function updateGoalOnServer(goalId, completed) {
     console.log(`📤 UPDATING SERVER - goalId: ${goalId}, completed: ${completed}`);
     
@@ -684,17 +710,14 @@ async function updateGoalOnServer(goalId, completed) {
         throw new Error('No authentication token');
     }
 
+    // ENHANCED: Include more comprehensive data to ensure tracking works
     const requestData = {
-        completed: completed
+        completed: completed,
+        // Always include the completion date info
+        lastCompletedDate: completed ? new Date().toISOString() : null
     };
     
-    if (completed) {
-        requestData.lastCompletedDate = new Date().toISOString();
-    } else {
-        requestData.lastCompletedDate = null;
-    }
-    
-    console.log('📤 Request data with PST handling:', requestData);
+    console.log('📤 Enhanced request data:', requestData);
 
     const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
         method: 'PUT',
@@ -713,6 +736,13 @@ async function updateGoalOnServer(goalId, completed) {
 
     const updatedGoal = await response.json();
     console.log('✅ Server returned updated goal:', updatedGoal);
+    
+    // ENHANCED: Update the local goal immediately to prevent UI lag
+    const goalIndex = currentGoals.findIndex(g => g._id === goalId);
+    if (goalIndex !== -1) {
+        currentGoals[goalIndex] = updatedGoal;
+        console.log('🔄 Updated local goal in currentGoals array');
+    }
     
     return updatedGoal;
 }
@@ -744,8 +774,14 @@ async function toggleGoalCompletion(goalId) {
         // Call the server
         await updateGoalOnServer(goalId, newState);
         
-        // Reload fresh data from server
-        await loadDailyGoals();
+        // ENHANCED: Update progress immediately without full reload
+        updateProgressStats();
+        renderGoalsByArea();
+        
+        // Re-enable checkbox
+        if (checkbox) {
+            checkbox.disabled = false;
+        }
         
         // Show success message
         showSuccess(newState ? 'Goal completed! 🎉' : 'Goal marked as incomplete.');
@@ -754,8 +790,12 @@ async function toggleGoalCompletion(goalId) {
         console.error('❌ Toggle failed:', error);
         showError('Failed to update goal. Please try again.');
         
-        // Reload to reset state
-        await loadDailyGoals();
+        // Reset checkbox on error
+        const checkbox = document.getElementById(`goal-${goalId}`);
+        if (checkbox) {
+            checkbox.disabled = false;
+            checkbox.checked = !checkbox.checked; // Revert the state
+        }
     }
 }
 
@@ -858,8 +898,10 @@ async function markAllComplete() {
             await updateGoalOnServer(goal._id, true);
         }
         
-        // Reload fresh data
-        await loadDailyGoals();
+        // Update UI immediately
+        updateProgressStats();
+        renderDailyGoals();
+        renderGoalsByArea();
         
         button.textContent = originalText;
         button.disabled = false;
