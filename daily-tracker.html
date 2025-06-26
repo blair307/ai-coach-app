@@ -481,36 +481,61 @@ function updateProgressStats() {
     console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
+// FIXED: Progress overview calculation that matches the main progress logic
 function calculateDayCompletion(date) {
     if (currentGoals.length === 0) return 0;
     
     const targetDatePST = formatDateForComparison(date);
+    const todayPST = formatDateForComparison(new Date());
+    
+    console.log(`📊 Calculating completion for date: ${targetDatePST}`);
     
     let completedOnDate = 0;
-    currentGoals.forEach(goal => {
-        // Check completion history first
-        if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
-            const dateEntry = goal.completionHistory.find(entry => {
-                const entryDatePST = formatDateForComparison(entry.date);
-                return entryDatePST === targetDatePST;
-            });
-            if (dateEntry && dateEntry.completed) {
-                completedOnDate++;
+    
+    currentGoals.forEach((goal, index) => {
+        let isCompletedOnThisDate = false;
+        
+        // FOR TODAY: Use the same exact logic as isGoalCompletedToday()
+        if (targetDatePST === todayPST) {
+            // Use the exact same logic as isGoalCompletedToday() for consistency
+            isCompletedOnThisDate = isGoalCompletedToday(goal);
+            console.log(`📊 TODAY - Goal ${index + 1} (${goal.area}): ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
+        } else {
+            // FOR OTHER DAYS: Use historical data
+            if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
+                const dateEntry = goal.completionHistory.find(entry => {
+                    const entryDatePST = formatDateForComparison(entry.date);
+                    return entryDatePST === targetDatePST;
+                });
+                if (dateEntry && dateEntry.completed) {
+                    isCompletedOnThisDate = true;
+                }
             }
+            // Fallback to lastCompletedDate for historical days
+            else if (goal.lastCompletedDate) {
+                const completedDatePST = formatDateForComparison(goal.lastCompletedDate);
+                if (completedDatePST === targetDatePST) {
+                    isCompletedOnThisDate = true;
+                }
+            }
+            console.log(`📊 HISTORICAL (${targetDatePST}) - Goal ${index + 1} (${goal.area}): ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
-        // Fallback to lastCompletedDate
-        else if (goal.lastCompletedDate) {
-            const completedDatePST = formatDateForComparison(goal.lastCompletedDate);
-            if (completedDatePST === targetDatePST) {
-                completedOnDate++;
-            }
+        
+        if (isCompletedOnThisDate) {
+            completedOnDate++;
         }
     });
     
-    return (completedOnDate / currentGoals.length) * 100;
+    const percentage = (completedOnDate / currentGoals.length) * 100;
+    console.log(`📊 Date ${targetDatePST}: ${completedOnDate}/${currentGoals.length} = ${percentage}%`);
+    
+    return percentage;
 }
 
+// ENHANCED: Weekly progress with better debugging
 function renderWeeklyProgress() {
+    console.log('📊 === RENDERING WEEKLY PROGRESS ===');
+    
     const container = document.getElementById('progressChart');
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
@@ -526,6 +551,8 @@ function renderWeeklyProgress() {
         const dayNumber = date.getDate();
         
         const completionRate = calculateDayCompletion(date);
+        
+        console.log(`📊 Week day ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
         
         html += `
             <div style="
@@ -559,9 +586,13 @@ function renderWeeklyProgress() {
     }
     
     container.innerHTML = html;
+    console.log('📊 === WEEKLY PROGRESS RENDERED ===');
 }
 
+// ENHANCED: Monthly progress with same logic
 function renderMonthlyProgress() {
+    console.log('📊 === RENDERING MONTHLY PROGRESS ===');
+    
     const container = document.getElementById('progressChart');
     const today = new Date();
     
@@ -609,6 +640,7 @@ function renderMonthlyProgress() {
     }
     
     container.innerHTML = html;
+    console.log('📊 === MONTHLY PROGRESS RENDERED ===');
 }
 
 function showWeeklyProgress() {
@@ -747,7 +779,7 @@ async function updateGoalOnServer(goalId, completed) {
     return updatedGoal;
 }
 
-// FIXED: More robust toggle function
+// ENHANCED: Toggle function that forces complete UI refresh
 async function toggleGoalCompletion(goalId) {
     console.log('🔄 TOGGLE CALLED - goalId:', goalId);
     
@@ -774,9 +806,18 @@ async function toggleGoalCompletion(goalId) {
         // Call the server
         await updateGoalOnServer(goalId, newState);
         
-        // ENHANCED: Update progress immediately without full reload
-        updateProgressStats();
-        renderGoalsByArea();
+        // ENHANCED: Force all UI updates including progress overview
+        console.log('🔄 UPDATING ALL UI COMPONENTS...');
+        renderDailyGoals();        // Goal cards
+        updateProgressStats();     // Top hero numbers
+        renderGoalsByArea();       // Area progress
+        
+        // CRITICAL: Update the progress overview charts
+        if (progressView === 'weekly') {
+            renderWeeklyProgress();
+        } else {
+            renderMonthlyProgress();
+        }
         
         // Re-enable checkbox
         if (checkbox) {
@@ -876,6 +917,7 @@ async function markGoalIncomplete() {
     closeGoalDetail();
 }
 
+// ENHANCED: Mark all complete with forced refresh
 async function markAllComplete() {
     try {
         const incompleteGoals = currentGoals.filter(goal => !isGoalCompletedToday(goal));
@@ -898,10 +940,17 @@ async function markAllComplete() {
             await updateGoalOnServer(goal._id, true);
         }
         
-        // Update UI immediately
-        updateProgressStats();
+        // FORCE COMPLETE UI REFRESH
+        console.log('🔄 MARK ALL COMPLETE - FORCING UI REFRESH...');
         renderDailyGoals();
+        updateProgressStats();
         renderGoalsByArea();
+        
+        if (progressView === 'weekly') {
+            renderWeeklyProgress();
+        } else {
+            renderMonthlyProgress();
+        }
         
         button.textContent = originalText;
         button.disabled = false;
@@ -1028,6 +1077,29 @@ document.getElementById('goalDetailModal').addEventListener('click', function(e)
         closeGoalDetail();
     }
 });
+
+// DEBUGGING: Add this function to test UI updates manually
+function debugUIRefresh() {
+    console.log('🐛 MANUAL UI REFRESH TEST');
+    console.log('Current goals:', currentGoals);
+    
+    // Test each goal's completion status
+    currentGoals.forEach((goal, index) => {
+        const isCompleted = isGoalCompletedToday(goal);
+        console.log(`🐛 Goal ${index + 1}: ${goal.area} - Completed: ${isCompleted}`);
+    });
+    
+    // Force refresh everything
+    renderDailyGoals();
+    updateProgressStats();
+    renderGoalsByArea();
+    renderWeeklyProgress();
+    
+    console.log('🐛 UI refresh complete');
+}
+
+// ENHANCED: Add this to the window for debugging
+window.debugUIRefresh = debugUIRefresh;
 
 // Add CSS animations
 const style = document.createElement('style');
