@@ -3374,3 +3374,215 @@ body {
     text-align: center !important;
     line-height: 1.2 !important;
 }
+
+/* =================================
+   TIMER & CALENDAR STYLING FIX
+   ================================= */
+
+/* Add this CSS to the end of your styles.css file or replace the existing timer styles */
+
+/* Container styling */
+.timer-display {
+    text-align: center !important;
+    padding: 1.5rem 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    margin-bottom: 1.5rem !important;
+    background: transparent !important;
+}
+
+/* Countdown container */
+.countdown-container {
+    display: block !important;
+    visibility: visible !important;
+}
+
+/* Label styling */
+.countdown-label {
+    font-size: 0.875rem !important;
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.75rem !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+/* Main timer styling - HIGHEST SPECIFICITY */
+.countdown-timer,
+#countdownTimer,
+.timer-display .countdown-timer,
+.dashboard-card .countdown-timer {
+    display: block !important;
+    visibility: visible !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+    margin: 0.5rem 0 !important;
+    padding: 0 !important;
+    letter-spacing: -0.02em !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11" !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    text-transform: none !important;
+    text-decoration: none !important;
+    border: none !important;
+    outline: none !important;
+}
+
+/* Date styling */
+.countdown-date {
+    font-size: 0.875rem !important;
+    color: var(--text-primary) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+/* Timezone styling */
+.timezone {
+    font-size: 0.75rem !important;
+    color: var(--text-muted) !important;
+    font-weight: 400 !important;
+    margin-top: 0.5rem !important;
+    display: block !important;
+    text-align: center !important;
+}
+
+/* No meeting state */
+.no-meeting {
+    display: none !important;
+    text-align: center !important;
+    padding: 1rem 0 !important;
+}
+
+.no-meeting.show {
+    display: block !important;
+}
+
+.no-meeting-text {
+    font-size: 1rem !important;
+    color: var(--text-muted) !important;
+    margin-bottom: 1rem !important;
+    font-weight: 500 !important;
+}
+
+.current-time {
+    font-size: 2rem !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 0.5rem !important;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+    letter-spacing: -0.02em !important;
+}
+
+.current-date {
+    font-size: 0.875rem !important;
+    color: var(--text-secondary) !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+/* Calendar styling remains the same but with better specificity */
+.calendar-container {
+    padding: 0 !important;
+    margin-top: 0 !important;
+}
+
+.calendar-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1rem !important;
+    padding: 0 0.5rem !important;
+}
+
+.calendar-nav {
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    font-size: 1rem !important;
+    color: var(--text-primary) !important;
+    transition: all 0.2s ease !important;
+    font-weight: 600 !important;
+}
+
+.calendar-nav:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    border-color: var(--primary) !important;
+    transform: scale(1.05) !important;
+}
+
+#currentMonth {
+    margin: 0 !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    text-align: center !important;
+}
+
+/* Mobile responsiveness for timer */
+@media (max-width: 768px) {
+    .countdown-timer,
+    #countdownTimer {
+        font-size: 2rem !important;
+    }
+    
+    .timer-display {
+        padding: 1rem 0 !important;
+    }
+    
+    .current-time {
+        font-size: 1.75rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .countdown-timer,
+    #countdownTimer {
+        font-size: 1.75rem !important;
+    }
+    
+    .current-time {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* Override any conflicting styles */
+.dashboard-card .countdown-timer,
+.dashboard-card #countdownTimer {
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+}
+
+/* Ensure the timer container doesn't inherit unwanted styles */
+.dashboard-card .timer-display * {
+    box-sizing: border-box !important;
+}
+
+/* Fix any flex or grid conflicts */
+.timer-display,
+.countdown-container,
+.no-meeting {
+    display: block !important;
+    flex: none !important;
+    grid-area: auto !important;
+}
