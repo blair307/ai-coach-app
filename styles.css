@@ -4741,3 +4741,14 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
 
     return messageDiv;
 }
+/* FIXED REPLY INDICATORS */
+.message-group.reply::after {
+    content: 'Reply'; /* Simple text instead of corrupted characters */
+    position: absolute;
+    left: -2rem;
+    top: 0.5rem;
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: bold;
+    font-family: system-ui, -apple-system, Arial, sans-serif;
+}
