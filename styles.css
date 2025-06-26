@@ -820,23 +820,6 @@ body {
     box-shadow: var(--shadow) !important;
 }
 
-.stat-number {
-    font-size: 2.0rem !important;
-    font-weight: 800 !important;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    margin-bottom: 0.5rem !important;
-    letter-spacing: -0.02em !important;
-    line-height: 1 !important;
-    min-height: 2.5rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-}
-
 .stat-label {
     color: var(--text-secondary) !important;
     font-size: 0.875rem !important;
