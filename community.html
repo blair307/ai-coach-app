@@ -92,26 +92,22 @@
                 max-width: 100% !important;
             }
             
-            /* Mobile chat header */
-            .chat-header {
-                padding: 1rem !important;
-                flex-direction: column !important;
-                gap: 0.75rem !important;
-                text-align: center !important;
-                border-bottom: 2px solid var(--border) !important;
-            }
-            
-            .room-title h2 {
-                font-size: 1.25rem !important;
-                margin: 0 !important;
-            }
-            
-            .room-title p {
-                font-size: 0.875rem !important;
-                margin: 0.25rem 0 0 0 !important;
-                opacity: 0.8 !important;
-            }
-            
+           .chat-header {
+    padding: 0.75rem 1rem !important; /* REDUCED padding */
+    flex-direction: column !important;
+    gap: 0.5rem !important; /* REDUCED gap */
+    text-align: center !important;
+    border-bottom: 2px solid var(--border) !important;
+}
+
+.room-title h2 {
+    font-size: 1.1rem !important; /* SMALLER font */
+    margin: 0 !important;
+}
+
+.room-title p {
+    display: none !important; /* HIDE description completely */
+}
             /* Desktop search hidden on mobile */
             .desktop-search-container {
                 display: none !important;
@@ -161,18 +157,20 @@
                 width: 100% !important;
             }
             
-            #communityMessageInput {
-                min-height: 44px !important;
-                max-height: 120px !important;
-                resize: none !important;
-                border: none !important;
-                outline: none !important;
-                background: transparent !important;
-                font-size: 16px !important;
-                line-height: 1.4 !important;
-                color: var(--text-primary) !important;
-                width: 100% !important;
-            }
+#communityMessageInput {
+    min-height: 44px !important; /* Single line */
+    max-height: 120px !important;
+    resize: none !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 16px !important;
+    line-height: 1.4 !important;
+    color: var(--text-primary) !important;
+    width: 100% !important;
+    overflow-y: hidden !important; /* ADD THIS */
+    transition: height 0.2s ease !important; /* ADD THIS */
+}
             
             .input-actions {
                 display: flex !important;
