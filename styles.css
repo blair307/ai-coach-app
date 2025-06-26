@@ -821,7 +821,7 @@ body {
 }
 
 .stat-number {
-    font-size: 1.75rem !important;
+    font-size: 2.0rem !important;
     font-weight: 800 !important;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
     -webkit-background-clip: text !important;
@@ -830,7 +830,7 @@ body {
     margin-bottom: 0.5rem !important;
     letter-spacing: -0.02em !important;
     line-height: 1 !important;
-    min-height: 1.75rem !important;
+    min-height: 2.5rem !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -2698,10 +2698,6 @@ body {
         padding: 1rem 0.5rem !important;
     }
     
-    .stat-number {
-        font-size: 1.5rem !important;
-        min-height: 1.5rem !important;
-    }
     
     .stat-label {
         font-size: 0.8rem !important;
