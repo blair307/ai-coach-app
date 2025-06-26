@@ -1098,34 +1098,6 @@ class SimpleProgressTracker {
     }
 }
 
-// Enhanced test function that also tests days active
-function simulateActivity() {
-    console.log('🧪 Testing progress tracker...');
-    
-    if (window.progressTracker) {
-        // Add some fake previous days for testing
-        window.progressTracker.addActiveDays(1); // Yesterday
-        window.progressTracker.addActiveDays(2); // 2 days ago
-        window.progressTracker.addActiveDays(5); // 5 days ago
-        
-        // Force update display
-        window.progressTracker.forceUpdate();
-        
-        console.log('📊 Current summary:', window.progressTracker.getSummary());
-    }
-}
-
-// Make reset function available for testing
-function resetDaysActive() {
-    if (window.progressTracker) {
-        window.progressTracker.resetActiveDays();
-        console.log('🔄 Days active counter reset');
-    }
-}
-
-// Export for global access
-window.simulateActivity = simulateActivity;
-window.resetDaysActive = resetDaysActive;
 
     // Dashboard Goals Loading
     async function loadDashboardGoals() {
