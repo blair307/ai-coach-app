@@ -4965,3 +4965,76 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     -webkit-overflow-scrolling: touch !important;
     padding: 1.5rem !important;
 }
+
+        /* =================================
+   SINGLE-LINE TEXTAREA FIX - STRONGER VERSION
+   Add this CSS to the VERY BOTTOM of your styles.css file
+   ================================= */
+
+/* FORCE SINGLE LINE TEXTAREA - STRONGER OVERRIDE */
+#communityMessageInput {
+    min-height: 20px !important;
+    height: 20px !important;
+    max-height: 120px !important;
+    line-height: 20px !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+    resize: none !important;
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 16px !important;
+    color: var(--text-primary) !important;
+    transition: height 0.2s ease !important;
+    font-family: inherit !important;
+    vertical-align: top !important;
+    display: block !important;
+    width: 100% !important;
+}
+
+/* When expanded by JavaScript */
+#communityMessageInput.expanded {
+    height: auto !important;
+    min-height: 44px !important;
+    overflow-y: auto !important;
+}
+
+/* Container fixes */
+.chat-input {
+    background: var(--surface) !important;
+    border: 2px solid var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    padding: 0.75rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    min-height: 44px !important;
+}
+
+.chat-input:focus-within {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Remove any conflicting styles from community.html */
+.community-responsive-container #communityMessageInput,
+.chat-input-area #communityMessageInput,
+.chat-input #communityMessageInput {
+    min-height: 20px !important;
+    height: 20px !important;
+    line-height: 20px !important;
+    padding: 12px !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 1024px) {
+    #communityMessageInput {
+        min-height: 20px !important;
+        height: 20px !important;
+        line-height: 20px !important;
+        font-size: 16px !important;
+        padding: 12px !important;
+    }
+}
