@@ -3123,52 +3123,16 @@ body {
     
     .
 
-    /* Fix for Recent Notifications overlapping text */
-.notification-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.75rem; /* Increased spacing */
-    gap: 1rem; /* Add gap between elements */
-}
+/* =================================
+   TIMER & CALENDAR - RESTORED CRITICAL STYLES
+   ================================= */
 
-.notification-header h3 {
-    margin: 0;
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 600;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.3;
-    flex: 1; /* Allow title to take available space */
-    min-width: 0; /* Allow shrinking */
-}
-
-.notification-time {
-    color: var(--text-muted);
-    font-size: 0.8rem; /* Slightly smaller */
-    flex-shrink: 0;
-    margin-left: 0.5rem; /* Reduced margin */
-    white-space: nowrap;
-    min-width: fit-content;
-}
-
-.notification-content p {
-    color: var(--text-secondary);
-    margin: 0 0 1rem 0;
-    line-height: 1.5;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    padding-right: 0.5rem; /* Add some right padding */
-}
-
-/* Fix for Timer Display - Force visibility and proper styling */
 .timer-display,
-#timerDisplay {
+#timerDisplay,
+.countdown-container,
+#countdownContainer {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     text-align: center;
     padding: 1rem 0;
     border-bottom: 1px solid var(--border);
@@ -3179,14 +3143,12 @@ body {
 #countdownContainer {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
 }
 
 .countdown-label,
 #countdownLabel {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 0.875rem;
     color: var(--text-secondary);
     font-weight: 500;
@@ -3197,25 +3159,22 @@ body {
 #countdownTimer {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 2rem;
     font-weight: 800;
     background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 0.5rem;
     letter-spacing: -0.02em;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-    min-height: 2rem;
 }
 
 .countdown-date,
 #countdownDate {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 0.875rem;
     color: var(--text-primary);
     font-weight: 500;
@@ -3226,14 +3185,12 @@ body {
 #noMeeting {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
 }
 
 .no-meeting-text,
 #noMeetingText {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 1rem;
     color: var(--text-muted);
     margin-bottom: 1rem;
@@ -3243,7 +3200,6 @@ body {
 #currentTime {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--primary) !important;
@@ -3255,7 +3211,6 @@ body {
 #currentDate {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 0.875rem;
     color: var(--text-secondary);
     font-weight: 500;
@@ -3266,12 +3221,51 @@ body {
 #timezone {
     display: block !important;
     visibility: visible !important;
-    opacity: 1 !important;
     font-size: 0.75rem;
     color: var(--text-muted);
 }
 
-/* Mobile responsive fixes for notifications */
+/* Fix for Recent Notifications overlapping text */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+    gap: 1rem;
+}
+
+.notification-header h3 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    line-height: 1.3;
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-time {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    margin-left: 0.5rem;
+    white-space: nowrap;
+    min-width: fit-content;
+}
+
+.notification-content p {
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    padding-right: 0.5rem;
+}
+
+/* Mobile responsive fixes */
 @media (max-width: 768px) {
     .notification-header {
         flex-direction: column;
