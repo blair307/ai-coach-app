@@ -4269,7 +4269,7 @@ mark {
         min-height: 0 !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important;
-        padding: 4.5rem 1rem 1rem 1rem !important; /* Much more top padding to prevent cutoff */
+        padding: 7rem 1rem 1rem 1rem !important; /* Much more top padding to prevent cutoff */
         background: var(--surface) !important;
         display: flex !important;
         flex-direction: column !important;
