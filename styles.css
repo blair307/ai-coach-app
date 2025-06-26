@@ -3023,7 +3023,7 @@ body {
     .
 
 /* =================================
-   TIMER & CALENDAR - RESTORED CRITICAL STYLES
+   TIMER & CALENDAR
    ================================= */
 
 .timer-display,
@@ -3122,71 +3122,6 @@ body {
     visibility: visible !important;
     font-size: 0.75rem;
     color: var(--text-muted);
-}
-
-/* Fix for Recent Notifications overlapping text */
-.notification-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 0.75rem;
-    gap: 1rem;
-}
-
-.notification-header h3 {
-    margin: 0;
-    color: var(--text-primary);
-    font-size: 1rem;
-    font-weight: 600;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.3;
-    flex: 1;
-    min-width: 0;
-}
-
-.notification-time {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    flex-shrink: 0;
-    margin-left: 0.5rem;
-    white-space: nowrap;
-    min-width: fit-content;
-}
-
-.notification-content p {
-    color: var(--text-secondary);
-    margin: 0 0 1rem 0;
-    line-height: 1.5;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
-    padding-right: 0.5rem;
-}
-
-/* Mobile responsive fixes */
-@media (max-width: 768px) {
-    .notification-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 0.5rem;
-    }
-    
-    .notification-time {
-        margin-left: 0;
-        font-size: 0.75rem;
-        align-self: flex-end;
-    }
-    
-    .notification-header h3 {
-        font-size: 0.95rem;
-        line-height: 1.4;
-    }
-    
-    .countdown-timer,
-    #countdownTimer {
-        font-size: 1.75rem;
-    }
 }
 
 
