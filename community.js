@@ -303,7 +303,7 @@ async function switchRoom(roomId) {
     }
 }
 
-// ENHANCED: Create message element with PROPER THREADING
+// ENHANCED: Create message element with PROPER THREADING - FIXED CHARACTERS
 function createMessageElement(message, isReply = false, parentIndex = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
@@ -342,10 +342,11 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
                         onclick="toggleLike('${message._id || message.id || Date.now()}')" 
                         title="Like">
                     ${isLikedByUser ? '♥' : '♡'}
-<button class="action-btn reply-btn" 
+                </button>
+                <button class="action-btn reply-btn" 
                         onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
                         title="Reply">
-                    →
+                    Reply
                 </button>
             </div>
         </div>
@@ -1360,4 +1361,4 @@ window.currentRoomId = currentRoomId;
 window.rooms = rooms;
 window.currentReplyTo = currentReplyTo;
 
-console.log('✅ THREADED Community.js loaded - Replies now connect to original messages!');
+console.log('✅ FIXED Community.js loaded - Reply buttons now show "Reply" instead of corrupted characters!');
