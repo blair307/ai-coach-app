@@ -330,12 +330,14 @@ async function switchRoom(roomId) {
         const sendButton = document.getElementById('sendCommunityButton');
         const emojiButton = document.getElementById('emojiBtn');
         
-        if (messageInput) {
-            messageInput.disabled = false;
-            messageInput.placeholder = `Message ${room.name}...`;
-        }
-        if (sendButton) sendButton.disabled = false;
-        if (emojiButton) emojiButton.disabled = false;
+if (messageInput) {
+    messageInput.disabled = false;
+    messageInput.placeholder = `Message ${room.name}...`;
+}
+if (sendButton) sendButton.disabled = false;
+if (emojiButton) emojiButton.disabled = false;
+const attachmentButton = document.getElementById('attachmentBtn');
+if (attachmentButton) attachmentButton.disabled = false;
 
         await loadMessages(roomId);
 
