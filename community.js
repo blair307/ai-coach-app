@@ -1579,7 +1579,7 @@ function showInfoToast(message) {
     }, 3000);
 }
 
-// COPY THIS ENTIRE FUNCTION TO REPLACE YOUR OLD ONE
+// TEMPORARY DEBUG VERSION - Replace your deleteMessage function with this
 async function deleteMessage(messageId) {
     try {
         // Show confirmation dialog
@@ -1589,6 +1589,7 @@ async function deleteMessage(messageId) {
         }
 
         console.log('🗑️ Starting deletion for message:', messageId);
+        console.log('🔗 API_BASE_URL:', API_BASE_URL);
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
@@ -1606,16 +1607,24 @@ async function deleteMessage(messageId) {
         // Show loading toast
         showInfoToast('🗑️ Deleting message...');
 
+        // DEBUG: Log the full URL being called
+        const deleteUrl = `${API_BASE_URL}/api/messages/${messageId}`;
+        console.log('🔗 DELETE URL:', deleteUrl);
+        console.log('🔑 Token exists:', !!token);
+
         // Try to delete from server
         console.log('🔄 Attempting message deletion...');
         
-        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+        const response = await fetch(deleteUrl, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
+
+        console.log('📊 Response status:', response.status);
+        console.log('📊 Response ok:', response.ok);
 
         const data = await response.json();
         console.log('📥 Server response:', data);
@@ -1660,6 +1669,12 @@ async function deleteMessage(messageId) {
 
     } catch (error) {
         console.error('❌ Error deleting message:', error);
+        console.error('❌ Full error details:', {
+            message: error.message,
+            stack: error.stack,
+            messageId: messageId,
+            apiUrl: API_BASE_URL
+        });
         
         // Reset button state
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
