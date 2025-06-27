@@ -1881,6 +1881,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🔍 Timer styling observer started');
 });
+
+        // Simple fix for Your Progress number alignment
+function alignProgressNumbers() {
+    console.log('🔧 Aligning Your Progress numbers...');
+    
+    // Target only the stat numbers in the progress section
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    statNumbers.forEach(element => {
+        // Force consistent baseline alignment
+        element.style.cssText += `
+            display: flex !important;
+            align-items: baseline !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            vertical-align: baseline !important;
+            min-height: 3rem !important;
+            height: 3rem !important;
+        `;
+    });
+    
+    console.log(`✅ Aligned ${statNumbers.length} progress numbers`);
+}
+
+// Apply the alignment fix when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(alignProgressNumbers, 1000);
+    
+    // Also apply after any content updates
+    const observer = new MutationObserver(function() {
+        setTimeout(alignProgressNumbers, 100);
+    });
+    
+    observer.observe(document.querySelector('.stats-grid') || document.body, {
+        childList: true,
+        subtree: true
+    });
+});
     </script>
    
 </body>
