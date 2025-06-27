@@ -3476,4 +3476,306 @@ body {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
 
+    /* ADD THIS TO YOUR EXISTING styles.css - MOBILE CHAT FIX */
+/* This preserves all your existing functionality and just fixes the mobile layout */
+
+@media (max-width: 768px) {
+    /* OVERRIDE BROKEN MOBILE LAYOUT - PRESERVE ALL FUNCTIONALITY */
+    
+    /* Fix main container positioning */
+    .app-container {
+        position: relative !important;
+    }
+    
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100vw !important;
+        min-height: 100vh !important;
+    }
+    
+    /* CRITICAL: Fix the chat container to be full screen on mobile */
+    .chat-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 50 !important;
+        background: var(--background) !important;
+    }
+    
+    /* Fix header positioning and make it stick to top */
+    .chat-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 100 !important;
+        background: var(--background) !important;
+        border-bottom: 2px solid var(--border) !important;
+        padding: 1rem !important;
+        min-height: 80px !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Make coach info responsive */
+    .coach-info {
+        flex: 1 !important;
+    }
+    
+    .coach-details h2 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.25rem !important;
+    }
+    
+    .coach-status {
+        font-size: 0.875rem !important;
+    }
+    
+    .chat-actions {
+        flex-wrap: wrap !important;
+        gap: 0.5rem !important;
+    }
+    
+    .chat-actions button {
+        min-height: 40px !important;
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.85rem !important;
+    }
+    
+    /* CRITICAL: Fix messages area to be scrollable between header and input */
+    .chat-messages {
+        position: fixed !important;
+        top: 80px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 120px !important; /* Leave space for input */
+        padding: 1rem !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        background: var(--surface) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    /* Ensure messages are readable */
+    .message {
+        max-width: 90% !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .message-content {
+        padding: 1rem !important;
+        font-size: 0.95rem !important;
+        line-height: 1.5 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* CRITICAL: Fix input container to stick to bottom */
+    .chat-input-container {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        background: var(--background) !important;
+        border-top: 2px solid var(--border) !important;
+        padding: 1rem !important;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.15) !important;
+        z-index: 100 !important;
+        min-height: 120px !important;
+        max-height: 200px !important;
+        overflow: visible !important;
+    }
+    
+    /* CRITICAL: Fix the input layout to be horizontal */
+    .chat-input {
+        display: flex !important;
+        flex-direction: row !important; /* Horizontal layout */
+        align-items: flex-end !important;
+        gap: 0.75rem !important;
+        background: var(--surface) !important;
+        border: 2px solid var(--border) !important;
+        border-radius: var(--radius-lg) !important;
+        padding: 0.75rem !important;
+        min-height: 60px !important;
+        box-shadow: var(--shadow) !important;
+    }
+    
+    .chat-input:focus-within {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), var(--shadow) !important;
+    }
+    
+    /* CRITICAL: Fix textarea to be single line that can expand */
+    .chat-input textarea,
+    #messageInput {
+        flex: 1 !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        font-size: 16px !important; /* Prevents zoom on iOS */
+        line-height: 1.4 !important;
+        min-height: 44px !important;
+        max-height: 100px !important;
+        resize: none !important;
+        padding: 0.5rem 0 !important;
+        color: var(--text-primary) !important;
+        font-family: inherit !important;
+        overflow-y: auto !important;
+        margin: 0 !important;
+    }
+    
+    .chat-input textarea::placeholder,
+    #messageInput::placeholder {
+        color: var(--text-muted) !important;
+        font-size: 16px !important;
+    }
+    
+    /* CRITICAL: Fix button layout */
+    .input-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .input-actions .btn,
+    #sendButton {
+        min-height: 44px !important;
+        padding: 0.75rem 1.5rem !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        border-radius: var(--radius) !important;
+    }
+    
+    /* Hide desktop sidebar on mobile */
+    .coaching-sidebar {
+        display: none !important;
+    }
+    
+    /* Fix content header for mobile */
+    .content-header {
+        display: none !important; /* Hide on mobile since we have chat header */
+    }
+    
+    /* Ensure welcome message is visible */
+    .message-content[style*="background: var(--surface)"] {
+        background: var(--background) !important;
+        border: 1px solid var(--border) !important;
+        box-shadow: var(--shadow-sm) !important;
+    }
+    
+    /* Fix typing indicator */
+    .typing-indicator {
+        position: static !important;
+        margin: 1rem !important;
+        transform: none !important;
+        left: auto !important;
+        bottom: auto !important;
+    }
+    
+    /* Settings modal adjustments for mobile */
+    #settingsModal {
+        padding: 1rem !important;
+    }
+    
+    #settingsModal > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        border-radius: var(--radius-lg) !important;
+    }
+    
+    /* Notification icon adjustments */
+    .notification-icon-container {
+        margin-right: 0.5rem !important;
+    }
+    
+    .notification-bell {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    /* Hamburger menu visibility */
+    .universal-hamburger {
+        display: flex !important;
+        z-index: 200 !important;
+    }
+    
+    /* Ensure proper text sizing */
+    .chat-input textarea,
+    .chat-input input,
+    #messageInput {
+        font-size: 16px !important; /* Critical for iOS to prevent zoom */
+        -webkit-text-size-adjust: 100% !important;
+        -webkit-appearance: none !important;
+    }
+    
+    /* Handle keyboard appearance on iOS */
+    .chat-input-container {
+        transition: none !important;
+    }
+    
+    /* Landscape mode adjustments */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .chat-header {
+            min-height: 60px !important;
+            padding: 0.75rem 1rem !important;
+        }
+        
+        .chat-messages {
+            top: 60px !important;
+            bottom: 80px !important;
+        }
+        
+        .chat-input-container {
+            min-height: 80px !important;
+            padding: 0.75rem !important;
+        }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 375px) {
+        .chat-input {
+            gap: 0.5rem !important;
+            padding: 0.5rem !important;
+        }
+        
+        .input-actions .btn {
+            padding: 0.75rem 1rem !important;
+            font-size: 0.875rem !important;
+        }
+    }
+}
+
+/* Additional mobile-specific improvements */
+@media (max-width: 480px) {
+    .chat-header {
+        padding: 0.75rem !important;
+    }
+    
+    .coach-details h2 {
+        font-size: 1rem !important;
+    }
+    
+    .chat-messages {
+        padding: 0.75rem !important;
+    }
+    
+    .message-content {
+        padding: 0.875rem !important;
+        font-size: 0.9rem !important;
+    }
+}
   
