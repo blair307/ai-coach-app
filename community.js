@@ -330,14 +330,12 @@ async function switchRoom(roomId) {
         const sendButton = document.getElementById('sendCommunityButton');
         const emojiButton = document.getElementById('emojiBtn');
         
-if (messageInput) {
-    messageInput.disabled = false;
-    messageInput.placeholder = `Message ${room.name}...`;
-}
-if (sendButton) sendButton.disabled = false;
-if (emojiButton) emojiButton.disabled = false;
-const attachmentButton = document.getElementById('attachmentBtn');
-if (attachmentButton) attachmentButton.disabled = false;
+        if (messageInput) {
+            messageInput.disabled = false;
+            messageInput.placeholder = `Message ${room.name}...`;
+        }
+        if (sendButton) sendButton.disabled = false;
+        if (emojiButton) emojiButton.disabled = false;
 
         await loadMessages(roomId);
 
@@ -1421,61 +1419,71 @@ async function updateNotificationCount() {
     }
 }
 
-// DISCORD-STYLE SINGLE LINE TEXTAREA - NO AUTO EXPANSION
+// UPDATED: Enhanced Auto-Expand Textarea Function
 function setupAutoExpandTextarea() {
     const textarea = document.getElementById('communityMessageInput');
     if (!textarea) {
-        console.log('⚠️ Textarea not found for single-line setup');
+        console.log('⚠️ Textarea not found for auto-expand setup');
         return;
     }
     
-    console.log('🔧 Setting up Discord-style single-line textarea');
+    console.log('🔧 Setting up auto-expand textarea');
     
-    // Force single-line properties
+    // Set initial single-line height
     textarea.style.height = '20px';
     textarea.style.minHeight = '20px';
-    textarea.style.maxHeight = '20px';
     textarea.style.lineHeight = '20px';
-    textarea.style.padding = '0';
-    textarea.style.margin = '0';
+    textarea.style.padding = '12px';
     textarea.style.overflow = 'hidden';
-    textarea.style.resize = 'none';
-    textarea.style.border = 'none';
-    textarea.style.outline = 'none';
-    textarea.style.background = 'transparent';
-    textarea.style.fontSize = '16px';
-    textarea.style.fontFamily = 'inherit';
-    textarea.style.verticalAlign = 'top';
-    textarea.style.flex = '1';
     
-    // Prevent any height changes
-    function preventExpansion() {
+    // Function to adjust height
+    function adjustHeight() {
+        // Reset to minimum height first
         textarea.style.height = '20px';
-        textarea.style.overflow = 'hidden';
+        
+        // Calculate total height including padding
+        const totalHeight = textarea.scrollHeight;
+        
+        // If content needs more space, expand
+        if (totalHeight > 44) { // 20px + 24px padding
+            const newHeight = Math.min(totalHeight, 120);
+            textarea.style.height = newHeight + 'px';
+            textarea.classList.add('expanded');
+            textarea.style.overflow = 'auto';
+        } else {
+            textarea.style.height = '20px';
+            textarea.classList.remove('expanded');
+            textarea.style.overflow = 'hidden';
+        }
+        
+        // Add visual feedback for content
+        if (textarea.value.trim()) {
+            textarea.classList.add('has-content');
+        } else {
+            textarea.classList.remove('has-content');
+        }
     }
     
-    // Event listeners to maintain single line
-    textarea.addEventListener('input', preventExpansion);
+    // Event listeners
+    textarea.addEventListener('input', adjustHeight);
     textarea.addEventListener('paste', () => {
-        setTimeout(preventExpansion, 10);
+        // Small delay to allow paste content to be processed
+        setTimeout(adjustHeight, 10);
     });
-    textarea.addEventListener('focus', preventExpansion);
-    textarea.addEventListener('keydown', (e) => {
-        // Prevent Enter from creating new lines (but still allow form submission)
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            // Trigger send message if available
-            if (typeof sendCommunityMessage === 'function') {
-                sendCommunityMessage();
-            }
+    
+    // Force initial height on focus
+    textarea.addEventListener('focus', () => {
+        if (!textarea.value.trim()) {
+            textarea.style.height = '20px';
         }
     });
     
-    // Force initial state
-    preventExpansion();
+    // Initial adjustment
+    adjustHeight();
     
-    console.log('✅ Discord-style single-line textarea setup complete');
+    console.log('✅ Auto-expand textarea setup complete - TRUE single line');
 }
+
 // Auto-refresh messages every 30 seconds
 setInterval(async () => {
     if (currentRoomId && isInitialized) {
@@ -1571,7 +1579,7 @@ function showInfoToast(message) {
     }, 3000);
 }
 
-// TEMPORARY DEBUG VERSION - Replace your deleteMessage function with this
+// COPY THIS ENTIRE FUNCTION TO REPLACE YOUR OLD ONE
 async function deleteMessage(messageId) {
     try {
         // Show confirmation dialog
@@ -1581,7 +1589,6 @@ async function deleteMessage(messageId) {
         }
 
         console.log('🗑️ Starting deletion for message:', messageId);
-        console.log('🔗 API_BASE_URL:', API_BASE_URL);
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
@@ -1599,24 +1606,16 @@ async function deleteMessage(messageId) {
         // Show loading toast
         showInfoToast('🗑️ Deleting message...');
 
-        // DEBUG: Log the full URL being called
-        const deleteUrl = `${API_BASE_URL}/api/messages/${messageId}`;
-        console.log('🔗 DELETE URL:', deleteUrl);
-        console.log('🔑 Token exists:', !!token);
-
         // Try to delete from server
         console.log('🔄 Attempting message deletion...');
         
-        const response = await fetch(deleteUrl, {
+        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             }
         });
-
-        console.log('📊 Response status:', response.status);
-        console.log('📊 Response ok:', response.ok);
 
         const data = await response.json();
         console.log('📥 Server response:', data);
@@ -1661,12 +1660,6 @@ async function deleteMessage(messageId) {
 
     } catch (error) {
         console.error('❌ Error deleting message:', error);
-        console.error('❌ Full error details:', {
-            message: error.message,
-            stack: error.stack,
-            messageId: messageId,
-            apiUrl: API_BASE_URL
-        });
         
         // Reset button state
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
@@ -1696,358 +1689,4 @@ async function deleteMessage(messageId) {
     }
 }
 
-function toggleAttachmentMenu() {
-    const menu = document.getElementById('attachmentMenu');
-    const btn = document.getElementById('attachmentBtn');
-    
-    if (btn.disabled) return; // Don't open if disabled
-    
-    menu.classList.toggle('show');
-    
-    // Close menu when clicking outside
-    if (menu.classList.contains('show')) {
-        document.addEventListener('click', function closeMenu(e) {
-            if (!menu.contains(e.target) && !e.target.classList.contains('attachment-btn')) {
-                menu.classList.remove('show');
-                document.removeEventListener('click', closeMenu);
-            }
-        });
-    }
-}
-
-function selectAttachment(type) {
-    // Hide menu
-    document.getElementById('attachmentMenu').classList.remove('show');
-    
-    switch(type) {
-        case 'image':
-            // Create hidden file input for images
-            const imageInput = document.createElement('input');
-            imageInput.type = 'file';
-            imageInput.accept = 'image/*';
-            imageInput.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    console.log('Image selected:', file.name);
-                    showInfoToast(`📸 Image "${file.name}" selected! (Upload feature coming soon)`);
-                }
-            };
-            imageInput.click();
-            break;
-            
-        case 'gif':
-            showInfoToast('🎭 GIF picker coming soon!');
-            break;
-            
-        case 'file':
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    console.log('File selected:', file.name);
-                    showInfoToast(`📎 File "${file.name}" selected! (Upload feature coming soon)`);
-                }
-            };
-            fileInput.click();
-            break;
-    }
-}
-
 console.log('✅ Enhanced Community.js loaded with PERMANENT MESSAGE DELETION (messages stay deleted forever)!');
-
-// =================================
-// FIXED COMMUNITY INPUT FUNCTIONS
-// Add these to the bottom of community.js
-// =================================
-
-// WORKING ATTACHMENT MENU
-function toggleAttachmentMenu() {
-    const menu = document.getElementById('attachmentMenu');
-    const btn = document.getElementById('attachmentBtn');
-    
-    if (btn && btn.disabled) {
-        console.log('⚠️ Attachment button is disabled');
-        return;
-    }
-    
-    const isShowing = menu && menu.classList.contains('show');
-    closeAllCommunityMenus();
-    
-    if (!isShowing && menu) {
-        menu.classList.add('show');
-        console.log('📎 Attachment menu opened');
-        setTimeout(() => {
-            document.addEventListener('click', handleClickOutside);
-        }, 10);
-    }
-}
-
-// WORKING EMOJI MODAL  
-function toggleEmoji() {
-    const modal = document.getElementById('emojiModal');
-    const btn = document.getElementById('emojiBtn');
-    
-    if (btn && btn.disabled) {
-        console.log('⚠️ Emoji button is disabled');
-        return;
-    }
-    
-    const isShowing = modal && modal.classList.contains('show');
-    closeAllCommunityMenus();
-    
-    if (!isShowing && modal) {
-        modal.classList.add('show');
-        console.log('😊 Emoji modal opened');
-        setTimeout(() => {
-            document.addEventListener('click', handleClickOutside);
-        }, 10);
-    }
-}
-
-// CLOSE ALL MENUS
-function closeAllCommunityMenus() {
-    const attachmentMenu = document.getElementById('attachmentMenu');
-    const emojiModal = document.getElementById('emojiModal');
-    
-    if (attachmentMenu) attachmentMenu.classList.remove('show');
-    if (emojiModal) emojiModal.classList.remove('show');
-    
-    document.removeEventListener('click', handleClickOutside);
-}
-
-// HANDLE CLICKS OUTSIDE MENUS
-function handleClickOutside(event) {
-    const attachmentMenu = document.getElementById('attachmentMenu');
-    const emojiModal = document.getElementById('emojiModal');
-    const attachmentBtn = event.target.closest('.attachment-btn, #attachmentBtn');
-    const emojiBtn = event.target.closest('.emoji-btn, #emojiBtn');
-    
-    if (attachmentMenu && !attachmentMenu.contains(event.target) && !attachmentBtn) {
-        attachmentMenu.classList.remove('show');
-    }
-    
-    if (emojiModal && !emojiModal.contains(event.target) && !emojiBtn) {
-        emojiModal.classList.remove('show');
-    }
-    
-    if ((!attachmentMenu || !attachmentMenu.classList.contains('show')) &&
-        (!emojiModal || !emojiModal.classList.contains('show'))) {
-        document.removeEventListener('click', handleClickOutside);
-    }
-}
-
-// WORKING ATTACHMENT SELECTION
-function selectAttachment(type) {
-    closeAllCommunityMenus();
-    console.log('📎 Selecting attachment type:', type);
-    
-    switch(type) {
-        case 'image':
-            const imageInput = document.createElement('input');
-            imageInput.type = 'file';
-            imageInput.accept = 'image/*';
-            imageInput.style.display = 'none';
-            
-            imageInput.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    console.log('📸 Image selected:', file.name);
-                    showCommunityToast(`📸 Image "${file.name}" selected!`);
-                }
-                document.body.removeChild(imageInput);
-            };
-            
-            document.body.appendChild(imageInput);
-            imageInput.click();
-            break;
-            
-        case 'gif':
-            showCommunityToast('🎭 GIF picker coming soon!', 'info');
-            break;
-            
-        case 'file':
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.style.display = 'none';
-            
-            fileInput.onchange = function(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    console.log('📎 File selected:', file.name);
-                    showCommunityToast(`📎 File "${file.name}" selected!`);
-                }
-                document.body.removeChild(fileInput);
-            };
-            
-            document.body.appendChild(fileInput);
-            fileInput.click();
-            break;
-    }
-}
-
-// WORKING EMOJI INSERTION
-function insertEmoji(emoji) {
-    const input = document.getElementById('communityMessageInput');
-    
-    if (!input) {
-        console.error('❌ Message input not found');
-        return;
-    }
-    
-    const cursorPos = input.selectionStart || input.value.length;
-    const textBefore = input.value.substring(0, cursorPos);
-    const textAfter = input.value.substring(input.selectionEnd || cursorPos);
-    
-    input.value = textBefore + emoji + textAfter;
-    
-    const newPos = cursorPos + emoji.length;
-    input.setSelectionRange(newPos, newPos);
-    input.focus();
-    
-    closeAllCommunityMenus();
-    console.log('😊 Emoji inserted:', emoji);
-    autoResizeTextarea(input);
-}
-
-// AUTO-RESIZE TEXTAREA
-function autoResizeTextarea(textarea) {
-    if (!textarea) return;
-    textarea.style.height = 'auto';
-    const newHeight = Math.min(Math.max(textarea.scrollHeight, 24), 120);
-    textarea.style.height = newHeight + 'px';
-}
-
-// IMPROVED KEY HANDLING
-function handleCommunityKeyPress(event) {
-    const input = event.target;
-    const isMobile = window.innerWidth <= 1024;
-    
-    if (event.key === 'Enter') {
-        if (isMobile) {
-            if (event.ctrlKey || event.metaKey) {
-                event.preventDefault();
-                sendCommunityMessage();
-            }
-        } else {
-            if (!event.shiftKey) {
-                event.preventDefault();
-                sendCommunityMessage();
-            }
-        }
-    }
-    
-    if (event.key === 'Escape') {
-        closeAllCommunityMenus();
-    }
-    
-    setTimeout(() => autoResizeTextarea(input), 0);
-}
-
-// COMMUNITY TOAST NOTIFICATIONS
-function showCommunityToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    let bgColor = '#10b981';
-    if (type === 'error') bgColor = '#ef4444';
-    if (type === 'info') bgColor = '#3b82f6';
-    if (type === 'warning') bgColor = '#f59e0b';
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 100px; left: 20px; right: 20px;' : 'bottom: 100px; right: 20px; max-width: 400px;'}
-        background: ${bgColor};
-        color: white;
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 14px;
-        font-weight: 500;
-        z-index: 10000;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        animation: slideInToast 0.3s ease-out;
-    `;
-    
-    toast.innerHTML = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = 'slideOutToast 0.3s ease-out';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// SETUP INPUT LISTENERS
-function setupCommunityInput() {
-    const textarea = document.getElementById('communityMessageInput');
-    
-    if (!textarea) {
-        console.warn('⚠️ Community message input not found');
-        return;
-    }
-    
-    function handleTextareaInput(event) {
-        autoResizeTextarea(event.target);
-    }
-    
-    textarea.removeEventListener('input', handleTextareaInput);
-    textarea.removeEventListener('keydown', handleCommunityKeyPress);
-    
-    textarea.addEventListener('input', handleTextareaInput);
-    textarea.addEventListener('keydown', handleCommunityKeyPress);
-    
-    autoResizeTextarea(textarea);
-    console.log('✅ Community input listeners setup complete');
-}
-
-// INITIALIZE WHEN DOM IS READY
-function initializeCommunityInput() {
-    setupCommunityInput();
-    
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeAllCommunityMenus();
-        }
-    });
-    
-    console.log('✅ Community input system initialized');
-}
-
-// AUTO-INITIALIZE
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeCommunityInput);
-} else {
-    initializeCommunityInput();
-}
-
-// ADD TOAST ANIMATIONS
-if (!document.querySelector('#community-toast-styles')) {
-    const toastStyles = document.createElement('style');
-    toastStyles.id = 'community-toast-styles';
-    toastStyles.textContent = `
-        @keyframes slideInToast {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideOutToast {
-            from { opacity: 1; transform: translateY(0); }
-            to { opacity: 0; transform: translateY(-20px); }
-        }
-    `;
-    document.head.appendChild(toastStyles);
-}
-
-// EXPORT FUNCTIONS
-window.toggleAttachmentMenu = toggleAttachmentMenu;
-window.toggleEmoji = toggleEmoji;
-window.selectAttachment = selectAttachment;
-window.insertEmoji = insertEmoji;
-window.closeAllCommunityMenus = closeAllCommunityMenus;
-window.handleCommunityKeyPress = handleCommunityKeyPress;
-window.showCommunityToast = showCommunityToast;
-
-console.log('✅ Fixed community input functions loaded!');
