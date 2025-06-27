@@ -1779,6 +1779,9 @@ window.resetDaysActive = resetDaysActive;
         }
     });
 
+       // Add this JavaScript to your dashboard.html to fix the stat number alignment
+function fixStatNumberAlignment() {
+    console.log('🔧 Fixing stat number alignment...');
     
     // Find all stat number elements
     const statElements = document.querySelectorAll('.stat-number');
@@ -1836,6 +1839,8 @@ window.resetDaysActive = resetDaysActive;
 }
 
 // UPDATED: Force apply timer styling with JavaScript - this overrides all CSS conflicts
+function forceTimerStyling() {
+    console.log('🎯 Applying force timer styling...');
     
     // Find all timer elements
     const timerElements = [
@@ -1872,6 +1877,12 @@ window.resetDaysActive = resetDaysActive;
         `;
     });
     
+    // Fix stat number alignment
+    fixStatNumberAlignment();
+    
+    console.log(`✅ Applied styling to ${timerElements.length} timer elements`);
+}
+
 // Apply the styling when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Apply immediately
@@ -1904,7 +1915,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🔍 Timer styling and alignment observer started');
 });
-
 /* Fix timer to be clean - ONLY the countdown number should be big and purple */
 #countdownTimer, .countdown-timer {
     font-size: 2.5rem !important;
