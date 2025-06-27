@@ -3476,22 +3476,4 @@ body {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
 
-    @media (max-width: 768px) {
-    .emoji-btn:hover {
-        transform: scale(1.05) !important;
-    }
-}
-
-    @media (max-width: 768px) {
-    .emoji-modal {
-        width: 350px !important;
-        max-width: calc(100vw - 20px) !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .emoji-modal {
-        width: 320px !important;
-        max-width: calc(100vw - 20px) !important;
-    }
-}
+  
