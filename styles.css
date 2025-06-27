@@ -3482,3 +3482,16 @@ body {
     }
 }
 
+    @media (max-width: 768px) {
+    .emoji-modal {
+        width: 350px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .emoji-modal {
+        width: 320px !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+}
