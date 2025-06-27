@@ -3312,74 +3312,225 @@ body {
     box-sizing: border-box !important;
 }
 
-/* MINIMAL DISCORD-STYLE UPGRADES - ADD TO YOUR EXISTING styles.css */
+/* =================================
+   CLEAN COMMUNITY INPUT SYSTEM
+   Add this to the bottom of styles.css
+   ================================= */
 
-/* Single-line input like Discord */
-#communityMessageInput {
-    min-height: 20px !important;
-    height: 20px !important;
-    max-height: 20px !important;
-    line-height: 20px !important;
-    padding: 12px !important;
-    resize: none !important;
-    overflow: hidden !important;
-    border: none !important;
-    outline: none !important;
-    background: transparent !important;
-    font-size: 16px !important;
-    color: var(--text-primary) !important;
-    font-family: inherit !important;
-    vertical-align: top !important;
-    display: block !important;
-    width: 100% !important;
+/* CHAT INPUT AREA - STICKY BOTTOM */
+.chat-input-area {
+    padding: 16px !important;
+    background: var(--background) !important;
+    border-top: 1px solid var(--border) !important;
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    flex-shrink: 0 !important;
 }
 
-/* Attachment button */
+/* MAIN INPUT CONTAINER - HORIZONTAL LAYOUT */
+.chat-input {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    background: #f8fafc !important;
+    border: 2px solid var(--border) !important;
+    border-radius: 24px !important;
+    padding: 8px 16px !important;
+    min-height: 48px !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+
+.chat-input:focus-within {
+    border-color: var(--primary) !important;
+    background: white !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* ATTACHMENT BUTTON - Clean plus icon */
 .attachment-btn {
-    background: none !important;
+    background: transparent !important;
     border: none !important;
     color: #64748b !important;
     cursor: pointer !important;
-    padding: 8px !important;
-    border-radius: 50% !important;
     width: 32px !important;
     height: 32px !important;
+    border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     transition: all 0.2s ease !important;
     flex-shrink: 0 !important;
-    font-size: 18px !important;
-    font-weight: 600 !important;
-    order: -1 !important; /* Put it first */
+    order: -1 !important;
+    position: relative !important;
 }
 
-.attachment-btn:hover {
+.attachment-btn::before {
+    content: '';
+    position: absolute;
+    width: 12px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 1px;
+}
+
+.attachment-btn::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 12px;
+    background: currentColor;
+    border-radius: 1px;
+}
+
+.attachment-btn:hover:not(:disabled) {
     background: #e2e8f0 !important;
     color: #475569 !important;
     transform: scale(1.1) !important;
 }
 
-/* Attachment menu */
-.attachment-menu {
+.attachment-btn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* MESSAGE INPUT - CLEAN TEXTAREA */
+#communityMessageInput {
+    flex: 1 !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 16px !important;
+    line-height: 24px !important;
+    padding: 8px 0 !important;
+    resize: none !important;
+    overflow: hidden !important;
+    min-height: 24px !important;
+    max-height: 120px !important;
+    font-family: inherit !important;
+    color: var(--text-primary) !important;
+    transition: height 0.2s ease !important;
+}
+
+#communityMessageInput::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* INPUT ACTIONS - BUTTONS */
+.input-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+}
+
+/* EMOJI BUTTON - Clean smile icon */
+.emoji-btn,
+#emojiBtn {
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    color: var(--text-muted) !important;
+    cursor: pointer !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+}
+
+.emoji-btn::before,
+#emojiBtn::before {
+    content: '';
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    position: relative;
+}
+
+.emoji-btn::after,
+#emojiBtn::after {
+    content: '';
     position: absolute;
-    bottom: 60px;
-    left: 16px;
-    background: white;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    padding: 8px;
-    display: none;
-    z-index: 1000;
+    width: 8px;
+    height: 4px;
+    border: 2px solid currentColor;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -30%);
 }
 
-.attachment-menu.show {
-    display: block;
-    animation: slideUp 0.2s ease-out;
+.emoji-btn:hover:not(:disabled),
+#emojiBtn:hover:not(:disabled) {
+    background: #f1f5f9 !important;
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
 }
 
-@keyframes slideUp {
+.emoji-btn:disabled,
+#emojiBtn:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+}
+
+/* SEND BUTTON */
+.send-btn,
+#sendCommunityButton {
+    background: var(--primary) !important;
+    border: none !important;
+    color: white !important;
+    cursor: pointer !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+    min-height: 36px !important;
+}
+
+.send-btn:hover:not(:disabled),
+#sendCommunityButton:hover:not(:disabled) {
+    background: #4f46e5 !important;
+    transform: translateY(-1px) !important;
+}
+
+.send-btn:disabled,
+#sendCommunityButton:disabled {
+    background: #d1d5db !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+}
+
+/* ATTACHMENT MENU - WORKING POPUP */
+.attachment-menu,
+#attachmentMenu {
+    position: absolute !important;
+    bottom: 100% !important;
+    left: 16px !important;
+    background: white !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    padding: 8px !important;
+    display: none !important;
+    z-index: 1000 !important;
+    margin-bottom: 8px !important;
+    min-width: 160px !important;
+}
+
+.attachment-menu.show,
+#attachmentMenu.show {
+    display: block !important;
+    animation: slideUpMenu 0.2s ease-out !important;
+}
+
+@keyframes slideUpMenu {
     from {
         opacity: 0;
         transform: translateY(10px);
@@ -3391,291 +3542,204 @@ body {
 }
 
 .attachment-option {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    white-space: nowrap;
-    min-width: 140px;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 12px 16px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    white-space: nowrap !important;
 }
 
 .attachment-option:hover {
-    background: #f1f5f9;
+    background: #f8fafc !important;
 }
 
 .attachment-icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-}
-
-/* Mobile adjustments */
-@media (max-width: 1024px) {
-    .attachment-btn {
-        width: 36px !important;
-        height: 36px !important;
-        font-size: 20px !important;
-    }
-}
-
-/* DISCORD LAYOUT FIX - Override column layout */
-.chat-input {
-    display: flex !important;
-    flex-direction: row !important; /* Change from column to row */
-    align-items: center !important;
-    gap: 12px !important;
-    background: #f1f5f9 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 24px !important;
-    padding: 8px 16px !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
-}
-
-.chat-input:focus-within {
-    border-color: #6366f1 !important;
-    background: #ffffff !important;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-}
-
-/* Override input actions to be inline */
-.input-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 8px !important;
-    align-items: center !important;
-    margin: 0 !important;
-}
-
-/* DISCORD-STYLE CHAT INPUT - HIGH SPECIFICITY OVERRIDES */
-
-/* Force the chat input area to be compact */
-.community-responsive-container .chat-input-area,
-.chat-container .chat-input-area {
-    padding: 12px 16px !important;
-    min-height: auto !important;
-    max-height: 68px !important; /* Compact height */
-    border-top: 1px solid var(--border) !important;
-    background: var(--background) !important;
-}
-
-/* Force the chat input container to be horizontal layout */
-.community-responsive-container .chat-input,
-.chat-container .chat-input {
-    display: flex !important;
-    flex-direction: row !important; /* Horizontal layout like Discord */
-    align-items: center !important;
-    gap: 8px !important;
-    background: #f1f5f9 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 24px !important;
-    padding: 8px 16px !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
-    margin: 0 !important;
-}
-
-/* Focus state */
-.community-responsive-container .chat-input:focus-within,
-.chat-container .chat-input:focus-within {
-    border-color: #6366f1 !important;
-    background: #ffffff !important;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-}
-
-/* Force textarea to be single line */
-.community-responsive-container #communityMessageInput,
-.chat-container #communityMessageInput {
-    min-height: 20px !important;
+    width: 20px !important;
     height: 20px !important;
-    max-height: 20px !important;
-    line-height: 20px !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    resize: none !important;
-    overflow: hidden !important;
-    border: none !important;
-    outline: none !important;
-    background: transparent !important;
-    font-size: 16px !important;
-    color: var(--text-primary) !important;
-    font-family: inherit !important;
-    flex: 1 !important;
-    vertical-align: top !important;
-}
-
-/* Force input actions to be inline */
-.community-responsive-container .input-actions,
-.chat-container .input-actions {
-    display: flex !important;
-    flex-direction: row !important;
-    gap: 8px !important;
-    align-items: center !important;
-    margin: 0 !important;
-    justify-content: flex-end !important;
-    flex-shrink: 0 !important;
-}
-
-/* Style the buttons to be more compact */
-.community-responsive-container .input-actions .btn,
-.chat-container .input-actions .btn {
-    padding: 8px 16px !important;
-    min-height: 36px !important;
-    font-size: 14px !important;
-    border-radius: 18px !important;
-}
-
-/* Attachment button styling */
-.community-responsive-container .attachment-btn,
-.chat-container .attachment-btn {
-    background: none !important;
-    border: none !important;
-    color: #64748b !important;
-    cursor: pointer !important;
-    padding: 8px !important;
-    border-radius: 50% !important;
-    width: 32px !important;
-    height: 32px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    transition: all 0.2s ease !important;
+    color: #64748b !important;
+    position: relative !important;
     flex-shrink: 0 !important;
-    font-size: 18px !important;
-    order: -1 !important; /* Put attachment button first */
 }
 
-.community-responsive-container .attachment-btn:hover,
-.chat-container .attachment-btn:hover {
-    background: #e2e8f0 !important;
-    color: #475569 !important;
-    transform: scale(1.05) !important;
+/* Camera icon for images */
+.attachment-option[onclick*="image"] .attachment-icon::before {
+    content: '';
+    width: 16px;
+    height: 12px;
+    border: 2px solid currentColor;
+    border-radius: 3px;
+    position: relative;
 }
 
-/* Mobile responsive adjustments */
-@media (max-width: 1024px) {
-    .community-responsive-container .chat-input-area,
-    .chat-container .chat-input-area {
-        padding: 8px 12px !important;
-        max-height: 60px !important;
-    }
-    
-    .community-responsive-container .chat-input,
-    .chat-container .chat-input {
-        min-height: 40px !important;
-        max-height: 40px !important;
-        padding: 6px 12px !important;
-    }
-    
-    .community-responsive-container .input-actions .btn,
-    .chat-container .input-actions .btn {
-        padding: 6px 12px !important;
-        min-height: 32px !important;
-        font-size: 13px !important;
-    }
+.attachment-option[onclick*="image"] .attachment-icon::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
-/* HIDE WEIRD BOTTOM ELEMENTS */
-.chat-input-area .reply-banner,
+
+/* Play icon for GIFs */
+.attachment-option[onclick*="gif"] .attachment-icon::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    position: relative;
+}
+
+.attachment-option[onclick*="gif"] .attachment-icon::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 6px solid currentColor;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    top: 50%;
+    left: 52%;
+    transform: translateY(-50%);
+}
+
+/* Document icon for files */
+.attachment-option[onclick*="file"] .attachment-icon::before {
+    content: '';
+    width: 12px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-radius: 2px;
+    position: relative;
+}
+
+.attachment-option[onclick*="file"] .attachment-icon::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    height: 1px;
+    background: currentColor;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 3px 0 currentColor, 0 6px 0 currentColor;
+}
+
+/* EMOJI MODAL - WORKING POPUP */
+.emoji-modal,
+#emojiModal {
+    position: absolute !important;
+    bottom: 100% !important;
+    right: 80px !important;
+    background: white !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    padding: 16px !important;
+    display: none !important;
+    z-index: 1000 !important;
+    margin-bottom: 8px !important;
+    max-width: 280px !important;
+}
+
+.emoji-modal.show,
+#emojiModal.show {
+    display: block !important;
+    animation: slideUpMenu 0.2s ease-out !important;
+}
+
+.emoji-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 8px !important;
+}
+
+.emoji-option {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: 6px !important;
+    font-size: 20px !important;
+    transition: all 0.2s ease !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.emoji-option:hover {
+    background: #f1f5f9 !important;
+    transform: scale(1.1) !important;
+}
+
+/* HIDE BROKEN ELEMENTS */
 .reply-banner,
 #replyBanner {
-    display: none !important;
-}
-
-/* Hide emoji modal and search results */
-#emojiModal,
-#searchResults {
     display: none !important;
     visibility: hidden !important;
 }
 
-/* Hide attachment menu when not active */
-.attachment-menu:not(.show) {
+#searchResults,
+.floating-search-results {
     display: none !important;
+    visibility: hidden !important;
 }
 
-/* STICKY CHAT INPUT AREA - ALWAYS VISIBLE */
-.chat-input-area {
-    position: sticky !important;
-    bottom: 0 !important;
-    z-index: 100 !important;
-    background: var(--background) !important;
-    border-top: 1px solid var(--border) !important;
-    padding: 12px 16px !important;
-    margin-top: auto !important;
-}
-
-/* DISCORD-STYLE INPUT WITH SEND BUTTON INSIDE */
-.chat-input {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    gap: 8px !important;
-    background: #f1f5f9 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 24px !important;
-    padding: 8px 16px !important;
-    min-height: 44px !important;
-    max-height: 44px !important;
-    width: 100% !important;
-    position: relative !important;
-}
-
-/* SEND BUTTON INSIDE THE INPUT AREA */
-.input-actions {
-    display: flex !important;
-    align-items: center !important;
-    gap: 4px !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
-}
-
-.input-actions .btn {
-    padding: 6px 12px !important;
-    min-height: 32px !important;
-    font-size: 13px !important;
-    border-radius: 16px !important;
-    margin: 0 !important;
-}
-
-/* EMOJI BUTTON SMALLER AND INLINE */
-#emojiBtn {
-    padding: 4px 8px !important;
-    min-height: 28px !important;
-    font-size: 12px !important;
-    border-radius: 14px !important;
-}
-
-/* MOBILE FIXES */
+/* MOBILE RESPONSIVE FIXES */
 @media (max-width: 1024px) {
     .chat-input-area {
-        padding: 8px 12px !important;
-        position: sticky !important;
-        bottom: 0 !important;
+        padding: 12px !important;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
     }
-    
+
     .chat-input {
         padding: 6px 12px !important;
+        min-height: 44px !important;
+        gap: 8px !important;
+    }
+
+    .attachment-btn {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    #communityMessageInput {
+        font-size: 16px !important;
+        transform: translateZ(0) !important;
+        -webkit-appearance: none !important;
+    }
+
+    .send-btn,
+    #sendCommunityButton {
+        padding: 10px 16px !important;
         min-height: 40px !important;
-        max-height: 40px !important;
-    }
-    
-    /* MOBILE: SEND BUTTON NORMAL SIZE, NOT FULL WIDTH */
-    .input-actions .btn {
-        flex: none !important;
-        padding: 8px 16px !important;
-        min-height: 36px !important;
         font-size: 14px !important;
-        width: auto !important;
     }
-    
-    /* HIDE EMOJI BUTTON ON MOBILE */
+
+    .emoji-btn,
     #emojiBtn {
         display: none !important;
+    }
+
+    .attachment-menu,
+    #attachmentMenu {
+        left: 12px !important;
+        max-width: calc(100vw - 40px) !important;
+    }
+
+    .emoji-modal,
+    #emojiModal {
+        right: 12px !important;
+        max-width: calc(100vw - 40px) !important;
     }
 }
