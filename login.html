@@ -5,6 +5,188 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Moving Gradient Background Animation */
+        .auth-container {
+            min-height: 100vh !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 2rem !important;
+            position: relative !important;
+            overflow: hidden !important;
+            
+            /* Animated gradient background */
+            background: linear-gradient(-45deg, 
+                #667eea, 
+                #764ba2, 
+                #f093fb, 
+                #f5576c,
+                #4facfe,
+                #00f2fe
+            ) !important;
+            background-size: 400% 400% !important;
+            animation: gradientShift 15s ease infinite !important;
+        }
+
+        /* Gradient animation keyframes */
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Add subtle floating particles effect */
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0%, 100% { 
+                transform: translateY(0px) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% { 
+                transform: translateY(-20px) rotate(2deg);
+                opacity: 1;
+            }
+        }
+
+        /* Enhanced auth card with better glass effect */
+        .auth-card {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(20px) saturate(180%) !important;
+            padding: 3rem !important;
+            border-radius: var(--radius-xl) !important;
+            box-shadow: 
+                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+            max-width: 450px !important;
+            width: 100% !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            position: relative !important;
+            z-index: 10 !important;
+            animation: cardFloat 6s ease-in-out infinite !important;
+        }
+
+        /* Subtle floating animation for the card */
+        @keyframes cardFloat {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Enhanced input focus effects to complement the gradient */
+        .form-group input:focus {
+            outline: none !important;
+            border-color: rgba(255, 255, 255, 0.8) !important;
+            box-shadow: 
+                0 0 0 3px rgba(255, 255, 255, 0.2),
+                0 0 20px rgba(102, 126, 234, 0.3) !important;
+            transform: translateY(-1px) !important;
+            background: rgba(255, 255, 255, 0.95) !important;
+        }
+
+        /* Enhanced button with gradient that responds to the background */
+        .btn-primary {
+            background: linear-gradient(135deg, 
+                rgba(99, 102, 241, 0.9) 0%, 
+                rgba(118, 75, 162, 0.9) 100%) !important;
+            border: none !important;
+            backdrop-filter: blur(10px) !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, 
+                rgba(99, 102, 241, 1) 0%, 
+                rgba(118, 75, 162, 1) 100%) !important;
+            transform: translateY(-2px) !important;
+            box-shadow: 
+                0 10px 25px rgba(99, 102, 241, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2) !important;
+        }
+
+        /* Subtle glow effect on form elements */
+        .auth-form {
+            position: relative !important;
+        }
+
+        .auth-form::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1), 
+                rgba(255, 255, 255, 0.05)
+            );
+            border-radius: calc(var(--radius-xl) + 20px);
+            z-index: -1;
+            opacity: 0.5;
+            animation: formGlow 8s ease-in-out infinite;
+        }
+
+        @keyframes formGlow {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.02);
+            }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .auth-container {
+                padding: 1rem !important;
+            }
+            
+            .auth-card {
+                padding: 2rem 1.5rem !important;
+                max-width: 100% !important;
+                animation: none !important; /* Disable floating on mobile for better UX */
+            }
+            
+            .auth-container::before {
+                animation: none !important; /* Reduce motion on mobile */
+            }
+        }
+
+        /* Prefers reduced motion accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            .auth-container,
+            .auth-container::before,
+            .auth-card,
+            .auth-form::before {
+                animation: none !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="auth-container">
