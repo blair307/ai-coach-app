@@ -205,7 +205,7 @@
                 width: 100% !important;
             }
             
-            /* MOBILE SINGLE-LINE INPUT */
+            /* MOBILE SINGLE-LINE INPUT - STACKED LAYOUT */
             .chat-input-area {
                 flex-shrink: 0 !important;
                 padding: 0.75rem !important;
@@ -218,19 +218,17 @@
             
             .chat-input {
                 display: flex !important;
-                flex-direction: row !important;
-                align-items: center !important;
-                gap: 0.5rem !important;
+                flex-direction: column !important;
+                gap: 0.75rem !important;
                 background: var(--surface) !important;
                 border: 2px solid var(--border) !important;
                 border-radius: var(--radius-lg) !important;
                 padding: 0.75rem !important;
-                min-height: 56px !important;
                 width: 100% !important;
             }
             
             #communityMessageInput {
-                flex: 1 !important;
+                width: 100% !important;
                 min-height: 44px !important;
                 max-height: 44px !important;
                 height: 44px !important;
@@ -246,6 +244,7 @@
                 overflow: hidden !important;
                 resize: none !important;
                 transition: max-height 0.2s ease !important;
+                box-sizing: border-box !important;
             }
             
             #communityMessageInput:focus,
@@ -258,7 +257,8 @@
                 display: flex !important;
                 gap: 0.5rem !important;
                 align-items: center !important;
-                flex-shrink: 0 !important;
+                justify-content: flex-end !important;
+                width: 100% !important;
             }
             
             /* Hide emoji button on mobile but keep send button */
@@ -268,22 +268,12 @@
             
             .input-actions .btn {
                 min-height: 44px !important;
-                padding: 0.75rem 1rem !important;
-                font-size: 0.9rem !important;
+                padding: 0.75rem 2rem !important;
+                font-size: 0.95rem !important;
                 touch-action: manipulation !important;
                 white-space: nowrap !important;
                 flex-shrink: 0 !important;
-            }
-            
-            .input-actions .btn-small {
-                min-height: 44px !important;
-                min-width: 44px !important;
-                padding: 0.75rem !important;
-                font-size: 1.1rem !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                flex-shrink: 0 !important;
+                max-width: 120px !important;
             }
             
             /* Mobile dropdown styling */
