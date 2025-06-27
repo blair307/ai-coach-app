@@ -1419,7 +1419,7 @@ async function updateNotificationCount() {
     }
 }
 
-// UPDATED: Enhanced Auto-Expand Textarea Function
+// UPDATED: Enhanced Auto-Expand Textarea Function - SINGLE LINE COMPATIBLE
 function setupAutoExpandTextarea() {
     const textarea = document.getElementById('communityMessageInput');
     if (!textarea) {
@@ -1427,31 +1427,30 @@ function setupAutoExpandTextarea() {
         return;
     }
     
-    console.log('🔧 Setting up auto-expand textarea');
+    console.log('🔧 Setting up single-line auto-expand textarea');
     
-    // Set initial single-line height
-    textarea.style.height = '20px';
-    textarea.style.minHeight = '20px';
-    textarea.style.lineHeight = '20px';
+    // Set initial single-line height - compatible with horizontal layout
+    textarea.style.height = '44px';
+    textarea.style.minHeight = '44px';
+    textarea.style.maxHeight = '44px';
+    textarea.style.lineHeight = '1.4';
     textarea.style.padding = '12px';
     textarea.style.overflow = 'hidden';
     
-    // Function to adjust height
+    // Function to adjust height for single-line layout
     function adjustHeight() {
-        // Reset to minimum height first
-        textarea.style.height = '20px';
+        // Reset to single line height first
+        textarea.style.height = '44px';
+        textarea.style.maxHeight = '44px';
         
-        // Calculate total height including padding
-        const totalHeight = textarea.scrollHeight;
-        
-        // If content needs more space, expand
-        if (totalHeight > 44) { // 20px + 24px padding
-            const newHeight = Math.min(totalHeight, 120);
+        // If content overflows, allow expansion up to max height
+        if (textarea.scrollHeight > 44) {
+            const newHeight = Math.min(textarea.scrollHeight, 120);
             textarea.style.height = newHeight + 'px';
+            textarea.style.maxHeight = newHeight + 'px';
             textarea.classList.add('expanded');
             textarea.style.overflow = 'auto';
         } else {
-            textarea.style.height = '20px';
             textarea.classList.remove('expanded');
             textarea.style.overflow = 'hidden';
         }
@@ -1461,6 +1460,10 @@ function setupAutoExpandTextarea() {
             textarea.classList.add('has-content');
         } else {
             textarea.classList.remove('has-content');
+            // Reset to single line when empty
+            textarea.style.height = '44px';
+            textarea.style.maxHeight = '44px';
+            textarea.style.overflow = 'hidden';
         }
     }
     
@@ -1471,17 +1474,29 @@ function setupAutoExpandTextarea() {
         setTimeout(adjustHeight, 10);
     });
     
-    // Force initial height on focus
+    // Force single line height on focus if empty
     textarea.addEventListener('focus', () => {
         if (!textarea.value.trim()) {
-            textarea.style.height = '20px';
+            textarea.style.height = '44px';
+            textarea.style.maxHeight = '44px';
+            textarea.style.overflow = 'hidden';
+        }
+    });
+    
+    // Handle blur to ensure proper state
+    textarea.addEventListener('blur', () => {
+        if (!textarea.value.trim()) {
+            textarea.style.height = '44px';
+            textarea.style.maxHeight = '44px';
+            textarea.style.overflow = 'hidden';
+            textarea.classList.remove('expanded', 'has-content');
         }
     });
     
     // Initial adjustment
     adjustHeight();
     
-    console.log('✅ Auto-expand textarea setup complete - TRUE single line');
+    console.log('✅ Single-line auto-expand textarea setup complete - works with horizontal layout');
 }
 
 // Auto-refresh messages every 30 seconds
