@@ -1882,16 +1882,15 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Timer styling observer started');
 });
 
-        // SIMPLE FIX: Add this at the very end of your script section, just before </script>
+   // REPLACE the simple fix you just added with this better version:
 
-// Wait for page to load, then fix the alignment
 setTimeout(function() {
-    console.log('🔧 Fixing progress number alignment...');
+    console.log('🔧 Fixing progress numbers only...');
     
-    // Get all the stat number elements
-    const statNumbers = document.querySelectorAll('.stat-number');
+    // Get ONLY the stat number elements (not timer elements)
+    const statNumbers = document.querySelectorAll('.stats-grid .stat-number');
     
-    // Apply consistent alignment to each one
+    // Apply consistent alignment to each progress number
     statNumbers.forEach(function(element) {
         element.style.setProperty('height', '3rem', 'important');
         element.style.setProperty('display', 'flex', 'important');
@@ -1900,8 +1899,18 @@ setTimeout(function() {
         element.style.setProperty('line-height', '1', 'important');
     });
     
-    console.log('✅ Fixed alignment for', statNumbers.length, 'numbers');
-}, 3000); // Wait 3 seconds for everything to load
+    // Fix timer elements specifically
+    const timerElements = document.querySelectorAll('#countdownTimer, .countdown-timer');
+    timerElements.forEach(function(element) {
+        element.style.setProperty('display', 'block', 'important');
+        element.style.setProperty('text-align', 'center', 'important');
+        element.style.setProperty('line-height', '1.2', 'important');
+        element.style.setProperty('width', '100%', 'important');
+        element.style.setProperty('height', 'auto', 'important');
+    });
+    
+    console.log('✅ Fixed progress numbers and timer');
+}, 3000);
     </script>
    
 </body>
