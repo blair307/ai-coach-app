@@ -1704,4 +1704,63 @@ async function deleteMessage(messageId) {
     }
 }
 
+function toggleAttachmentMenu() {
+    const menu = document.getElementById('attachmentMenu');
+    const btn = document.getElementById('attachmentBtn');
+    
+    if (btn.disabled) return; // Don't open if disabled
+    
+    menu.classList.toggle('show');
+    
+    // Close menu when clicking outside
+    if (menu.classList.contains('show')) {
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target) && !e.target.classList.contains('attachment-btn')) {
+                menu.classList.remove('show');
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }
+}
+
+function selectAttachment(type) {
+    // Hide menu
+    document.getElementById('attachmentMenu').classList.remove('show');
+    
+    switch(type) {
+        case 'image':
+            // Create hidden file input for images
+            const imageInput = document.createElement('input');
+            imageInput.type = 'file';
+            imageInput.accept = 'image/*';
+            imageInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('Image selected:', file.name);
+                    showInfoToast(`📸 Image "${file.name}" selected! (Upload feature coming soon)`);
+                }
+            };
+            imageInput.click();
+            break;
+            
+        case 'gif':
+            showInfoToast('🎭 GIF picker coming soon!');
+            break;
+            
+        case 'file':
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    console.log('File selected:', file.name);
+                    showInfoToast(`📎 File "${file.name}" selected! (Upload feature coming soon)`);
+                }
+            };
+            fileInput.click();
+            break;
+    }
+}
+
 console.log('✅ Enhanced Community.js loaded with PERMANENT MESSAGE DELETION (messages stay deleted forever)!');
+
