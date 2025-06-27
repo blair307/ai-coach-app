@@ -1579,7 +1579,7 @@ function showInfoToast(message) {
     }, 3000);
 }
 
-// ENHANCED: Delete message function with WORKING server deletion
+// COPY THIS ENTIRE FUNCTION TO REPLACE YOUR OLD ONE
 async function deleteMessage(messageId) {
     try {
         // Show confirmation dialog
@@ -1588,7 +1588,7 @@ async function deleteMessage(messageId) {
             return;
         }
 
-        console.log('🗑️ Starting SERVER deletion for message:', messageId);
+        console.log('🗑️ Starting deletion for message:', messageId);
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
@@ -1604,70 +1604,25 @@ async function deleteMessage(messageId) {
         }
 
         // Show loading toast
-        showInfoToast('🗑️ Deleting message from server...');
+        showInfoToast('🗑️ Deleting message...');
 
-        // Try the primary delete endpoint
-        let deleteSuccessful = false;
-        let responseData = null;
-
-        try {
-            console.log('🔄 Attempting primary delete endpoint...');
-            
-            const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            const data = await response.json();
-            console.log('📥 Server response:', data);
-
-            if (response.ok && data.success) {
-                deleteSuccessful = true;
-                responseData = data;
-                console.log('✅ PRIMARY endpoint success:', data.message);
-            } else {
-                throw new Error(data.message || `HTTP ${response.status}`);
+        // Try to delete from server
+        console.log('🔄 Attempting message deletion...');
+        
+        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
-        } catch (primaryError) {
-            console.log('❌ Primary endpoint failed:', primaryError.message);
+        });
+
+        const data = await response.json();
+        console.log('📥 Server response:', data);
+
+        if (response.ok && data.success) {
+            console.log('✅ Server deletion successful:', data.message);
             
-            // Try secondary endpoint (room-specific)
-            if (currentRoomId) {
-                try {
-                    console.log('🔄 Attempting secondary delete endpoint...');
-                    
-                    const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages/${messageId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    const data = await response.json();
-                    console.log('📥 Secondary response:', data);
-
-                    if (response.ok && data.success) {
-                        deleteSuccessful = true;
-                        responseData = data;
-                        console.log('✅ SECONDARY endpoint success:', data.message);
-                    } else {
-                        throw new Error(data.message || `HTTP ${response.status}`);
-                    }
-                } catch (secondaryError) {
-                    console.log('❌ Secondary endpoint also failed:', secondaryError.message);
-                    throw new Error(`Both delete endpoints failed. Last error: ${secondaryError.message}`);
-                }
-            } else {
-                throw primaryError;
-            }
-        }
-
-        // Handle successful deletion
-        if (deleteSuccessful && responseData) {
             // Mark as deleted locally for immediate UI update
             markMessageAsDeleted(messageId);
             
@@ -1686,14 +1641,12 @@ async function deleteMessage(messageId) {
             }
 
             // Show appropriate success message
-            if (responseData.hasReplies) {
+            if (data.hasReplies) {
                 showWarningToast('⚠️ Message deleted - converted to placeholder due to replies');
             } else {
-                showSuccessToast('✅ Message permanently deleted from server!');
+                showSuccessToast('✅ Message permanently deleted!');
             }
 
-            console.log('🎉 SUCCESS: Message deleted from server successfully');
-            
             // Refresh messages to show updated state
             setTimeout(() => {
                 if (currentRoomId) {
@@ -1702,11 +1655,11 @@ async function deleteMessage(messageId) {
             }, 1000);
 
         } else {
-            throw new Error('Delete operation did not return success status');
+            throw new Error(data.message || `Server error: ${response.status}`);
         }
 
     } catch (error) {
-        console.error('❌ CRITICAL ERROR deleting message:', error);
+        console.error('❌ Error deleting message:', error);
         
         // Reset button state
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
@@ -1716,7 +1669,7 @@ async function deleteMessage(messageId) {
             deleteBtn.style.opacity = '1';
         }
 
-        // Show error but still hide locally as fallback
+        // Handle specific error cases
         if (error.message.includes('permission') || error.message.includes('own messages')) {
             showErrorMessage('❌ You can only delete your own messages.');
         } else if (error.message.includes('not found')) {
@@ -1727,16 +1680,11 @@ async function deleteMessage(messageId) {
             if (messageElement && messageElement.parentNode) {
                 messageElement.parentNode.removeChild(messageElement);
             }
+        } else if (error.message.includes('No authentication token')) {
+            showErrorMessage('❌ Please log in again to delete messages.');
         } else {
-            showErrorMessage('❌ Server error - hiding message locally only.');
+            showErrorMessage('❌ Failed to delete message. Please try again.');
             console.log('📝 Detailed error:', error.message);
-            
-            // Fallback: hide locally
-            markMessageAsDeleted(messageId);
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement && messageElement.parentNode) {
-                messageElement.parentNode.removeChild(messageElement);
-            }
         }
     }
 }
