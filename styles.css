@@ -1806,23 +1806,26 @@ body {
 .emoji-grid {
     display: grid !important;
     grid-template-columns: repeat(6, 1fr) !important;
-    gap: 0.75rem !important;
-    padding: 0.5rem !important;
+    gap: 0.4rem !important;
+    padding: 0.25rem !important;
     box-sizing: border-box !important;
+    width: 100% !important;
 }
 
 .emoji-btn {
     background: var(--surface) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
-    padding: 0.75rem !important;
-    font-size: 1.2rem !important;
+    padding: 0.5rem !important;
+    font-size: 1.1rem !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-height: 40px !important;
+    min-height: 36px !important;
+    aspect-ratio: 1 !important;
+    box-sizing: border-box !important;
 }
 
 .emoji-btn:hover {
