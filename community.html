@@ -146,44 +146,70 @@
                 width: 100% !important;
             }
             
-            .chat-input {
+           .chat-input {
                 background: var(--surface) !important;
                 border: 2px solid var(--border) !important;
                 border-radius: var(--radius-lg) !important;
-                padding: 1rem !important;
+                padding: 0.75rem !important;
                 display: flex !important;
-                flex-direction: column !important;
-                gap: 0.75rem !important;
+                flex-direction: row !important; /* CHANGED: row instead of column */
+                align-items: center !important; /* ADDED: center alignment */
+                gap: 0.5rem !important; /* REDUCED: smaller gap */
                 width: 100% !important;
+                min-height: 56px !important; /* ADDED: consistent height */
             }
             
-#communityMessageInput {
-    min-height: 44px !important; /* Single line */
-    max-height: 120px !important;
-    resize: none !important;
-    border: none !important;
-    outline: none !important;
-    background: transparent !important;
-    font-size: 16px !important;
-    line-height: 1.4 !important;
-    color: var(--text-primary) !important;
-    width: 100% !important;
-    overflow-y: hidden !important; /* ADD THIS */
-    transition: height 0.2s ease !important; /* ADD THIS */
-}
+            #communityMessageInput {
+                flex: 1 !important; /* ADDED: take remaining space */
+                min-height: 44px !important;
+                max-height: 44px !important; /* ADDED: keep single line */
+                height: 44px !important; /* ADDED: fixed height */
+                resize: none !important;
+                border: none !important;
+                outline: none !important;
+                background: transparent !important;
+                font-size: 16px !important;
+                line-height: 1.4 !important;
+                color: var(--text-primary) !important;
+                padding: 12px !important; /* ADDED: proper padding */
+                border-radius: var(--radius) !important; /* ADDED: border radius */
+                margin: 0 !important; /* ADDED: remove margins */
+                overflow: hidden !important; /* CHANGED: hidden instead of hidden-y */
+                transition: max-height 0.2s ease !important; /* CHANGED: better transition */
+            }
+            
+            /* Allow expansion when typing */
+            #communityMessageInput:focus,
+            #communityMessageInput.has-content {
+                max-height: 120px !important;
+                overflow-y: auto !important;
+            }
             
             .input-actions {
                 display: flex !important;
-                justify-content: space-between !important;
-                gap: 0.75rem !important;
-                width: 100% !important;
+                gap: 0.5rem !important; /* REDUCED: smaller gap */
+                align-items: center !important; /* ADDED: center alignment */
+                flex-shrink: 0 !important; /* ADDED: don't shrink buttons */
             }
             
             .input-actions .btn {
-                flex: 1 !important;
                 min-height: 44px !important;
-                font-size: 0.95rem !important;
+                padding: 0.75rem 1rem !important; /* CHANGED: better padding */
+                font-size: 0.9rem !important; /* REDUCED: smaller font */
                 touch-action: manipulation !important;
+                white-space: nowrap !important; /* ADDED: prevent text wrapping */
+                flex-shrink: 0 !important; /* ADDED: don't shrink */
+            }
+            
+            .input-actions .btn-small {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 0.75rem !important;
+                font-size: 1.1rem !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-shrink: 0 !important;
             }
             
             /* Mobile dropdown styling */
