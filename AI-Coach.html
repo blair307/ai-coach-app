@@ -5,87 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
-    
-    <!-- REMOVE ALL THE MOBILE CSS AND REPLACE WITH THIS SIMPLE APPROACH -->
     <style>
-        /* Keep your existing desktop styles, just add this simple mobile fix */
-        .mobile-chat-mode .chat-container {
-            position: fixed !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
-            z-index: 9999 !important;
-            background: white !important;
-            display: flex !important;
-            flex-direction: column !important;
+        /* Override problematic card styles directly */
+        .feature::before,
+        .pricing-card::before {
+            display: none !important;
         }
         
-        .mobile-chat-mode .chat-header {
-            flex-shrink: 0 !important;
-            height: 60px !important;
-            border-bottom: 1px solid #ccc !important;
-        }
-        
-        .mobile-chat-mode .chat-messages {
-            flex: 1 !important;
-            overflow-y: auto !important;
-            padding: 1rem !important;
-            background: #f5f5f5 !important;
-        }
-        
-        .mobile-chat-mode .chat-input-container {
-            flex-shrink: 0 !important;
-            padding: 1rem !important;
-            background: white !important;
-            border-top: 1px solid #ccc !important;
-        }
-        
-        .mobile-chat-mode .chat-input {
-            display: flex !important;
-            gap: 0.5rem !important;
-            align-items: center !important;
-            background: #f0f0f0 !important;
-            border: 1px solid #ccc !important;
-            border-radius: 25px !important;
-            padding: 0.75rem !important;
-        }
-        
-        .mobile-chat-mode .chat-input textarea {
-            flex: 1 !important;
-            border: none !important;
-            background: transparent !important;
-            font-size: 16px !important;
-            resize: none !important;
-            outline: none !important;
-            height: 20px !important;
-            max-height: 60px !important;
-        }
-        
-        .mobile-chat-mode .chat-input button {
-            background: #007bff !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 20px !important;
+        /* Settings button styling */
+        .modern-settings-btn {
+            background: rgba(99, 102, 241, 0.1) !important;
+            border: 2px solid rgba(99, 102, 241, 0.2) !important;
+            color: #6366f1 !important;
             padding: 0.5rem 1rem !important;
-            font-size: 14px !important;
-            flex-shrink: 0 !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            transition: all 0.2s ease !important;
+            cursor: pointer !important;
         }
         
-        .mobile-chat-mode .coaching-sidebar,
-        .mobile-chat-mode .content-header,
-        .mobile-chat-mode .sidebar {
-            display: none !important;
-        }
-        
-        .mobile-chat-mode .main-content {
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-        
-        /* Hide settings button on mobile */
-        .mobile-chat-mode .chat-actions {
-            display: none !important;
+        .modern-settings-btn:hover {
+            background: rgba(99, 102, 241, 0.15) !important;
+            border-color: rgba(99, 102, 241, 0.3) !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2) !important;
         }
     </style>
 </head>
@@ -102,13 +46,21 @@
                 </button>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
-                <li><a href="ai-coach.html" class="menu-item active">AI Coach</a></li>
-                <li><a href="community.html" class="menu-item">Community</a></li>
-                <li><a href="goals.html" class="menu-item">Goals</a></li>
-                <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
-                <li><a href="billing.html" class="menu-item">Billing</a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
+                <li><a href="dashboard.html" class="menu-item">
+                    Dashboard
+                </a></li>
+                <li><a href="ai-coach.html" class="menu-item active">
+                    AI Coach
+                </a></li>
+                <li><a href="community.html" class="menu-item">
+                    Community
+                </a></li>
+               <li><a href="goals.html" class="menu-item">Goals</a></li>
+<li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
+<li><a href="billing.html" class="menu-item">Billing</a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">
+                    Logout
+                </a></li>
             </ul>
         </nav>
 
@@ -125,12 +77,16 @@
                         </div>
                     </div>
                     
-                    <button class="btn btn-secondary" onclick="clearConversation()">New Session</button>
-                    <button class="btn btn-outline" onclick="exportChat()">Export Chat</button>
+                    <button class="btn btn-secondary" onclick="clearConversation()">
+                        New Session
+                    </button>
+                    <button class="btn btn-outline" onclick="exportChat()">
+                        Export Chat
+                    </button>
                 </div>
             </header>
 
-            <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
+            <div style="display: flex; gap: 4rem; height: calc(100vh - 12rem);">
                 <!-- Chat Container -->
                 <div class="chat-container">
                     <div class="chat-header">
@@ -145,7 +101,9 @@
                             </div>
                         </div>
                         <div class="chat-actions">
-                            <button class="modern-settings-btn" onclick="toggleSettings()">Settings</button>
+                            <button class="modern-settings-btn" onclick="toggleSettings()">
+                                Settings
+                            </button>
                         </div>
                     </div>
 
@@ -178,46 +136,34 @@
                     </div>
                 </div>
 
-                <!-- Coaching Sidebar -->
+                <!-- Streamlined Coaching Sidebar -->
                 <div class="coaching-sidebar">
-                    <!-- Current Goals -->
-                    <div class="sidebar-section">
-                        <h3>Your Goals</h3>
-                        <div class="goals-list">
-                            <div class="goal-item">
-                                <input type="checkbox" checked id="goal1">
-                                <label for="goal1">Reduce work stress</label>
-                            </div>
-                            <div class="goal-item">
-                                <input type="checkbox" id="goal2">
-                                <label for="goal2">Improve team communication</label>
-                            </div>
-                            <div class="goal-item">
-                                <input type="checkbox" id="goal3">
-                                <label for="goal3">Better work-life balance</label>
-                            </div>
-                            <div class="goal-item">
-                                <input type="checkbox" checked id="goal4">
-                                <label for="goal4">Increase emotional awareness</label>
-                            </div>
-                        </div>
-                        <button class="btn btn-outline btn-small" onclick="addGoal()">Add Goal</button>
-                    </div>
-
-                    <!-- Quick Topics -->
+                    <!-- Quick Topics - MOVED UP -->
                     <div class="sidebar-section">
                         <h3>Quick Topics</h3>
                         <div class="topic-buttons">
-                            <button class="topic-btn" onclick="quickTopic('stress')">Stress Management</button>
-                            <button class="topic-btn" onclick="quickTopic('leadership')">Leadership Skills</button>
-                            <button class="topic-btn" onclick="quickTopic('burnout')">Preventing Burnout</button>
-                            <button class="topic-btn" onclick="quickTopic('communication')">Team Communication</button>
-                            <button class="topic-btn" onclick="quickTopic('decision')">Decision Making</button>
-                            <button class="topic-btn" onclick="quickTopic('confidence')">Building Confidence</button>
+                            <button class="topic-btn" onclick="quickTopic('stress')">
+                                Stress Management
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('leadership')">
+                                Leadership Skills
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('burnout')">
+                                Preventing Burnout
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('communication')">
+                                Team Communication
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('decision')">
+                                Decision Making
+                            </button>
+                            <button class="topic-btn" onclick="quickTopic('confidence')">
+                                Building Confidence
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Recent Insights -->
+                    <!-- Recent Insights - MOVED UP -->
                     <div class="sidebar-section">
                         <h3>Recent Insights</h3>
                         <div class="insights-list">
@@ -235,36 +181,158 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- Mood Tracker -->
-                    <div class="sidebar-section">
-                        <h3>How are you feeling?</h3>
-                        <div class="mood-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;">
-                            <button class="mood-btn" onclick="trackMood('great')" style="background: var(--success); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Great</button>
-                            <button class="mood-btn" onclick="trackMood('good')" style="background: var(--primary-light); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Good</button>
-                            <button class="mood-btn" onclick="trackMood('okay')" style="background: var(--warning); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Okay</button>
-                            <button class="mood-btn" onclick="trackMood('stressed')" style="background: var(--error); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Stressed</button>
-                        </div>
-                        <small style="color: var(--text-muted); text-align: center; display: block;">Track your daily emotional state</small>
-                    </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Settings Modal -->
+    <!-- COMPLETELY NEW SETTINGS MODAL WITH INLINE STYLES -->
     <div id="settingsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
             <div style="background: white; border-radius: 12px; width: 100%; max-width: 500px; max-height: 80vh; overflow: hidden; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);">
+                
+                <!-- Header -->
                 <div style="background: #f8fafc; padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600; color: #1e293b;">AI Coach Settings</h3>
                     <button onclick="closeSettings()" style="background: #f1f5f9; border: none; border-radius: 6px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #64748b;">×</button>
                 </div>
-                <div style="padding: 2rem;">
-                    <p>Settings panel content here...</p>
+                
+                <!-- Body -->
+                <div style="max-height: 60vh; overflow-y: auto;">
+                    
+                    <!-- Chat Preferences -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Chat Preferences</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="autoSave" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Auto-save conversations
+                            </label>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="typingIndicator" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Show typing indicator
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="soundNotifications" style="width: 40px; height: 20px; background: #d1d5db; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Sound notifications
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Coaching Style -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Coaching Style</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response tone:</label>
+                            <select id="coachingTone" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="supportive">Supportive & Encouraging</option>
+                                <option value="direct">Direct & Practical</option>
+                                <option value="analytical">Analytical & Detailed</option>
+                                <option value="gentle">Gentle & Patient</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Response length:</label>
+                            <select id="responseLength" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="concise">Concise</option>
+                                <option value="moderate" selected>Moderate</option>
+                                <option value="detailed">Detailed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Privacy & Data -->
+                    <div style="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Privacy & Data</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="dataAnalytics" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Allow usage analytics for improvement
+                            </label>
+                        </div>
+                        
+                        <div>
+                            <label style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; font-size: 0.875rem; color: #475569;">
+                                <input type="checkbox" id="personalizedInsights" checked style="width: 40px; height: 20px; background: #3b82f6; border-radius: 10px; appearance: none; cursor: pointer; position: relative;">
+                                Generate personalized insights
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Management -->
+                    <div style="padding: 1.5rem 2rem;">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 1rem; font-weight: 600; color: #1e293b;">Session Management</h4>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Session reminders:</label>
+                            <select id="sessionReminder" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; background: white;">
+                                <option value="none">None</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly" selected>Weekly</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <button onclick="clearChatHistory()" style="width: 100%; padding: 0.75rem; background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                                Clear Chat History
+                            </button>
+                            <small style="display: block; margin-top: 0.5rem; font-size: 0.75rem; color: #6b7280; font-style: italic;">This action cannot be undone</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div style="background: #f8fafc; padding: 1rem 2rem; border-top: 1px solid #e2e8f0; display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button onclick="closeSettings()" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Cancel</button>
+                    <button onclick="saveSettings()" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">Save Settings</button>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Custom checkbox styles -->
+    <style>
+        input[type="checkbox"]:checked {
+            background: #3b82f6 !important;
+        }
+        
+        input[type="checkbox"]::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        input[type="checkbox"]:checked::after {
+            transform: translateX(20px);
+        }
+    </style>
+
+    <!-- Typing Indicator (Hidden by default) -->
+    <div class="typing-indicator" id="typingIndicator" style="display: none;">
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>AI Coach is thinking...</span>
     </div>
 
     <script src="api-service.js"></script>
@@ -272,38 +340,6 @@
     <script src="ai-coach.js"></script>
     
     <script>
-    // SIMPLE MOBILE DETECTION AND FIX
-    function isMobileDevice() {
-        return window.innerWidth <= 768 && ('ontouchstart' in window || navigator.maxTouchPoints > 0);
-    }
-
-    function applyMobileFix() {
-        if (isMobileDevice()) {
-            console.log('📱 Mobile detected - applying mobile chat layout');
-            document.body.classList.add('mobile-chat-mode');
-            
-            // Make sure input is visible
-            const input = document.getElementById('messageInput');
-            if (input) {
-                input.addEventListener('focus', function() {
-                    setTimeout(() => {
-                        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 300);
-                });
-            }
-        } else {
-            console.log('🖥️ Desktop detected - using normal layout');
-            document.body.classList.remove('mobile-chat-mode');
-        }
-    }
-
-    // Apply on load and resize
-    document.addEventListener('DOMContentLoaded', applyMobileFix);
-    window.addEventListener('resize', applyMobileFix);
-    window.addEventListener('orientationchange', function() {
-        setTimeout(applyMobileFix, 100);
-    });
-
     // Simple notification counter
     async function updateNotificationCount() {
         try {
