@@ -3452,3 +3452,131 @@ body {
     align-items: center !important;
     margin: 0 !important;
 }
+
+/* DISCORD-STYLE CHAT INPUT - HIGH SPECIFICITY OVERRIDES */
+
+/* Force the chat input area to be compact */
+.community-responsive-container .chat-input-area,
+.chat-container .chat-input-area {
+    padding: 12px 16px !important;
+    min-height: auto !important;
+    max-height: 68px !important; /* Compact height */
+    border-top: 1px solid var(--border) !important;
+    background: var(--background) !important;
+}
+
+/* Force the chat input container to be horizontal layout */
+.community-responsive-container .chat-input,
+.chat-container .chat-input {
+    display: flex !important;
+    flex-direction: row !important; /* Horizontal layout like Discord */
+    align-items: center !important;
+    gap: 8px !important;
+    background: #f1f5f9 !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 24px !important;
+    padding: 8px 16px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    margin: 0 !important;
+}
+
+/* Focus state */
+.community-responsive-container .chat-input:focus-within,
+.chat-container .chat-input:focus-within {
+    border-color: #6366f1 !important;
+    background: #ffffff !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Force textarea to be single line */
+.community-responsive-container #communityMessageInput,
+.chat-container #communityMessageInput {
+    min-height: 20px !important;
+    height: 20px !important;
+    max-height: 20px !important;
+    line-height: 20px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    resize: none !important;
+    overflow: hidden !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    font-size: 16px !important;
+    color: var(--text-primary) !important;
+    font-family: inherit !important;
+    flex: 1 !important;
+    vertical-align: top !important;
+}
+
+/* Force input actions to be inline */
+.community-responsive-container .input-actions,
+.chat-container .input-actions {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 8px !important;
+    align-items: center !important;
+    margin: 0 !important;
+    justify-content: flex-end !important;
+    flex-shrink: 0 !important;
+}
+
+/* Style the buttons to be more compact */
+.community-responsive-container .input-actions .btn,
+.chat-container .input-actions .btn {
+    padding: 8px 16px !important;
+    min-height: 36px !important;
+    font-size: 14px !important;
+    border-radius: 18px !important;
+}
+
+/* Attachment button styling */
+.community-responsive-container .attachment-btn,
+.chat-container .attachment-btn {
+    background: none !important;
+    border: none !important;
+    color: #64748b !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+    font-size: 18px !important;
+    order: -1 !important; /* Put attachment button first */
+}
+
+.community-responsive-container .attachment-btn:hover,
+.chat-container .attachment-btn:hover {
+    background: #e2e8f0 !important;
+    color: #475569 !important;
+    transform: scale(1.05) !important;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 1024px) {
+    .community-responsive-container .chat-input-area,
+    .chat-container .chat-input-area {
+        padding: 8px 12px !important;
+        max-height: 60px !important;
+    }
+    
+    .community-responsive-container .chat-input,
+    .chat-container .chat-input {
+        min-height: 40px !important;
+        max-height: 40px !important;
+        padding: 6px 12px !important;
+    }
+    
+    .community-responsive-container .input-actions .btn,
+    .chat-container .input-actions .btn {
+        padding: 6px 12px !important;
+        min-height: 32px !important;
+        font-size: 13px !important;
+    }
+}
