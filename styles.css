@@ -1790,6 +1790,9 @@ body {
     padding: 1rem !important;
     animation: emojiSlideIn 0.3s ease-out !important;
     overflow: hidden !important;
+    display: flex !important;           /* ADD THIS */
+    justify-content: center !important; /* ADD THIS */
+    align-items: center !important;     /* ADD THIS */
 }
 
 @keyframes emojiSlideIn {
