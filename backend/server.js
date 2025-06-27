@@ -1062,7 +1062,6 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// ADD THIS ROUTE TO YOUR server.js FILE
 // ENHANCED: Delete message endpoint - WORKING VERSION
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   try {
@@ -1166,6 +1165,34 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       message: 'Failed to delete message',
       error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
     });
+  }
+});
+
+app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
+  try {
+    const room = await Room.findOne({ _id: req.params.id, createdBy: req.user.userId });
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found or you do not have permission to delete it' });
+    }
+    
+    // Delete all messages in the room
+    await Message.deleteMany({ roomId: req.params.id });
+    
+    // Delete related notifications
+    await Notification.deleteMany({ 
+      type: 'community',
+      title: { $regex: room.name, $options: 'i' }
+    });
+    
+    // Delete the room
+    await Room.findByIdAndDelete(req.params.id);
+    
+    console.log(`🗑️ Room "${room.name}" and related data deleted`);
+    
+    res.json({ message: 'Room deleted successfully' });
+  } catch (error) {
+    console.error('❌ Delete room error:', error);
+    res.status(500).json({ error: 'Failed to delete room' });
   }
 });
 
