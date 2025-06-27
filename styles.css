@@ -3476,19 +3476,41 @@ body {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
 
-/* Make mobile emoji buttons match desktop size */
+/* FORCE emoji buttons to match desktop size on ALL devices */
 @media (max-width: 768px) {
     .emoji-btn {
-        min-height: 36px !important;        /* Same as desktop */
-        font-size: 1.1rem !important;       /* Same as desktop */
-        padding: 0.5rem !important;         /* Same as desktop */
+        min-height: 36px !important;
+        max-height: 36px !important;
+        height: 36px !important;
+        font-size: 1.1rem !important;
+        padding: 0.5rem !important;
+        width: auto !important;
     }
 }
 
 @media (max-width: 480px) {
     .emoji-btn {
-        min-height: 36px !important;        /* Same as desktop */
-        font-size: 1.1rem !important;       /* Same as desktop */
-        padding: 0.5rem !important;         /* Same as desktop */
+        min-height: 36px !important;
+        max-height: 36px !important; 
+        height: 36px !important;
+        font-size: 1.1rem !important;
+        padding: 0.5rem !important;
+        width: auto !important;
+    }
+}
+
+/* Override any touch-friendly button styles that might be affecting emoji buttons */
+@media (max-width: 768px) {
+    .emoji-btn {
+        min-height: 36px !important;
+        max-height: 36px !important;
+    }
+    
+    /* Make sure general button styles don't affect emoji buttons */
+    .btn.emoji-btn {
+        min-height: 36px !important;
+        max-height: 36px !important;
+        padding: 0.5rem !important;
+        font-size: 1.1rem !important;
     }
 }
