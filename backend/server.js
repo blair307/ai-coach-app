@@ -1062,6 +1062,112 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
+// ADD THIS ROUTE TO YOUR server.js FILE
+// ENHANCED: Delete message endpoint - WORKING VERSION
+app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const userId = req.user.userId;
+    
+    console.log('🗑️ DELETE REQUEST:', { messageId, userId, timestamp: new Date().toISOString() });
+    
+    // Validate messageId format
+    if (!mongoose.Types.ObjectId.isValid(messageId)) {
+      console.log('❌ Invalid message ID format');
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid message ID format' 
+      });
+    }
+    
+    // Find the message
+    const message = await Message.findById(messageId);
+    
+    if (!message) {
+      console.log('❌ Message not found:', messageId);
+      return res.status(404).json({ 
+        success: false,
+        message: 'Message not found' 
+      });
+    }
+    
+    console.log('📝 Found message:', {
+      id: message._id,
+      owner: message.userId,
+      requester: userId,
+      content: message.content?.substring(0, 30) + '...'
+    });
+    
+    // Check if the user owns this message
+    if (message.userId !== userId) {
+      console.log('❌ Permission denied. Message owner:', message.userId, 'Requester:', userId);
+      return res.status(403).json({ 
+        success: false,
+        message: 'You can only delete your own messages' 
+      });
+    }
+    
+    // Check if this message has replies
+    const repliesCount = await Message.countDocuments({
+      'replyTo.messageId': messageId
+    });
+    
+    console.log(`📊 Message has ${repliesCount} replies`);
+    
+    if (repliesCount > 0) {
+      console.log(`⚠️ Message has ${repliesCount} replies. Converting to deleted placeholder.`);
+      
+      // Instead of deleting, convert to a placeholder
+      message.content = '[Message deleted by user]';
+      message.message = '[Message deleted by user]'; // For backward compatibility
+      message.deleted = true;
+      message.deletedAt = new Date();
+      // Keep username for threading but mark as deleted
+      if (!message.username.includes('(deleted)')) {
+        message.username = message.username + ' (deleted)';
+      }
+      
+      await message.save();
+      
+      console.log('✅ Message converted to placeholder due to replies');
+      
+      return res.json({ 
+        success: true,
+        message: 'Message deleted (converted to placeholder due to replies)',
+        hasReplies: true,
+        messageId: messageId
+      });
+    } else {
+      // No replies - safe to completely delete
+      await Message.findByIdAndDelete(messageId);
+      
+      console.log('✅ Message completely deleted from database');
+      
+      return res.json({ 
+        success: true,
+        message: 'Message permanently deleted',
+        hasReplies: false,
+        messageId: messageId
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Error deleting message:', error);
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid message ID format' 
+      });
+    }
+    
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete message',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    });
+  }
+});
 // ENHANCED: Delete message endpoint - WORKING VERSION
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   try {
