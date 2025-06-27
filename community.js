@@ -474,10 +474,14 @@ async function loadMessages(roomId) {
     }
 }
 
-// ENHANCED: Display messages with PERMANENT deletion filtering
+// REPLACE the end of your displayThreadedMessages function with this:
+
 function displayThreadedMessages(messages) {
     const messagesContainer = document.getElementById('communityMessages');
     if (!messagesContainer) return;
+
+    // SMART SCROLL: Check if user is near bottom before updating
+    const wasNearBottom = isUserNearBottom(messagesContainer);
 
     messagesContainer.innerHTML = '';
 
@@ -548,10 +552,27 @@ function displayThreadedMessages(messages) {
         renderMessage(message, false, 0);
     });
 
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    // SMART SCROLL: Only scroll if user was near bottom before update
+    if (wasNearBottom) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        console.log('📜 Auto-scrolled to bottom (user was near bottom)');
+    } else {
+        console.log('📜 Preserved scroll position (user was reading older messages)');
+    }
     
     const replyCount = visibleMessages.filter(m => m.replyTo).length;
     console.log(`📊 Displayed ${visibleMessages.length} visible messages in THREADED format (${replyCount} replies properly connected)`);
+}
+
+// ADD this new helper function to your community.js:
+function isUserNearBottom(container, threshold = 100) {
+    if (!container) return true; // Default to scrolling if container not found
+    
+    const { scrollTop, scrollHeight, clientHeight } = container;
+    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+    
+    // User is "near bottom" if within threshold pixels of the bottom
+    return distanceFromBottom <= threshold;
 }
 
 // Keep the displayMessages function for backward compatibility
