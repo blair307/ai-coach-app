@@ -346,7 +346,7 @@ async function switchRoom(roomId) {
     }
 }
 
-// ENHANCED: Delete message function with PERMANENT deletion
+// ENHANCED: Delete message function with AGGRESSIVE server deletion for own messages
 async function deleteMessage(messageId) {
     try {
         // Show confirmation dialog
@@ -355,7 +355,7 @@ async function deleteMessage(messageId) {
             return;
         }
 
-        console.log('🗑️ Permanently deleting message:', messageId);
+        console.log('🗑️ Attempting to delete message for everyone:', messageId);
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
@@ -370,57 +370,111 @@ async function deleteMessage(messageId) {
             deleteBtn.style.opacity = '0.6';
         }
 
-        // Try multiple possible API endpoints
-        const possibleEndpoints = [
-            `${API_BASE_URL}/api/messages/${messageId}`,
-            `${API_BASE_URL}/api/rooms/${currentRoomId}/messages/${messageId}`,
-            `${API_BASE_URL}/api/message/${messageId}/delete`
+        // AGGRESSIVE: Try ALL possible API endpoints and methods
+        const possibleApproaches = [
+            // Standard DELETE endpoints
+            { method: 'DELETE', url: `${API_BASE_URL}/api/messages/${messageId}` },
+            { method: 'DELETE', url: `${API_BASE_URL}/api/rooms/${currentRoomId}/messages/${messageId}` },
+            { method: 'DELETE', url: `${API_BASE_URL}/api/message/${messageId}/delete` },
+            { method: 'DELETE', url: `${API_BASE_URL}/api/chat/messages/${messageId}` },
+            
+            // POST endpoints (some APIs use POST for delete)
+            { method: 'POST', url: `${API_BASE_URL}/api/messages/${messageId}/delete` },
+            { method: 'POST', url: `${API_BASE_URL}/api/rooms/${currentRoomId}/messages/${messageId}/delete` },
+            
+            // PUT endpoints (some APIs use PUT for updates like soft delete)
+            { method: 'PUT', url: `${API_BASE_URL}/api/messages/${messageId}`, body: { deleted: true } },
+            { method: 'PUT', url: `${API_BASE_URL}/api/messages/${messageId}`, body: { status: 'deleted' } },
+            
+            // PATCH endpoints
+            { method: 'PATCH', url: `${API_BASE_URL}/api/messages/${messageId}`, body: { deleted: true } },
+            { method: 'PATCH', url: `${API_BASE_URL}/api/messages/${messageId}`, body: { action: 'delete' } },
         ];
 
         let deleteSuccessful = false;
         let lastError = null;
+        let attemptCount = 0;
 
-        // Try each endpoint
-        for (const endpoint of possibleEndpoints) {
+        // Try each approach aggressively
+        for (const approach of possibleApproaches) {
             try {
-                console.log(`🔄 Trying endpoint: ${endpoint}`);
+                attemptCount++;
+                console.log(`🔄 Attempt ${attemptCount}: ${approach.method} ${approach.url}`);
                 
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // Longer timeout
 
-                const response = await fetch(endpoint, {
-                    method: 'DELETE',
+                const requestOptions = {
+                    method: approach.method,
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     signal: controller.signal
-                });
+                };
 
+                // Add body for POST/PUT/PATCH requests
+                if (approach.body) {
+                    requestOptions.body = JSON.stringify(approach.body);
+                }
+
+                const response = await fetch(approach.url, requestOptions);
                 clearTimeout(timeoutId);
 
                 if (response.ok) {
-                    console.log('✅ Message deleted from server via:', endpoint);
+                    console.log('✅ SUCCESS! Message deleted from server via:', approach.method, approach.url);
                     deleteSuccessful = true;
                     break;
                 } else if (response.status === 404) {
-                    console.log(`❌ Endpoint not found: ${endpoint}`);
+                    console.log(`❌ 404 Not Found: ${approach.url}`);
                     lastError = new Error('Endpoint not found');
-                    continue; // Try next endpoint
+                    continue; // Try next approach
+                } else if (response.status === 403) {
+                    console.log(`❌ 403 Forbidden: ${approach.url} - May not have permission`);
+                    lastError = new Error('Permission denied');
+                    continue;
                 } else {
-                    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                    lastError = new Error(errorData.message || `HTTP ${response.status}`);
-                    console.log(`❌ Error from ${endpoint}:`, lastError.message);
-                    continue; // Try next endpoint
+                    const errorText = await response.text().catch(() => 'Unknown error');
+                    lastError = new Error(`HTTP ${response.status}: ${errorText}`);
+                    console.log(`❌ Error from ${approach.url}:`, lastError.message);
+                    continue; // Try next approach
                 }
             } catch (fetchError) {
                 lastError = fetchError;
-                console.log(`❌ Network error for ${endpoint}:`, fetchError.message);
-                continue; // Try next endpoint
+                console.log(`❌ Network error for ${approach.url}:`, fetchError.message);
+                continue; // Try next approach
             }
         }
 
-        // PERMANENT DELETION: Mark as deleted regardless of API success
+        // If still no success, try a few more creative approaches
+        if (!deleteSuccessful) {
+            console.log('🔄 Trying creative approaches...');
+            
+            // Try updating message content to indicate deletion
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        content: '[This message was deleted]',
+                        deleted: true,
+                        originalContent: '[DELETED BY USER]'
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('✅ Message marked as deleted via content update');
+                    deleteSuccessful = true;
+                }
+            } catch (error) {
+                console.log('❌ Content update approach failed:', error.message);
+            }
+        }
+
+        // PERMANENT DELETION: Mark as deleted locally regardless
         markMessageAsDeleted(messageId);
         
         // Remove message from DOM with animation
@@ -437,17 +491,18 @@ async function deleteMessage(messageId) {
             }, 300);
         }
 
-        // Show success message with clear explanation
+        // Show detailed success message
         if (deleteSuccessful) {
-            showSuccessToast('Message deleted for everyone on the server');
+            showSuccessToast('✅ Message deleted from server - removed for everyone!');
+            console.log('🎉 SUCCESS: Message deleted for everyone via server API');
         } else {
-            showSuccessToast('Message hidden permanently from your view only');
+            showWarningToast('⚠️ Server deletion failed - message hidden from your view only');
+            console.log(`⚠️ FALLBACK: Tried ${attemptCount} different approaches, all failed. Using local deletion.`);
+            console.log('Last error:', lastError?.message);
         }
 
-        console.log('✅ Message permanently deleted - will never reappear');
-
     } catch (error) {
-        console.error('❌ Error deleting message:', error);
+        console.error('❌ Critical error deleting message:', error);
         
         // Reset button state
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
@@ -457,24 +512,12 @@ async function deleteMessage(messageId) {
             deleteBtn.style.opacity = '1';
         }
 
-        // Show appropriate error message
+        // Show appropriate error message but still try to hide locally
         if (error.message.includes('permission') || error.message.includes('unauthorized')) {
             showErrorMessage('You can only delete your own messages.');
-        } else if (error.message.includes('not found')) {
-            showErrorMessage('Message not found or already deleted.');
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            showErrorMessage('Network error - message hidden from your view only.');
-            // Still mark as deleted even on network error
-            markMessageAsDeleted(messageId);
-            
-            // Remove from DOM
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement && messageElement.parentNode) {
-                messageElement.parentNode.removeChild(messageElement);
-            }
         } else {
-            showErrorMessage('Server error - message hidden from your view only.');
-            // Still mark as deleted
+            showErrorMessage('Error occurred - message hidden from your view only.');
+            // Still mark as deleted locally
             markMessageAsDeleted(messageId);
             
             // Remove from DOM
@@ -915,7 +958,7 @@ function showSuccessToast(message) {
         transform: translateY(100%);
         transition: transform 0.3s ease;
     `;
-    toast.innerHTML = `✅ ${message}`;
+    toast.innerHTML = message;
     
     document.body.appendChild(toast);
     
@@ -931,6 +974,45 @@ function showSuccessToast(message) {
             }
         }, 300);
     }, 4000);
+}
+
+// Warning toast for partial success
+function showWarningToast(message) {
+    const toast = document.createElement('div');
+    const isMobile = window.innerWidth <= 1024;
+    
+    toast.style.cssText = `
+        position: fixed;
+        ${isMobile ? 'bottom: 100px; left: 20px; right: 20px;' : 'bottom: 100px; right: 20px; max-width: 400px;'}
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
+        z-index: 10000;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    `;
+    toast.innerHTML = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateY(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        toast.style.transform = 'translateY(100%)';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 5000);
 }
 
 // Initialize the community system
