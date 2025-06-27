@@ -1779,66 +1779,7 @@ window.resetDaysActive = resetDaysActive;
         }
     });
 
-       // Add this JavaScript to your dashboard.html to fix the stat number alignment
-function fixStatNumberAlignment() {
-    console.log('🔧 Fixing stat number alignment...');
-    
-    // Find all stat number elements
-    const statElements = document.querySelectorAll('.stat-number');
-    
-    statElements.forEach(element => {
-        console.log('📐 Aligning stat element:', element);
-        
-        // Apply perfect centering styles
-        element.style.cssText = `
-            font-size: 2.5rem !important;
-            font-weight: 800 !important;
-            background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-            margin-bottom: 0.5rem !important;
-            letter-spacing: -0.02em !important;
-            line-height: 1 !important;
-            min-height: 2.5rem !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 100% !important;
-            text-align: center !important;
-            padding: 0 !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            box-sizing: border-box !important;
-        `;
-    });
-    
-    // Also fix the stat containers to ensure proper centering
-    const statContainers = document.querySelectorAll('.stat');
-    
-    statContainers.forEach(container => {
-        console.log('📦 Aligning stat container:', container);
-        
-        container.style.cssText = `
-            text-align: center !important;
-            padding: 1.5rem 1rem !important;
-            background: var(--surface) !important;
-            border-radius: var(--radius-lg) !important;
-            border: 1px solid var(--border) !important;
-            transition: all 0.3s ease !important;
-            min-height: 120px !important;
-            display: flex !important;
-            flex-direction: column !important;
-            justify-content: center !important;
-            align-items: center !important;
-            box-sizing: border-box !important;
-        `;
-    });
-    
-    console.log(`✅ Fixed alignment for ${statElements.length} stat numbers`);
-}
-
-// UPDATED: Force apply timer styling with JavaScript - this overrides all CSS conflicts
+        // Force apply timer styling with JavaScript - this overrides all CSS conflicts
 function forceTimerStyling() {
     console.log('🎯 Applying force timer styling...');
     
@@ -1848,6 +1789,12 @@ function forceTimerStyling() {
         document.querySelector('.countdown-timer'),
         ...document.querySelectorAll('[id*="countdown"]'),
         ...document.querySelectorAll('[class*="countdown"]')
+    ].filter(el => el !== null);
+    
+    // Find all stat number elements  
+    const statElements = [
+        ...document.querySelectorAll('.stat-number'),
+        ...document.querySelectorAll('[id*="count"]')
     ].filter(el => el !== null);
     
     // Apply styling to timer elements
@@ -1877,10 +1824,29 @@ function forceTimerStyling() {
         `;
     });
     
-    // Fix stat number alignment
-    fixStatNumberAlignment();
+    // Apply styling to stat number elements
+    statElements.forEach(element => {
+        console.log('🔧 Styling stat element:', element);
+        
+        element.style.cssText = `
+            font-size: 2.5rem !important;
+            font-weight: 800 !important;
+            background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            margin-bottom: 0.5rem !important;
+            letter-spacing: -0.02em !important;
+            line-height: 1 !important;
+            min-height: 2.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+        `;
+    });
     
-    console.log(`✅ Applied styling to ${timerElements.length} timer elements`);
+    console.log(`✅ Applied styling to ${timerElements.length} timer elements and ${statElements.length} stat elements`);
 }
 
 // Apply the styling when the page loads
@@ -1913,7 +1879,7 @@ document.addEventListener('DOMContentLoaded', function() {
         attributeFilter: ['class', 'style']
     });
     
-    console.log('🔍 Timer styling and alignment observer started');
+    console.log('🔍 Timer styling observer started');
 });
     </script>
    
