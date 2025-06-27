@@ -3475,3 +3475,20 @@ body {
 #communityMessageInput {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
+
+/* Make mobile emoji buttons match desktop size */
+@media (max-width: 768px) {
+    .emoji-btn {
+        min-height: 36px !important;        /* Same as desktop */
+        font-size: 1.1rem !important;       /* Same as desktop */
+        padding: 0.5rem !important;         /* Same as desktop */
+    }
+}
+
+@media (max-width: 480px) {
+    .emoji-btn {
+        min-height: 36px !important;        /* Same as desktop */
+        font-size: 1.1rem !important;       /* Same as desktop */
+        padding: 0.5rem !important;         /* Same as desktop */
+    }
+}
