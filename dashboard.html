@@ -1779,7 +1779,66 @@ window.resetDaysActive = resetDaysActive;
         }
     });
 
-        // Force apply timer styling with JavaScript - this overrides all CSS conflicts
+       // Add this JavaScript to your dashboard.html to fix the stat number alignment
+function fixStatNumberAlignment() {
+    console.log('🔧 Fixing stat number alignment...');
+    
+    // Find all stat number elements
+    const statElements = document.querySelectorAll('.stat-number');
+    
+    statElements.forEach(element => {
+        console.log('📐 Aligning stat element:', element);
+        
+        // Apply perfect centering styles
+        element.style.cssText = `
+            font-size: 2.5rem !important;
+            font-weight: 800 !important;
+            background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            margin-bottom: 0.5rem !important;
+            letter-spacing: -0.02em !important;
+            line-height: 1 !important;
+            min-height: 2.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 100% !important;
+            text-align: center !important;
+            padding: 0 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            box-sizing: border-box !important;
+        `;
+    });
+    
+    // Also fix the stat containers to ensure proper centering
+    const statContainers = document.querySelectorAll('.stat');
+    
+    statContainers.forEach(container => {
+        console.log('📦 Aligning stat container:', container);
+        
+        container.style.cssText = `
+            text-align: center !important;
+            padding: 1.5rem 1rem !important;
+            background: var(--surface) !important;
+            border-radius: var(--radius-lg) !important;
+            border: 1px solid var(--border) !important;
+            transition: all 0.3s ease !important;
+            min-height: 120px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+        `;
+    });
+    
+    console.log(`✅ Fixed alignment for ${statElements.length} stat numbers`);
+}
+
+// UPDATED: Force apply timer styling with JavaScript - this overrides all CSS conflicts
 function forceTimerStyling() {
     console.log('🎯 Applying force timer styling...');
     
@@ -1789,12 +1848,6 @@ function forceTimerStyling() {
         document.querySelector('.countdown-timer'),
         ...document.querySelectorAll('[id*="countdown"]'),
         ...document.querySelectorAll('[class*="countdown"]')
-    ].filter(el => el !== null);
-    
-    // Find all stat number elements  
-    const statElements = [
-        ...document.querySelectorAll('.stat-number'),
-        ...document.querySelectorAll('[id*="count"]')
     ].filter(el => el !== null);
     
     // Apply styling to timer elements
@@ -1824,29 +1877,10 @@ function forceTimerStyling() {
         `;
     });
     
-    // Apply styling to stat number elements
-    statElements.forEach(element => {
-        console.log('🔧 Styling stat element:', element);
-        
-        element.style.cssText = `
-            font-size: 2.5rem !important;
-            font-weight: 800 !important;
-            background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
-            -webkit-background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            background-clip: text !important;
-            margin-bottom: 0.5rem !important;
-            letter-spacing: -0.02em !important;
-            line-height: 1 !important;
-            min-height: 2.5rem !important;
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            width: 100% !important;
-        `;
-    });
+    // Fix stat number alignment
+    fixStatNumberAlignment();
     
-    console.log(`✅ Applied styling to ${timerElements.length} timer elements and ${statElements.length} stat elements`);
+    console.log(`✅ Applied styling to ${timerElements.length} timer elements`);
 }
 
 // Apply the styling when the page loads
@@ -1879,45 +1913,7 @@ document.addEventListener('DOMContentLoaded', function() {
         attributeFilter: ['class', 'style']
     });
     
-    console.log('🔍 Timer styling observer started');
-});
-
-        // Simple fix for Your Progress number alignment
-function alignProgressNumbers() {
-    console.log('🔧 Aligning Your Progress numbers...');
-    
-    // Target only the stat numbers in the progress section
-    const statNumbers = document.querySelectorAll('.stat-number');
-    
-    statNumbers.forEach(element => {
-        // Force consistent baseline alignment
-        element.style.cssText += `
-            display: flex !important;
-            align-items: baseline !important;
-            justify-content: center !important;
-            line-height: 1 !important;
-            vertical-align: baseline !important;
-            min-height: 3rem !important;
-            height: 3rem !important;
-        `;
-    });
-    
-    console.log(`✅ Aligned ${statNumbers.length} progress numbers`);
-}
-
-// Apply the alignment fix when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(alignProgressNumbers, 1000);
-    
-    // Also apply after any content updates
-    const observer = new MutationObserver(function() {
-        setTimeout(alignProgressNumbers, 100);
-    });
-    
-    observer.observe(document.querySelector('.stats-grid') || document.body, {
-        childList: true,
-        subtree: true
-    });
+    console.log('🔍 Timer styling and alignment observer started');
 });
     </script>
    
