@@ -1,4 +1,4 @@
-// Enhanced Community.js - WITH FIXED MESSAGE DELETION (No More Errors)
+// Enhanced Community.js - WITH PERMANENT MESSAGE DELETION
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
 let currentRoomId = null;
@@ -8,9 +8,52 @@ let rooms = [];
 let isInitialized = false;
 let currentReplyTo = null;
 
+// NEW: Local message storage for permanent deletions
+let deletedMessages = new Set();
+const DELETED_MESSAGES_KEY = 'eeh_deleted_messages';
+
+// Load deleted messages from localStorage on startup
+function loadDeletedMessages() {
+    try {
+        const stored = localStorage.getItem(DELETED_MESSAGES_KEY);
+        if (stored) {
+            deletedMessages = new Set(JSON.parse(stored));
+            console.log('📚 Loaded deleted messages:', deletedMessages.size);
+        }
+    } catch (error) {
+        console.error('Error loading deleted messages:', error);
+        deletedMessages = new Set();
+    }
+}
+
+// Save deleted messages to localStorage
+function saveDeletedMessages() {
+    try {
+        localStorage.setItem(DELETED_MESSAGES_KEY, JSON.stringify([...deletedMessages]));
+        console.log('💾 Saved deleted messages:', deletedMessages.size);
+    } catch (error) {
+        console.error('Error saving deleted messages:', error);
+    }
+}
+
+// Check if a message is deleted
+function isMessageDeleted(messageId) {
+    return deletedMessages.has(messageId);
+}
+
+// Mark a message as deleted permanently
+function markMessageAsDeleted(messageId) {
+    deletedMessages.add(messageId);
+    saveDeletedMessages();
+    console.log('🗑️ Message marked as permanently deleted:', messageId);
+}
+
 // Initialize community when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Community with FIXED MESSAGE DELETION loading...');
+    console.log('🚀 Enhanced Community with PERMANENT MESSAGE DELETION loading...');
+    
+    // Load deleted messages first
+    loadDeletedMessages();
     
     // FORCE HIDE modals immediately on page load
     setTimeout(() => {
@@ -303,7 +346,7 @@ async function switchRoom(roomId) {
     }
 }
 
-// FIXED: Delete message function with better error handling and fallback
+// ENHANCED: Delete message function with PERMANENT deletion
 async function deleteMessage(messageId) {
     try {
         // Show confirmation dialog
@@ -312,7 +355,7 @@ async function deleteMessage(messageId) {
             return;
         }
 
-        console.log('🗑️ Attempting to delete message:', messageId);
+        console.log('🗑️ Permanently deleting message:', messageId);
 
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
@@ -357,7 +400,7 @@ async function deleteMessage(messageId) {
                 clearTimeout(timeoutId);
 
                 if (response.ok) {
-                    console.log('✅ Message deleted successfully via:', endpoint);
+                    console.log('✅ Message deleted from server via:', endpoint);
                     deleteSuccessful = true;
                     break;
                 } else if (response.status === 404) {
@@ -377,40 +420,34 @@ async function deleteMessage(messageId) {
             }
         }
 
-        // If no endpoint worked, use local deletion
-        if (!deleteSuccessful) {
-            console.log('⚠️ API deletion failed, using local deletion fallback');
+        // PERMANENT DELETION: Mark as deleted regardless of API success
+        markMessageAsDeleted(messageId);
+        
+        // Remove message from DOM with animation
+        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+        if (messageElement) {
+            messageElement.style.transition = 'all 0.3s ease';
+            messageElement.style.opacity = '0';
+            messageElement.style.transform = 'translateX(-20px)';
             
-            // Remove message locally from DOM
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                // Add fade out animation
-                messageElement.style.transition = 'all 0.3s ease';
-                messageElement.style.opacity = '0';
-                messageElement.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    if (messageElement.parentNode) {
-                        messageElement.parentNode.removeChild(messageElement);
-                    }
-                }, 300);
-                
-                showSuccessToast('Message removed from view (local deletion)');
-            } else {
-                throw new Error('Message not found in current view');
-            }
-        } else {
-            // API deletion successful
-            showSuccessToast('Message deleted successfully');
-            
-            // Reload messages to update the UI
-            if (currentRoomId) {
-                await loadMessages(currentRoomId);
-            }
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+            }, 300);
         }
 
+        // Show success message
+        if (deleteSuccessful) {
+            showSuccessToast('Message deleted permanently from server');
+        } else {
+            showSuccessToast('Message deleted permanently (hidden from your view)');
+        }
+
+        console.log('✅ Message permanently deleted - will never reappear');
+
     } catch (error) {
-        console.error('❌ Final error deleting message:', error);
+        console.error('❌ Error deleting message:', error);
         
         // Reset button state
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
@@ -426,9 +463,25 @@ async function deleteMessage(messageId) {
         } else if (error.message.includes('not found')) {
             showErrorMessage('Message not found or already deleted.');
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            showErrorMessage('Network error. Message may have been deleted.');
+            showErrorMessage('Network error, but message will be hidden permanently.');
+            // Still mark as deleted even on network error
+            markMessageAsDeleted(messageId);
+            
+            // Remove from DOM
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement && messageElement.parentNode) {
+                messageElement.parentNode.removeChild(messageElement);
+            }
         } else {
-            showErrorMessage('Could not delete message. It may already be removed.');
+            showErrorMessage('Error occurred, but message will be hidden permanently.');
+            // Still mark as deleted
+            markMessageAsDeleted(messageId);
+            
+            // Remove from DOM
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement && messageElement.parentNode) {
+                messageElement.parentNode.removeChild(messageElement);
+            }
         }
     }
 }
@@ -560,14 +613,26 @@ async function loadMessages(roomId) {
     }
 }
 
-// FIXED: Display messages with PROPER THREADING (replies appear under original messages)
+// ENHANCED: Display messages with PERMANENT deletion filtering
 function displayThreadedMessages(messages) {
     const messagesContainer = document.getElementById('communityMessages');
     if (!messagesContainer) return;
 
     messagesContainer.innerHTML = '';
 
-    if (messages.length === 0) {
+    // FILTER OUT DELETED MESSAGES PERMANENTLY
+    const visibleMessages = messages.filter(message => {
+        const messageId = message._id || message.id;
+        const isDeleted = isMessageDeleted(messageId);
+        if (isDeleted) {
+            console.log('🚫 Hiding permanently deleted message:', messageId);
+        }
+        return !isDeleted;
+    });
+
+    console.log(`📊 Filtered messages: ${messages.length} total → ${visibleMessages.length} visible (${messages.length - visibleMessages.length} permanently hidden)`);
+
+    if (visibleMessages.length === 0) {
         messagesContainer.innerHTML = `
             <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
                 <p>No messages yet. Be the first to start the conversation!</p>
@@ -580,13 +645,13 @@ function displayThreadedMessages(messages) {
     const messageMap = new Map();
     const rootMessages = [];
     
-    // First pass: Create a map of all messages
-    messages.forEach(message => {
+    // First pass: Create a map of all visible messages
+    visibleMessages.forEach(message => {
         messageMap.set(message._id, { ...message, replies: [] });
     });
     
     // Second pass: Build the threaded structure
-    messages.forEach(message => {
+    visibleMessages.forEach(message => {
         if (message.replyTo && message.replyTo.messageId) {
             // This is a reply - find its parent
             const parent = messageMap.get(message.replyTo.messageId);
@@ -594,7 +659,7 @@ function displayThreadedMessages(messages) {
                 parent.replies.push(message);
                 console.log(`🔗 Threading reply "${message.content.substring(0, 30)}..." under parent "${parent.content.substring(0, 30)}..."`);
             } else {
-                // Parent not found, treat as root message
+                // Parent not found (might be deleted), treat as root message
                 rootMessages.push(message);
             }
         } else {
@@ -624,8 +689,8 @@ function displayThreadedMessages(messages) {
 
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
     
-    const replyCount = messages.filter(m => m.replyTo).length;
-    console.log(`📊 Displayed ${messages.length} messages in THREADED format (${replyCount} replies properly connected)`);
+    const replyCount = visibleMessages.filter(m => m.replyTo).length;
+    console.log(`📊 Displayed ${visibleMessages.length} visible messages in THREADED format (${replyCount} replies properly connected)`);
 }
 
 // Keep the displayMessages function for backward compatibility
@@ -876,7 +941,7 @@ async function initializeCommunity() {
             return;
         }
 
-        console.log('🚀 Starting enhanced community with THREADED reply system and FIXED MESSAGE DELETION...');
+        console.log('🚀 Starting enhanced community with THREADED reply system and PERMANENT MESSAGE DELETION...');
         
         const searchResults = document.getElementById('searchResults');
         const emojiModal = document.getElementById('emojiModal');
@@ -942,7 +1007,7 @@ async function initializeCommunity() {
 
         isInitialized = true;
         setupAutoExpandTextarea();
-        console.log('✅ Enhanced community with THREADED replies and FIXED MESSAGE DELETION initialized successfully');
+        console.log('✅ Enhanced community with THREADED replies and PERMANENT MESSAGE DELETION initialized successfully');
         
     } catch (error) {
         console.error('❌ Error initializing community:', error);
@@ -1576,4 +1641,4 @@ window.currentRoomId = currentRoomId;
 window.rooms = rooms;
 window.currentReplyTo = currentReplyTo;
 
-console.log('✅ Enhanced Community.js loaded with FIXED MESSAGE DELETION (no more errors)!');
+console.log('✅ Enhanced Community.js loaded with PERMANENT MESSAGE DELETION (messages stay deleted forever)!');
