@@ -3476,15 +3476,9 @@ body {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
 
-/* Just make emoji buttons smaller on mobile to fit in box */
-@media (max-width: 768px) {
-    .emoji-btn {
-        min-height: 32px !important;
-        padding: 0.3rem !important;
-        font-size: 0.9rem !important;
-    }
-    
-    .emoji-grid {
-        gap: 0.2rem !important;
+    @media (max-width: 768px) {
+    .emoji-btn:hover {
+        transform: scale(1.05) !important;
     }
 }
+
