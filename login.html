@@ -6,7 +6,7 @@
     <title>Login - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Moving Blue Gradient Background with #2696FE base */
+        /* DARKER Moving Blue Gradient Background with #2696FE base */
         .auth-container {
             min-height: 100vh !important;
             display: flex !important;
@@ -16,35 +16,41 @@
             position: relative !important;
             overflow: hidden !important;
             
-            /* Moving gradient based on #2696FE */
+            /* DARKER moving gradient based on #2696FE */
             background: linear-gradient(-45deg, 
-                #2696FE,        /* Your base blue */
-                #1E7CE8,        /* Darker blue */
-                #3DA3FF,        /* Lighter blue */
-                #1B5FBB,        /* Deep blue */
-                #45B7FF,        /* Sky blue */
-                #0F4C8C,        /* Navy blue */
-                #5CC3FF,        /* Light cyan */
-                #2696FE         /* Back to base */
+                #1a5cbf,        /* Dark version of your base blue */
+                #0f3460,        /* Very dark blue */
+                #2696FE,        /* Your original base blue */
+                #0d2847,        /* Deep navy */
+                #1e4a7a,        /* Medium dark blue */
+                #061829,        /* Almost black blue */
+                #1a5cbf,        /* Dark base again */
+                #0a1f38         /* Very dark navy */
             ) !important;
-            background-size: 400% 400% !important;
-            animation: blueGradientMove 15s ease infinite !important;
+            background-size: 800% 800% !important;
+            animation: darkBlueMove 12s ease-in-out infinite !important;
         }
 
-        /* Smooth gradient movement animation */
-        @keyframes blueGradientMove {
+        /* VISIBLE gradient movement animation */
+        @keyframes darkBlueMove {
             0% {
-                background-position: 0% 50%;
+                background-position: 0% 0%;
+            }
+            25% {
+                background-position: 100% 0%;
             }
             50% {
-                background-position: 100% 50%;
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
             }
             100% {
-                background-position: 0% 50%;
+                background-position: 0% 0%;
             }
         }
 
-        /* Add subtle overlay for depth */
+        /* DARKER subtle overlay for depth */
         .auth-container::before {
             content: '';
             position: absolute;
@@ -53,23 +59,27 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(38, 150, 254, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(30, 124, 232, 0.2) 0%, transparent 50%);
-            animation: blueOverlayFloat 20s ease-in-out infinite !important;
+                radial-gradient(circle at 30% 20%, rgba(38, 150, 254, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(26, 92, 191, 0.1) 0%, transparent 50%);
+            animation: darkOverlayMove 18s ease-in-out infinite !important;
             pointer-events: none;
-            mix-blend-mode: overlay;
+            mix-blend-mode: soft-light;
         }
 
-        /* Floating blue overlay animation */
-        @keyframes blueOverlayFloat {
+        /* VISIBLE floating overlay animation */
+        @keyframes darkOverlayMove {
             0%, 100% { 
-                transform: translateY(0px) translateX(0px);
-                opacity: 0.7;
+                transform: translateY(0px) translateX(0px) rotate(0deg);
+                opacity: 0.8;
             }
-            50% { 
-                transform: translateY(-30px) translateX(20px);
+            33% { 
+                transform: translateY(-40px) translateX(30px) rotate(120deg);
                 opacity: 1;
+            }
+            66% { 
+                transform: translateY(20px) translateX(-20px) rotate(240deg);
+                opacity: 0.6;
             }
         }
 
@@ -192,6 +202,7 @@
             .auth-container,
             .auth-container::before {
                 animation: none !important;
+                background: #1a5cbf !important; /* Static dark blue fallback */
             }
         }
     </style>
