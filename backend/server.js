@@ -1007,13 +1007,22 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         content: req.body.content.substring(0, 50) + '...'
       });
 
-        // DELETE MESSAGE ENDPOINT - Add this after your existing message routes
+     // ENHANCED: Delete message endpoint - WORKING VERSION
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   try {
     const messageId = req.params.id;
     const userId = req.user.userId;
     
-    console.log('🗑️ Delete request for message:', messageId, 'by user:', userId);
+    console.log('🗑️ DELETE REQUEST:', { messageId, userId, timestamp: new Date().toISOString() });
+    
+    // Validate messageId format
+    if (!mongoose.Types.ObjectId.isValid(messageId)) {
+      console.log('❌ Invalid message ID format');
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid message ID format' 
+      });
+    }
     
     // Find the message
     const message = await Message.findById(messageId);
@@ -1025,6 +1034,13 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
         message: 'Message not found' 
       });
     }
+    
+    console.log('📝 Found message:', {
+      id: message._id,
+      owner: message.userId,
+      requester: userId,
+      content: message.content?.substring(0, 30) + '...'
+    });
     
     // Check if the user owns this message
     if (message.userId !== userId) {
@@ -1040,6 +1056,8 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       'replyTo.messageId': messageId
     });
     
+    console.log(`📊 Message has ${repliesCount} replies`);
+    
     if (repliesCount > 0) {
       console.log(`⚠️ Message has ${repliesCount} replies. Converting to deleted placeholder.`);
       
@@ -1048,6 +1066,8 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       message.message = '[Message deleted by user]'; // For backward compatibility
       message.deleted = true;
       message.deletedAt = new Date();
+      // Keep username for threading but mark as deleted
+      message.username = message.username + ' (deleted)';
       
       await message.save();
       
@@ -1056,18 +1076,20 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       return res.json({ 
         success: true,
         message: 'Message deleted (converted to placeholder due to replies)',
-        hasReplies: true
+        hasReplies: true,
+        messageId: messageId
       });
     } else {
       // No replies - safe to completely delete
       await Message.findByIdAndDelete(messageId);
       
-      console.log('✅ Message completely deleted');
+      console.log('✅ Message completely deleted from database');
       
       return res.json({ 
         success: true,
-        message: 'Message deleted successfully',
-        hasReplies: false
+        message: 'Message permanently deleted',
+        hasReplies: false,
+        messageId: messageId
       });
     }
     
@@ -1088,65 +1110,88 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     });
   }
 });
-      // CREATE NOTIFICATION for the person being replied to
-      try {
-        // Find the user being replied to
-        const repliedToUser = await User.findOne({
-          $or: [
-            { _id: req.body.replyTo.userId }, // Try by ID first
-            { 
-              $expr: {
-                $eq: [
-                  { $concat: ['$firstName', ' ', '$lastName'] },
-                  req.body.replyTo.username
-                ]
-              }
-            } // Fallback to name matching
-          ]
-        });
 
-        if (repliedToUser && repliedToUser._id.toString() !== req.user.userId) {
-          // Don't notify yourself
-          const notification = new Notification({
-            userId: repliedToUser._id,
-            type: 'community',
-            title: `💬 ${username} replied to your message`,
-            content: `"${req.body.content.length > 100 ? req.body.content.substring(0, 100) + '...' : req.body.content}"`,
-            isReply: true, // Mark as reply notification
-            priority: 'high', // High priority for replies
-            createdAt: new Date()
-          });
-
-          await notification.save();
-          
-          console.log('🔔 Reply notification created for:', repliedToUser.email);
-        } else if (!repliedToUser) {
-          console.log('⚠️ Could not find user to notify for reply:', req.body.replyTo.username);
-        } else {
-          console.log('ℹ️ Skipping self-notification for reply');
-        }
-      } catch (notificationError) {
-        console.error('❌ Error creating reply notification:', notificationError);
-        // Don't fail the message send if notification fails
-      }
-    }
-
-    const message = new Message(messageData);
-    await message.save();
+// ADDITIONAL: Delete message from room (alternative endpoint)
+app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (req, res) => {
+  try {
+    const { roomId, messageId } = req.params;
+    const userId = req.user.userId;
     
-    console.log('✅ Message saved successfully:', {
-      id: message._id,
-      isReply: !!message.replyTo,
-      room: req.params.id
+    console.log('🗑️ DELETE FROM ROOM:', { roomId, messageId, userId, timestamp: new Date().toISOString() });
+    
+    // Validate IDs
+    if (!mongoose.Types.ObjectId.isValid(messageId) || !mongoose.Types.ObjectId.isValid(roomId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Invalid ID format' 
+      });
+    }
+    
+    // Find the message in the specific room
+    const message = await Message.findOne({ 
+      _id: messageId, 
+      roomId: roomId 
     });
     
-    res.json(message);
+    if (!message) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Message not found in this room' 
+      });
+    }
+    
+    // Check ownership
+    if (message.userId !== userId) {
+      return res.status(403).json({ 
+        success: false,
+        message: 'You can only delete your own messages' 
+      });
+    }
+    
+    // Check for replies
+    const repliesCount = await Message.countDocuments({
+      'replyTo.messageId': messageId
+    });
+    
+    if (repliesCount > 0) {
+      // Convert to placeholder
+      message.content = '[Message deleted by user]';
+      message.message = '[Message deleted by user]';
+      message.deleted = true;
+      message.deletedAt = new Date();
+      message.username = message.username + ' (deleted)';
+      await message.save();
+      
+      console.log('✅ Room message converted to placeholder due to replies');
+      
+      return res.json({ 
+        success: true,
+        message: 'Message deleted (placeholder created due to replies)',
+        hasReplies: true,
+        messageId: messageId
+      });
+    } else {
+      // Completely delete
+      await Message.findByIdAndDelete(messageId);
+      
+      console.log('✅ Room message completely deleted from database');
+      
+      return res.json({ 
+        success: true,
+        message: 'Message permanently deleted from room',
+        hasReplies: false,
+        messageId: messageId
+      });
+    }
+    
   } catch (error) {
-    console.error('❌ Send message error:', error);
-    res.status(500).json({ error: 'Failed to send message' });
+    console.error('❌ Error deleting message from room:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Failed to delete message from room' 
+    });
   }
 });
-
 app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
   try {
     const room = await Room.findOne({ _id: req.params.id, createdBy: req.user.userId });
