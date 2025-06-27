@@ -1805,12 +1805,10 @@ body {
 
 .emoji-grid {
     display: grid !important;
-    grid-template-columns: repeat(6, 1fr) !important;
-    gap: 0.5rem !important;
-    justify-content: center !important;  
-    align-content: center !important;    
-    width: 100% !important;             
-    margin: 0 auto !important;          
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 0.75rem !important;
+    padding: 0.5rem !important;
+    box-sizing: border-box !important;
 }
 
 .emoji-btn {
