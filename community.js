@@ -1419,71 +1419,61 @@ async function updateNotificationCount() {
     }
 }
 
-// UPDATED: Enhanced Auto-Expand Textarea Function
+// DISCORD-STYLE SINGLE LINE TEXTAREA - NO AUTO EXPANSION
 function setupAutoExpandTextarea() {
     const textarea = document.getElementById('communityMessageInput');
     if (!textarea) {
-        console.log('⚠️ Textarea not found for auto-expand setup');
+        console.log('⚠️ Textarea not found for single-line setup');
         return;
     }
     
-    console.log('🔧 Setting up auto-expand textarea');
+    console.log('🔧 Setting up Discord-style single-line textarea');
     
-    // Set initial single-line height
+    // Force single-line properties
     textarea.style.height = '20px';
     textarea.style.minHeight = '20px';
+    textarea.style.maxHeight = '20px';
     textarea.style.lineHeight = '20px';
-    textarea.style.padding = '12px';
+    textarea.style.padding = '0';
+    textarea.style.margin = '0';
     textarea.style.overflow = 'hidden';
+    textarea.style.resize = 'none';
+    textarea.style.border = 'none';
+    textarea.style.outline = 'none';
+    textarea.style.background = 'transparent';
+    textarea.style.fontSize = '16px';
+    textarea.style.fontFamily = 'inherit';
+    textarea.style.verticalAlign = 'top';
+    textarea.style.flex = '1';
     
-    // Function to adjust height
-    function adjustHeight() {
-        // Reset to minimum height first
+    // Prevent any height changes
+    function preventExpansion() {
         textarea.style.height = '20px';
-        
-        // Calculate total height including padding
-        const totalHeight = textarea.scrollHeight;
-        
-        // If content needs more space, expand
-        if (totalHeight > 44) { // 20px + 24px padding
-            const newHeight = Math.min(totalHeight, 120);
-            textarea.style.height = newHeight + 'px';
-            textarea.classList.add('expanded');
-            textarea.style.overflow = 'auto';
-        } else {
-            textarea.style.height = '20px';
-            textarea.classList.remove('expanded');
-            textarea.style.overflow = 'hidden';
-        }
-        
-        // Add visual feedback for content
-        if (textarea.value.trim()) {
-            textarea.classList.add('has-content');
-        } else {
-            textarea.classList.remove('has-content');
-        }
+        textarea.style.overflow = 'hidden';
     }
     
-    // Event listeners
-    textarea.addEventListener('input', adjustHeight);
+    // Event listeners to maintain single line
+    textarea.addEventListener('input', preventExpansion);
     textarea.addEventListener('paste', () => {
-        // Small delay to allow paste content to be processed
-        setTimeout(adjustHeight, 10);
+        setTimeout(preventExpansion, 10);
     });
-    
-    // Force initial height on focus
-    textarea.addEventListener('focus', () => {
-        if (!textarea.value.trim()) {
-            textarea.style.height = '20px';
+    textarea.addEventListener('focus', preventExpansion);
+    textarea.addEventListener('keydown', (e) => {
+        // Prevent Enter from creating new lines (but still allow form submission)
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            // Trigger send message if available
+            if (typeof sendCommunityMessage === 'function') {
+                sendCommunityMessage();
+            }
         }
     });
     
-    // Initial adjustment
-    adjustHeight();
+    // Force initial state
+    preventExpansion();
     
-    console.log('✅ Auto-expand textarea setup complete - TRUE single line');
+    console.log('✅ Discord-style single-line textarea setup complete');
 }
-
 // Auto-refresh messages every 30 seconds
 setInterval(async () => {
     if (currentRoomId && isInitialized) {
