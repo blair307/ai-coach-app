@@ -3001,55 +3001,6 @@ body {
     
     .
 
-/* =================================
-   TIMER & CALENDAR
-   ================================= */
-
-.timer-display {
-    text-align: center;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 1.5rem;
-}
-
-.countdown-container {
-    display: block;
-}
-
-.countdown-label {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
-}
-
-
-.countdown-date {
-    font-size: 0.875rem;
-    color: var(--text-primary);
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.current-time {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    margin-bottom: 0.5rem;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.current-date {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-}
-
-.timezone {
-    font-size: 0.75rem;
-    color: var(--text-muted);
-}
 
 .calendar-container {
     padding: 0;
