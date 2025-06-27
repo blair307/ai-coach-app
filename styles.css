@@ -3580,3 +3580,102 @@ body {
         font-size: 13px !important;
     }
 }
+/* HIDE WEIRD BOTTOM ELEMENTS */
+.chat-input-area .reply-banner,
+.reply-banner,
+#replyBanner {
+    display: none !important;
+}
+
+/* Hide emoji modal and search results */
+#emojiModal,
+#searchResults {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* Hide attachment menu when not active */
+.attachment-menu:not(.show) {
+    display: none !important;
+}
+
+/* STICKY CHAT INPUT AREA - ALWAYS VISIBLE */
+.chat-input-area {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 100 !important;
+    background: var(--background) !important;
+    border-top: 1px solid var(--border) !important;
+    padding: 12px 16px !important;
+    margin-top: auto !important;
+}
+
+/* DISCORD-STYLE INPUT WITH SEND BUTTON INSIDE */
+.chat-input {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #f1f5f9 !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 24px !important;
+    padding: 8px 16px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    width: 100% !important;
+    position: relative !important;
+}
+
+/* SEND BUTTON INSIDE THE INPUT AREA */
+.input-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+}
+
+.input-actions .btn {
+    padding: 6px 12px !important;
+    min-height: 32px !important;
+    font-size: 13px !important;
+    border-radius: 16px !important;
+    margin: 0 !important;
+}
+
+/* EMOJI BUTTON SMALLER AND INLINE */
+#emojiBtn {
+    padding: 4px 8px !important;
+    min-height: 28px !important;
+    font-size: 12px !important;
+    border-radius: 14px !important;
+}
+
+/* MOBILE FIXES */
+@media (max-width: 1024px) {
+    .chat-input-area {
+        padding: 8px 12px !important;
+        position: sticky !important;
+        bottom: 0 !important;
+    }
+    
+    .chat-input {
+        padding: 6px 12px !important;
+        min-height: 40px !important;
+        max-height: 40px !important;
+    }
+    
+    /* MOBILE: SEND BUTTON NORMAL SIZE, NOT FULL WIDTH */
+    .input-actions .btn {
+        flex: none !important;
+        padding: 8px 16px !important;
+        min-height: 36px !important;
+        font-size: 14px !important;
+        width: auto !important;
+    }
+    
+    /* HIDE EMOJI BUTTON ON MOBILE */
+    #emojiBtn {
+        display: none !important;
+    }
+}
