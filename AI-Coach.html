@@ -8,7 +8,7 @@
     
     <style>
         /* FINAL MOBILE CSS FIX - MOBILE ONLY */
-        @media (max-width: 768px) and (pointer: coarse) {
+        @media (max-width: 768px) {
             /* Force full screen container */
             .chat-container {
                 position: fixed !important;
@@ -26,6 +26,68 @@
                 box-shadow: none !important;
                 border: none !important;
             }
+        
+        /* DESKTOP OVERRIDE - Prevent mobile styles on desktop */
+        @media (min-width: 769px) {
+            .chat-container,
+            .chat-header,
+            .chat-messages,
+            #chatMessages,
+            .chat-input-container,
+            .chat-input,
+            .main-content {
+                position: static !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                width: auto !important;
+                height: auto !important;
+                z-index: auto !important;
+                margin: auto !important;
+                padding: auto !important;
+                overflow: auto !important;
+                display: block !important;
+                flex-direction: row !important;
+                background: var(--background) !important;
+                border: 1px solid var(--border) !important;
+                border-radius: var(--radius-xl) !important;
+                box-shadow: var(--shadow-sm) !important;
+            }
+            
+            .chat-container {
+                display: flex !important;
+                flex-direction: column !important;
+                height: calc(100vh - 4rem) !important;
+                margin-right: 2rem !important;
+                flex: 1 !important;
+            }
+            
+            .chat-input {
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.75rem !important;
+                background: var(--surface) !important;
+                border: 2px solid var(--border) !important;
+                border-radius: var(--radius-lg) !important;
+                padding: 0.75rem !important;
+            }
+            
+            .input-actions {
+                display: flex !important;
+                justify-content: flex-end !important;
+                gap: 0.5rem !important;
+                align-items: center !important;
+            }
+            
+            .coaching-sidebar,
+            .content-header,
+            .sidebar,
+            #settingsModal {
+                display: block !important;
+                visibility: visible !important;
+            }
+        }
             
             /* Clean header - NO SETTINGS BUTTON */
             .chat-header {
