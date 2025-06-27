@@ -1170,6 +1170,7 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   }
 });
 
+
 // ADDITIONAL: Delete message from room (alternative endpoint)
 app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (req, res) => {
   try {
