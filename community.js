@@ -437,11 +437,11 @@ async function deleteMessage(messageId) {
             }, 300);
         }
 
-        // Show success message
+        // Show success message with clear explanation
         if (deleteSuccessful) {
-            showSuccessToast('Message deleted permanently from server');
+            showSuccessToast('Message deleted for everyone on the server');
         } else {
-            showSuccessToast('Message deleted permanently (hidden from your view)');
+            showSuccessToast('Message hidden permanently from your view only');
         }
 
         console.log('✅ Message permanently deleted - will never reappear');
@@ -463,7 +463,7 @@ async function deleteMessage(messageId) {
         } else if (error.message.includes('not found')) {
             showErrorMessage('Message not found or already deleted.');
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
-            showErrorMessage('Network error, but message will be hidden permanently.');
+            showErrorMessage('Network error - message hidden from your view only.');
             // Still mark as deleted even on network error
             markMessageAsDeleted(messageId);
             
@@ -473,7 +473,7 @@ async function deleteMessage(messageId) {
                 messageElement.parentNode.removeChild(messageElement);
             }
         } else {
-            showErrorMessage('Error occurred, but message will be hidden permanently.');
+            showErrorMessage('Server error - message hidden from your view only.');
             // Still mark as deleted
             markMessageAsDeleted(messageId);
             
