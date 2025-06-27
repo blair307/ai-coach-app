@@ -498,6 +498,117 @@
     order: -1 !important;
 }
 </style>
+
+<style>
+/* NUCLEAR DISCORD OVERRIDE - HIGHEST PRIORITY */
+* {
+    box-sizing: border-box !important;
+}
+
+/* FORCE STICKY INPUT */
+.chat-input-area {
+    position: sticky !important;
+    bottom: 0 !important;
+    z-index: 1000 !important;
+    background: white !important;
+    border-top: 1px solid #e2e8f0 !important;
+    padding: 8px 12px !important;
+}
+
+/* FORCE HORIZONTAL LAYOUT */
+.chat-input {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #f1f5f9 !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 24px !important;
+    padding: 6px 12px !important;
+    height: 44px !important;
+    width: 100% !important;
+}
+
+/* FORCE SINGLE LINE INPUT */
+#communityMessageInput {
+    height: 30px !important;
+    min-height: 30px !important;
+    max-height: 30px !important;
+    line-height: 30px !important;
+    padding: 0 8px !important;
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    flex: 1 !important;
+    resize: none !important;
+    overflow: hidden !important;
+    font-size: 14px !important;
+}
+
+/* FORCE BUTTON LAYOUT */
+.input-actions {
+    display: flex !important;
+    gap: 4px !important;
+    margin: 0 !important;
+}
+
+.input-actions .btn {
+    padding: 4px 12px !important;
+    height: 32px !important;
+    font-size: 12px !important;
+    border-radius: 16px !important;
+    white-space: nowrap !important;
+    flex: none !important;
+    width: auto !important;
+}
+
+/* FORCE ATTACHMENT BUTTON */
+.attachment-btn {
+    background: none !important;
+    border: none !important;
+    color: #64748b !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 16px !important;
+    order: -1 !important;
+}
+
+/* HIDE UNWANTED ELEMENTS */
+#replyBanner,
+.reply-banner,
+#emojiModal,
+#searchResults {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* MOBILE OVERRIDES */
+@media (max-width: 1024px) {
+    .chat-input {
+        height: 40px !important;
+        padding: 4px 8px !important;
+    }
+    
+    #communityMessageInput {
+        height: 28px !important;
+        min-height: 28px !important;
+        max-height: 28px !important;
+        line-height: 28px !important;
+        font-size: 16px !important;
+    }
+    
+    .input-actions .btn {
+        flex: none !important;
+        width: auto !important;
+        padding: 6px 16px !important;
+        height: 32px !important;
+    }
+}
+</style>
     
 </head>
 <body>
