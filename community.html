@@ -486,36 +486,56 @@
                         </div>
                     </div>
 
-                    <!-- Message Input -->
-                    <div class="chat-input-area">
-                        <!-- Reply Banner (Hidden by default) -->
-                        <div id="replyBanner" class="reply-banner" style="display: none;">
-                            <div class="reply-content">
-                                <div class="reply-header">
-                                    <span style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">↳ Replying to</span>
-                                    <span id="replyToUser" style="font-weight: 600; color: var(--text-primary);"></span>
-                                    <button onclick="cancelReply()" class="cancel-reply-btn">×</button>
-                                </div>
-                                <div id="replyToMessage" class="reply-preview"></div>
-                            </div>
-                        </div>
-
-                        <div class="chat-input">
-                            <textarea 
-                                id="communityMessageInput" 
-                                placeholder="Type your message..." 
-                                onkeypress="handleCommunityKeyPress(event)"
-                                style="font-size: 16px; resize: none; min-height: 44px; max-height: 120px;"
-                                disabled
-                            ></textarea>
-                            <div class="input-actions">
-                                <button class="btn btn-small btn-outline desktop-only" onclick="toggleEmoji()" disabled id="emojiBtn">😊</button>
-                                <button class="btn btn-primary" onclick="sendCommunityMessage()" disabled id="sendCommunityButton">Send</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+     <!-- Message Input -->
+<div class="chat-input-area">
+    <!-- Reply Banner (Hidden by default) -->
+    <div id="replyBanner" class="reply-banner" style="display: none;">
+        <div class="reply-content">
+            <div class="reply-header">
+                <span style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">↳ Replying to</span>
+                <span id="replyToUser" style="font-weight: 600; color: var(--text-primary);"></span>
+                <button onclick="cancelReply()" class="cancel-reply-btn">×</button>
             </div>
+            <div id="replyToMessage" class="reply-preview"></div>
+        </div>
+    </div>
+
+    <div class="chat-input">
+        <!-- NEW: Attachment Button -->
+        <button class="attachment-btn" onclick="toggleAttachmentMenu()" title="Add photo or file" disabled id="attachmentBtn">
+            +
+        </button>
+        
+        <textarea 
+            id="communityMessageInput" 
+            placeholder="Type your message..." 
+            onkeypress="handleCommunityKeyPress(event)"
+            style="font-size: 16px; resize: none; min-height: 20px; max-height: 20px; height: 20px;"
+            disabled
+        ></textarea>
+        
+        <div class="input-actions">
+            <button class="btn btn-small btn-outline desktop-only" onclick="toggleEmoji()" disabled id="emojiBtn">😊</button>
+            <button class="btn btn-primary" onclick="sendCommunityMessage()" disabled id="sendCommunityButton">Send</button>
+        </div>
+    </div>
+
+    <!-- NEW: Attachment Menu -->
+    <div id="attachmentMenu" class="attachment-menu">
+        <div class="attachment-option" onclick="selectAttachment('image')">
+            <div class="attachment-icon">📸</div>
+            <span>Upload Photo</span>
+        </div>
+        <div class="attachment-option" onclick="selectAttachment('gif')">
+            <div class="attachment-icon">🎭</div>
+            <span>Add GIF</span>
+        </div>
+        <div class="attachment-option" onclick="selectAttachment('file')">
+            <div class="attachment-icon">📎</div>
+            <span>Attach File</span>
+        </div>
+    </div>
+</div>
 
             <!-- Floating Search Results (Desktop Only) - EXPLICITLY HIDDEN -->
             <div id="searchResults" class="floating-search-results desktop-only" style="display: none !important;">
