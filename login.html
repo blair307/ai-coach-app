@@ -6,7 +6,7 @@
     <title>Login - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Oil Slick Moving Gradient Background */
+        /* REAL Oil Slick Background - Multiple Layers */
         .auth-container {
             min-height: 100vh !important;
             display: flex !important;
@@ -16,78 +16,94 @@
             position: relative !important;
             overflow: hidden !important;
             
-            /* Oil slick gradient - iridescent colors */
-            background: linear-gradient(45deg, 
-                #0f0f23,    /* Deep dark blue */
-                #1a1a2e,    /* Dark navy */
-                #16213e,    /* Midnight blue */
-                #0f3460,    /* Steel blue */
-                #533483,    /* Deep purple */
-                #7209b7,    /* Rich purple */
-                #a663cc,    /* Light purple */
-                #4c956c,    /* Teal green */
-                #2f9599,    /* Cyan */
-                #61a5c2,    /* Light blue */
-                #a9cce3,    /* Pale blue */
-                #c8b6e2     /* Lavender */
-            ) !important;
-            background-size: 600% 600% !important;
-            animation: oilSlick 20s ease infinite !important;
+            /* Dark oil base */
+            background: #0a0a0a !important;
         }
 
-        /* Oil slick animation - much more visible movement */
-        @keyframes oilSlick {
-            0% {
-                background-position: 0% 0%;
-            }
-            25% {
-                background-position: 100% 0%;
-            }
-            50% {
-                background-position: 100% 100%;
-            }
-            75% {
-                background-position: 0% 100%;
-            }
-            100% {
-                background-position: 0% 0%;
-            }
-        }
-
-        /* Add iridescent shimmer overlay for oil slick effect */
+        /* Oil slick layer 1 - Base iridescent layer */
         .auth-container::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
             background: 
-                radial-gradient(circle at 30% 20%, rgba(138, 43, 226, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
-                radial-gradient(circle at 20% 70%, rgba(255, 20, 147, 0.25) 0%, transparent 50%),
-                radial-gradient(circle at 80% 30%, rgba(50, 205, 50, 0.2) 0%, transparent 50%);
-            animation: shimmer 25s ease-in-out infinite !important;
+                radial-gradient(ellipse at 10% 20%, rgba(255, 0, 150, 0.4) 0%, transparent 30%),
+                radial-gradient(ellipse at 90% 80%, rgba(0, 255, 255, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 10%, rgba(255, 255, 0, 0.3) 0%, transparent 35%),
+                radial-gradient(ellipse at 20% 90%, rgba(150, 0, 255, 0.4) 0%, transparent 30%),
+                radial-gradient(ellipse at 80% 30%, rgba(0, 255, 100, 0.3) 0%, transparent 40%),
+                radial-gradient(ellipse at 30% 70%, rgba(255, 100, 0, 0.3) 0%, transparent 35%);
+            animation: oilFlow1 25s linear infinite !important;
             pointer-events: none;
             mix-blend-mode: screen;
         }
 
-        @keyframes shimmer {
-            0%, 100% { 
-                transform: translateX(-50px) translateY(-30px) rotate(0deg);
-                opacity: 0.6;
+        /* Oil slick layer 2 - Secondary rainbow layer */
+        .auth-container::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                conic-gradient(from 0deg at 30% 40%, 
+                    transparent 0deg,
+                    rgba(255, 0, 255, 0.2) 60deg,
+                    rgba(0, 255, 255, 0.2) 120deg,
+                    rgba(255, 255, 0, 0.2) 180deg,
+                    rgba(255, 0, 100, 0.2) 240deg,
+                    rgba(100, 255, 0, 0.2) 300deg,
+                    transparent 360deg
+                ),
+                conic-gradient(from 180deg at 70% 60%, 
+                    transparent 0deg,
+                    rgba(0, 100, 255, 0.15) 45deg,
+                    rgba(255, 0, 200, 0.15) 90deg,
+                    rgba(200, 255, 0, 0.15) 135deg,
+                    rgba(0, 255, 150, 0.15) 180deg,
+                    rgba(255, 150, 0, 0.15) 225deg,
+                    transparent 270deg
+                );
+            animation: oilFlow2 30s linear infinite reverse !important;
+            pointer-events: none;
+            mix-blend-mode: color-dodge;
+            opacity: 0.8;
+        }
+
+        /* Oil flow animations - realistic oil movement */
+        @keyframes oilFlow1 {
+            0% {
+                transform: translate(0%, 0%) rotate(0deg) scale(1);
             }
-            25% { 
-                transform: translateX(30px) translateY(-50px) rotate(90deg);
-                opacity: 0.8;
+            25% {
+                transform: translate(-10%, -5%) rotate(90deg) scale(1.1);
             }
-            50% { 
-                transform: translateX(50px) translateY(30px) rotate(180deg);
-                opacity: 0.7;
+            50% {
+                transform: translate(-15%, -10%) rotate(180deg) scale(0.9);
             }
-            75% { 
-                transform: translateX(-30px) translateY(50px) rotate(270deg);
-                opacity: 0.9;
+            75% {
+                transform: translate(-5%, -15%) rotate(270deg) scale(1.05);
+            }
+            100% {
+                transform: translate(0%, 0%) rotate(360deg) scale(1);
+            }
+        }
+
+        @keyframes oilFlow2 {
+            0% {
+                transform: translate(0%, 0%) rotate(0deg) scale(1.2);
+            }
+            33% {
+                transform: translate(8%, 12%) rotate(-120deg) scale(0.8);
+            }
+            66% {
+                transform: translate(-12%, 8%) rotate(-240deg) scale(1.1);
+            }
+            100% {
+                transform: translate(0%, 0%) rotate(-360deg) scale(1.2);
             }
         }
 
@@ -195,17 +211,16 @@
                 /* REMOVED: animation: none !important; */
             }
             
-            .auth-container::before {
+            .auth-container::before,
+            .auth-container::after {
                 animation: none !important; /* Reduce motion on mobile */
             }
         }
 
         /* Prefers reduced motion accessibility */
         @media (prefers-reduced-motion: reduce) {
-            .auth-container,
             .auth-container::before,
-            .auth-card,
-            .auth-form::before {
+            .auth-container::after {
                 animation: none !important;
             }
         }
