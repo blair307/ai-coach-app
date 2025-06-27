@@ -1779,9 +1779,6 @@ window.resetDaysActive = resetDaysActive;
         }
     });
 
-       // Add this JavaScript to your dashboard.html to fix the stat number alignment
-function fixStatNumberAlignment() {
-    console.log('🔧 Fixing stat number alignment...');
     
     // Find all stat number elements
     const statElements = document.querySelectorAll('.stat-number');
@@ -1839,8 +1836,6 @@ function fixStatNumberAlignment() {
 }
 
 // UPDATED: Force apply timer styling with JavaScript - this overrides all CSS conflicts
-function forceTimerStyling() {
-    console.log('🎯 Applying force timer styling...');
     
     // Find all timer elements
     const timerElements = [
@@ -1877,12 +1872,6 @@ function forceTimerStyling() {
         `;
     });
     
-    // Fix stat number alignment
-    fixStatNumberAlignment();
-    
-    console.log(`✅ Applied styling to ${timerElements.length} timer elements`);
-}
-
 // Apply the styling when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Apply immediately
@@ -1915,6 +1904,84 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🔍 Timer styling and alignment observer started');
 });
+        // CLEAN FIX: Replace all the messy functions with this clean solution
+
+// Remove all the conflicting styling and apply clean fixes
+const cleanStyles = document.createElement('style');
+cleanStyles.textContent = `
+/* Fix progress numbers to be perfectly level */
+.stats-grid .stat-number {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    height: 3rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em !important;
+    width: 100% !important;
+}
+
+/* Fix timer to be clean - ONLY the countdown number should be big and purple */
+#countdownTimer, .countdown-timer {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    display: block !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    margin: 0.5rem 0 !important;
+    width: 100% !important;
+}
+
+/* Reset other timer text to normal size */
+.countdown-label, .countdown-date, .no-meeting-text, .current-time, .current-date, .timezone {
+    font-size: 1rem !important;
+    font-weight: 500 !important;
+    color: var(--text-secondary) !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    background-clip: initial !important;
+    text-align: center !important;
+    line-height: 1.4 !important;
+}
+
+/* Specific fixes for meeting text */
+.countdown-date {
+    font-size: 0.9rem !important;
+    margin-top: 0.5rem !important;
+}
+
+.timezone {
+    font-size: 0.85rem !important;
+    color: var(--text-muted) !important;
+    margin-top: 1rem !important;
+}
+
+/* Make sure Next Meeting In text is normal */
+h4, .timer-display h4 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+}
+`;
+
+// Add the clean styles immediately
+document.head.appendChild(cleanStyles);
+
+console.log('✅ Clean dashboard fix applied - level numbers and proper timer!');
     </script>
    
 </body>
