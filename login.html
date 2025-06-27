@@ -6,7 +6,7 @@
     <title>Login - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Oil Dripping Background - Multiple Drip Layers */
+        /* Moving Blue Gradient Background with #2696FE base */
         .auth-container {
             min-height: 100vh !important;
             display: flex !important;
@@ -16,149 +16,66 @@
             position: relative !important;
             overflow: hidden !important;
             
-            /* Dark oil base with subtle gradient */
-            background: radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 100%) !important;
+            /* Moving gradient based on #2696FE */
+            background: linear-gradient(-45deg, 
+                #2696FE,        /* Your base blue */
+                #1E7CE8,        /* Darker blue */
+                #3DA3FF,        /* Lighter blue */
+                #1B5FBB,        /* Deep blue */
+                #45B7FF,        /* Sky blue */
+                #0F4C8C,        /* Navy blue */
+                #5CC3FF,        /* Light cyan */
+                #2696FE         /* Back to base */
+            ) !important;
+            background-size: 400% 400% !important;
+            animation: blueGradientMove 15s ease infinite !important;
         }
 
-        /* Oil drip layer 1 - Main dripping effect */
+        /* Smooth gradient movement animation */
+        @keyframes blueGradientMove {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Add subtle overlay for depth */
         .auth-container::before {
             content: '';
             position: absolute;
-            top: -100px;
+            top: 0;
             left: 0;
             right: 0;
             bottom: 0;
             background: 
-                /* Vertical drip streaks with iridescent colors */
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255, 0, 150, 0.3) 10%, 
-                    transparent 20%
-                ) 10% 0 / 5% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(0, 255, 255, 0.4) 15%, 
-                    transparent 30%
-                ) 25% 0 / 3% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255, 255, 0, 0.3) 20%, 
-                    transparent 40%
-                ) 45% 0 / 7% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(150, 0, 255, 0.35) 8%, 
-                    transparent 25%
-                ) 65% 0 / 4% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(0, 255, 100, 0.4) 12%, 
-                    transparent 35%
-                ) 80% 0 / 6% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255, 100, 0, 0.3) 18%, 
-                    transparent 45%
-                ) 90% 0 / 4% 100%;
-            animation: oilDrip1 12s ease-in-out infinite !important;
+                radial-gradient(circle at 20% 80%, rgba(38, 150, 254, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(30, 124, 232, 0.2) 0%, transparent 50%);
+            animation: blueOverlayFloat 20s ease-in-out infinite !important;
             pointer-events: none;
-            mix-blend-mode: screen;
+            mix-blend-mode: overlay;
         }
 
-        /* Oil drip layer 2 - Secondary drips */
-        .auth-container::after {
-            content: '';
-            position: absolute;
-            top: -100px;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                /* More drip patterns offset from first layer */
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(0, 200, 255, 0.2) 25%, 
-                    transparent 50%
-                ) 15% 0 / 3% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255, 0, 200, 0.25) 30%, 
-                    transparent 60%
-                ) 35% 0 / 5% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(100, 255, 0, 0.2) 15%, 
-                    transparent 40%
-                ) 55% 0 / 4% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(255, 150, 255, 0.3) 20%, 
-                    transparent 45%
-                ) 75% 0 / 6% 100%,
-                linear-gradient(180deg, 
-                    transparent 0%, 
-                    rgba(0, 255, 200, 0.25) 35%, 
-                    transparent 70%
-                ) 5% 0 / 3% 100%;
-            animation: oilDrip2 15s ease-in-out infinite 3s !important;
-            pointer-events: none;
-            mix-blend-mode: color-dodge;
-            opacity: 0.7;
-        }
-
-        /* Oil dripping animations - like real drips falling */
-        @keyframes oilDrip1 {
-            0% {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            50% {
-                transform: translateY(20px);
-                opacity: 0.8;
-            }
-            80% {
-                transform: translateY(100px);
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(200px);
-                opacity: 0;
-            }
-        }
-
-        @keyframes oilDrip2 {
-            0% {
-                transform: translateY(-80px);
-                opacity: 0;
-            }
-            15% {
+        /* Floating blue overlay animation */
+        @keyframes blueOverlayFloat {
+            0%, 100% { 
+                transform: translateY(0px) translateX(0px);
                 opacity: 0.7;
             }
-            40% {
-                transform: translateY(0px);
-                opacity: 0.9;
-            }
-            70% {
-                transform: translateY(80px);
-                opacity: 0.5;
-            }
-            100% {
-                transform: translateY(180px);
-                opacity: 0;
+            50% { 
+                transform: translateY(-30px) translateX(20px);
+                opacity: 1;
             }
         }
 
-        /* Add pooling effect at bottom */
-        .auth-container {
-            background: 
-                radial-gradient(ellipse at center, #1a1a1a 0%, #0a0a0a 100%),
-                /* Oil pools at bottom */
-                radial-gradient(ellipse at 20% 100%, rgba(255, 0, 150, 0.1) 0%, transparent 30%),
-                radial-gradient(ellipse at 60% 100%, rgba(0, 255, 255, 0.08) 0%, transparent 25%),
-                radial-gradient(ellipse at 90% 100%, rgba(255, 255, 0, 0.1) 0%, transparent 35%) !important;
+        /* Remove the old drip animation */
+        .auth-container::after {
+            display: none !important;
         }
 
         /* STATIC auth card - no movement */
@@ -265,16 +182,15 @@
                 /* REMOVED: animation: none !important; */
             }
             
-            .auth-container::before,
-            .auth-container::after {
+            .auth-container::before {
                 animation: none !important; /* Reduce motion on mobile */
             }
         }
 
         /* Prefers reduced motion accessibility */
         @media (prefers-reduced-motion: reduce) {
-            .auth-container::before,
-            .auth-container::after {
+            .auth-container,
+            .auth-container::before {
                 animation: none !important;
             }
         }
