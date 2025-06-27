@@ -3476,41 +3476,55 @@ body {
     transition: max-height 0.2s ease, height 0.2s ease !important;
 }
 
-/* FORCE emoji buttons to match desktop size on ALL devices */
-@media (max-width: 768px) {
-    .emoji-btn {
-        min-height: 36px !important;
-        max-height: 36px !important;
-        height: 36px !important;
-        font-size: 1.1rem !important;
-        padding: 0.5rem !important;
-        width: auto !important;
-    }
+/* FORCE small emoji buttons on mobile - override all touch sizing */
+.emoji-modal {
+    width: 280px !important; /* Make modal smaller on mobile */
 }
 
-@media (max-width: 480px) {
-    .emoji-btn {
-        min-height: 36px !important;
-        max-height: 36px !important; 
-        height: 36px !important;
-        font-size: 1.1rem !important;
-        padding: 0.5rem !important;
-        width: auto !important;
-    }
+.emoji-grid {
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 0.15rem !important; /* Smaller gap */
 }
 
-/* Override any touch-friendly button styles that might be affecting emoji buttons */
+.emoji-btn {
+    min-height: 32px !important;
+    max-height: 32px !important;
+    height: 32px !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    padding: 0.25rem !important; /* Smaller padding */
+    font-size: 0.9rem !important; /* Smaller font */
+    aspect-ratio: 1 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+}
+
+/* Force on all screen sizes */
 @media (max-width: 768px) {
-    .emoji-btn {
-        min-height: 36px !important;
-        max-height: 36px !important;
+    .emoji-modal {
+        width: 260px !important;
+        left: 10px !important;
+        right: 10px !important;
     }
     
-    /* Make sure general button styles don't affect emoji buttons */
-    .btn.emoji-btn {
-        min-height: 36px !important;
-        max-height: 36px !important;
-        padding: 0.5rem !important;
-        font-size: 1.1rem !important;
+    .emoji-btn {
+        min-height: 28px !important;
+        max-height: 28px !important;
+        height: 28px !important;
+        width: 28px !important;
+        min-width: 28px !important;
+        max-width: 28px !important;
+        padding: 0.2rem !important;
+        font-size: 0.8rem !important;
     }
+}
+
+/* Prevent mobile touch enhancement */
+.emoji-btn {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
 }
