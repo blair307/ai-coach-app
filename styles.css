@@ -1805,7 +1805,7 @@ body {
 
 .emoji-grid {
     display: grid !important;
-    grid-template-columns: repeat(5, 1fr) !important;
+    grid-template-columns: repeat(6, 1fr) !important;
     gap: 0.75rem !important;
     padding: 0.5rem !important;
     box-sizing: border-box !important;
