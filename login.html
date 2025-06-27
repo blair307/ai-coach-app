@@ -6,7 +6,7 @@
     <title>Login - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Moving Gradient Background Animation */
+        /* Oil Slick Moving Gradient Background */
         .auth-container {
             min-height: 100vh !important;
             display: flex !important;
@@ -16,33 +16,45 @@
             position: relative !important;
             overflow: hidden !important;
             
-            /* Animated gradient background */
-            background: linear-gradient(-45deg, 
-                #667eea, 
-                #764ba2, 
-                #f093fb, 
-                #f5576c,
-                #4facfe,
-                #00f2fe
+            /* Oil slick gradient - iridescent colors */
+            background: linear-gradient(45deg, 
+                #0f0f23,    /* Deep dark blue */
+                #1a1a2e,    /* Dark navy */
+                #16213e,    /* Midnight blue */
+                #0f3460,    /* Steel blue */
+                #533483,    /* Deep purple */
+                #7209b7,    /* Rich purple */
+                #a663cc,    /* Light purple */
+                #4c956c,    /* Teal green */
+                #2f9599,    /* Cyan */
+                #61a5c2,    /* Light blue */
+                #a9cce3,    /* Pale blue */
+                #c8b6e2     /* Lavender */
             ) !important;
-            background-size: 400% 400% !important;
-            animation: gradientShift 15s ease infinite !important;
+            background-size: 600% 600% !important;
+            animation: oilSlick 20s ease infinite !important;
         }
 
-        /* Gradient animation keyframes */
-        @keyframes gradientShift {
+        /* Oil slick animation - much more visible movement */
+        @keyframes oilSlick {
             0% {
-                background-position: 0% 50%;
+                background-position: 0% 0%;
+            }
+            25% {
+                background-position: 100% 0%;
             }
             50% {
-                background-position: 100% 50%;
+                background-position: 100% 100%;
+            }
+            75% {
+                background-position: 0% 100%;
             }
             100% {
-                background-position: 0% 50%;
+                background-position: 0% 0%;
             }
         }
 
-        /* Add subtle floating particles effect */
+        /* Add iridescent shimmer overlay for oil slick effect */
         .auth-container::before {
             content: '';
             position: absolute;
@@ -51,50 +63,60 @@
             right: 0;
             bottom: 0;
             background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
+                radial-gradient(circle at 30% 20%, rgba(138, 43, 226, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 20% 70%, rgba(255, 20, 147, 0.25) 0%, transparent 50%),
+                radial-gradient(circle at 80% 30%, rgba(50, 205, 50, 0.2) 0%, transparent 50%);
+            animation: shimmer 25s ease-in-out infinite !important;
             pointer-events: none;
+            mix-blend-mode: screen;
         }
 
-        @keyframes float {
+        @keyframes shimmer {
             0%, 100% { 
-                transform: translateY(0px) rotate(0deg);
-                opacity: 0.7;
+                transform: translateX(-50px) translateY(-30px) rotate(0deg);
+                opacity: 0.6;
+            }
+            25% { 
+                transform: translateX(30px) translateY(-50px) rotate(90deg);
+                opacity: 0.8;
             }
             50% { 
-                transform: translateY(-20px) rotate(2deg);
-                opacity: 1;
+                transform: translateX(50px) translateY(30px) rotate(180deg);
+                opacity: 0.7;
+            }
+            75% { 
+                transform: translateX(-30px) translateY(50px) rotate(270deg);
+                opacity: 0.9;
             }
         }
 
-        /* Enhanced auth card with better glass effect */
+        /* STATIC auth card - no movement */
         .auth-card {
             background: rgba(255, 255, 255, 0.95) !important;
             backdrop-filter: blur(20px) saturate(180%) !important;
             padding: 3rem !important;
             border-radius: var(--radius-xl) !important;
             box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                0 25px 50px -12px rgba(0, 0, 0, 0.4),
                 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
             max-width: 450px !important;
             width: 100% !important;
             border: 1px solid rgba(255, 255, 255, 0.3) !important;
             position: relative !important;
             z-index: 10 !important;
-            animation: cardFloat 6s ease-in-out infinite !important;
+            /* REMOVED: animation: cardFloat 6s ease-in-out infinite !important; */
         }
 
-        /* Subtle floating animation for the card */
-        @keyframes cardFloat {
+        /* REMOVED floating animation for the card */
+        /* @keyframes cardFloat {
             0%, 100% {
                 transform: translateY(0px);
             }
             50% {
                 transform: translateY(-10px);
             }
-        }
+        } */
 
         /* Enhanced input focus effects to complement the gradient */
         .form-group input:focus {
@@ -127,12 +149,13 @@
                 0 0 0 1px rgba(255, 255, 255, 0.2) !important;
         }
 
-        /* Subtle glow effect on form elements */
+        /* STATIC form - no glow animation */
         .auth-form {
             position: relative !important;
         }
 
-        .auth-form::before {
+        /* REMOVED form glow animation */
+        /* .auth-form::before {
             content: '';
             position: absolute;
             top: -20px;
@@ -158,7 +181,7 @@
                 opacity: 0.6;
                 transform: scale(1.02);
             }
-        }
+        } */
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -169,7 +192,7 @@
             .auth-card {
                 padding: 2rem 1.5rem !important;
                 max-width: 100% !important;
-                animation: none !important; /* Disable floating on mobile for better UX */
+                /* REMOVED: animation: none !important; */
             }
             
             .auth-container::before {
