@@ -2,6 +2,343 @@
 <html lang="en">
 <head>
 
+/* FINAL MOBILE CSS FIX - REPLACE YOUR NUCLEAR CSS WITH THIS */
+/* Add this to your AI-Coach.html <style> section */
+
+@media (max-width: 768px) {
+    /* Force full screen container */
+    .chat-container {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        display: flex !important;
+        flex-direction: column !important;
+        z-index: 9999 !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    
+    /* Clean header - NO SETTINGS BUTTON */
+    .chat-header {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 70px !important;
+        min-height: 70px !important;
+        max-height: 70px !important;
+        background: white !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        z-index: 10001 !important;
+        padding: 0.75rem 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Hide settings button completely */
+    .chat-actions,
+    .modern-settings-btn,
+    button[onclick*="toggleSettings"],
+    button[onclick*="Settings"] {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Clean coach info layout */
+    .coach-info {
+        flex: 1 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+    }
+    
+    .coach-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .coach-details h2 {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+        font-weight: 600 !important;
+    }
+    
+    .coach-status {
+        font-size: 0.875rem !important;
+        margin: 0 !important;
+    }
+    
+    /* Keep only essential header actions */
+    .header-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .header-actions .btn {
+        padding: 0.5rem !important;
+        font-size: 0.8rem !important;
+        min-height: 36px !important;
+        min-width: 36px !important;
+    }
+    
+    /* PERFECT SCROLLABLE MESSAGES AREA */
+    .chat-messages, #chatMessages {
+        position: fixed !important;
+        top: 70px !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 85px !important; /* Perfect spacing for input */
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        padding: 1rem !important;
+        background: #f8fafc !important;
+        z-index: 9998 !important;
+        display: block !important;
+        scroll-behavior: smooth !important;
+    }
+    
+    /* Ensure messages scroll properly */
+    .chat-messages * {
+        max-width: 100% !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+    
+    /* Message styling */
+    .message-content {
+        max-width: 90% !important;
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+        border-radius: 12px !important;
+        line-height: 1.5 !important;
+        font-size: 0.95rem !important;
+    }
+    
+    /* PERFECT INPUT AT BOTTOM */
+    .chat-input-container {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        height: 85px !important; /* Reduced height */
+        min-height: 85px !important;
+        max-height: 85px !important;
+        background: white !important;
+        border-top: 1px solid #e5e7eb !important;
+        padding: 1rem !important;
+        padding-bottom: calc(1rem + env(safe-area-inset-bottom)) !important;
+        z-index: 10001 !important;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05) !important;
+        display: flex !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Perfect horizontal input layout */
+    .chat-input {
+        display: flex !important;
+        width: 100% !important;
+        gap: 0.75rem !important;
+        align-items: center !important;
+        background: #f8fafc !important;
+        border: 2px solid #d1d5db !important;
+        border-radius: 25px !important; /* More rounded for mobile */
+        padding: 0.5rem 0.75rem !important;
+        min-height: 50px !important;
+        max-height: 50px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .chat-input:focus-within {
+        border-color: #3b82f6 !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        background: white !important;
+    }
+    
+    /* Perfect single-line textarea */
+    .chat-input textarea, #messageInput {
+        flex: 1 !important;
+        border: none !important;
+        outline: none !important;
+        background: transparent !important;
+        font-size: 16px !important; /* Prevents iOS zoom */
+        line-height: 1.4 !important;
+        min-height: 22px !important;
+        max-height: 22px !important;
+        height: 22px !important;
+        resize: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+        color: #1f2937 !important;
+        overflow: hidden !important;
+        -webkit-appearance: none !important;
+    }
+    
+    .chat-input textarea::placeholder, #messageInput::placeholder {
+        color: #9ca3af !important;
+        font-size: 16px !important;
+    }
+    
+    /* Perfect send button */
+    .chat-input button, 
+    #sendButton, 
+    .input-actions .btn {
+        background: #3b82f6 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 20px !important;
+        padding: 0.5rem 1.25rem !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+        min-height: 40px !important;
+        height: 40px !important;
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 1px 3px rgba(59, 130, 246, 0.3) !important;
+    }
+    
+    .chat-input button:hover, #sendButton:hover {
+        background: #2563eb !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4) !important;
+    }
+    
+    .chat-input button:active, #sendButton:active {
+        transform: translateY(0) !important;
+    }
+    
+    /* Input actions - only show send button */
+    .input-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        align-items: center !important;
+        flex-shrink: 0 !important;
+    }
+    
+    /* Hide all secondary buttons in input area */
+    .input-actions > *:not(#sendButton):not([onclick*="sendMessage"]) {
+        display: none !important;
+    }
+    
+    /* HIDE EVERYTHING THAT SHOULDN'T BE ON MOBILE */
+    .coaching-sidebar,
+    .content-header,
+    .sidebar,
+    #settingsModal {
+        display: none !important;
+        visibility: hidden !important;
+    }
+    
+    /* Clean main content */
+    .main-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+    
+    /* Clean app container */
+    .app-container {
+        overflow: hidden !important;
+    }
+    
+    /* Make sure parent containers don't interfere */
+    .main-content > div {
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+    
+    /* Hide any floating elements */
+    .typing-indicator {
+        position: static !important;
+        margin: 1rem !important;
+        transform: none !important;
+    }
+    
+    /* Ensure hamburger menu works */
+    .universal-hamburger {
+        display: flex !important;
+        position: fixed !important;
+        top: 15px !important;
+        left: 15px !important;
+        z-index: 99999 !important;
+        width: 45px !important;
+        height: 45px !important;
+        background: #3b82f6 !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Notification icon in header */
+    .notification-icon-container {
+        margin-right: 0.5rem !important;
+    }
+    
+    .notification-bell {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    /* Landscape mode optimizations */
+    @media (orientation: landscape) and (max-height: 500px) {
+        .chat-header {
+            height: 60px !important;
+            min-height: 60px !important;
+            max-height: 60px !important;
+            padding: 0.5rem 1rem !important;
+        }
+        
+        .chat-messages, #chatMessages {
+            top: 60px !important;
+            bottom: 70px !important;
+        }
+        
+        .chat-input-container {
+            height: 70px !important;
+            min-height: 70px !important;
+            max-height: 70px !important;
+            padding: 0.75rem !important;
+        }
+        
+        .chat-input {
+            min-height: 40px !important;
+            max-height: 40px !important;
+        }
+    }
+    
+    /* Very small screens */
+    @media (max-width: 375px) {
+        .chat-input {
+            gap: 0.5rem !important;
+            padding: 0.5rem !important;
+        }
+        
+        .chat-input button, #sendButton {
+            padding: 0.5rem 1rem !important;
+            font-size: 13px !important;
+        }
+        
+        .coach-details h2 {
+            font-size: 1rem !important;
+        }
+    }
+}
+    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Coach - Entrepreneur Emotional Health</title>
