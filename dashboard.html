@@ -1882,35 +1882,51 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Timer styling observer started');
 });
 
-   // REPLACE the simple fix you just added with this better version:
+// IMMEDIATE FIX: Add this CSS to override everything instantly
 
-setTimeout(function() {
-    console.log('🔧 Fixing progress numbers only...');
-    
-    // Get ONLY the stat number elements (not timer elements)
-    const statNumbers = document.querySelectorAll('.stats-grid .stat-number');
-    
-    // Apply consistent alignment to each progress number
-    statNumbers.forEach(function(element) {
-        element.style.setProperty('height', '3rem', 'important');
-        element.style.setProperty('display', 'flex', 'important');
-        element.style.setProperty('align-items', 'center', 'important');
-        element.style.setProperty('justify-content', 'center', 'important');
-        element.style.setProperty('line-height', '1', 'important');
-    });
-    
-    // Fix timer elements specifically
-    const timerElements = document.querySelectorAll('#countdownTimer, .countdown-timer');
-    timerElements.forEach(function(element) {
-        element.style.setProperty('display', 'block', 'important');
-        element.style.setProperty('text-align', 'center', 'important');
-        element.style.setProperty('line-height', '1.2', 'important');
-        element.style.setProperty('width', '100%', 'important');
-        element.style.setProperty('height', 'auto', 'important');
-    });
-    
-    console.log('✅ Fixed progress numbers and timer');
-}, 3000);
+// Add CSS that takes priority over all other styling
+const fixStyles = document.createElement('style');
+fixStyles.textContent = `
+/* Force progress numbers to be aligned and proper size */
+.stats-grid .stat-number {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    height: 3rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em !important;
+    width: 100% !important;
+}
+
+/* Keep timer working properly */
+#countdownTimer, .countdown-timer {
+    display: block !important;
+    text-align: center !important;
+    line-height: 1.2 !important;
+    width: 100% !important;
+    height: auto !important;
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin: 0.5rem 0 !important;
+    padding: 0 !important;
+}
+`;
+
+// Add the styles to the page immediately
+document.head.appendChild(fixStyles);
+
+console.log('✅ Immediate fix applied - no delays!');
     </script>
    
 </body>
