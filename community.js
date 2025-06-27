@@ -507,6 +507,152 @@ async function deleteMessage(messageId) {
         }
     }
 }
+
+        // Add loading state to delete button
+        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
+        if (deleteBtn) {
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '⏳';
+            deleteBtn.style.opacity = '0.6';
+        }
+
+        // Show loading toast
+        showInfoToast('🗑️ Deleting message from server...');
+
+        // Try the primary delete endpoint
+        let deleteSuccessful = false;
+        let responseData = null;
+
+        try {
+            console.log('🔄 Attempting primary delete endpoint...');
+            
+            const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            console.log('📥 Server response:', data);
+
+            if (response.ok && data.success) {
+                deleteSuccessful = true;
+                responseData = data;
+                console.log('✅ PRIMARY endpoint success:', data.message);
+            } else {
+                throw new Error(data.message || `HTTP ${response.status}`);
+            }
+        } catch (primaryError) {
+            console.log('❌ Primary endpoint failed:', primaryError.message);
+            
+            // Try secondary endpoint (room-specific)
+            if (currentRoomId) {
+                try {
+                    console.log('🔄 Attempting secondary delete endpoint...');
+                    
+                    const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages/${messageId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+                    console.log('📥 Secondary response:', data);
+
+                    if (response.ok && data.success) {
+                        deleteSuccessful = true;
+                        responseData = data;
+                        console.log('✅ SECONDARY endpoint success:', data.message);
+                    } else {
+                        throw new Error(data.message || `HTTP ${response.status}`);
+                    }
+                } catch (secondaryError) {
+                    console.log('❌ Secondary endpoint also failed:', secondaryError.message);
+                    throw new Error(`Both delete endpoints failed. Last error: ${secondaryError.message}`);
+                }
+            } else {
+                throw primaryError;
+            }
+        }
+
+        // Handle successful deletion
+        if (deleteSuccessful && responseData) {
+            // Mark as deleted locally for immediate UI update
+            markMessageAsDeleted(messageId);
+            
+            // Remove message from DOM with animation
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.style.transition = 'all 0.3s ease';
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateX(-20px)';
+                
+                setTimeout(() => {
+                    if (messageElement.parentNode) {
+                        messageElement.parentNode.removeChild(messageElement);
+                    }
+                }, 300);
+            }
+
+            // Show appropriate success message
+            if (responseData.hasReplies) {
+                showWarningToast('⚠️ Message deleted - converted to placeholder due to replies');
+            } else {
+                showSuccessToast('✅ Message permanently deleted from server!');
+            }
+
+            console.log('🎉 SUCCESS: Message deleted from server successfully');
+            
+            // Refresh messages to show updated state
+            setTimeout(() => {
+                if (currentRoomId) {
+                    loadMessages(currentRoomId);
+                }
+            }, 1000);
+
+        } else {
+            throw new Error('Delete operation did not return success status');
+        }
+
+    } catch (error) {
+        console.error('❌ CRITICAL ERROR deleting message:', error);
+        
+        // Reset button state
+        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
+        if (deleteBtn) {
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '🗑️';
+            deleteBtn.style.opacity = '1';
+        }
+
+        // Show error but still hide locally as fallback
+        if (error.message.includes('permission') || error.message.includes('own messages')) {
+            showErrorMessage('❌ You can only delete your own messages.');
+        } else if (error.message.includes('not found')) {
+            showErrorMessage('❌ Message not found - it may have already been deleted.');
+            // Still remove from UI since it doesn't exist
+            markMessageAsDeleted(messageId);
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement && messageElement.parentNode) {
+                messageElement.parentNode.removeChild(messageElement);
+            }
+        } else {
+            showErrorMessage('❌ Server error - hiding message locally only.');
+            console.log('📝 Detailed error:', error.message);
+            
+            // Fallback: hide locally
+            markMessageAsDeleted(messageId);
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement && messageElement.parentNode) {
+                messageElement.parentNode.removeChild(messageElement);
+            }
+        }
+    }
+}
 // Add loading state to delete button
         const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
         if (deleteBtn) {
