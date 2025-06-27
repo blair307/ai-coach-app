@@ -1882,51 +1882,43 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('🔍 Timer styling observer started');
 });
 
-// IMMEDIATE FIX: Add this CSS to override everything instantly
-
-// Add CSS that takes priority over all other styling
-const fixStyles = document.createElement('style');
-fixStyles.textContent = `
-/* Force progress numbers to be aligned and proper size */
-.stats-grid .stat-number {
-    font-size: 2.5rem !important;
-    font-weight: 800 !important;
-    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    height: 3rem !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    line-height: 1 !important;
-    margin-bottom: 0.5rem !important;
-    letter-spacing: -0.02em !important;
-    width: 100% !important;
+        // Simple fix for Your Progress number alignment
+function alignProgressNumbers() {
+    console.log('🔧 Aligning Your Progress numbers...');
+    
+    // Target only the stat numbers in the progress section
+    const statNumbers = document.querySelectorAll('.stat-number');
+    
+    statNumbers.forEach(element => {
+        // Force consistent baseline alignment
+        element.style.cssText += `
+            display: flex !important;
+            align-items: baseline !important;
+            justify-content: center !important;
+            line-height: 1 !important;
+            vertical-align: baseline !important;
+            min-height: 3rem !important;
+            height: 3rem !important;
+        `;
+    });
+    
+    console.log(`✅ Aligned ${statNumbers.length} progress numbers`);
 }
 
-/* Keep timer working properly */
-#countdownTimer, .countdown-timer {
-    display: block !important;
-    text-align: center !important;
-    line-height: 1.2 !important;
-    width: 100% !important;
-    height: auto !important;
-    font-size: 2.5rem !important;
-    font-weight: 800 !important;
-    background: linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    margin: 0.5rem 0 !important;
-    padding: 0 !important;
-}
-`;
-
-// Add the styles to the page immediately
-document.head.appendChild(fixStyles);
-
-console.log('✅ Immediate fix applied - no delays!');
+// Apply the alignment fix when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(alignProgressNumbers, 1000);
+    
+    // Also apply after any content updates
+    const observer = new MutationObserver(function() {
+        setTimeout(alignProgressNumbers, 100);
+    });
+    
+    observer.observe(document.querySelector('.stats-grid') || document.body, {
+        childList: true,
+        subtree: true
+    });
+});
     </script>
    
 </body>
