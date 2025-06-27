@@ -1789,6 +1789,7 @@ body {
     z-index: 9998 !important;
     padding: 1rem !important;
     animation: emojiSlideIn 0.3s ease-out !important;
+    overflow: hidden !important;
 }
 
 @keyframes emojiSlideIn {
@@ -1824,7 +1825,7 @@ body {
 
 .emoji-btn:hover {
     background: var(--primary) !important;
-    transform: scale(1.1) !important;
+    transform: scale(1.05) !important;
     box-shadow: var(--shadow-sm) !important;
 }
 
