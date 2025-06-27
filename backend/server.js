@@ -155,6 +155,9 @@ const messageSchema = new mongoose.Schema({
     username: String,
     content: String
   },
+  // NEW: Deletion fields
+  deleted: { type: Boolean, default: false },
+  deletedAt: { type: Date },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -929,7 +932,6 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Get messages with reply support
 // ENHANCED: Get messages with reply support and deleted message handling
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
@@ -953,20 +955,14 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         messageObj.content = '[Message deleted by user]';
         messageObj.message = '[Message deleted by user]';
         messageObj.isDeleted = true;
-        // Remove user info for deleted messages for privacy
-        messageObj.username = 'Deleted User';
-        messageObj.userId = 'deleted';
+        // Keep username for threading but mark as deleted
+        if (!messageObj.username.includes('(deleted)')) {
+          messageObj.username = messageObj.username + ' (deleted)';
+        }
       }
       
       return messageObj;
     });
-    
-    res.json(processedMessages);
-  } catch (error) {
-    console.error('Get messages error:', error);
-    res.status(500).json({ error: 'Failed to fetch messages' });
-  }
-});
     
     res.json(processedMessages);
   } catch (error) {
@@ -1007,7 +1003,7 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         content: req.body.content.substring(0, 50) + '...'
       });
 
-// CREATE NOTIFICATION for the person being replied to
+      // CREATE NOTIFICATION for the person being replied to
       try {
         // Find the user being replied to
         const repliedToUser = await User.findOne({
@@ -1126,7 +1122,9 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       message.deleted = true;
       message.deletedAt = new Date();
       // Keep username for threading but mark as deleted
-      message.username = message.username + ' (deleted)';
+      if (!message.username.includes('(deleted)')) {
+        message.username = message.username + ' (deleted)';
+      }
       
       await message.save();
       
@@ -1170,7 +1168,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   }
 });
 
-
 // ADDITIONAL: Delete message from room (alternative endpoint)
 app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (req, res) => {
   try {
@@ -1219,7 +1216,9 @@ app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (r
       message.message = '[Message deleted by user]';
       message.deleted = true;
       message.deletedAt = new Date();
-      message.username = message.username + ' (deleted)';
+      if (!message.username.includes('(deleted)')) {
+        message.username = message.username + ' (deleted)';
+      }
       await message.save();
       
       console.log('✅ Room message converted to placeholder due to replies');
@@ -1253,87 +1252,6 @@ app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (r
   }
 });
 
-// ADDITIONAL: Delete message from room (alternative endpoint)
-app.delete('/api/rooms/:roomId/messages/:messageId', authenticateToken, async (req, res) => {
-  try {
-    const { roomId, messageId } = req.params;
-    const userId = req.user.userId;
-    
-    console.log('🗑️ DELETE FROM ROOM:', { roomId, messageId, userId, timestamp: new Date().toISOString() });
-    
-    // Validate IDs
-    if (!mongoose.Types.ObjectId.isValid(messageId) || !mongoose.Types.ObjectId.isValid(roomId)) {
-      return res.status(400).json({ 
-        success: false,
-        message: 'Invalid ID format' 
-      });
-    }
-    
-    // Find the message in the specific room
-    const message = await Message.findOne({ 
-      _id: messageId, 
-      roomId: roomId 
-    });
-    
-    if (!message) {
-      return res.status(404).json({ 
-        success: false,
-        message: 'Message not found in this room' 
-      });
-    }
-    
-    // Check ownership
-    if (message.userId !== userId) {
-      return res.status(403).json({ 
-        success: false,
-        message: 'You can only delete your own messages' 
-      });
-    }
-    
-    // Check for replies
-    const repliesCount = await Message.countDocuments({
-      'replyTo.messageId': messageId
-    });
-    
-    if (repliesCount > 0) {
-      // Convert to placeholder
-      message.content = '[Message deleted by user]';
-      message.message = '[Message deleted by user]';
-      message.deleted = true;
-      message.deletedAt = new Date();
-      message.username = message.username + ' (deleted)';
-      await message.save();
-      
-      console.log('✅ Room message converted to placeholder due to replies');
-      
-      return res.json({ 
-        success: true,
-        message: 'Message deleted (placeholder created due to replies)',
-        hasReplies: true,
-        messageId: messageId
-      });
-    } else {
-      // Completely delete
-      await Message.findByIdAndDelete(messageId);
-      
-      console.log('✅ Room message completely deleted from database');
-      
-      return res.json({ 
-        success: true,
-        message: 'Message permanently deleted from room',
-        hasReplies: false,
-        messageId: messageId
-      });
-    }
-    
-  } catch (error) {
-    console.error('❌ Error deleting message from room:', error);
-    res.status(500).json({ 
-      success: false,
-      message: 'Failed to delete message from room' 
-    });
-  }
-});
 app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
   try {
     const room = await Room.findOne({ _id: req.params.id, createdBy: req.user.userId });
@@ -1703,7 +1621,8 @@ app.get('/health', (req, res) => {
       replySystem: 'enabled',
       replyNotifications: 'enabled',
       communityRooms: 'enabled',
-      lifeGoals: 'enabled'
+      lifeGoals: 'enabled',
+      messageDeleting: 'enabled'
     }
   });
 });
@@ -1738,4 +1657,5 @@ app.listen(PORT, () => {
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
   console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
+  console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
 });
