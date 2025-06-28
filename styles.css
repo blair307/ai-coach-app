@@ -3328,16 +3328,42 @@ body {
 }
 
 /* =================================
-   SELECTIVE MOBILE HEADER - CENTERED BOLD PAGE TITLE
-   Only shows on pages that need it (excludes Daily Tracker, Goals, etc.)
+   FIXED MOBILE HEADER - PROPER PAGE DETECTION & SIZING
+   Replace previous CSS with this corrected version
    ================================= */
 
 @media (max-width: 768px) {
     /* =================================
-       CENTERED PAGE HEADER - ONLY FOR SPECIFIC PAGES
+       HIDE HEADER ON SPECIFIC PAGES FIRST
        ================================= */
     
-    /* Show and center the content header ONLY on pages that need it */
+    /* Hide content header on Daily Tracker - multiple detection methods */
+    body:has([style*="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"]) .content-header,
+    .main-content:has(.progress-section) .content-header,
+    .main-content:has([style*="Today's Progress"]) .content-header,
+    body[class*="daily"] .content-header,
+    body[class*="tracker"] .content-header {
+        display: none !important;
+    }
+    
+    /* Hide content header on Goals page */
+    body:has(.goals-container) .content-header,
+    .main-content:has(.goal-item) .content-header,
+    body[class*="goals"] .content-header {
+        display: none !important;
+    }
+    
+    /* Alternative: Hide if URL contains these paths */
+    body[data-page="daily-tracker"] .content-header,
+    body[data-page="goals"] .content-header {
+        display: none !important;
+    }
+    
+    /* =================================
+       SHOW AND STYLE HEADER FOR OTHER PAGES
+       ================================= */
+    
+    /* Default: Show centered header for most pages */
     .content-header {
         display: flex !important;
         justify-content: center !important;
@@ -3350,96 +3376,68 @@ body {
         z-index: 1 !important;
     }
     
-    /* Style the page title - centered and bold */
+    /* Match Billing page font size and weight */
     .content-header h1 {
-        font-size: 1.25rem !important;
+        font-size: 1.5rem !important; /* Larger like Billing page */
         margin: 0 !important;
         text-align: center !important;
         color: var(--text-primary) !important;
-        font-weight: 700 !important; /* Bold */
+        font-weight: 800 !important; /* Extra bold like Billing */
         line-height: 1.2 !important;
         width: 100% !important;
+        letter-spacing: -0.02em !important; /* Slight letter spacing */
     }
     
-    /* Hide header actions but keep the title */
+    /* Hide header actions */
     .content-header .header-actions {
         display: none !important;
     }
     
     /* =================================
-       HIDE HEADER ON PAGES WITH EXISTING STYLED HEADERS
+       SPECIFIC PAGE OVERRIDES
        ================================= */
     
-    /* Hide content header on Daily Tracker page */
-    body[data-page="daily-tracker"] .content-header,
-    .daily-tracker-page .content-header {
+    /* Force hide on Daily Tracker using more specific selectors */
+    [class*="daily-tracker"] .content-header,
+    [id*="daily-tracker"] .content-header,
+    body:has(.calendar-container) .content-header,
+    body:has(.timer-display) .content-header {
         display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
     }
     
-    /* Hide content header on Goals page */
-    body[data-page="goals"] .content-header,
-    .goals-page .content-header {
+    /* Force hide on Goals page */
+    [class*="goals"] .content-header,
+    [id*="goals"] .content-header,
+    body:has(.goal-buttons) .content-header,
+    body:has(.area-stats) .content-header {
         display: none !important;
-    }
-    
-    /* Alternative method - hide if page contains specific elements */
-    /* If Daily Tracker has a specific class or ID, hide header */
-    .page-container:has(.progress-header) .content-header,
-    .page-container:has(.daily-progress) .content-header,
-    .main-content:has(.progress-section) .content-header {
-        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
     }
     
     /* =================================
-       URL-BASED HIDING (most reliable method)
+       LAYOUT ADJUSTMENTS
        ================================= */
     
-    /* Hide header when URL contains these paths */
-    body[class*="daily-tracker"] .content-header,
-    body[class*="goals"] .content-header,
-    .daily-tracker .content-header,
-    .goals .content-header {
-        display: none !important;
-    }
-    
-    /* =================================
-       ADJUST LAYOUT FOR PAGES WITH HEADER
-       ================================= */
-    
-    /* Adjust main content for pages WITH the header */
+    /* Standard layout for pages with header */
     .main-content {
         padding: 0.5rem !important;
     }
     
-    /* Adjust chat container height to account for header */
-    .chat-container {
-        height: calc(100vh - 4rem) !important;
+    /* Adjust content height for pages with header */
+    .chat-container,
+    .dashboard-grid,
+    .billing-container,
+    .notifications-container {
         margin: 0 1rem 1rem 1rem !important;
-        border-radius: var(--radius-lg) !important;
     }
     
     /* =================================
-       PAGES WITHOUT HEADER GET MORE SPACE
-       ================================= */
-    
-    /* Give full height to pages that don't need the header */
-    body[data-page="daily-tracker"] .main-content,
-    body[data-page="goals"] .main-content,
-    .daily-tracker-page .main-content,
-    .goals-page .main-content {
-        padding: 0.25rem !important;
-    }
-    
-    body[data-page="daily-tracker"] .chat-container,
-    body[data-page="goals"] .chat-container,
-    .daily-tracker-page .chat-container,
-    .goals-page .chat-container {
-        height: calc(100vh - 1rem) !important;
-        margin: 0.5rem !important;
-    }
-    
-    /* =================================
-       ENSURE HAMBURGER MENU CLEARANCE
+       HAMBURGER MENU CLEARANCE
        ================================= */
     
     .universal-hamburger {
@@ -3448,28 +3446,37 @@ body {
         top: 20px !important;
         left: 20px !important;
     }
+    
+    /* Ensure content doesn't overlap with hamburger */
+    .content-header {
+        padding-left: 5rem !important; /* Clear hamburger space */
+        padding-right: 1rem !important;
+    }
+    
+    .content-header h1 {
+        margin-left: -4rem !important; /* Offset to center properly */
+    }
 }
 
 @media (max-width: 480px) {
     /* Small screen adjustments */
     .content-header {
-        padding: 1.25rem 0.5rem 0.5rem 0.5rem !important;
+        padding: 1.25rem 4.5rem 0.5rem 4.5rem !important;
     }
     
     .content-header h1 {
-        font-size: 1.1rem !important;
+        font-size: 1.3rem !important;
+        margin-left: -3.5rem !important;
     }
     
-    .chat-container {
-        height: calc(100vh - 3.5rem) !important;
-        margin: 0 0.5rem 0.5rem 0.5rem !important;
-    }
-    
-    /* Full height for pages without header on small screens */
-    body[data-page="daily-tracker"] .chat-container,
-    body[data-page="goals"] .chat-container {
-        height: calc(100vh - 0.5rem) !important;
-        margin: 0.25rem !important;
+    /* Ensure hidden pages stay hidden on small screens */
+    [class*="daily-tracker"] .content-header,
+    [class*="goals"] .content-header,
+    body:has(.calendar-container) .content-header,
+    body:has(.goal-buttons) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
     }
 }
- 
+
