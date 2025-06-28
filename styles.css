@@ -3326,3 +3326,98 @@ body {
         display: flex !important;
     }
 }
+
+/* =================================
+   MOBILE HEADER FIX - ADD BACK PAGE TITLE
+   Add this CSS to restore the page title header on mobile
+   ================================= */
+
+@media (max-width: 768px) {
+    /* =================================
+       RESTORE AND REPOSITION PAGE HEADER
+       ================================= */
+    
+    /* Show the content header but modify it for mobile */
+    .content-header {
+        display: flex !important;
+        justify-content: flex-end !important; /* Right-align to avoid hamburger */
+        align-items: center !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem 1rem 0.5rem 5rem !important; /* Left padding to clear hamburger */
+        border-bottom: none !important; /* Remove border for cleaner look */
+        background: transparent !important;
+    }
+    
+    /* Style the page title for mobile */
+    .content-header h1 {
+        font-size: 1.1rem !important;
+        margin: 0 !important;
+        text-align: right !important;
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+    }
+    
+    /* Hide header actions but keep the title */
+    .content-header .header-actions {
+        display: none !important;
+    }
+    
+    /* =================================
+       ADJUST LAYOUT FOR HEADER
+       ================================= */
+    
+    /* Adjust main content to accommodate header */
+    .main-content {
+        padding: 0.5rem !important;
+    }
+    
+    /* Adjust chat container height to account for header */
+    .chat-container {
+        height: calc(100vh - 4rem) !important; /* Reduced to make room for header */
+        margin: 0 1rem 1rem 1rem !important;
+        border-radius: var(--radius-lg) !important;
+    }
+    
+    /* Adjust flex container */
+    .main-content > div[style*="display: flex"] {
+        height: calc(100vh - 3rem) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* =================================
+       ENSURE HAMBURGER MENU CLEARANCE
+       ================================= */
+    
+    /* Make sure hamburger menu has proper z-index */
+    .universal-hamburger {
+        z-index: 99999 !important;
+        position: fixed !important;
+        top: 20px !important;
+        left: 20px !important;
+    }
+    
+    /* Ensure page title doesn't overlap */
+    .content-header {
+        position: relative !important;
+        z-index: 1 !important;
+        padding-top: 1.5rem !important; /* Extra space from top */
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small screens adjustments */
+    .content-header {
+        padding: 1rem 0.5rem 0.5rem 4.5rem !important; /* Less padding on small screens */
+    }
+    
+    .content-header h1 {
+        font-size: 1rem !important;
+    }
+    
+    .chat-container {
+        height: calc(100vh - 3.5rem) !important;
+        margin: 0 0.5rem 0.5rem 0.5rem !important;
+    }
+}
