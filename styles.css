@@ -3328,34 +3328,37 @@ body {
 }
 
 /* =================================
-   MOBILE HEADER FIX - ADD BACK PAGE TITLE
-   Add this CSS to restore the page title header on mobile
+   SELECTIVE MOBILE HEADER - CENTERED BOLD PAGE TITLE
+   Only shows on pages that need it (excludes Daily Tracker, Goals, etc.)
    ================================= */
 
 @media (max-width: 768px) {
     /* =================================
-       RESTORE AND REPOSITION PAGE HEADER
+       CENTERED PAGE HEADER - ONLY FOR SPECIFIC PAGES
        ================================= */
     
-    /* Show the content header but modify it for mobile */
+    /* Show and center the content header ONLY on pages that need it */
     .content-header {
         display: flex !important;
-        justify-content: flex-end !important; /* Right-align to avoid hamburger */
+        justify-content: center !important;
         align-items: center !important;
         margin-bottom: 1rem !important;
-        padding: 1rem 1rem 0.5rem 5rem !important; /* Left padding to clear hamburger */
-        border-bottom: none !important; /* Remove border for cleaner look */
+        padding: 1.5rem 1rem 0.5rem 1rem !important;
+        border-bottom: none !important;
         background: transparent !important;
+        position: relative !important;
+        z-index: 1 !important;
     }
     
-    /* Style the page title for mobile */
+    /* Style the page title - centered and bold */
     .content-header h1 {
-        font-size: 1.1rem !important;
+        font-size: 1.25rem !important;
         margin: 0 !important;
-        text-align: right !important;
+        text-align: center !important;
         color: var(--text-primary) !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important; /* Bold */
         line-height: 1.2 !important;
+        width: 100% !important;
     }
     
     /* Hide header actions but keep the title */
@@ -3364,60 +3367,109 @@ body {
     }
     
     /* =================================
-       ADJUST LAYOUT FOR HEADER
+       HIDE HEADER ON PAGES WITH EXISTING STYLED HEADERS
        ================================= */
     
-    /* Adjust main content to accommodate header */
+    /* Hide content header on Daily Tracker page */
+    body[data-page="daily-tracker"] .content-header,
+    .daily-tracker-page .content-header {
+        display: none !important;
+    }
+    
+    /* Hide content header on Goals page */
+    body[data-page="goals"] .content-header,
+    .goals-page .content-header {
+        display: none !important;
+    }
+    
+    /* Alternative method - hide if page contains specific elements */
+    /* If Daily Tracker has a specific class or ID, hide header */
+    .page-container:has(.progress-header) .content-header,
+    .page-container:has(.daily-progress) .content-header,
+    .main-content:has(.progress-section) .content-header {
+        display: none !important;
+    }
+    
+    /* =================================
+       URL-BASED HIDING (most reliable method)
+       ================================= */
+    
+    /* Hide header when URL contains these paths */
+    body[class*="daily-tracker"] .content-header,
+    body[class*="goals"] .content-header,
+    .daily-tracker .content-header,
+    .goals .content-header {
+        display: none !important;
+    }
+    
+    /* =================================
+       ADJUST LAYOUT FOR PAGES WITH HEADER
+       ================================= */
+    
+    /* Adjust main content for pages WITH the header */
     .main-content {
         padding: 0.5rem !important;
     }
     
     /* Adjust chat container height to account for header */
     .chat-container {
-        height: calc(100vh - 4rem) !important; /* Reduced to make room for header */
+        height: calc(100vh - 4rem) !important;
         margin: 0 1rem 1rem 1rem !important;
         border-radius: var(--radius-lg) !important;
     }
     
-    /* Adjust flex container */
-    .main-content > div[style*="display: flex"] {
-        height: calc(100vh - 3rem) !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    /* =================================
+       PAGES WITHOUT HEADER GET MORE SPACE
+       ================================= */
+    
+    /* Give full height to pages that don't need the header */
+    body[data-page="daily-tracker"] .main-content,
+    body[data-page="goals"] .main-content,
+    .daily-tracker-page .main-content,
+    .goals-page .main-content {
+        padding: 0.25rem !important;
+    }
+    
+    body[data-page="daily-tracker"] .chat-container,
+    body[data-page="goals"] .chat-container,
+    .daily-tracker-page .chat-container,
+    .goals-page .chat-container {
+        height: calc(100vh - 1rem) !important;
+        margin: 0.5rem !important;
     }
     
     /* =================================
        ENSURE HAMBURGER MENU CLEARANCE
        ================================= */
     
-    /* Make sure hamburger menu has proper z-index */
     .universal-hamburger {
         z-index: 99999 !important;
         position: fixed !important;
         top: 20px !important;
         left: 20px !important;
     }
-    
-    /* Ensure page title doesn't overlap */
-    .content-header {
-        position: relative !important;
-        z-index: 1 !important;
-        padding-top: 1.5rem !important; /* Extra space from top */
-    }
 }
 
 @media (max-width: 480px) {
-    /* Extra small screens adjustments */
+    /* Small screen adjustments */
     .content-header {
-        padding: 1rem 0.5rem 0.5rem 4.5rem !important; /* Less padding on small screens */
+        padding: 1.25rem 0.5rem 0.5rem 0.5rem !important;
     }
     
     .content-header h1 {
-        font-size: 1rem !important;
+        font-size: 1.1rem !important;
     }
     
     .chat-container {
         height: calc(100vh - 3.5rem) !important;
         margin: 0 0.5rem 0.5rem 0.5rem !important;
     }
+    
+    /* Full height for pages without header on small screens */
+    body[data-page="daily-tracker"] .chat-container,
+    body[data-page="goals"] .chat-container {
+        height: calc(100vh - 0.5rem) !important;
+        margin: 0.25rem !important;
+    }
 }
+ 
