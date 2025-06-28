@@ -525,7 +525,7 @@
                 
                 await saveGoalToBackend(goalData);
                 closeWizard();
-                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress below or on the Goal Tracker Page.`);
+                showSuccessMessage(`Your ${currentArea} goal has been created! Start tracking your daily progress below or on the Daily Tracker Page.`);
                 await loadGoalsOverview();
                 
             } catch (error) {
