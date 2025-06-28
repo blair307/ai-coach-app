@@ -3366,23 +3366,41 @@ body {
     .content-header .header-actions {
         display: none !important;
     }
-    
-  /* =================================
-   SIMPLE SOLUTION - HIDE HEADERS ONLY ON DAILY TRACKER AND GOALS
-   Add this to the END of your styles.css
+/* =================================
+   CLEAN MOBILE HEADER SOLUTION
+   Replace the problematic CSS with this clean version
    ================================= */
 
 @media (max-width: 768px) {
-    /* Hide header on Daily Tracker page specifically */
-    body[class*="daily"] .content-header,
-    body[class*="tracker"] .content-header,
-    [data-page="daily-tracker"] .content-header {
-        display: none !important;
+    /* =================================
+       SHOW HEADERS ON ALL PAGES - CLEAN AND SIMPLE
+       ================================= */
+    
+    /* Style all headers nicely for mobile */
+    .content-header {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin-bottom: 1rem !important;
+        padding: 1rem !important;
+        border-bottom: none !important;
+        text-align: center !important;
     }
     
-    /* Hide header on Goals page specifically */
-    body[class*="goals"] .content-header,
-    [data-page="goals"] .content-header {
+    /* Style the page titles */
+    .content-header h1 {
+        font-size: 1.5rem !important;
+        margin: 0 !important;
+        text-align: center !important;
+        color: var(--text-primary) !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
+        width: 100% !important;
+        letter-spacing: -0.02em !important;
+    }
+    
+    /* Hide header actions (buttons/notifications) on mobile but keep titles */
+    .content-header .header-actions {
         display: none !important;
     }
 }
