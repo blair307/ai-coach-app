@@ -3369,199 +3369,21 @@ body {
     }
 }
 
-<style>
-/* =================================
-   CORRECTED GOAL WIZARD MODAL STYLES
-   ================================= */
-
-/* Modal overlay - REMOVED the auto-display issue */
+/* Simple modal centering fix */
 #goalWizardModal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 9999 !important;
-    backdrop-filter: blur(4px) !important;
-    /* REMOVED: display: flex !important; - This was causing the auto-show */
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 1rem !important;
-    box-sizing: border-box !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-
-/* Only show flex when modal is actually open */
-#goalWizardModal[style*="display: block"],
-#goalWizardModal[style*="display: flex"] {
-    display: flex !important;
-}
-
-/* Modal container - properly centered and responsive */
-#goalWizardModal > div {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 100% !important;
-    height: 100% !important;
-    padding: 2rem !important;
-    box-sizing: border-box !important;
-}
-
-/* Modal content - responsive sizing */
-#goalWizardModal .modal-content,
-#goalWizardModal > div > div {
-    background: white !important;
-    border-radius: 16px !important;
-    width: 100% !important;
-    max-width: 600px !important;
-    max-height: 90vh !important;
-    overflow: hidden !important;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
-    margin: 0 auto !important;
-    position: relative !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-/* Modal header - fixed styling */
-#goalWizardModal #wizardHeader {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    color: white !important;
-    padding: 2rem !important;
-    text-align: center !important;
-    flex-shrink: 0 !important;
-}
-
-#goalWizardModal #wizardTitle {
-    margin: 0 !important;
-    font-size: 1.75rem !important;
-    font-weight: 700 !important;
-}
-
-#goalWizardModal #wizardSubtitle {
-    margin: 0.5rem 0 0 0 !important;
-    opacity: 0.9 !important;
-}
-
-/* Modal body - scrollable content */
-#goalWizardModal .modal-body,
-#goalWizardModal > div > div > div:not(#wizardHeader) {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    padding: 2rem !important;
-    max-height: calc(90vh - 120px) !important;
-}
-
-/* Form elements - responsive sizing */
-#goalWizardModal textarea,
-#goalWizardModal input {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 1rem !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 8px !important;
-    font-family: inherit !important;
-    font-size: 1rem !important;
-    line-height: 1.5 !important;
-    resize: vertical !important;
-}
-
-#goalWizardModal textarea {
-    min-height: 120px !important;
-}
-
-#goalWizardModal input {
-    margin-bottom: 1.5rem !important;
-}
-
-/* Button styling */
-#goalWizardModal .btn {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
-    color: white !important;
-    padding: 0.75rem 2rem !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    font-size: 1rem !important;
-    transition: all 0.3s ease !important;
-}
-
-#goalWizardModal .btn:hover {
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
-}
-
-/* Button container styling */
-#goalWizardModal .btn-container,
-#goalWizardModal div[style*="display: flex"] {
-    display: flex !important;
-    gap: 1rem !important;
-    margin-top: 1.5rem !important;
-    flex-wrap: wrap !important;
-}
-
-/* =================================
-   DELETE CONFIRMATION MODAL FIXES
-   ================================= */
 
 #deleteConfirmModal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 10000 !important;
-    backdrop-filter: blur(4px) !important;
-    /* REMOVED: display: flex !important; - This was causing the auto-show */
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 2rem !important;
-    box-sizing: border-box !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Only show flex when modal is actually open */
-#deleteConfirmModal[style*="display: block"],
-#deleteConfirmModal[style*="display: flex"] {
-    display: flex !important;
+/* Make sure modals are hidden by default */
+#goalWizardModal[style*="display: none"],
+#deleteConfirmModal[style*="display: none"] {
+    display: none !important;
 }
-
-#deleteConfirmModal > div {
-    background: white !important;
-    border-radius: 16px !important;
-    width: 100% !important;
-    max-width: 450px !important;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
-    margin: 0 auto !important;
-}
-
-/* Mobile responsive adjustments */
-@media (max-width: 768px) {
-    #goalWizardModal {
-        padding: 0.5rem !important;
-    }
-    
-    #goalWizardModal > div {
-        padding: 1rem !important;
-    }
-    
-    #goalWizardModal .modal-content,
-    #goalWizardModal > div > div {
-        max-width: 100% !important;
-        max-height: 95vh !important;
-        border-radius: 12px !important;
-    }
-    
-    #deleteConfirmModal {
-        padding: 1rem !important;
-    }
-    
-    #deleteConfirmModal > div {
-        max-width: 100% !important;
-        border-radius: 12px !important;
-    }
-}
-</style>
-
