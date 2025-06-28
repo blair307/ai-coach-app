@@ -6,7 +6,7 @@
     <title>Settings - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* SETTINGS PAGE SPECIFIC STYLES */
+        /* SETTINGS PAGE STYLES */
         .settings-container {
             max-width: 800px;
             margin: 0 auto;
@@ -21,6 +21,11 @@
             border: 1px solid var(--border);
             overflow: hidden;
             box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .settings-section:hover {
+            box-shadow: var(--shadow);
         }
 
         .settings-section-header {
@@ -138,6 +143,7 @@
             justify-content: center;
             color: white;
             font-size: 1.5rem;
+            filter: grayscale(100%) brightness(0) invert(1);
         }
 
         .upload-text {
@@ -181,8 +187,7 @@
         }
 
         .form-group input,
-        .form-group select,
-        .form-group textarea {
+        .form-group select {
             padding: 1rem;
             border: 2px solid var(--border);
             border-radius: var(--radius);
@@ -194,74 +199,20 @@
         }
 
         .form-group input:focus,
-        .form-group select:focus,
-        .form-group textarea:focus {
+        .form-group select:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
 
+        .form-group input:hover,
+        .form-group select:hover {
+            border-color: var(--primary-light);
+        }
+
         .form-group small {
             color: var(--text-muted);
             font-size: 0.8rem;
-        }
-
-        /* Toggle Switch */
-        .toggle-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .toggle-group:last-child {
-            border-bottom: none;
-        }
-
-        .toggle-info {
-            flex: 1;
-        }
-
-        .toggle-title {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .toggle-description {
-            color: var(--text-secondary);
-            font-size: 0.875rem;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 24px;
-            background: var(--border);
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-switch.active {
-            background: var(--primary);
-        }
-
-        .toggle-slider {
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        .toggle-switch.active .toggle-slider {
-            transform: translateX(26px);
         }
 
         /* Action Buttons */
@@ -272,45 +223,6 @@
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 1px solid var(--border);
-        }
-
-        /* Danger Zone */
-        .danger-zone {
-            border-color: rgba(239, 68, 68, 0.2);
-            background: rgba(239, 68, 68, 0.02);
-        }
-
-        .danger-zone .settings-section-header {
-            background: rgba(239, 68, 68, 0.05);
-            border-bottom-color: rgba(239, 68, 68, 0.2);
-        }
-
-        .danger-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .danger-action {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: var(--radius);
-            background: rgba(239, 68, 68, 0.05);
-        }
-
-        .danger-info h4 {
-            margin: 0 0 0.25rem 0;
-            color: var(--error);
-            font-weight: 600;
-        }
-
-        .danger-info p {
-            margin: 0;
-            color: var(--text-secondary);
-            font-size: 0.875rem;
         }
 
         /* Success/Error Messages */
@@ -332,6 +244,31 @@
             background: rgba(239, 68, 68, 0.1);
             color: var(--error);
             border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        /* Loading States */
+        .btn.loading {
+            position: relative;
+            color: transparent !important;
+        }
+
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         /* Responsive Design */
@@ -383,24 +320,6 @@
                 min-height: 44px;
             }
 
-            .danger-action {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-                text-align: center;
-            }
-
-            .toggle-group {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-                padding: 1.5rem 0;
-            }
-
-            .toggle-switch {
-                align-self: center;
-            }
-
             /* Hide notification bell on mobile settings */
             .notification-icon-container {
                 display: none !important;
@@ -444,42 +363,6 @@
             .content-header h1 {
                 font-size: 1.5rem !important;
             }
-        }
-
-        /* Loading States */
-        .btn.loading {
-            position: relative;
-            color: transparent !important;
-        }
-
-        .btn.loading::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top: 2px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        /* Improved visual hierarchy */
-        .settings-section:hover {
-            box-shadow: var(--shadow);
-        }
-
-        .form-group input:hover,
-        .form-group select:hover,
-        .form-group textarea:hover {
-            border-color: var(--primary-light);
         }
     </style>
 </head>
@@ -634,39 +517,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Danger Zone -->
-                <div class="settings-section danger-zone">
-                    <div class="settings-section-header">
-                        <div class="settings-section-icon" style="background: var(--error);">
-                            ⚠️
-                        </div>
-                        <h2>Danger Zone</h2>
-                    </div>
-                    <div class="settings-section-body">
-                        <div class="danger-actions">
-                            <div class="danger-action">
-                                <div class="danger-info">
-                                    <h4>Clear All Chat History</h4>
-                                    <p>Permanently delete all your coaching conversation history. This cannot be undone.</p>
-                                </div>
-                                <button type="button" class="btn btn-outline" style="border-color: var(--error); color: var(--error);" onclick="clearChatHistory()">
-                                    Clear History
-                                </button>
-                            </div>
-
-                            <div class="danger-action">
-                                <div class="danger-info">
-                                    <h4>Delete Account</h4>
-                                    <p>Permanently delete your account and all associated data. This action cannot be undone.</p>
-                                </div>
-                                <button type="button" class="btn" style="background: var(--error); color: white;" onclick="deleteAccount()">
-                                    Delete Account
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </main>
     </div>
@@ -705,35 +555,28 @@
     <script src="notifications.js"></script>
     
     <script>
-        // FIXED Settings Management System - Actually connects to API
+        // Clean Settings Manager - API Connected
         class SettingsManager {
             constructor() {
                 this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
                 this.apiBase = 'https://ai-coach-backend-pbse.onrender.com';
-                this.initializeForm();
+                this.userData = {};
+                this.init();
+            }
+
+            async init() {
+                console.log('⚙️ Initializing Settings Manager...');
+                await this.loadSettings();
                 this.setupEventListeners();
-                console.log('⚙️ Settings Manager initialized with API connection');
             }
 
-            async initializeForm() {
-                try {
-                    if (!this.token) {
-                        this.showMessage('Please log in to access settings.', 'error');
-                        return;
-                    }
-
-                    // Load real data from API
-                    await this.loadSettingsFromAPI();
-                } catch (error) {
-                    console.error('Error initializing form:', error);
-                    this.loadFallbackData();
+            async loadSettings() {
+                if (!this.token) {
+                    this.showMessage('Please log in to access settings.', 'error');
+                    return;
                 }
-            }
 
-            async loadSettingsFromAPI() {
                 try {
-                    console.log('🔄 Loading settings from API...');
-                    
                     const response = await fetch(`${this.apiBase}/api/user/settings`, {
                         headers: {
                             'Authorization': `Bearer ${this.token}`,
@@ -741,78 +584,64 @@
                         }
                     });
 
-                    if (!response.ok) {
-                        throw new Error(`API error: ${response.status}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.userData = data.profile;
+                        this.populateForm();
+                        console.log('✅ Settings loaded from API');
+                    } else {
+                        throw new Error('Failed to load settings');
                     }
-
-                    const data = await response.json();
-                    console.log('✅ Settings loaded from API:', data);
-
-                    // Load profile data
-                    document.getElementById('firstName').value = data.profile.firstName || '';
-                    document.getElementById('lastName').value = data.profile.lastName || '';
-                    document.getElementById('email').value = data.profile.email || '';
-                    document.getElementById('timezone').value = data.profile.timezone || 'America/Chicago';
-                    document.getElementById('company').value = data.profile.company || '';
-
-                    // Store data for avatar updates
-                    this.userData = data.profile;
-
-                    // Update avatar display
-                    this.updateAvatarDisplay();
-
                 } catch (error) {
-                    console.error('Error loading from API:', error);
+                    console.error('Error loading settings:', error);
                     this.loadFallbackData();
                 }
             }
 
             loadFallbackData() {
-                console.log('⚠️ Using fallback data from localStorage');
-                
-                // Try to get from token
                 try {
                     const payload = JSON.parse(atob(this.token.split('.')[1]));
-                    document.getElementById('email').value = payload.email || '';
+                    this.userData = {
+                        firstName: '',
+                        lastName: '',
+                        email: payload.email || '',
+                        company: '',
+                        timezone: 'America/Chicago'
+                    };
+                    this.populateForm();
                 } catch (error) {
-                    console.error('Error parsing token:', error);
-                }
-
-                // Load from localStorage as fallback
-                const stored = localStorage.getItem('userData');
-                if (stored) {
-                    const userData = JSON.parse(stored);
-                    document.getElementById('firstName').value = userData.firstName || '';
-                    document.getElementById('lastName').value = userData.lastName || '';
-                    document.getElementById('email').value = userData.email || '';
-                    document.getElementById('company').value = userData.company || '';
-                    this.userData = userData;
-                    this.updateAvatarDisplay();
+                    console.error('Error loading fallback data:', error);
                 }
             }
 
-            updateAvatarDisplay() {
+            populateForm() {
+                document.getElementById('firstName').value = this.userData.firstName || '';
+                document.getElementById('lastName').value = this.userData.lastName || '';
+                document.getElementById('email').value = this.userData.email || '';
+                document.getElementById('timezone').value = this.userData.timezone || 'America/Chicago';
+                document.getElementById('company').value = this.userData.company || '';
+                this.updateAvatar();
+            }
+
+            updateAvatar() {
                 const avatarPreview = document.getElementById('avatarPreview');
-                const avatarInitials = document.getElementById('avatarInitials');
                 
-                if (this.userData && this.userData.profilePhoto) {
-                    // Show uploaded photo
+                if (this.userData.profilePhoto) {
                     avatarPreview.innerHTML = `<img src="${this.userData.profilePhoto}" alt="Profile Photo">`;
                 } else {
-                    // Show initials
                     const initials = this.getInitials();
                     avatarPreview.innerHTML = `<span id="avatarInitials">${initials}</span>`;
                 }
             }
 
             getInitials() {
-                const firstName = this.userData?.firstName || 'J';
-                const lastName = this.userData?.lastName || 'D';
-                return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+                const first = this.userData.firstName || 'J';
+                const last = this.userData.lastName || 'D';
+                return (first.charAt(0) + last.charAt(0)).toUpperCase();
             }
 
             setupEventListeners() {
-                // Profile form submission
+                // Profile form
                 document.getElementById('profileForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.saveProfile();
@@ -821,12 +650,11 @@
                 // Password form
                 document.getElementById('passwordForm').addEventListener('submit', (e) => {
                     e.preventDefault();
-                    this.updatePassword();
+                    this.changePassword();
                 });
 
-                // Drag and drop for photo upload
+                // Drag and drop
                 const uploadArea = document.querySelector('.upload-area');
-                
                 uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     uploadArea.classList.add('dragover');
@@ -839,26 +667,18 @@
                 uploadArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     uploadArea.classList.remove('dragover');
-                    
-                    const files = e.dataTransfer.files;
-                    if (files.length > 0) {
-                        this.handlePhotoFile(files[0]);
+                    if (e.dataTransfer.files.length > 0) {
+                        this.handlePhotoFile(e.dataTransfer.files[0]);
                     }
                 });
             }
 
             async saveProfile() {
+                const submitBtn = document.querySelector('#profileForm button[type="submit"]');
+                submitBtn.classList.add('loading');
+
                 try {
-                    const submitBtn = document.querySelector('#profileForm button[type="submit"]');
-                    const originalText = submitBtn.textContent;
-                    
-                    // Show loading state
-                    submitBtn.classList.add('loading');
-                    submitBtn.textContent = 'Saving...';
-                    
-                    // Get form data
                     const formData = new FormData(document.getElementById('profileForm'));
-                    
                     const profileData = {
                         firstName: formData.get('firstName'),
                         lastName: formData.get('lastName'),
@@ -867,9 +687,6 @@
                         timezone: formData.get('timezone')
                     };
 
-                    console.log('💾 Saving profile to API:', profileData);
-
-                    // Send to API
                     const response = await fetch(`${this.apiBase}/api/user/profile`, {
                         method: 'PUT',
                         headers: {
@@ -879,86 +696,55 @@
                         body: JSON.stringify(profileData)
                     });
 
-                    if (!response.ok) {
+                    if (response.ok) {
+                        this.userData = { ...this.userData, ...profileData };
+                        localStorage.setItem('userData', JSON.stringify(this.userData));
+                        this.updateAvatar();
+                        this.showMessage('Profile updated successfully!', 'success');
+                    } else {
                         const error = await response.json();
                         throw new Error(error.error || 'Failed to save profile');
                     }
-
-                    const result = await response.json();
-                    console.log('✅ Profile saved to API:', result);
-
-                    // Update local data
-                    this.userData = { ...this.userData, ...profileData };
-                    
-                    // Update localStorage for compatibility
-                    localStorage.setItem('userData', JSON.stringify(this.userData));
-                    
-                    // Update avatar with new initials if needed
-                    this.updateAvatarDisplay();
-                    
-                    // Show success message
-                    this.showMessage('Profile updated successfully!', 'success');
-                    
                 } catch (error) {
-                    console.error('❌ Error saving profile:', error);
-                    this.showMessage(`Failed to save profile: ${error.message}`, 'error');
+                    this.showMessage(`Error: ${error.message}`, 'error');
                 } finally {
-                    // Reset loading state
-                    const submitBtn = document.querySelector('#profileForm button[type="submit"]');
-                    setTimeout(() => {
-                        submitBtn.classList.remove('loading');
-                        submitBtn.textContent = 'Save Changes';
-                    }, 1000);
+                    submitBtn.classList.remove('loading');
                 }
             }
 
             handlePhotoFile(file) {
-                // Validate file
                 if (!file.type.startsWith('image/')) {
                     this.showMessage('Please select a valid image file.', 'error');
                     return;
                 }
-                
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+
+                if (file.size > 5 * 1024 * 1024) {
                     this.showMessage('File size must be less than 5MB.', 'error');
                     return;
                 }
-                
-                // Read and upload image
+
                 const reader = new FileReader();
                 reader.onload = async (e) => {
                     try {
-                        const base64Data = e.target.result;
-                        console.log('📤 Uploading photo to API...');
-
-                        // Send to API
                         const response = await fetch(`${this.apiBase}/api/user/photo`, {
                             method: 'PUT',
                             headers: {
                                 'Authorization': `Bearer ${this.token}`,
                                 'Content-Type': 'application/json'
                             },
-                            body: JSON.stringify({ profilePhoto: base64Data })
+                            body: JSON.stringify({ profilePhoto: e.target.result })
                         });
 
-                        if (!response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.error || 'Failed to upload photo');
+                        if (response.ok) {
+                            this.userData.profilePhoto = e.target.result;
+                            localStorage.setItem('userData', JSON.stringify(this.userData));
+                            this.updateAvatar();
+                            this.showMessage('Profile photo updated!', 'success');
+                        } else {
+                            throw new Error('Failed to upload photo');
                         }
-
-                        const result = await response.json();
-                        console.log('✅ Photo uploaded to API:', result);
-
-                        // Update local data
-                        this.userData.profilePhoto = base64Data;
-                        localStorage.setItem('userData', JSON.stringify(this.userData));
-                        
-                        this.updateAvatarDisplay();
-                        this.showMessage('Profile photo updated!', 'success');
-
                     } catch (error) {
-                        console.error('❌ Error uploading photo:', error);
-                        this.showMessage(`Failed to upload photo: ${error.message}`, 'error');
+                        this.showMessage(`Error uploading photo: ${error.message}`, 'error');
                     }
                 };
                 reader.readAsDataURL(file);
@@ -966,8 +752,6 @@
 
             async removePhoto() {
                 try {
-                    console.log('🗑️ Removing photo from API...');
-
                     const response = await fetch(`${this.apiBase}/api/user/photo`, {
                         method: 'DELETE',
                         headers: {
@@ -976,69 +760,53 @@
                         }
                     });
 
-                    if (!response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.error || 'Failed to remove photo');
+                    if (response.ok) {
+                        this.userData.profilePhoto = null;
+                        localStorage.setItem('userData', JSON.stringify(this.userData));
+                        this.updateAvatar();
+                        this.showMessage('Profile photo removed.', 'success');
+                    } else {
+                        throw new Error('Failed to remove photo');
                     }
-
-                    console.log('✅ Photo removed from API');
-
-                    // Update local data
-                    this.userData.profilePhoto = null;
-                    localStorage.setItem('userData', JSON.stringify(this.userData));
-                    
-                    this.updateAvatarDisplay();
-                    this.showMessage('Profile photo removed.', 'success');
-
                 } catch (error) {
-                    console.error('❌ Error removing photo:', error);
-                    this.showMessage(`Failed to remove photo: ${error.message}`, 'error');
+                    this.showMessage(`Error removing photo: ${error.message}`, 'error');
                 }
             }
 
-            async updatePassword() {
+            async changePassword() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (newPassword !== confirmPassword) {
+                    this.showMessage('New passwords do not match.', 'error');
+                    return;
+                }
+
+                if (newPassword.length < 6) {
+                    this.showMessage('Password must be at least 6 characters long.', 'error');
+                    return;
+                }
+
                 try {
-                    const currentPassword = document.getElementById('currentPassword').value;
-                    const newPassword = document.getElementById('newPassword').value;
-                    const confirmPassword = document.getElementById('confirmPassword').value;
-                    
-                    if (newPassword !== confirmPassword) {
-                        this.showMessage('New passwords do not match.', 'error');
-                        return;
-                    }
-                    
-                    if (newPassword.length < 6) {
-                        this.showMessage('Password must be at least 6 characters long.', 'error');
-                        return;
-                    }
-
-                    console.log('🔑 Updating password via API...');
-
                     const response = await fetch(`${this.apiBase}/api/user/change-password`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${this.token}`,
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({
-                            currentPassword,
-                            newPassword
-                        })
+                        body: JSON.stringify({ currentPassword, newPassword })
                     });
 
-                    if (!response.ok) {
+                    if (response.ok) {
+                        this.showMessage('Password updated successfully!', 'success');
+                        this.closePasswordModal();
+                    } else {
                         const error = await response.json();
                         throw new Error(error.error || 'Failed to update password');
                     }
-
-                    console.log('✅ Password updated via API');
-                    
-                    this.showMessage('Password updated successfully!', 'success');
-                    this.closePasswordModal();
-                    
                 } catch (error) {
-                    console.error('❌ Error updating password:', error);
-                    this.showMessage(`Failed to update password: ${error.message}`, 'error');
+                    this.showMessage(`Error: ${error.message}`, 'error');
                 }
             }
 
@@ -1046,46 +814,14 @@
                 const messageElement = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
                 const otherMessage = document.getElementById(type === 'success' ? 'errorMessage' : 'successMessage');
                 
-                // Hide other message
                 otherMessage.style.display = 'none';
-                
-                // Show current message
                 messageElement.textContent = text;
                 messageElement.style.display = 'block';
                 
-                // Auto-hide after 5 seconds
                 setTimeout(() => {
                     messageElement.style.display = 'none';
                 }, 5000);
                 
-                // Scroll to top to show message
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-
-            closePasswordModal() {
-                document.getElementById('passwordModal').style.display = 'none';
-                document.getElementById('passwordForm').reset();
-            }
-        }
-
-
-            showMessage(text, type) {
-                const messageElement = document.getElementById(type === 'success' ? 'successMessage' : 'errorMessage');
-                const otherMessage = document.getElementById(type === 'success' ? 'errorMessage' : 'successMessage');
-                
-                // Hide other message
-                otherMessage.style.display = 'none';
-                
-                // Show current message
-                messageElement.textContent = text;
-                messageElement.style.display = 'block';
-                
-                // Auto-hide after 5 seconds
-                setTimeout(() => {
-                    messageElement.style.display = 'none';
-                }, 5000);
-                
-                // Scroll to top to show message
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
@@ -1109,9 +845,9 @@
         }
 
         function resetProfileForm() {
-            if (confirm('Are you sure you want to reset all profile changes?')) {
-                window.settingsManager.initializeForm();
-                window.settingsManager.showMessage('Profile form reset.', 'success');
+            if (confirm('Are you sure you want to reset all changes?')) {
+                window.settingsManager.populateForm();
+                window.settingsManager.showMessage('Form reset.', 'success');
             }
         }
 
@@ -1123,7 +859,6 @@
             window.settingsManager.closePasswordModal();
         }
 
-        // Navigation functions
         function goToNotifications() {
             window.location.href = 'notifications.html';
         }
@@ -1145,84 +880,3 @@
                         'Content-Type': 'application/json'
                     }
                 });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const count = data.count || 0;
-                    const countElement = document.getElementById('headerNotificationCount');
-                    
-                    if (countElement) {
-                        countElement.textContent = count;
-                        countElement.setAttribute('data-count', count);
-                        countElement.style.display = count > 0 ? 'flex' : 'none';
-                    }
-                }
-            } catch (error) {
-                console.error('Error fetching notification count:', error);
-            }
-        }
-
-        // Sidebar toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            
-            if (window.innerWidth <= 768) {
-                // Mobile behavior
-                sidebar.classList.toggle('open');
-                
-                // Add/remove overlay
-                let overlay = document.querySelector('.mobile-overlay');
-                if (!overlay) {
-                    overlay = document.createElement('div');
-                    overlay.className = 'mobile-overlay';
-                    overlay.onclick = () => {
-                        sidebar.classList.remove('open');
-                        overlay.classList.remove('active');
-                    };
-                    document.body.appendChild(overlay);
-                }
-                
-                if (sidebar.classList.contains('open')) {
-                    overlay.classList.add('active');
-                } else {
-                    overlay.classList.remove('active');
-                }
-            } else {
-                // Desktop behavior
-                if (mainContent.classList.contains('shifted')) {
-                    mainContent.classList.remove('shifted');
-                    sidebar.style.transform = 'translateX(-280px)';
-                } else {
-                    mainContent.classList.add('shifted');
-                    sidebar.style.transform = 'translateX(0)';
-                }
-            }
-        }
-
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('⚙️ Settings page loading...');
-            
-            // Initialize settings manager
-            window.settingsManager = new SettingsManager();
-            
-            // Load notification count
-            updateNotificationCount();
-            setInterval(updateNotificationCount, 30000);
-            
-            // Close modal when clicking outside
-            const passwordModal = document.getElementById('passwordModal');
-            if (passwordModal) {
-                passwordModal.addEventListener('click', function(e) {
-                    if (e.target === this) {
-                        closePasswordModal();
-                    }
-                });
-            }
-            
-            console.log('✅ Settings page initialized');
-        });
-    </script>
-</body>
-</html>
