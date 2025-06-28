@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with Enhanced Reply Notifications
+// Complete AI Coach Backend Server with Enhanced Reply Notifications + SETTINGS SUPPORT
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -59,7 +59,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// Updated User Schema with Streak Tracking + Password Reset
+// UPDATED User Schema with Settings Support + Password Reset
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -78,6 +78,19 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  // NEW SETTINGS FIELDS - Step 4
+  company: String,
+  timezone: { type: String, default: 'America/Chicago' },
+  profilePhoto: String,
+  settings: {
+    emailNotifications: { type: Boolean, default: true },
+    coachingReminders: { type: Boolean, default: true },
+    communityMentions: { type: Boolean, default: true },
+    goalReminders: { type: Boolean, default: true },
+    weeklyReports: { type: Boolean, default: true },
+    profileVisibility: { type: Boolean, default: true },
+    activityStatus: { type: Boolean, default: false }
+  },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -277,7 +290,7 @@ app.get('/', (req, res) => {
 
 // Test route
 app.get('/test', (req, res) => {
-  res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
+  res.json({ message: 'Enhanced reply system deployed with SETTINGS!', timestamp: new Date() });
 });
 
 // Register new user with payment
@@ -307,7 +320,18 @@ app.post('/api/auth/register', async (req, res) => {
         currentStreak: 1,
         lastLoginDate: new Date(),
         longestStreak: 1
-      }
+      },
+      // Initialize default settings
+      settings: {
+        emailNotifications: true,
+        coachingReminders: true,
+        communityMentions: true,
+        goalReminders: true,
+        weeklyReports: true,
+        profileVisibility: true,
+        activityStatus: false
+      },
+      timezone: 'America/Chicago'
     });
 
     await user.save();
@@ -481,6 +505,309 @@ app.post('/api/auth/reset-password', async (req, res) => {
   } catch (error) {
     console.error('Reset password error:', error);
     res.status(500).json({ message: 'Error resetting password' });
+  }
+});
+
+// ==========================================
+// NEW SETTINGS API ROUTES - Step 3
+// ==========================================
+
+// Get user settings and profile
+app.get('/api/user/settings', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId).select('-password -resetPasswordToken');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      settings: user.settings || {
+        emailNotifications: true,
+        coachingReminders: true,
+        communityMentions: true,
+        goalReminders: true,
+        weeklyReports: true,
+        profileVisibility: true,
+        activityStatus: false
+      },
+      profile: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company || '',
+        timezone: user.timezone || 'America/Chicago',
+        profilePhoto: user.profilePhoto || null
+      }
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ error: 'Failed to get settings' });
+  }
+});
+
+// Update user profile information
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const { firstName, lastName, email, company, timezone } = req.body;
+    
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({ 
+        email: email.toLowerCase(), 
+        _id: { $ne: req.user.userId } 
+      });
+      if (existingUser) {
+        return res.status(400).json({ error: 'Email already in use by another account' });
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { 
+        firstName, 
+        lastName, 
+        email: email?.toLowerCase(), 
+        company, 
+        timezone 
+      },
+      { new: true, runValidators: true }
+    ).select('-password -resetPasswordToken');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ 
+      message: 'Profile updated successfully', 
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company,
+        timezone: user.timezone
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    if (error.code === 11000) {
+      return res.status(400).json({ error: 'Email already in use' });
+    }
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Update user settings (notification preferences, privacy settings)
+app.put('/api/user/settings', authenticateToken, async (req, res) => {
+  try {
+    const settings = req.body;
+    
+    // Validate settings object
+    const validSettings = [
+      'emailNotifications', 'coachingReminders', 'communityMentions', 
+      'goalReminders', 'weeklyReports', 'profileVisibility', 'activityStatus'
+    ];
+    
+    const filteredSettings = {};
+    for (const [key, value] of Object.entries(settings)) {
+      if (validSettings.includes(key) && typeof value === 'boolean') {
+        filteredSettings[`settings.${key}`] = value;
+      }
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId, 
+      filteredSettings,
+      { new: true }
+    );
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ 
+      message: 'Settings updated successfully',
+      settings: user.settings
+    });
+  } catch (error) {
+    console.error('Update settings error:', error);
+    res.status(500).json({ error: 'Failed to update settings' });
+  }
+});
+
+// Upload/Update profile photo
+app.put('/api/user/photo', authenticateToken, async (req, res) => {
+  try {
+    const { profilePhoto } = req.body;
+    
+    if (!profilePhoto) {
+      return res.status(400).json({ error: 'Profile photo data required' });
+    }
+
+    // Basic validation for base64 image data
+    if (!profilePhoto.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { profilePhoto },
+      { new: true }
+    ).select('firstName lastName profilePhoto');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ 
+      message: 'Profile photo updated successfully',
+      profilePhoto: user.profilePhoto
+    });
+  } catch (error) {
+    console.error('Upload photo error:', error);
+    res.status(500).json({ error: 'Failed to upload photo' });
+  }
+});
+
+// Remove profile photo
+app.delete('/api/user/photo', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findByIdAndUpdate(
+      req.user.userId,
+      { $unset: { profilePhoto: 1 } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ message: 'Profile photo removed successfully' });
+  } catch (error) {
+    console.error('Remove photo error:', error);
+    res.status(500).json({ error: 'Failed to remove photo' });
+  }
+});
+
+// Change password from settings
+app.put('/api/user/change-password', authenticateToken, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+
+    const user = await User.findById(req.user.userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Hash and save new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.findByIdAndUpdate(req.user.userId, { password: hashedPassword });
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Export user data
+app.get('/api/user/export', authenticateToken, async (req, res) => {
+  try {
+    const { type } = req.query;
+    const userId = req.user.userId;
+
+    let exportData = {
+      exportDate: new Date().toISOString(),
+      userId: userId
+    };
+
+    switch (type) {
+      case 'coaching':
+        const chatHistory = await Chat.findOne({ userId });
+        exportData.type = 'Coaching History Export';
+        exportData.sessions = chatHistory ? chatHistory.messages.filter(m => m.role === 'user').length : 0;
+        exportData.messages = chatHistory ? chatHistory.messages : [];
+        break;
+
+      case 'goals':
+        const goals = await LifeGoal.find({ userId });
+        exportData.type = 'Goals & Progress Export';
+        exportData.goals = goals;
+        break;
+
+      case 'all':
+        const user = await User.findById(userId).select('-password -resetPasswordToken');
+        const allGoals = await LifeGoal.find({ userId });
+        const allChats = await Chat.findOne({ userId });
+        const notifications = await Notification.find({ userId }).limit(100);
+
+        exportData.type = 'Complete Data Export';
+        exportData.profile = user;
+        exportData.goals = allGoals;
+        exportData.chatHistory = allChats;
+        exportData.notifications = notifications;
+        break;
+
+      default:
+        return res.status(400).json({ error: 'Invalid export type' });
+    }
+
+    res.json(exportData);
+  } catch (error) {
+    console.error('Export data error:', error);
+    res.status(500).json({ error: 'Failed to export data' });
+  }
+});
+
+// Clear chat history
+app.delete('/api/user/chat-history', authenticateToken, async (req, res) => {
+  try {
+    await Chat.findOneAndDelete({ userId: req.user.userId });
+    res.json({ message: 'Chat history cleared successfully' });
+  } catch (error) {
+    console.error('Clear chat history error:', error);
+    res.status(500).json({ error: 'Failed to clear chat history' });
+  }
+});
+
+// Delete user account
+app.delete('/api/user/account', authenticateToken, async (req, res) => {
+  try {
+    const { confirmation } = req.body;
+    
+    if (confirmation !== 'DELETE MY ACCOUNT') {
+      return res.status(400).json({ error: 'Invalid confirmation text' });
+    }
+
+    const userId = req.user.userId;
+
+    // Delete all user data
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      Goal.deleteMany({ userId }),
+      LifeGoal.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+      Chat.findOneAndDelete({ userId }),
+      Message.deleteMany({ userId })
+    ]);
+
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
   }
 });
 
@@ -1522,7 +1849,7 @@ async function migrateGoalsToHistory() {
   }
 }
 
-// Enhanced health check with reply system status
+// Enhanced health check with reply system status + SETTINGS
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -1538,7 +1865,10 @@ app.get('/health', (req, res) => {
       replyNotifications: 'enabled',
       communityRooms: 'enabled',
       lifeGoals: 'enabled',
-      messageDeleting: 'enabled'
+      messageDeleting: 'enabled',
+      userSettings: 'enabled',
+      profilePhotos: 'enabled',
+      dataExport: 'enabled'
     }
   });
 });
@@ -1574,4 +1904,6 @@ app.listen(PORT, () => {
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
   console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
+  console.log(`⚙️ USER SETTINGS: ENABLED with Profile Photos & Data Export ✅`);
+  console.log(`🔒 Security: Password Change & Account Deletion ✅`);
 });
