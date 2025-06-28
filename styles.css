@@ -3369,13 +3369,12 @@ body {
     }
 }
 
-<!-- Add this CSS to fix the modal positioning and responsiveness -->
 <style>
 /* =================================
-   FIXED GOAL WIZARD MODAL STYLES
+   CORRECTED GOAL WIZARD MODAL STYLES
    ================================= */
 
-/* Modal overlay - ensure full coverage and proper centering */
+/* Modal overlay - REMOVED the auto-display issue */
 #goalWizardModal {
     position: fixed !important;
     top: 0 !important;
@@ -3385,11 +3384,17 @@ body {
     background: rgba(0, 0, 0, 0.5) !important;
     z-index: 9999 !important;
     backdrop-filter: blur(4px) !important;
-    display: flex !important;
+    /* REMOVED: display: flex !important; - This was causing the auto-show */
     align-items: center !important;
     justify-content: center !important;
     padding: 1rem !important;
     box-sizing: border-box !important;
+}
+
+/* Only show flex when modal is actually open */
+#goalWizardModal[style*="display: block"],
+#goalWizardModal[style*="display: flex"] {
+    display: flex !important;
 }
 
 /* Modal container - properly centered and responsive */
@@ -3488,26 +3493,6 @@ body {
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
 }
 
-/* Example buttons grid */
-#goalWizardModal #examplesList {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 0.5rem !important;
-    margin-top: 1rem !important;
-}
-
-#goalWizardModal #examplesList button {
-    background: var(--background) !important;
-    border: 2px solid var(--border) !important;
-    color: var(--text-secondary) !important;
-    padding: 0.5rem 1rem !important;
-    border-radius: 20px !important;
-    cursor: pointer !important;
-    font-size: 0.875rem !important;
-    transition: all 0.2s ease !important;
-    white-space: nowrap !important;
-}
-
 /* Button container styling */
 #goalWizardModal .btn-container,
 #goalWizardModal div[style*="display: flex"] {
@@ -3515,6 +3500,41 @@ body {
     gap: 1rem !important;
     margin-top: 1.5rem !important;
     flex-wrap: wrap !important;
+}
+
+/* =================================
+   DELETE CONFIRMATION MODAL FIXES
+   ================================= */
+
+#deleteConfirmModal {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 10000 !important;
+    backdrop-filter: blur(4px) !important;
+    /* REMOVED: display: flex !important; - This was causing the auto-show */
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2rem !important;
+    box-sizing: border-box !important;
+}
+
+/* Only show flex when modal is actually open */
+#deleteConfirmModal[style*="display: block"],
+#deleteConfirmModal[style*="display: flex"] {
+    display: flex !important;
+}
+
+#deleteConfirmModal > div {
+    background: white !important;
+    border-radius: 16px !important;
+    width: 100% !important;
+    max-width: 450px !important;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+    margin: 0 auto !important;
 }
 
 /* Mobile responsive adjustments */
@@ -3534,111 +3554,6 @@ body {
         border-radius: 12px !important;
     }
     
-    #goalWizardModal #wizardHeader {
-        padding: 1.5rem !important;
-    }
-    
-    #goalWizardModal #wizardTitle {
-        font-size: 1.5rem !important;
-    }
-    
-    #goalWizardModal .modal-body,
-    #goalWizardModal > div > div > div:not(#wizardHeader) {
-        padding: 1.5rem !important;
-        max-height: calc(95vh - 100px) !important;
-    }
-    
-    #goalWizardModal textarea {
-        min-height: 100px !important;
-        font-size: 16px !important; /* Prevents zoom on iOS */
-    }
-    
-    #goalWizardModal input {
-        font-size: 16px !important; /* Prevents zoom on iOS */
-    }
-    
-    #goalWizardModal .btn-container,
-    #goalWizardModal div[style*="display: flex"] {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-    }
-    
-    #goalWizardModal .btn {
-        width: 100% !important;
-        padding: 1rem 2rem !important;
-        font-size: 0.95rem !important;
-    }
-    
-    #goalWizardModal #examplesList {
-        gap: 0.375rem !important;
-    }
-    
-    #goalWizardModal #examplesList button {
-        font-size: 0.8rem !important;
-        padding: 0.375rem 0.75rem !important;
-    }
-}
-
-@media (max-width: 480px) {
-    #goalWizardModal {
-        padding: 0.25rem !important;
-    }
-    
-    #goalWizardModal > div {
-        padding: 0.5rem !important;
-    }
-    
-    #goalWizardModal .modal-content,
-    #goalWizardModal > div > div {
-        max-height: 98vh !important;
-        border-radius: 8px !important;
-    }
-    
-    #goalWizardModal #wizardHeader {
-        padding: 1rem !important;
-    }
-    
-    #goalWizardModal #wizardTitle {
-        font-size: 1.25rem !important;
-    }
-    
-    #goalWizardModal .modal-body,
-    #goalWizardModal > div > div > div:not(#wizardHeader) {
-        padding: 1rem !important;
-        max-height: calc(98vh - 80px) !important;
-    }
-}
-
-/* =================================
-   DELETE CONFIRMATION MODAL FIXES
-   ================================= */
-
-#deleteConfirmModal {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    background: rgba(0, 0, 0, 0.5) !important;
-    z-index: 10000 !important;
-    backdrop-filter: blur(4px) !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 2rem !important;
-    box-sizing: border-box !important;
-}
-
-#deleteConfirmModal > div {
-    background: white !important;
-    border-radius: 16px !important;
-    width: 100% !important;
-    max-width: 450px !important;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
-    margin: 0 auto !important;
-}
-
-@media (max-width: 768px) {
     #deleteConfirmModal {
         padding: 1rem !important;
     }
@@ -3650,68 +3565,3 @@ body {
 }
 </style>
 
-<!-- Also add this JavaScript fix to ensure proper modal behavior -->
-<script>
-// Enhanced modal positioning fix
-function openGoalWizard(area) {
-    currentArea = area;
-    currentStep = 1;
-    const config = areaConfig[area];
-    
-    document.getElementById('wizardTitle').textContent = config.title;
-    document.getElementById('wizardSubtitle').textContent = config.subtitle;
-    document.getElementById('wizardHeader').style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
-    document.getElementById('stepDescription').textContent = config.description;
-    
-    document.getElementById('bigGoalInput').value = '';
-    document.getElementById('dailyActionInput').value = '';
-    showStep(1);
-    
-    const modal = document.getElementById('goalWizardModal');
-    modal.style.display = 'flex'; // Use flex instead of block
-    document.body.style.overflow = 'hidden';
-    
-    // Force center positioning
-    setTimeout(() => {
-        document.getElementById('bigGoalInput').focus();
-    }, 100);
-}
-
-function closeWizard() {
-    document.getElementById('goalWizardModal').style.display = 'none';
-    document.body.style.overflow = '';
-    currentStep = 1;
-    currentArea = '';
-    wizardData = {};
-}
-
-// Enhanced delete modal positioning
-function deleteGoalClick(goalId) {
-    // ... existing delete goal logic ...
-    
-    const modal = document.getElementById('deleteConfirmModal');
-    modal.style.display = 'flex'; // Use flex instead of block
-    document.body.style.overflow = 'hidden';
-}
-
-function closeDeleteModal() {
-    document.getElementById('deleteConfirmModal').style.display = 'none';
-    document.body.style.overflow = '';
-    goalToDelete = null;
-}
-
-// Fix modal click-outside-to-close behavior
-document.addEventListener('click', function(e) {
-    const goalWizardModal = document.getElementById('goalWizardModal');
-    const deleteModal = document.getElementById('deleteConfirmModal');
-    
-    // Only close if clicking the modal overlay itself, not the content
-    if (e.target === goalWizardModal) {
-        closeWizard();
-    }
-    
-    if (e.target === deleteModal) {
-        closeDeleteModal();
-    }
-});
-</script>
