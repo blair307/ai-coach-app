@@ -1262,6 +1262,8 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
+// REPLACE WITH THIS NEW CODE:
+
 // ENHANCED: Get messages with reply support, deleted message handling, AND PROFILE PHOTOS
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
@@ -1295,7 +1297,7 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
     }));
     
     // Process messages to ensure proper reply structure and handle deleted messages
-    const processedMessages = messagesWithPhotos.map(message => {
+    const processedMessages = messagesWithPhotos.map(messageObj => {
       
       // Ensure backward compatibility
       if (!messageObj.content && messageObj.message) {
