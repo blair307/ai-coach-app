@@ -1,4 +1,4 @@
-/* Ultra Modern Entrepreneur Emotional Health Styles - CLEANED VERSION */
+F/* Ultra Modern Entrepreneur Emotional Health Styles - CLEANED VERSION */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -3328,54 +3328,10 @@ body {
 }
 
 /* =================================
-   FIXED MOBILE HEADER - SHOW HEADERS BY DEFAULT, HIDE ONLY ON SPECIFIC PAGES
-   Replace previous CSS with this corrected version
+   CLEAN MOBILE HEADER SOLUTION - FINAL VERSION
    ================================= */
 
 @media (max-width: 768px) {
-    /* =================================
-       DEFAULT: SHOW HEADERS ON MOST PAGES
-       ================================= */
-    
-    /* Show and style header by default */
-    .content-header {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        margin-bottom: 1rem !important;
-        padding: 1.5rem 1rem 0.5rem 1rem !important;
-        border-bottom: none !important;
-        background: transparent !important;
-        position: relative !important;
-        z-index: 1 !important;
-    }
-    
-    /* Style the page title - large and bold like Billing page */
-    .content-header h1 {
-        font-size: 1.5rem !important;
-        margin: 0 !important;
-        text-align: center !important;
-        color: var(--text-primary) !important;
-        font-weight: 800 !important;
-        line-height: 1.2 !important;
-        width: 100% !important;
-        letter-spacing: -0.02em !important;
-    }
-    
-    /* Hide header actions but keep the title */
-    .content-header .header-actions {
-        display: none !important;
-    }
-/* =================================
-   CLEAN MOBILE HEADER SOLUTION
-   Replace the problematic CSS with this clean version
-   ================================= */
-
-@media (max-width: 768px) {
-    /* =================================
-       SHOW HEADERS ON ALL PAGES - CLEAN AND SIMPLE
-       ================================= */
-    
     /* Style all headers nicely for mobile */
     .content-header {
         display: flex !important;
