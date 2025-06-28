@@ -347,6 +347,8 @@ async function switchRoom(roomId) {
 }
 
 
+// REPLACE WITH THIS NEW CODE:
+
 // ENHANCED: Create message element with PROFILE PHOTOS and better delete button handling
 function createMessageElement(message, isReply = false, parentIndex = null) {
     const messageDiv = document.createElement('div');
@@ -496,6 +498,8 @@ async function loadMessages(roomId) {
 }
 
 // REPLACE the end of your displayThreadedMessages function with this:
+
+// REPLACE WITH THIS NEW CODE:
 
 function displayThreadedMessages(messages) {
     const messagesContainer = document.getElementById('communityMessages');
