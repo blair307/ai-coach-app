@@ -877,47 +877,49 @@
             }
         }
 
-        // Initialize
+     // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             updateNotificationCount();
             setInterval(updateNotificationCount, 30000);
         });
-
-        /* Profile Photo Styling for Community Messages */
-.user-avatar.photo-avatar {
-    overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.9);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.user-avatar img {
-    transition: all 0.2s ease;
-}
-
-.user-avatar.photo-avatar:hover img {
-    transform: scale(1.05);
-}
-
-/* Ensure avatars maintain proper size */
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
-    flex-shrink: 0;
-    position: relative;
-}
-
-@media (max-width: 480px) {
-    .user-avatar {
-        width: 28px;
-        height: 28px;
-        min-width: 28px;
-        min-height: 28px;
-    }
-}
         
     </script>
+    
+    <style>
+        /* Profile Photo Styling for Community Messages */
+        .user-avatar.photo-avatar {
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-avatar img {
+            transition: all 0.2s ease;
+        }
+
+        .user-avatar.photo-avatar:hover img {
+            transform: scale(1.05);
+        }
+
+        /* Ensure avatars maintain proper size */
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            min-height: 32px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        @media (max-width: 480px) {
+            .user-avatar {
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
+            }
+        }
+    </style>
     
 </body>
 </html>
