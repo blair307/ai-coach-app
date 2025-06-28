@@ -1262,7 +1262,7 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Get messages with reply support and deleted message handling
+// ENHANCED: Get messages with reply support, deleted message handling, AND PROFILE PHOTOS
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const messages = await Message.find({ roomId: req.params.id })
@@ -1271,9 +1271,31 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       
     console.log(`📨 Retrieved ${messages.length} messages for room ${req.params.id}`);
     
-    // Process messages to ensure proper reply structure and handle deleted messages
-    const processedMessages = messages.map(message => {
+    // NEW: Add profile photos to all messages (including old ones)
+    const messagesWithPhotos = await Promise.all(messages.map(async (message) => {
       const messageObj = message.toObject();
+      
+      // Get user's current profile photo for this message
+      if (messageObj.userId) {
+        try {
+          const user = await User.findById(messageObj.userId).select('profilePhoto firstName lastName');
+          if (user && user.profilePhoto) {
+            messageObj.profilePhoto = user.profilePhoto;
+          }
+          // Also ensure we have the latest username
+          if (user && user.firstName && user.lastName) {
+            messageObj.username = `${user.firstName} ${user.lastName}`;
+          }
+        } catch (error) {
+          console.log('Could not fetch user data for message:', messageObj.userId);
+        }
+      }
+      
+      return messageObj;
+    }));
+    
+    // Process messages to ensure proper reply structure and handle deleted messages
+    const processedMessages = messagesWithPhotos.map(message => {
       
       // Ensure backward compatibility
       if (!messageObj.content && messageObj.message) {
@@ -1301,13 +1323,13 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Send message with reply notifications
+// ENHANCED: Send message with reply notifications AND PROFILE PHOTOS
 app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
     const username = user ? `${user.firstName} ${user.lastName}` : 'User';
     
-    // Create the message
+    // Create the message with profile photo
     const messageData = {
       roomId: req.params.id,
       userId: req.user.userId,
@@ -1315,7 +1337,9 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       avatar: req.body.avatar || user?.firstName?.charAt(0).toUpperCase() || 'U',
       content: req.body.content,
       message: req.body.content, // For compatibility
-      avatarColor: req.body.avatarColor || '#6366f1'
+      avatarColor: req.body.avatarColor || '#6366f1',
+      // NEW: Add profile photo to every message
+      profilePhoto: user?.profilePhoto || null
     };
 
     // Handle reply data if this is a reply
