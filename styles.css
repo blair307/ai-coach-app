@@ -3328,42 +3328,16 @@ body {
 }
 
 /* =================================
-   FIXED MOBILE HEADER - PROPER PAGE DETECTION & SIZING
+   FIXED MOBILE HEADER - SHOW HEADERS BY DEFAULT, HIDE ONLY ON SPECIFIC PAGES
    Replace previous CSS with this corrected version
    ================================= */
 
 @media (max-width: 768px) {
     /* =================================
-       HIDE HEADER ON SPECIFIC PAGES FIRST
+       DEFAULT: SHOW HEADERS ON MOST PAGES
        ================================= */
     
-    /* Hide content header on Daily Tracker - multiple detection methods */
-    body:has([style*="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"]) .content-header,
-    .main-content:has(.progress-section) .content-header,
-    .main-content:has([style*="Today's Progress"]) .content-header,
-    body[class*="daily"] .content-header,
-    body[class*="tracker"] .content-header {
-        display: none !important;
-    }
-    
-    /* Hide content header on Goals page */
-    body:has(.goals-container) .content-header,
-    .main-content:has(.goal-item) .content-header,
-    body[class*="goals"] .content-header {
-        display: none !important;
-    }
-    
-    /* Alternative: Hide if URL contains these paths */
-    body[data-page="daily-tracker"] .content-header,
-    body[data-page="goals"] .content-header {
-        display: none !important;
-    }
-    
-    /* =================================
-       SHOW AND STYLE HEADER FOR OTHER PAGES
-       ================================= */
-    
-    /* Default: Show centered header for most pages */
+    /* Show and style header by default */
     .content-header {
         display: flex !important;
         justify-content: center !important;
@@ -3376,47 +3350,68 @@ body {
         z-index: 1 !important;
     }
     
-    /* Match Billing page font size and weight */
+    /* Style the page title - large and bold like Billing page */
     .content-header h1 {
-        font-size: 1.5rem !important; /* Larger like Billing page */
+        font-size: 1.5rem !important;
         margin: 0 !important;
         text-align: center !important;
         color: var(--text-primary) !important;
-        font-weight: 800 !important; /* Extra bold like Billing */
+        font-weight: 800 !important;
         line-height: 1.2 !important;
         width: 100% !important;
-        letter-spacing: -0.02em !important; /* Slight letter spacing */
+        letter-spacing: -0.02em !important;
     }
     
-    /* Hide header actions */
+    /* Hide header actions but keep the title */
     .content-header .header-actions {
         display: none !important;
     }
     
     /* =================================
-       SPECIFIC PAGE OVERRIDES
+       SPECIFIC PAGES: HIDE HEADERS ONLY WHERE NEEDED
        ================================= */
     
-    /* Force hide on Daily Tracker using more specific selectors */
-    [class*="daily-tracker"] .content-header,
-    [id*="daily-tracker"] .content-header,
+    /* Hide ONLY on Daily Tracker - very specific targeting */
+    body:has(.timer-display) .content-header,
     body:has(.calendar-container) .content-header,
-    body:has(.timer-display) .content-header {
+    .main-content:has(.calendar-days) .content-header {
         display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        overflow: hidden !important;
     }
     
-    /* Force hide on Goals page */
-    [class*="goals"] .content-header,
-    [id*="goals"] .content-header,
+    /* Hide ONLY on Goals page - very specific targeting */
     body:has(.goal-buttons) .content-header,
-    body:has(.area-stats) .content-header {
+    body:has(.area-stats) .content-header,
+    .main-content:has(.goal-streak) .content-header {
         display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        overflow: hidden !important;
+    }
+    
+    /* =================================
+       ENSURE HEADERS SHOW ON KEY PAGES
+       ================================= */
+    
+    /* Force show on Dashboard */
+    .main-content:has(.dashboard-grid) .content-header {
+        display: flex !important;
+    }
+    
+    /* Force show on AI Coach */
+    .main-content:has(.chat-container) .content-header {
+        display: flex !important;
+    }
+    
+    /* Force show on Billing */
+    .main-content:has(.billing-card) .content-header {
+        display: flex !important;
+    }
+    
+    /* Force show on Community */
+    .main-content:has(.community-responsive-container) .content-header {
+        display: flex !important;
+    }
+    
+    /* Force show on Notifications */
+    .main-content:has(.notifications-container) .content-header {
+        display: flex !important;
     }
     
     /* =================================
@@ -3428,7 +3423,7 @@ body {
         padding: 0.5rem !important;
     }
     
-    /* Adjust content height for pages with header */
+    /* Adjust content spacing */
     .chat-container,
     .dashboard-grid,
     .billing-container,
@@ -3446,37 +3441,15 @@ body {
         top: 20px !important;
         left: 20px !important;
     }
-    
-    /* Ensure content doesn't overlap with hamburger */
-    .content-header {
-        padding-left: 5rem !important; /* Clear hamburger space */
-        padding-right: 1rem !important;
-    }
-    
-    .content-header h1 {
-        margin-left: -4rem !important; /* Offset to center properly */
-    }
 }
 
 @media (max-width: 480px) {
     /* Small screen adjustments */
     .content-header {
-        padding: 1.25rem 4.5rem 0.5rem 4.5rem !important;
+        padding: 1.25rem 0.5rem 0.5rem 0.5rem !important;
     }
     
     .content-header h1 {
         font-size: 1.3rem !important;
-        margin-left: -3.5rem !important;
-    }
-    
-    /* Ensure hidden pages stay hidden on small screens */
-    [class*="daily-tracker"] .content-header,
-    [class*="goals"] .content-header,
-    body:has(.calendar-container) .content-header,
-    body:has(.goal-buttons) .content-header {
-        display: none !important;
-        visibility: hidden !important;
-        height: 0 !important;
     }
 }
-
