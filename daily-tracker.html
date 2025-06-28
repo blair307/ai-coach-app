@@ -1193,25 +1193,6 @@ style.textContent = `
 `;
 document.head.appendChild(style);
     </script>
-
-    // Hide header on mobile for Goals and Daily Tracker pages
-// Add this script to goals.html and daily-tracker.html
-
-function hideHeaderOnMobile() {
-    // Only hide on mobile screens
-    if (window.innerWidth <= 768) {
-        const header = document.querySelector('.content-header');
-        if (header) {
-            header.style.display = 'none';
-        }
-    }
-}
-
-// Run when page loads
-document.addEventListener('DOMContentLoaded', hideHeaderOnMobile);
-
-// Run when window is resized (in case user rotates phone)
-window.addEventListener('resize', hideHeaderOnMobile);
         
 </body>
 </html>
