@@ -3360,3 +3360,11 @@ body {
         display: none !important;
     }
 }
+
+/* Force hide headers on Goals and Daily Tracker mobile */
+@media (max-width: 768px) {
+    body[data-page="goals"] .content-header,
+    body[data-page="daily-tracker"] .content-header {
+        display: none !important;
+    }
+}
