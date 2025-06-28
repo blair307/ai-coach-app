@@ -166,12 +166,17 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.5rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+            min-width: 0;
         }
 
         .form-group.full-width {
@@ -193,6 +198,9 @@
             transition: all 0.3s ease;
             background: var(--surface);
             color: var(--text-primary);
+            width: 100%;
+            box-sizing: border-box;
+            max-width: 100%;
         }
 
         .form-group input:focus,
@@ -956,10 +964,12 @@
             }
         }
 
-        // Handle avatar upload
+        // Handle avatar upload - FIXED FOR 500 ERROR
         async function handleAvatarUpload(e) {
             const file = e.target.files[0];
             if (!file) return;
+
+            console.log('📷 Starting avatar upload:', file.name, file.size, file.type);
 
             // Validate file type
             if (!file.type.startsWith('image/')) {
@@ -967,17 +977,25 @@
                 return;
             }
 
-            // Validate file size (5MB max)
-            if (file.size > 5 * 1024 * 1024) {
-                showMessage('profileMessage', 'Image must be smaller than 5MB', 'error');
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('profileMessage', 'Image must be smaller than 10MB', 'error');
                 return;
             }
 
             try {
+                showMessage('profileMessage', 'Uploading photo...', 'success');
+                
                 // Convert to base64
                 const base64 = await fileToBase64(file);
+                console.log('📷 Base64 conversion complete, length:', base64.length);
                 
                 const token = getAuthToken();
+                if (!token) {
+                    throw new Error('Authentication token not found');
+                }
+
+                console.log('📷 Sending upload request to server...');
                 const response = await fetch(`${API_BASE_URL}/api/user/photo`, {
                     method: 'PUT',
                     headers: {
@@ -989,12 +1007,39 @@
                     })
                 });
 
+                console.log('📷 Server response status:', response.status);
+                console.log('📷 Server response headers:', Object.fromEntries(response.headers.entries()));
+
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to upload photo');
+                    const errorText = await response.text();
+                    console.error('📷 Server error response:', errorText);
+                    
+                    // Try to parse as JSON for better error message
+                    let errorMessage = 'Failed to upload photo';
+                    try {
+                        const errorData = JSON.parse(errorText);
+                        errorMessage = errorData.error || errorData.message || errorMessage;
+                    } catch (parseError) {
+                        // If not JSON, use the raw text if it's informative
+                        if (errorText && errorText.length > 0 && errorText.length < 200) {
+                            errorMessage = errorText;
+                        }
+                    }
+                    
+                    // Add more specific error handling based on status code
+                    if (response.status === 413) {
+                        errorMessage = 'Image file is too large for the server. Please try a smaller image.';
+                    } else if (response.status === 500) {
+                        errorMessage = 'Server error occurred. Please try again or contact support.';
+                    } else if (response.status === 400) {
+                        errorMessage = 'Invalid image format. Please try a different image.';
+                    }
+                    
+                    throw new Error(errorMessage);
                 }
 
                 const result = await response.json();
+                console.log('📷 Upload successful:', result);
                 
                 // Update avatar display - PERMANENTLY STORED
                 document.getElementById('currentAvatar').innerHTML = `<img src="${base64}" alt="Profile Photo">`;
@@ -1004,7 +1049,17 @@
 
             } catch (error) {
                 console.error('❌ Error uploading photo:', error);
-                showMessage('profileMessage', error.message || 'Failed to upload photo', 'error');
+                
+                // Provide more helpful error messages
+                let userMessage = error.message || 'Failed to upload photo';
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    userMessage = 'Network error. Please check your connection and try again.';
+                } else if (error.message.includes('base64')) {
+                    userMessage = 'Error processing image. Please try a different image format.';
+                }
+                
+                showMessage('profileMessage', userMessage, 'error');
             }
         }
 
@@ -1164,8 +1219,14 @@
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
+                reader.onload = () => {
+                    console.log('📷 FileReader conversion complete');
+                    resolve(reader.result);
+                };
+                reader.onerror = error => {
+                    console.error('📷 FileReader error:', error);
+                    reject(new Error('Failed to read image file'));
+                };
             });
         }
 
