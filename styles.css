@@ -3448,7 +3448,132 @@ body {
     .content-header {
         padding: 1.25rem 0.5rem 0.5rem 0.5rem !important;
     }
+
+    /* =================================
+   HIDE HEADERS ONLY ON DAILY TRACKER AND GOALS
+   Add this CSS in addition to your existing mobile header CSS
+   ================================= */
+
+@media (max-width: 768px) {
+    /* =================================
+       DAILY TRACKER - MULTIPLE DETECTION METHODS
+       ================================= */
     
+    /* Method 1: Detect by URL */
+    body[class*="daily-tracker"] .content-header,
+    body[id*="daily-tracker"] .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Method 2: Detect by page elements */
+    .main-content:has(.timer-display) .content-header,
+    .main-content:has(.calendar-container) .content-header,
+    .main-content:has(.calendar-days) .content-header,
+    .main-content:has(.compact-calendar) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Method 3: Detect by specific Daily Tracker text/elements */
+    .main-content:has([style*="Today's Progress"]) .content-header,
+    body:has(.meeting-legend) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* =================================
+       GOALS PAGE - MULTIPLE DETECTION METHODS
+       ================================= */
+    
+    /* Method 1: Detect by URL/class */
+    body[class*="goals"] .content-header,
+    body[id*="goals"] .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Method 2: Detect by Goals page elements */
+    .main-content:has(.goal-buttons) .content-header,
+    .main-content:has(.area-stats) .content-header,
+    .main-content:has(.goal-streak) .content-header,
+    .main-content:has(.goal-item) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* Method 3: Detect by specific Goals elements */
+    body:has(.streak-number) .content-header,
+    body:has(.progress-count) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+    
+    /* =================================
+       FALLBACK - DETECT BY FILENAME IN URL
+       ================================= */
+    
+    /* If the URL contains these strings */
+    body[data-page="daily-tracker"] .content-header,
+    body[data-page="goals"] .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Ensure hiding works on small screens too */
+    body[class*="daily-tracker"] .content-header,
+    body[class*="goals"] .content-header,
+    .main-content:has(.timer-display) .content-header,
+    .main-content:has(.goal-buttons) .content-header {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        overflow: hidden !important;
+    }
+}
+
+/* =================================
+   NUCLEAR OPTION - IF NOTHING ELSE WORKS
+   Uncomment these if the above doesn't work
+   ================================= */
+
+/*
+@media (max-width: 768px) {
+    
+    /* Hide based on page title text */
+    .content-header h1:contains("Daily Tracker") {
+        display: none !important;
+    }
+    
+    .content-header h1:contains("Goals") {
+        display: none !important;
+    }
+    
+    /* Hide entire header if it contains these titles */
+    .content-header:has(h1:contains("Daily Tracker")),
+    .content-header:has(h1:contains("Goals")) {
+        display: none !important;
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+}
+*/
     .content-header h1 {
         font-size: 1.3rem !important;
     }
