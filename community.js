@@ -347,7 +347,7 @@ async function switchRoom(roomId) {
 }
 
 
-// ENHANCED: Create message element with better delete button handling
+// ENHANCED: Create message element with PROFILE PHOTOS and better delete button handling
 function createMessageElement(message, isReply = false, parentIndex = null) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
@@ -365,6 +365,29 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     
     // Check if this message belongs to the current user
     const isOwnMessage = message.userId === currentUser?.id;
+    
+    // NEW: Get profile photo URL from message data
+    const profilePhoto = message.profilePhoto || null;
+    
+    // NEW: Create avatar HTML - either photo or initials
+    let avatarHTML;
+    if (profilePhoto) {
+        avatarHTML = `
+            <div class="user-avatar photo-avatar" style="background-color: ${message.avatarColor || '#6366f1'}; position: relative;">
+                <img src="${profilePhoto}" 
+                     alt="${escapeHtml(username)}" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; position: absolute; top: 0; left: 0;"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='${userInitials}'; this.parentElement.classList.remove('photo-avatar');"
+                />
+            </div>
+        `;
+    } else {
+        avatarHTML = `
+            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
+                ${userInitials}
+            </div>
+        `;
+    }
     
     // Simulate like count
     const likes = message.likes || [];
@@ -400,9 +423,7 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
     
     messageDiv.innerHTML = `
         <div class="message-header">
-            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
-                ${userInitials}
-            </div>
+            ${avatarHTML}
             <span class="username ${isOwnMessage ? 'own-message-username' : ''}">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
             <span class="message-timestamp">${timestamp}</span>
         </div>
