@@ -86,7 +86,7 @@
                 </div>
             </header>
 
-            <div style="display: flex; gap: 4rem; height: calc(100vh - 12rem);">
+            <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
                 <!-- Chat Container -->
                 <div class="chat-container">
                     <div class="chat-header">
@@ -136,9 +136,33 @@
                     </div>
                 </div>
 
-                <!-- Streamlined Coaching Sidebar -->
+                <!-- Coaching Sidebar -->
                 <div class="coaching-sidebar">
-                    <!-- Quick Topics - MOVED UP -->
+                    <!-- Current Goals -->
+                    <div class="sidebar-section">
+                        <h3>Your Goals</h3>
+                        <div class="goals-list">
+                            <div class="goal-item">
+                                <input type="checkbox" checked id="goal1">
+                                <label for="goal1">Reduce work stress</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal2">
+                                <label for="goal2">Improve team communication</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" id="goal3">
+                                <label for="goal3">Better work-life balance</label>
+                            </div>
+                            <div class="goal-item">
+                                <input type="checkbox" checked id="goal4">
+                                <label for="goal4">Increase emotional awareness</label>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline btn-small" onclick="addGoal()">Add Goal</button>
+                    </div>
+
+                    <!-- Quick Topics -->
                     <div class="sidebar-section">
                         <h3>Quick Topics</h3>
                         <div class="topic-buttons">
@@ -163,7 +187,7 @@
                         </div>
                     </div>
 
-                    <!-- Recent Insights - MOVED UP -->
+                    <!-- Recent Insights -->
                     <div class="sidebar-section">
                         <h3>Recent Insights</h3>
                         <div class="insights-list">
@@ -180,6 +204,18 @@
                                 <small>3 days ago</small>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Mood Tracker -->
+                    <div class="sidebar-section">
+                        <h3>How are you feeling?</h3>
+                        <div class="mood-buttons" style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem;">
+                            <button class="mood-btn" onclick="trackMood('great')" style="background: var(--success); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Great</button>
+                            <button class="mood-btn" onclick="trackMood('good')" style="background: var(--primary-light); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Good</button>
+                            <button class="mood-btn" onclick="trackMood('okay')" style="background: var(--warning); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Okay</button>
+                            <button class="mood-btn" onclick="trackMood('stressed')" style="background: var(--error); color: white; border: none; padding: 0.5rem; border-radius: var(--radius); cursor: pointer;">Stressed</button>
+                        </div>
+                        <small style="color: var(--text-muted); text-align: center; display: block;">Track your daily emotional state</small>
                     </div>
                 </div>
             </div>
