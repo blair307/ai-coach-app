@@ -1148,7 +1148,7 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       avatar: req.body.avatar || user?.firstName?.charAt(0).toUpperCase() || 'U',
       content: req.body.content,
       message: req.body.content, // For compatibility
-      avatarColor: req.body.avatarColor || '#6366f1'
+      avatarColor: req.body.avatarColor || '#6366f1',
         profilePhoto: user?.profilePhoto || null
     };
 
