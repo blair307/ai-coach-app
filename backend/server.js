@@ -221,8 +221,6 @@ dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
 
-// Insights Schema - NEW
-const insightSchema = new mongoose.Schema({
 
 // Insights Schema - NEW
 const insightSchema = new mongoose.Schema({
@@ -2182,8 +2180,6 @@ app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Enhanced health check with reply system status + SETTINGS
-app.get('/health', (req, res) => {
 
 // Enhanced health check with reply system status + SETTINGS
 app.get('/health', (req, res) => {
