@@ -469,57 +469,57 @@ function formatDateForComparison(date) {
     return pstDate.toISOString().split('T')[0];
 }
 
-// ENHANCED: Goal completion checker that handles goals without completion data
+
+        // FIXED: Goal completion checker - simplified and reliable
 function isGoalCompletedToday(goal) {
-    const todayPST = formatDateForComparison(new Date());
+    const todayString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    console.log(`🔍 Checking completion for goal ${goal._id}:`, {
+    console.log(`🔍 FIXED - Checking completion for goal ${goal._id}:`, {
         goalId: goal._id,
-        todayPST: todayPST,
+        todayString: todayString,
         lastCompletedDate: goal.lastCompletedDate,
-        hasCompletionHistory: !!goal.completionHistory,
-        historyLength: goal.completionHistory?.length || 0,
-        completed: goal.completed // Check the basic completed field too
+        completed: goal.completed
     });
 
-    // METHOD 1: Check new completion history system first
-    if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
+    // METHOD 1: Check lastCompletedDate (most reliable)
+    if (goal.lastCompletedDate) {
+        const completedDateString = new Date(goal.lastCompletedDate).toISOString().split('T')[0];
+        const isCompletedToday = completedDateString === todayString;
+        
+        console.log(`📅 FIXED - lastCompletedDate check:`, {
+            completedDateString,
+            todayString,
+            isCompletedToday
+        });
+        
+        if (isCompletedToday) {
+            console.log(`✅ FIXED - Goal completed today via lastCompletedDate`);
+            return true;
+        }
+    }
+
+    // METHOD 2: Check completion history if available
+    if (goal.completionHistory && Array.isArray(goal.completionHistory) && goal.completionHistory.length > 0) {
         const todayEntry = goal.completionHistory.find(entry => {
-            const entryDatePST = formatDateForComparison(entry.date);
-            return entryDatePST === todayPST;
+            if (!entry.date) return false;
+            const entryDateString = new Date(entry.date).toISOString().split('T')[0];
+            return entryDateString === todayString;
         });
         
         if (todayEntry) {
-            console.log(`✅ Found today's entry in completion history:`, {
-                completed: todayEntry.completed,
-                date: todayEntry.date
-            });
+            console.log(`✅ FIXED - Found today's entry in completion history:`, todayEntry);
             return todayEntry.completed;
         }
     }
 
-    // METHOD 2: Fallback to lastCompletedDate for backward compatibility
-    if (goal.lastCompletedDate) {
-        const lastCompletedPST = formatDateForComparison(goal.lastCompletedDate);
-        const isCompletedToday = lastCompletedPST === todayPST;
-        
-        console.log(`📅 Checking lastCompletedDate:`, {
-            lastCompletedPST,
-            todayPST,
-            isCompletedToday
-        });
-        
-        return isCompletedToday;
-    }
-
-    // METHOD 3: NEW - Check basic 'completed' field as final fallback
+    // METHOD 3: Fallback to basic completed field
     if (goal.hasOwnProperty('completed')) {
-        console.log(`🔄 Using basic completed field:`, goal.completed);
+        console.log(`🔄 FIXED - Using basic completed field:`, goal.completed);
         return goal.completed;
     }
 
-    console.log(`❌ No completion data found for goal ${goal._id} - defaulting to false`);
-    return false; // Default to not completed if no data exists
+    console.log(`❌ FIXED - No completion data found for goal ${goal._id} - defaulting to false`);
+    return false;
 }
 
 // Initialize page
