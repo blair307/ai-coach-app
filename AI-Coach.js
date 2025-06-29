@@ -192,6 +192,11 @@ function addMessageToChat(message, type, isTemporary = false) {
         saveConversationToStorage();
     }
 
+// Refresh insights after AI responses
+    if (type === 'ai' && !isTemporary) {
+        setTimeout(loadRecentInsights, 5000);
+    }
+    
     // Refresh insights after AI responses
     if (type === 'ai' && !isTemporary) {
         setTimeout(loadRecentInsights, 5000);
@@ -445,6 +450,103 @@ function clearChatHistory() {
         showToast('Chat history cleared successfully!');
         console.log('🗑️ Chat history cleared');
     }
+}
+
+// ==========================================
+// INSIGHTS FUNCTIONALITY - NEW
+// ==========================================
+
+// Load real insights from backend
+async function loadRecentInsights() {
+  try {
+    const token = getAuthToken();
+    if (!token) return;
+    
+    console.log('💡 Loading recent insights...');
+    
+    const response = await fetch(`${BACKEND_URL}/api/insights?limit=3`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      const insights = await response.json();
+      console.log('✅ Loaded insights:', insights.length);
+      updateInsightsDisplay(insights);
+    } else {
+      console.log('❌ Failed to load insights:', response.status);
+    }
+  } catch (error) {
+    console.error('Error loading insights:', error);
+  }
+}
+
+// Update the insights display with real data
+function updateInsightsDisplay(insights) {
+  const insightsContainer = document.querySelector('.insights-list');
+  if (!insightsContainer) {
+    console.log('❌ Insights container not found');
+    return;
+  }
+  
+  if (insights.length === 0) {
+    insightsContainer.innerHTML = `
+      <div class="insight-item">
+        <p>Start chatting to generate personalized insights!</p>
+        <small>No insights yet</small>
+      </div>
+    `;
+    return;
+  }
+  
+  insightsContainer.innerHTML = insights.map(insight => `
+    <div class="insight-item" data-insight-id="${insight._id}">
+      <p>"${insight.insight}"</p>
+      <small>${formatTimeAgo(insight.createdAt)}</small>
+      <div class="insight-actions" style="margin-top: 0.5rem;">
+        <button onclick="markInsightAsRead('${insight._id}')" 
+                style="font-size: 0.75rem; padding: 0.25rem 0.5rem; background: var(--primary-light); color: white; border: none; border-radius: 4px; cursor: pointer;">
+          ${insight.isRead ? 'Read' : 'Mark Read'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+  
+  console.log('✅ Updated insights display');
+}
+
+// Format time ago helper
+function formatTimeAgo(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+  
+  if (diffInHours < 1) return 'Just now';
+  if (diffInHours < 24) return `${diffInHours} hours ago`;
+  if (diffInHours < 48) return 'Yesterday';
+  return `${Math.floor(diffInHours / 24)} days ago`;
+}
+
+// Mark insight as read
+async function markInsightAsRead(insightId) {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`${BACKEND_URL}/api/insights/${insightId}/read`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (response.ok) {
+      loadRecentInsights(); // Refresh the display
+    }
+  } catch (error) {
+    console.error('Error marking insight as read:', error);
+  }
 }
 
 // ==========================================
