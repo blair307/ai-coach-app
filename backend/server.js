@@ -62,7 +62,16 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
-  .then(() => console.log('✅ Connected to MongoDB'))
+  .then(async () => {
+    console.log('✅ Connected to MongoDB');
+    try {
+      await createDefaultRooms();
+      await migrateGoalsToHistory();
+      console.log('✅ Initial setup completed');
+    } catch (error) {
+      console.error('❌ Setup error:', error);
+    }
+  })
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // UPDATED User Schema with Settings Support + Password Reset
@@ -2219,11 +2228,6 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
-// Initialize default rooms after MongoDB connection
-mongoose.connection.once('open', () => {
-  createDefaultRooms();
-  migrateGoalsToHistory();
-});
 
 // Start server
 app.listen(PORT, () => {
