@@ -80,7 +80,7 @@ const userSchema = new mongoose.Schema({
   resetPasswordExpires: Date,
   company: { type: String, default: '' },              // NEW: Store company name
   timezone: { type: String, default: 'America/Chicago' }, // NEW: Store timezone
-profilePhoto: { type: String },                      // NEW: Store profile picture                   // N
+profilePhoto: { type: String },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -1720,7 +1720,82 @@ mongoose.connection.once('open', () => {
 // ==========================================
 
 
+// ADD THIS ROUTE - Put it right BEFORE the line that says:
+// app.put('/api/user/change-password', authenticateToken, async (req, res) => {
 
+// Get user settings (what the settings page calls first)
+app.get('/api/user/settings', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      profile: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company || '',
+        timezone: user.timezone || 'America/Chicago',
+        profilePhoto: user.profilePhoto || null
+      }
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ message: 'Failed to get settings' });
+  }
+});
+
+// ADD A ROUTE TO UPDATE PROFILE TOO:
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { firstName, lastName, email, company, timezone } = req.body;
+    
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ error: 'First name, last name, and email are required' });
+    }
+    
+    // Check if email is already taken
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(), 
+      _id: { $ne: userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use by another account' });
+    }
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.toLowerCase().trim(),
+        company: company?.trim() || '',
+        timezone: timezone || 'America/Chicago'
+      },
+      { new: true }
+    ).select('-password');
+    
+    res.json({
+      message: 'Profile updated successfully',
+      profile: {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        company: updatedUser.company,
+        timezone: updatedUser.timezone
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
 
 
 // Change password (when you update password)
