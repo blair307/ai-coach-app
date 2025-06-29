@@ -182,7 +182,7 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
-// Life Goals Schema
+// Life Goals Schema - SINGLE DEFINITION ONLY
 const lifeGoalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   area: { type: String, enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], required: true },
@@ -201,9 +201,7 @@ const lifeGoalSchema = new mongoose.Schema({
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
-const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
-
-// Daily Emotions Schema - NEW
+// Daily Emotions Schema - EMOTION TRACKER (NOT MOOD)
 const dailyEmotionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   emotion: { 
@@ -223,10 +221,7 @@ dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
 
 const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
 
-// Insights Schema - NEW
-const insightSchema = new mongoose.Schema({
-
-// Insights Schema - NEW
+// Insights Schema - SINGLE DEFINITION ONLY
 const insightSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, enum: ['stress', 'communication', 'productivity', 'emotional', 'leadership'], required: true },
@@ -923,7 +918,9 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
       LifeGoal.deleteMany({ userId }),
       Notification.deleteMany({ userId }),
       Chat.findOneAndDelete({ userId }),
-      Message.deleteMany({ userId })
+      Message.deleteMany({ userId }),
+      DailyEmotion.deleteMany({ userId }),
+      Insight.deleteMany({ userId })
     ]);
 
     res.json({ message: 'Account deleted successfully' });
@@ -1034,7 +1031,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     chat.updatedAt = new Date();
     await chat.save();
 
-// Generate insights after successful chat - NEW
+    // Generate insights after successful chat - NEW
     if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
@@ -1385,8 +1382,6 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to create room' });
   }
 });
-
-// REPLACE WITH THIS NEW CODE:
 
 // ENHANCED: Get messages with reply support, deleted message handling, AND PROFILE PHOTOS
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
@@ -2184,10 +2179,7 @@ app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Enhanced health check with reply system status + SETTINGS
-app.get('/health', (req, res) => {
-
-// Enhanced health check with reply system status + SETTINGS
+// Enhanced health check with reply system status + SETTINGS + EMOTIONS
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -2206,7 +2198,9 @@ app.get('/health', (req, res) => {
       messageDeleting: 'enabled',
       userSettings: 'enabled',
       profilePhotos: 'enabled',
-      dataExport: 'enabled'
+      dataExport: 'enabled',
+      emotionTracker: 'enabled',
+      insights: 'enabled'
     }
   });
 });
@@ -2244,4 +2238,6 @@ app.listen(PORT, () => {
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
   console.log(`⚙️ USER SETTINGS: ENABLED with Profile Photos & Data Export ✅`);
   console.log(`🔒 Security: Password Change & Account Deletion ✅`);
+  console.log(`🎭 EMOTION TRACKER: ENABLED with Daily Tracking & Analytics ✅`);
+  console.log(`💡 AI INSIGHTS: ENABLED with Pattern Detection ✅`);
 });
