@@ -1294,113 +1294,190 @@ document.getElementById('goalDetailModal').addEventListener('click', function(e)
 });
 
 // ==========================================
-// MOOD TRACKER FUNCTIONALITY - NEW
+// EMOTION TRACKER FUNCTIONALITY - NEW
 // ==========================================
 
-// Mood tracking configuration
-const moodConfig = {
-    excellent: { emoji: '🤩', color: '#10b981', label: 'Excellent' },
-    good: { emoji: '😊', color: '#6366f1', label: 'Good' },
-    okay: { emoji: '😐', color: '#f59e0b', label: 'Okay' },
-    stressed: { emoji: '😰', color: '#ef4444', label: 'Stressed' },
-    down: { emoji: '😔', color: '#8b5cf6', label: 'Down' }
+// Emotion tracking configuration
+const emotionConfig = {
+    happy: { emoji: '😊', color: '#10b981', label: 'Happy' },
+    excited: { emoji: '🤩', color: '#f59e0b', label: 'Excited' },
+    content: { emoji: '😌', color: '#06b6d4', label: 'Content' },
+    hopeful: { emoji: '🌟', color: '#8b5cf6', label: 'Hopeful' },
+    sad: { emoji: '😢', color: '#6366f1', label: 'Sad' },
+    angry: { emoji: '😠', color: '#ef4444', label: 'Angry' },
+    disappointed: { emoji: '😞', color: '#f97316', label: 'Disappointed' },
+    lonely: { emoji: '😔', color: '#64748b', label: 'Lonely' },
+    scared: { emoji: '😨', color: '#dc2626', label: 'Scared' },
+    stressed: { emoji: '😰', color: '#7c2d12', label: 'Stressed' }
 };
 
-// Initialize mood tracker
-function initializeMoodTracker() {
-    console.log('🎭 Initializing mood tracker...');
-    loadTodaysMood();
-    renderWeeklyMoodChart();
+let currentEmotions = [];
+
+// Initialize emotion tracker
+function initializeEmotionTracker() {
+    console.log('🎭 Initializing emotion tracker...');
+    loadTodaysEmotion();
+    loadWeeklyEmotions();
 }
 
-// Get today's mood key for storage
-function getTodaysMoodKey() {
-    const today = new Date();
-    return `mood_${today.toISOString().split('T')[0]}`;
-}
-
-// Select a mood for today
-function selectMood(mood) {
-    console.log('🎭 Mood selected:', mood);
+// Select an emotion for today - SAVE TO BACKEND
+async function selectEmotion(emotion) {
+    console.log('🎭 Emotion selected:', emotion);
     
     try {
-        // Store in localStorage
-        const moodData = {
-            mood: mood,
-            timestamp: new Date().toISOString(),
-            date: new Date().toISOString().split('T')[0]
-        };
-        
-        localStorage.setItem(getTodaysMoodKey(), JSON.stringify(moodData));
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            showError('Please log in to record emotions');
+            return;
+        }
+
+        // Show loading state
+        const button = document.querySelector(`[data-emotion="${emotion}"]`);
+        if (button) {
+            button.style.opacity = '0.7';
+            button.style.pointerEvents = 'none';
+        }
+
+        // Save to backend
+        const response = await fetch(`${API_BASE_URL}/api/emotions`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                emotion: emotion,
+                intensity: 3 // Default intensity
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to record emotion');
+        }
+
+        const emotionEntry = await response.json();
+        console.log('✅ Emotion saved to backend:', emotionEntry);
         
         // Update the UI immediately
-        updateMoodSelection(mood);
-        renderWeeklyMoodChart();
+        updateEmotionSelection(emotion);
+        await loadWeeklyEmotions(); // Refresh weekly chart
         
         // Show success message
-        showSuccess(`Mood recorded: ${moodConfig[mood].label} ${moodConfig[mood].emoji}`);
+        showSuccess(`Emotion recorded: ${emotionConfig[emotion].label} ${emotionConfig[emotion].emoji}`);
         
     } catch (error) {
-        console.error('Error recording mood:', error);
-        showError('Failed to record mood. Please try again.');
+        console.error('❌ Error recording emotion:', error);
+        showError('Failed to record emotion. Please try again.');
+    } finally {
+        // Reset button state
+        const button = document.querySelector(`[data-emotion="${emotion}"]`);
+        if (button) {
+            button.style.opacity = '1';
+            button.style.pointerEvents = 'auto';
+        }
     }
 }
 
-// Update the mood selection UI
-function updateMoodSelection(selectedMood) {
-    // Reset all mood buttons
-    document.querySelectorAll('.mood-btn').forEach(btn => {
+// Update the emotion selection UI
+function updateEmotionSelection(selectedEmotion) {
+    // Reset all emotion buttons
+    document.querySelectorAll('.emotion-btn').forEach(btn => {
         btn.style.border = '2px solid var(--border)';
         btn.style.background = 'var(--surface)';
         btn.style.transform = 'scale(1)';
     });
     
-    // Highlight selected mood
-    const selectedBtn = document.querySelector(`[data-mood="${selectedMood}"]`);
+    // Highlight selected emotion
+    const selectedBtn = document.querySelector(`[data-emotion="${selectedEmotion}"]`);
     if (selectedBtn) {
-        const config = moodConfig[selectedMood];
+        const config = emotionConfig[selectedEmotion];
         selectedBtn.style.border = `2px solid ${config.color}`;
         selectedBtn.style.background = `${config.color}15`;
         selectedBtn.style.transform = 'scale(1.05)';
     }
     
-    // Show selected mood display
-    const display = document.getElementById('selectedMoodDisplay');
-    const text = document.getElementById('selectedMoodText');
+    // Show selected emotion display
+    const display = document.getElementById('selectedEmotionDisplay');
+    const text = document.getElementById('selectedEmotionText');
     
     if (display && text) {
-        const config = moodConfig[selectedMood];
+        const config = emotionConfig[selectedEmotion];
         text.textContent = `${config.label} ${config.emoji}`;
         display.style.display = 'block';
         display.style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
     }
 }
 
-// Load today's mood if already recorded
-function loadTodaysMood() {
+// Load today's emotion from backend
+async function loadTodaysEmotion() {
     try {
-        const todaysMoodData = localStorage.getItem(getTodaysMoodKey());
-        
-        if (todaysMoodData) {
-            const data = JSON.parse(todaysMoodData);
-            console.log('🎭 Found today\'s mood:', data.mood);
-            updateMoodSelection(data.mood);
-        } else {
-            console.log('🎭 No mood recorded for today yet');
-            // Hide the selected mood display
-            const display = document.getElementById('selectedMoodDisplay');
-            if (display) {
-                display.style.display = 'none';
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            console.log('🎭 No auth token - skipping emotion load');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/emotions/today`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const todaysEmotion = await response.json();
+            
+            if (todaysEmotion && todaysEmotion.emotion) {
+                console.log('🎭 Found today\'s emotion:', todaysEmotion.emotion);
+                updateEmotionSelection(todaysEmotion.emotion);
+            } else {
+                console.log('🎭 No emotion recorded for today yet');
+                // Hide the selected emotion display
+                const display = document.getElementById('selectedEmotionDisplay');
+                if (display) {
+                    display.style.display = 'none';
+                }
             }
         }
     } catch (error) {
-        console.error('Error loading today\'s mood:', error);
+        console.error('❌ Error loading today\'s emotion:', error);
     }
 }
 
-// Render weekly mood chart
-function renderWeeklyMoodChart() {
-    const container = document.getElementById('weeklyMoodChart');
+// Load weekly emotions from backend
+async function loadWeeklyEmotions() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            console.log('🎭 No auth token - skipping weekly emotions load');
+            renderWeeklyEmotionChart([]);
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/emotions?days=7`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            currentEmotions = await response.json();
+            console.log('🎭 Loaded weekly emotions:', currentEmotions.length, 'entries');
+            renderWeeklyEmotionChart(currentEmotions);
+        } else {
+            console.log('🎭 Failed to load weekly emotions');
+            renderWeeklyEmotionChart([]);
+        }
+    } catch (error) {
+        console.error('❌ Error loading weekly emotions:', error);
+        renderWeeklyEmotionChart([]);
+    }
+}
+
+// Render weekly emotion chart
+function renderWeeklyEmotionChart(emotions) {
+    const container = document.getElementById('weeklyEmotionChart');
     if (!container) return;
     
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -1411,29 +1488,27 @@ function renderWeeklyMoodChart() {
     for (let i = 0; i < 7; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - (6 - i));
+        date.setHours(0, 0, 0, 0); // Normalize to midnight
         
         const isToday = date.toDateString() === today.toDateString();
         const dayName = days[date.getDay()];
         const dayNumber = date.getDate();
-        const dateKey = date.toISOString().split('T')[0];
         
-        // Get mood for this day
-        let dayMood = null;
-        let moodEmoji = '—';
-        let moodColor = 'var(--border)';
+        // Find emotion for this day
+        let dayEmotion = null;
+        let emotionEmoji = '—';
+        let emotionColor = 'var(--border)';
         
-        try {
-            const moodData = localStorage.getItem(`mood_${dateKey}`);
-            if (moodData) {
-                const data = JSON.parse(moodData);
-                dayMood = data.mood;
-                if (moodConfig[dayMood]) {
-                    moodEmoji = moodConfig[dayMood].emoji;
-                    moodColor = moodConfig[dayMood].color;
-                }
-            }
-        } catch (error) {
-            console.log('Error loading mood for', dateKey);
+        const emotionEntry = emotions.find(entry => {
+            const entryDate = new Date(entry.date);
+            entryDate.setHours(0, 0, 0, 0);
+            return entryDate.getTime() === date.getTime();
+        });
+        
+        if (emotionEntry && emotionConfig[emotionEntry.emotion]) {
+            dayEmotion = emotionEntry.emotion;
+            emotionEmoji = emotionConfig[dayEmotion].emoji;
+            emotionColor = emotionConfig[dayEmotion].color;
         }
         
         html += `
@@ -1443,22 +1518,22 @@ function renderWeeklyMoodChart() {
                 background: ${isToday ? 'var(--primary)' : 'var(--surface)'}; 
                 color: ${isToday ? 'white' : 'var(--text-primary)'}; 
                 border-radius: 12px; 
-                border: 2px solid ${isToday ? 'var(--primary)' : (dayMood ? moodColor : 'var(--border)')};
+                border: 2px solid ${isToday ? 'var(--primary)' : (dayEmotion ? emotionColor : 'var(--border)')};
                 min-height: 100px;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
-                ${dayMood && !isToday ? `background: ${moodColor}15;` : ''}
+                ${dayEmotion && !isToday ? `background: ${emotionColor}15;` : ''}
             ">
                 <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">${dayName}</div>
                 <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;">${dayNumber}</div>
-                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">${moodEmoji}</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">${emotionEmoji}</div>
                 <div style="
-                    font-size: 0.7rem; 
+                    font-size: 0.65rem; 
                     opacity: 0.8;
                     ${isToday ? 'color: rgba(255,255,255,0.8);' : 'color: var(--text-muted);'}
                 ">
-                    ${dayMood ? moodConfig[dayMood].label : 'No data'}
+                    ${dayEmotion ? emotionConfig[dayEmotion].label : 'No data'}
                 </div>
             </div>
         `;
@@ -1467,76 +1542,32 @@ function renderWeeklyMoodChart() {
     container.innerHTML = html;
 }
 
-// Get mood statistics for dashboard integration
-function getMoodStats() {
-    const stats = {
-        todaysMood: null,
-        weeklyMoods: [],
-        averageMood: null
-    };
-    
+// Get emotion statistics for dashboard integration
+async function getEmotionStats() {
     try {
-        // Get today's mood
-        const todaysMoodData = localStorage.getItem(getTodaysMoodKey());
-        if (todaysMoodData) {
-            const data = JSON.parse(todaysMoodData);
-            stats.todaysMood = data.mood;
-        }
-        
-        // Get this week's moods
-        const today = new Date();
-        for (let i = 0; i < 7; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() - (6 - i));
-            const dateKey = date.toISOString().split('T')[0];
-            
-            const moodData = localStorage.getItem(`mood_${dateKey}`);
-            if (moodData) {
-                const data = JSON.parse(moodData);
-                stats.weeklyMoods.push(data.mood);
-            }
-        }
-        
-        // Calculate average mood (simplified)
-        if (stats.weeklyMoods.length > 0) {
-            const moodValues = { down: 1, stressed: 2, okay: 3, good: 4, excellent: 5 };
-            const avgValue = stats.weeklyMoods.reduce((sum, mood) => sum + (moodValues[mood] || 3), 0) / stats.weeklyMoods.length;
-            
-            if (avgValue >= 4.5) stats.averageMood = 'excellent';
-            else if (avgValue >= 3.5) stats.averageMood = 'good';
-            else if (avgValue >= 2.5) stats.averageMood = 'okay';
-            else if (avgValue >= 1.5) stats.averageMood = 'stressed';
-            else stats.averageMood = 'down';
-        }
-        
-    } catch (error) {
-        console.error('Error calculating mood stats:', error);
-    }
-    
-    return stats;
-}
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) return null;
 
-// Clean up old mood data (keep only last 30 days)
-function cleanupOldMoodData() {
-    try {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
-        Object.keys(localStorage).forEach(key => {
-            if (key.startsWith('mood_')) {
-                const dateStr = key.replace('mood_', '');
-                const moodDate = new Date(dateStr);
-                
-                if (moodDate < thirtyDaysAgo) {
-                    localStorage.removeItem(key);
-                    console.log('🧹 Cleaned up old mood data:', key);
-                }
+        const response = await fetch(`${API_BASE_URL}/api/emotions/stats?days=30`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
+
+        if (response.ok) {
+            const stats = await response.json();
+            return stats;
+        }
     } catch (error) {
-        console.error('Error cleaning up mood data:', error);
+        console.error('Error getting emotion stats:', error);
     }
+    
+    return null;
 }
+
+// DEBUGGING: Add this function to test UI updates manually
+function debugUIRefresh() {
         
 // DEBUGGING: Add this function to test UI updates manually
 function debugUIRefresh() {
