@@ -3888,20 +3888,22 @@ html, body {
 
 /* DASHBOARD GRID WIDTH FIX - Make boxes wider before adding more columns */
 
-/* Main dashboard grid - INCREASED minimum width from 280px to 400px */
+/* Main dashboard grid - BALANCED minimum width for proper spacing */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)) !important; /* INCREASED from 280px */
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) !important; /* BALANCED at 340px */
+    gap: 2rem !important; /* INCREASED gap for better spacing */
     margin-bottom: 3rem;
     width: 100%;
     max-width: 100%;
     margin-left: auto;
     margin-right: auto;
     overflow: hidden;
+    padding: 0 1rem; /* Add padding to prevent edge overlap */
+    box-sizing: border-box;
 }
 
-/* Ensure cards fill the wider space properly */
+/* Ensure cards fill the space properly without overflow */
 .dashboard-card {
     background: var(--background);
     padding: 2rem;
@@ -3915,36 +3917,41 @@ html, body {
     overflow-wrap: break-word;
     min-width: 0; /* Prevents overflow issues */
     width: 100%; /* Ensure full width usage */
+    box-sizing: border-box; /* Include padding and border in width calculation */
 }
 
 /* For very large screens (1600px+), allow up to 3 columns max */
 @media (min-width: 1600px) {
     .dashboard-grid {
-        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)) !important; /* Even wider on large screens */
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)) !important; /* Reduced from 450px */
         max-width: 1400px; /* Prevent boxes from getting too wide */
         margin: 0 auto 3rem auto;
+        gap: 2.5rem !important; /* Extra spacing on large screens */
     }
 }
 
 /* For large desktops (1200px-1599px), typically 2-3 columns */
 @media (min-width: 1200px) and (max-width: 1599px) {
     .dashboard-grid {
-        grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important; /* Reduced from 420px */
+        gap: 2rem !important;
     }
 }
 
 /* For medium screens (900px-1199px), typically 2 columns */
 @media (min-width: 900px) and (max-width: 1199px) {
     .dashboard-grid {
-        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)) !important;
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) !important; /* Reduced from 380px */
+        gap: 1.75rem !important;
     }
 }
 
 /* For tablets (768px-899px), force 1-2 columns */
 @media (min-width: 768px) and (max-width: 899px) {
     .dashboard-grid {
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important; /* Reduced from 350px */
+        gap: 1.5rem !important;
+        padding: 0 0.5rem; /* Reduced padding on smaller screens */
     }
 }
 
@@ -3952,7 +3959,8 @@ html, body {
 @media (max-width: 767px) {
     .dashboard-grid {
         grid-template-columns: 1fr !important; /* Force single column */
-        gap: 1rem;
+        gap: 1rem !important;
+        padding: 0 0.5rem; /* Small padding for mobile */
     }
     
     .dashboard-card {
