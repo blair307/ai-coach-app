@@ -2201,7 +2201,7 @@
             }
         }
 
-        // Auto-refresh messages every 30 seconds
+        // Auto-refresh messages every 3 minutes (180 seconds)
         setInterval(async () => {
             if (currentRoomId && isInitialized) {
                 try {
@@ -2210,7 +2210,7 @@
                     console.log('⚠️ Auto-refresh failed, will try again next time');
                 }
             }
-        }, 30000);
+        }, 180000); // Changed from 30000 (30 seconds) to 180000 (3 minutes)
 
         // Update notification count periodically
         updateNotificationCount();
