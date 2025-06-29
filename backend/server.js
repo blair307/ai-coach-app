@@ -201,8 +201,6 @@ const lifeGoalSchema = new mongoose.Schema({
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
-const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
-
 // Daily Emotions Schema - NEW
 const dailyEmotionSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
