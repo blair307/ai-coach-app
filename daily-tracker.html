@@ -121,6 +121,125 @@
         </main>
     </div>
 
+<!-- Mood Tracker Section -->
+<div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+        <h2 style="margin: 0; color: var(--text-primary);">Daily Mood Tracker</h2>
+        <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            Track how you're feeling today
+        </div>
+    </div>
+    
+    <!-- Today's Mood Selection -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">How are you feeling today?</h3>
+        <div id="moodButtons" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <button onclick="selectMood('excellent')" class="mood-btn" data-mood="excellent" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">🤩</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Excellent</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Energized & optimistic</div>
+            </button>
+            
+            <button onclick="selectMood('good')" class="mood-btn" data-mood="good" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😊</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Good</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Positive & motivated</div>
+            </button>
+            
+            <button onclick="selectMood('okay')" class="mood-btn" data-mood="okay" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😐</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Okay</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Neutral & balanced</div>
+            </button>
+            
+            <button onclick="selectMood('stressed')" class="mood-btn" data-mood="stressed" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😰</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Stressed</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Overwhelmed or anxious</div>
+            </button>
+            
+            <button onclick="selectMood('down')" class="mood-btn" data-mood="down" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😔</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Down</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Low energy or sad</div>
+            </button>
+        </div>
+        
+        <!-- Selected Mood Display -->
+        <div id="selectedMoodDisplay" style="display: none; padding: 1rem; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border-radius: 12px; text-align: center;">
+            <p style="margin: 0; font-weight: 600;">Today's mood recorded: <span id="selectedMoodText"></span></p>
+        </div>
+    </div>
+    
+    <!-- Weekly Mood History -->
+    <div>
+        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">This Week's Mood Pattern</h3>
+        <div id="weeklyMoodChart" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
+            <!-- Weekly mood chart will be populated by JavaScript -->
+        </div>
+    </div>
+</div>
+    
     <!-- Goal Detail Modal -->
     <div id="goalDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
         <div style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 2rem;">
@@ -275,11 +394,16 @@ function isGoalCompletedToday(goal) {
 }
 
 // Initialize page
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
     loadDailyGoals();
+    initializeMoodTracker(); // NEW: Initialize mood tracker
     updateNotificationCount();
     setInterval(updateNotificationCount, 30000);
+    
+    // Clean up old mood data weekly
+    cleanupOldMoodData();
 });
 
 function updateCurrentDate() {
@@ -1079,6 +1203,251 @@ document.getElementById('goalDetailModal').addEventListener('click', function(e)
     }
 });
 
+// ==========================================
+// MOOD TRACKER FUNCTIONALITY - NEW
+// ==========================================
+
+// Mood tracking configuration
+const moodConfig = {
+    excellent: { emoji: '🤩', color: '#10b981', label: 'Excellent' },
+    good: { emoji: '😊', color: '#6366f1', label: 'Good' },
+    okay: { emoji: '😐', color: '#f59e0b', label: 'Okay' },
+    stressed: { emoji: '😰', color: '#ef4444', label: 'Stressed' },
+    down: { emoji: '😔', color: '#8b5cf6', label: 'Down' }
+};
+
+// Initialize mood tracker
+function initializeMoodTracker() {
+    console.log('🎭 Initializing mood tracker...');
+    loadTodaysMood();
+    renderWeeklyMoodChart();
+}
+
+// Get today's mood key for storage
+function getTodaysMoodKey() {
+    const today = new Date();
+    return `mood_${today.toISOString().split('T')[0]}`;
+}
+
+// Select a mood for today
+function selectMood(mood) {
+    console.log('🎭 Mood selected:', mood);
+    
+    try {
+        // Store in localStorage
+        const moodData = {
+            mood: mood,
+            timestamp: new Date().toISOString(),
+            date: new Date().toISOString().split('T')[0]
+        };
+        
+        localStorage.setItem(getTodaysMoodKey(), JSON.stringify(moodData));
+        
+        // Update the UI immediately
+        updateMoodSelection(mood);
+        renderWeeklyMoodChart();
+        
+        // Show success message
+        showSuccess(`Mood recorded: ${moodConfig[mood].label} ${moodConfig[mood].emoji}`);
+        
+    } catch (error) {
+        console.error('Error recording mood:', error);
+        showError('Failed to record mood. Please try again.');
+    }
+}
+
+// Update the mood selection UI
+function updateMoodSelection(selectedMood) {
+    // Reset all mood buttons
+    document.querySelectorAll('.mood-btn').forEach(btn => {
+        btn.style.border = '2px solid var(--border)';
+        btn.style.background = 'var(--surface)';
+        btn.style.transform = 'scale(1)';
+    });
+    
+    // Highlight selected mood
+    const selectedBtn = document.querySelector(`[data-mood="${selectedMood}"]`);
+    if (selectedBtn) {
+        const config = moodConfig[selectedMood];
+        selectedBtn.style.border = `2px solid ${config.color}`;
+        selectedBtn.style.background = `${config.color}15`;
+        selectedBtn.style.transform = 'scale(1.05)';
+    }
+    
+    // Show selected mood display
+    const display = document.getElementById('selectedMoodDisplay');
+    const text = document.getElementById('selectedMoodText');
+    
+    if (display && text) {
+        const config = moodConfig[selectedMood];
+        text.textContent = `${config.label} ${config.emoji}`;
+        display.style.display = 'block';
+        display.style.background = `linear-gradient(135deg, ${config.color} 0%, ${adjustBrightness(config.color, -20)} 100%)`;
+    }
+}
+
+// Load today's mood if already recorded
+function loadTodaysMood() {
+    try {
+        const todaysMoodData = localStorage.getItem(getTodaysMoodKey());
+        
+        if (todaysMoodData) {
+            const data = JSON.parse(todaysMoodData);
+            console.log('🎭 Found today\'s mood:', data.mood);
+            updateMoodSelection(data.mood);
+        } else {
+            console.log('🎭 No mood recorded for today yet');
+            // Hide the selected mood display
+            const display = document.getElementById('selectedMoodDisplay');
+            if (display) {
+                display.style.display = 'none';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading today\'s mood:', error);
+    }
+}
+
+// Render weekly mood chart
+function renderWeeklyMoodChart() {
+    const container = document.getElementById('weeklyMoodChart');
+    if (!container) return;
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const today = new Date();
+    
+    let html = '';
+    
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (6 - i));
+        
+        const isToday = date.toDateString() === today.toDateString();
+        const dayName = days[date.getDay()];
+        const dayNumber = date.getDate();
+        const dateKey = date.toISOString().split('T')[0];
+        
+        // Get mood for this day
+        let dayMood = null;
+        let moodEmoji = '—';
+        let moodColor = 'var(--border)';
+        
+        try {
+            const moodData = localStorage.getItem(`mood_${dateKey}`);
+            if (moodData) {
+                const data = JSON.parse(moodData);
+                dayMood = data.mood;
+                if (moodConfig[dayMood]) {
+                    moodEmoji = moodConfig[dayMood].emoji;
+                    moodColor = moodConfig[dayMood].color;
+                }
+            }
+        } catch (error) {
+            console.log('Error loading mood for', dateKey);
+        }
+        
+        html += `
+            <div style="
+                text-align: center; 
+                padding: 1rem 0.5rem; 
+                background: ${isToday ? 'var(--primary)' : 'var(--surface)'}; 
+                color: ${isToday ? 'white' : 'var(--text-primary)'}; 
+                border-radius: 12px; 
+                border: 2px solid ${isToday ? 'var(--primary)' : (dayMood ? moodColor : 'var(--border)')};
+                min-height: 100px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                ${dayMood && !isToday ? `background: ${moodColor}15;` : ''}
+            ">
+                <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.25rem;">${dayName}</div>
+                <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem;">${dayNumber}</div>
+                <div style="font-size: 1.5rem; margin-bottom: 0.25rem;">${moodEmoji}</div>
+                <div style="
+                    font-size: 0.7rem; 
+                    opacity: 0.8;
+                    ${isToday ? 'color: rgba(255,255,255,0.8);' : 'color: var(--text-muted);'}
+                ">
+                    ${dayMood ? moodConfig[dayMood].label : 'No data'}
+                </div>
+            </div>
+        `;
+    }
+    
+    container.innerHTML = html;
+}
+
+// Get mood statistics for dashboard integration
+function getMoodStats() {
+    const stats = {
+        todaysMood: null,
+        weeklyMoods: [],
+        averageMood: null
+    };
+    
+    try {
+        // Get today's mood
+        const todaysMoodData = localStorage.getItem(getTodaysMoodKey());
+        if (todaysMoodData) {
+            const data = JSON.parse(todaysMoodData);
+            stats.todaysMood = data.mood;
+        }
+        
+        // Get this week's moods
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - (6 - i));
+            const dateKey = date.toISOString().split('T')[0];
+            
+            const moodData = localStorage.getItem(`mood_${dateKey}`);
+            if (moodData) {
+                const data = JSON.parse(moodData);
+                stats.weeklyMoods.push(data.mood);
+            }
+        }
+        
+        // Calculate average mood (simplified)
+        if (stats.weeklyMoods.length > 0) {
+            const moodValues = { down: 1, stressed: 2, okay: 3, good: 4, excellent: 5 };
+            const avgValue = stats.weeklyMoods.reduce((sum, mood) => sum + (moodValues[mood] || 3), 0) / stats.weeklyMoods.length;
+            
+            if (avgValue >= 4.5) stats.averageMood = 'excellent';
+            else if (avgValue >= 3.5) stats.averageMood = 'good';
+            else if (avgValue >= 2.5) stats.averageMood = 'okay';
+            else if (avgValue >= 1.5) stats.averageMood = 'stressed';
+            else stats.averageMood = 'down';
+        }
+        
+    } catch (error) {
+        console.error('Error calculating mood stats:', error);
+    }
+    
+    return stats;
+}
+
+// Clean up old mood data (keep only last 30 days)
+function cleanupOldMoodData() {
+    try {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('mood_')) {
+                const dateStr = key.replace('mood_', '');
+                const moodDate = new Date(dateStr);
+                
+                if (moodDate < thirtyDaysAgo) {
+                    localStorage.removeItem(key);
+                    console.log('🧹 Cleaned up old mood data:', key);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error cleaning up mood data:', error);
+    }
+}
+        
 // DEBUGGING: Add this function to test UI updates manually
 function debugUIRefresh() {
     console.log('🐛 MANUAL UI REFRESH TEST');
