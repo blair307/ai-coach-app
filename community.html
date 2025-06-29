@@ -1477,7 +1477,7 @@ function createMessageElement(message, isReply = false) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
     messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
-    
+
     if (isReply) {
         messageDiv.classList.add('reply');
     }
@@ -1486,14 +1486,10 @@ function createMessageElement(message, isReply = false) {
     const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     const timestamp = formatMessageTime(message.createdAt || message.timestamp);
     const content = message.content || message.message || '';
-    
-    // Check if this message belongs to the current user
+
     const isOwnMessage = message.userId === currentUser?.id;
-    
-    // ENHANCED: Get profile photo URL with multiple fallback options
     const profilePhoto = message.profilePhoto || null;
-    
-    // ENHANCED: Create avatar HTML with better error handling
+
     let avatarHTML;
     if (profilePhoto && (profilePhoto.startsWith('data:image/') || profilePhoto.startsWith('http'))) {
         avatarHTML = `
@@ -1512,12 +1508,11 @@ function createMessageElement(message, isReply = false) {
             </div>
         `;
     }
-    
-    // Continue with rest of function (don't change anything below this)
+
     const likes = message.likes || [];
     const likeCount = likes.length || Math.floor(Math.random() * 3);
     const isLikedByUser = likes.includes(currentUser?.id);
-    
+
     let actionButtons = `
         <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
                 onclick="toggleLike('${message._id || message.id || Date.now()}')" 
@@ -1540,7 +1535,7 @@ function createMessageElement(message, isReply = false) {
             </button>
         `;
     }
-    
+
     messageDiv.innerHTML = `
         <div class="message-header">
             ${avatarHTML}
@@ -1558,7 +1553,7 @@ function createMessageElement(message, isReply = false) {
 
     return messageDiv;
 }
-            
+        
           
 
         // Load messages for a room
