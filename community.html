@@ -103,7 +103,7 @@
 
         /* HAMBURGER MENU */
         .universal-hamburger {
-            display: none;
+            display: block;
             position: fixed;
             top: 1rem;
             left: 1rem;
@@ -115,6 +115,11 @@
             cursor: pointer;
             box-shadow: var(--shadow-lg);
             transition: all 0.2s ease;
+        }
+
+        .universal-hamburger:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
         }
 
         .hamburger-line {
@@ -636,17 +641,31 @@
             border-color: var(--error);
         }
 
-        /* MESSAGE INPUT - STICKY AT BOTTOM */
+        /* MESSAGE INPUT - DESKTOP: ONLY IN CHAT AREA, MOBILE: FULL WIDTH */
         .message-input-area {
             position: fixed;
             bottom: 0;
-            left: 0;
-            right: 0;
             padding: 1rem;
             background: var(--surface);
             border-top: 1px solid var(--border);
             z-index: 1000;
             box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Desktop: Input only extends across chat area */
+        @media (min-width: 1025px) {
+            .message-input-area {
+                left: calc(280px + 1.5rem + 280px); /* Sidebar + margin + rooms sidebar */
+                right: 1.5rem;
+            }
+        }
+
+        /* Mobile: Input spans full width */
+        @media (max-width: 1024px) {
+            .message-input-area {
+                left: 0;
+                right: 0;
+            }
         }
 
         .reply-banner {
