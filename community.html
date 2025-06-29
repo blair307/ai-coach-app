@@ -108,8 +108,8 @@
             top: 1rem;
             left: 1rem;
             z-index: 2000;
-            background: var(--primary);
-            border: none;
+            background: white;
+            border: 2px solid var(--border);
             border-radius: var(--radius);
             padding: 0.75rem;
             cursor: pointer;
@@ -118,7 +118,8 @@
         }
 
         .universal-hamburger:hover {
-            background: var(--primary-dark);
+            background: var(--background);
+            border-color: var(--primary);
             transform: scale(1.05);
         }
 
@@ -126,7 +127,7 @@
             display: block;
             width: 20px;
             height: 2px;
-            background: white;
+            background: var(--text-primary);
             margin: 4px 0;
             transition: 0.3s;
             border-radius: 2px;
@@ -140,6 +141,7 @@
             min-height: 100vh;
             background: transparent;
             overflow: hidden;
+            margin-left: 280px;
         }
 
         /* HEADER */
@@ -149,7 +151,7 @@
             padding: 1rem 1.5rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: center;
             flex-shrink: 0;
             position: sticky;
             top: 0;
@@ -162,9 +164,12 @@
             font-weight: 700;
             color: var(--text-primary);
             margin: 0;
+            text-align: center;
         }
 
         .header-actions {
+            position: absolute;
+            right: 1.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
