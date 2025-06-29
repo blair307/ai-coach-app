@@ -13,17 +13,20 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors({
     origin: [
         /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,  // Matches any deployment
         'https://spontaneous-treacle-905d13.netlify.app',
+        /https:\/\/.*\.netlify\.app$/,  // Allow any Netlify app
         'http://localhost:3000',
-        'http://localhost:8080'
+        'http://localhost:8080',
+        'http://localhost:5000',
+        'http://127.0.0.1:5500',  // Live Server
+        'http://localhost:3001'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Increase payload limit for image uploads
@@ -197,6 +200,122 @@ const lifeGoalSchema = new mongoose.Schema({
 });
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
+
+const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
+
+// Daily Emotions Schema - NEW
+const dailyEmotionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  emotion: { 
+    type: String, 
+    enum: ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'], 
+    required: true 
+  },
+  intensity: { type: Number, min: 1, max: 5, default: 3 }, // Optional intensity rating
+  notes: { type: String, maxlength: 500 }, // Optional notes
+  date: { type: Date, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Ensure one emotion per user per day
+dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
+
+const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
+
+// Insights Schema - NEW
+const insightSchema = new mongoose.Schema({
+
+// Insights Schema - NEW
+const insightSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  type: { type: String, enum: ['stress', 'communication', 'productivity', 'emotional', 'leadership'], required: true },
+  insight: { type: String, required: true },
+  confidence: { type: Number, min: 0, max: 1, default: 0.7 },
+  source: { type: String, enum: ['ai_analysis', 'pattern_detection', 'user_feedback'] },
+  chatSession: { type: String },
+  createdAt: { type: Date, default: Date.now },
+  isRead: { type: Boolean, default: false }
+});
+
+const Insight = mongoose.model('Insight', insightSchema);
+
+// Generate insights from chat conversations - NEW
+async function generateInsights(userId, messages) {
+  try {
+    if (!openai || messages.length < 6) return; // Need enough conversation
+    
+    console.log('🧠 Generating insights for user:', userId);
+    
+    // Get recent user messages for analysis
+    const userMessages = messages
+      .filter(msg => msg.role === 'user')
+      .slice(-8) // Last 8 user messages
+      .map(msg => msg.content)
+      .join('\n');
+    
+    if (userMessages.length < 50) return; // Need substantial content
+    
+    // Use OpenAI to analyze patterns
+    const analysisPrompt = `Analyze these entrepreneur conversation messages and identify 1-2 actionable insights about their stress patterns, communication style, productivity, emotional state, or leadership challenges.
+
+Messages:
+${userMessages}
+
+Format response as:
+TYPE: specific actionable insight under 80 characters
+
+Types: stress, communication, productivity, emotional, leadership
+Be specific and actionable, not generic.`;
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: analysisPrompt }],
+      max_tokens: 200,
+      temperature: 0.3
+    });
+    
+    const analysisResult = completion.choices[0].message.content;
+    console.log('🔍 AI Analysis Result:', analysisResult);
+    
+    // Parse insights from AI response
+    const insightLines = analysisResult.split('\n').filter(line => line.includes(':'));
+    
+    for (const line of insightLines) {
+      const parts = line.split(':');
+      if (parts.length >= 2) {
+        const type = parts[0].trim().toLowerCase();
+        const insight = parts.slice(1).join(':').trim();
+        
+        if (insight && insight.length > 15) {
+          // Check if similar insight already exists
+          const existingInsight = await Insight.findOne({
+            userId,
+            type,
+            insight: { $regex: insight.substring(0, 15), $options: 'i' },
+            createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+          });
+          
+          if (!existingInsight) {
+            const newInsight = new Insight({
+              userId,
+              type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
+              insight: insight.charAt(0).toUpperCase() + insight.slice(1),
+              source: 'ai_analysis',
+              confidence: 0.8
+            });
+            
+            await newInsight.save();
+            console.log('💡 Generated insight:', newInsight.insight);
+          }
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error generating insights:', error);
+  }
+}
 
 // Function to update user streak
 async function updateUserStreak(userId) {
@@ -914,6 +1033,11 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     );
     chat.updatedAt = new Date();
     await chat.save();
+
+// Generate insights after successful chat - NEW
+    if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    }
 
     res.json({ response });
 
@@ -1877,6 +2001,191 @@ async function migrateGoalsToHistory() {
     console.error('❌ Migration error:', error);
   }
 }
+
+// ==========================================
+// INSIGHTS API ROUTES - NEW
+// ==========================================
+
+// Get user insights
+app.get('/api/insights', authenticateToken, async (req, res) => {
+  try {
+    const { limit = 5, type } = req.query;
+    
+    let query = { userId: req.user.userId };
+    if (type && type !== 'all') {
+      query.type = type;
+    }
+    
+    const insights = await Insight.find(query)
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit));
+    
+    res.json(insights);
+  } catch (error) {
+    console.error('Get insights error:', error);
+    res.status(500).json({ error: 'Failed to fetch insights' });
+  }
+});
+
+// Mark insight as read
+app.put('/api/insights/:id/read', authenticateToken, async (req, res) => {
+  try {
+    await Insight.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      { isRead: true }
+    );
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Mark insight read error:', error);
+    res.status(500).json({ error: 'Failed to mark insight as read' });
+  }
+});
+
+// Delete insight
+app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
+  try {
+    await Insight.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete insight error:', error);
+    res.status(500).json({ error: 'Failed to delete insight' });
+  }
+});
+
+// ==========================================
+// EMOTION TRACKER API ROUTES - NEW
+// ==========================================
+
+// Get user's emotion history
+app.get('/api/emotions', authenticateToken, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+    
+    const emotions = await DailyEmotion.find({
+      userId: req.user.userId,
+      date: { $gte: startDate }
+    }).sort({ date: -1 });
+    
+    res.json(emotions);
+  } catch (error) {
+    console.error('Get emotions error:', error);
+    res.status(500).json({ error: 'Failed to fetch emotions' });
+  }
+});
+
+// Record today's emotion
+app.post('/api/emotions', authenticateToken, async (req, res) => {
+  try {
+    const { emotion, intensity, notes } = req.body;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to midnight for consistent daily tracking
+    
+    // Validate emotion
+    const validEmotions = ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'];
+    if (!validEmotions.includes(emotion)) {
+      return res.status(400).json({ error: 'Invalid emotion' });
+    }
+    
+    // Update or create today's emotion entry
+    const emotionEntry = await DailyEmotion.findOneAndUpdate(
+      { 
+        userId: req.user.userId, 
+        date: today 
+      },
+      { 
+        emotion, 
+        intensity: intensity || 3,
+        notes: notes || '',
+        updatedAt: new Date()
+      },
+      { 
+        upsert: true, 
+        new: true 
+      }
+    );
+    
+    console.log('🎭 Emotion recorded:', { userId: req.user.userId, emotion, date: today });
+    res.json(emotionEntry);
+    
+  } catch (error) {
+    console.error('Record emotion error:', error);
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Emotion already recorded for today' });
+    } else {
+      res.status(500).json({ error: 'Failed to record emotion' });
+    }
+  }
+});
+
+// Get today's emotion
+app.get('/api/emotions/today', authenticateToken, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaysEmotion = await DailyEmotion.findOne({
+      userId: req.user.userId,
+      date: today
+    });
+    
+    res.json(todaysEmotion);
+  } catch (error) {
+    console.error('Get today emotion error:', error);
+    res.status(500).json({ error: 'Failed to fetch today\'s emotion' });
+  }
+});
+
+// Delete emotion entry
+app.delete('/api/emotions/:id', authenticateToken, async (req, res) => {
+  try {
+    await DailyEmotion.findOneAndDelete({ 
+      _id: req.params.id, 
+      userId: req.user.userId 
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete emotion error:', error);
+    res.status(500).json({ error: 'Failed to delete emotion' });
+  }
+});
+
+// Get emotion statistics
+app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+    
+    const emotions = await DailyEmotion.find({
+      userId: req.user.userId,
+      date: { $gte: startDate }
+    });
+    
+    // Calculate statistics
+    const stats = {
+      totalEntries: emotions.length,
+      averageIntensity: emotions.length > 0 ? 
+        emotions.reduce((sum, e) => sum + e.intensity, 0) / emotions.length : 0,
+      emotionCounts: {},
+      weeklyPattern: {}
+    };
+    
+    // Count emotions
+    emotions.forEach(emotion => {
+      stats.emotionCounts[emotion.emotion] = (stats.emotionCounts[emotion.emotion] || 0) + 1;
+    });
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Get emotion stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch emotion statistics' });
+  }
+});
+
+// Enhanced health check with reply system status + SETTINGS
+app.get('/health', (req, res) => {
 
 // Enhanced health check with reply system status + SETTINGS
 app.get('/health', (req, res) => {
