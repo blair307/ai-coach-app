@@ -1712,6 +1712,265 @@ mongoose.connection.once('open', () => {
   migrateGoalsToHistory();
 });
 
+// ==========================================
+// SETTINGS API ROUTES - STEP 2 ADD THESE
+// ==========================================
+
+// Get user settings (what the settings page calls first)
+app.get('/api/user/settings', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('-password');
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    res.json({
+      profile: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company || '',
+        timezone: user.timezone || 'America/Chicago',
+        profilePhoto: user.profilePhoto || null
+      }
+    });
+  } catch (error) {
+    console.error('Get settings error:', error);
+    res.status(500).json({ message: 'Failed to get settings' });
+  }
+});
+
+// Update user profile (when you click "Save Changes")
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { firstName, lastName, email, company, timezone } = req.body;
+    
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ error: 'First name, last name, and email are required' });
+    }
+    
+    // Check if email is already taken
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(), 
+      _id: { $ne: userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use by another account' });
+    }
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.toLowerCase().trim(),
+        company: company?.trim() || '',
+        timezone: timezone || 'America/Chicago'
+      },
+      { new: true }
+    ).select('-password');
+    
+    res.json({
+      message: 'Profile updated successfully',
+      profile: {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        company: updatedUser.company,
+        timezone: updatedUser.timezone
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Change password (when you update password)
+app.put('/api/user/change-password', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Current password and new password are required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
+    }
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if current password is correct
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!isValidPassword) {
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+    
+    // Hash and save new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    await User.findByIdAndUpdate(userId, {
+      password: hashedNewPassword
+    });
+    
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ error: 'Failed to change password' });
+  }
+});
+
+// Upload profile photo (when you upload a picture)
+app.put('/api/user/photo', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { profilePhoto } = req.body;
+    
+    if (!profilePhoto) {
+      return res.status(400).json({ error: 'Profile photo data is required' });
+    }
+    
+    // Check if it's a valid image
+    if (!profilePhoto.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image format' });
+    }
+    
+    // Check file size (limit to 5MB)
+    if (profilePhoto.length > 7000000) {
+      return res.status(400).json({ error: 'Image file is too large. Please use an image smaller than 5MB.' });
+    }
+    
+    await User.findByIdAndUpdate(userId, {
+      profilePhoto: profilePhoto
+    });
+    
+    res.json({ 
+      message: 'Profile photo updated successfully',
+      profilePhoto: profilePhoto
+    });
+  } catch (error) {
+    console.error('Upload photo error:', error);
+    res.status(500).json({ error: 'Failed to upload photo' });
+  }
+});
+
+// Remove profile photo (when you click "Remove Photo")
+app.delete('/api/user/photo', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    await User.findByIdAndUpdate(userId, {
+      $unset: { profilePhoto: 1 }
+    });
+    
+    res.json({ message: 'Profile photo removed successfully' });
+  } catch (error) {
+    console.error('Remove photo error:', error);
+    res.status(500).json({ error: 'Failed to remove photo' });
+  }
+});
+
+// Clear chat history (when you click "Clear Chat History")
+app.delete('/api/user/chat-history', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    
+    await Chat.deleteMany({ userId });
+    
+    res.json({ message: 'Chat history cleared successfully' });
+  } catch (error) {
+    console.error('Clear chat history error:', error);
+    res.status(500).json({ error: 'Failed to clear chat history' });
+  }
+});
+
+// Export user data (when you click "Export Data")
+app.get('/api/user/export', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { type = 'all' } = req.query;
+    
+    const user = await User.findById(userId).select('-password');
+    let exportData = {};
+    
+    if (type === 'all' || type === 'profile') {
+      exportData.profile = {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        company: user.company,
+        timezone: user.timezone,
+        createdAt: user.createdAt,
+        streakData: user.streakData
+      };
+    }
+    
+    if (type === 'all' || type === 'goals') {
+      const goals = await Goal.find({ userId });
+      const lifeGoals = await LifeGoal.find({ userId });
+      exportData.goals = goals;
+      exportData.lifeGoals = lifeGoals;
+    }
+    
+    if (type === 'all' || type === 'coaching') {
+      const chatHistory = await Chat.find({ userId });
+      exportData.chatHistory = chatHistory;
+    }
+    
+    if (type === 'all') {
+      const notifications = await Notification.find({ userId });
+      const insights = await Insight.find({ userId });
+      exportData.notifications = notifications;
+      exportData.insights = insights;
+    }
+    
+    exportData.exportDate = new Date();
+    exportData.exportType = type;
+    
+    res.json(exportData);
+  } catch (error) {
+    console.error('Export data error:', error);
+    res.status(500).json({ error: 'Failed to export data' });
+  }
+});
+
+// Delete account (when you type "DELETE MY ACCOUNT")
+app.delete('/api/user/account', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { confirmation } = req.body;
+    
+    if (confirmation !== 'DELETE MY ACCOUNT') {
+      return res.status(400).json({ error: 'Invalid confirmation text' });
+    }
+    
+    // Delete all user data
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      Goal.deleteMany({ userId }),
+      LifeGoal.deleteMany({ userId }),
+      Chat.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+      Insight.deleteMany({ userId }),
+      Message.deleteMany({ userId })
+    ]);
+    
+    res.json({ message: 'Account deleted successfully' });
+  } catch (error) {
+    console.error('Delete account error:', error);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
