@@ -3402,18 +3402,33 @@ html, body {
     overflow-x: hidden;
 }
 
-/* FIXED: Authentication container - full edge coverage with scrolling */
+/* FIXED: Authentication container - full edge coverage with animated gradient */
 .auth-container {
     min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     padding: 2rem;
     position: relative;
     margin: 0;
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Animated gradient keyframes */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
 }
 
 /* FIXED: Auth card sizing */
@@ -3500,9 +3515,11 @@ html, body {
     box-sizing: border-box;
 }
 
-/* FIXED: Hero section - full edge-to-edge coverage */
+/* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
