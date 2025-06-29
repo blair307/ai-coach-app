@@ -416,31 +416,69 @@
             margin-bottom: 0.5rem;
         }
 
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            font-size: 0.875rem;
-            flex-shrink: 0;
-        }
+     /* ENHANCED USER AVATAR STYLES FOR PROFILE PHOTOS */
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-        .user-avatar.photo-avatar {
-            overflow: hidden;
-            border: 2px solid white;
-            box-shadow: var(--shadow-sm);
-        }
+.user-avatar.photo-avatar {
+    border: 2px solid white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    background: #f8fafc; /* Fallback background */
+}
 
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transition: opacity 0.3s ease;
+}
+
+.user-avatar img:hover {
+    opacity: 0.9;
+}
+
+/* Hover effect for avatars */
+.user-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile avatar adjustments */
+@media (max-width: 480px) {
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Large avatar for desktop */
+@media (min-width: 1025px) {
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 0.9rem;
+    }
+}
 
         .username {
             font-weight: 600;
@@ -1435,45 +1473,91 @@
             }
         }
 
-        // Create message element with profile photos
-        function createMessageElement(message, isReply = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message-group';
-            messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
-            
-            if (isReply) {
-                messageDiv.classList.add('reply');
-            }
+function createMessageElement(message, isReply = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'message-group';
+    messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
+    
+    if (isReply) {
+        messageDiv.classList.add('reply');
+    }
 
-            const username = message.username || 'User';
-            const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-            const timestamp = formatMessageTime(message.createdAt || message.timestamp);
-            const content = message.content || message.message || '';
-            
-            // Check if this message belongs to the current user
-            const isOwnMessage = message.userId === currentUser?.id;
-            
-            // Get profile photo URL from message data
-            const profilePhoto = message.profilePhoto || null;
-            
-            // Create avatar HTML - either photo or initials
-            let avatarHTML;
-            if (profilePhoto) {
-                avatarHTML = `
-                    <div class="user-avatar photo-avatar" style="background-color: ${message.avatarColor || '#6366f1'};">
-                        <img src="${profilePhoto}" 
-                             alt="${escapeHtml(username)}" 
-                             onerror="this.style.display='none'; this.parentElement.innerHTML='${userInitials}'; this.parentElement.classList.remove('photo-avatar');"
-                        />
-                    </div>
-                `;
-            } else {
-                avatarHTML = `
-                    <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
-                        ${userInitials}
-                    </div>
-                `;
-            }
+    const username = message.username || 'User';
+    const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    const timestamp = formatMessageTime(message.createdAt || message.timestamp);
+    const content = message.content || message.message || '';
+    
+    // Check if this message belongs to the current user
+    const isOwnMessage = message.userId === currentUser?.id;
+    
+    // ENHANCED: Get profile photo URL with multiple fallback options
+    const profilePhoto = message.profilePhoto || null;
+    
+    // ENHANCED: Create avatar HTML with better error handling
+    let avatarHTML;
+    if (profilePhoto && (profilePhoto.startsWith('data:image/') || profilePhoto.startsWith('http'))) {
+        avatarHTML = `
+            <div class="user-avatar photo-avatar" style="background-color: ${message.avatarColor || '#6366f1'};">
+                <img src="${profilePhoto}" 
+                     alt="${escapeHtml(username)}" 
+                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML='${userInitials}'; this.parentElement.classList.remove('photo-avatar');"
+                />
+            </div>
+        `;
+    } else {
+        avatarHTML = `
+            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
+                ${userInitials}
+            </div>
+        `;
+    }
+    
+    // Continue with rest of function (don't change anything below this)
+    const likes = message.likes || [];
+    const likeCount = likes.length || Math.floor(Math.random() * 3);
+    const isLikedByUser = likes.includes(currentUser?.id);
+    
+    let actionButtons = `
+        <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
+                onclick="toggleLike('${message._id || message.id || Date.now()}')" 
+                title="Like">
+            ${isLikedByUser ? '♥' : '♡'}
+        </button>
+        <button class="action-btn reply-btn" 
+                onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
+                title="Reply">
+            ↳
+        </button>
+    `;
+
+    if (isOwnMessage) {
+        actionButtons += `
+            <button class="action-btn delete-btn" 
+                    onclick="deleteMessage('${message._id || message.id || Date.now()}')" 
+                    title="Delete your message">
+                🗑️
+            </button>
+        `;
+    }
+    
+    messageDiv.innerHTML = `
+        <div class="message-header">
+            ${avatarHTML}
+            <span class="username">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
+            <span class="message-timestamp">${timestamp}</span>
+        </div>
+        <div class="message-content">
+            <p>${escapeHtml(content)}</p>
+            <div class="message-actions">
+                ${actionButtons}
+            </div>
+        </div>
+        ${likeCount > 0 ? `<div style="margin-left: 3rem; margin-top: 0.5rem; color: var(--error); font-size: 0.875rem;">♥ ${likeCount}</div>` : ''}
+    `;
+
+    return messageDiv;
+}
             
             // Simulate like count
             const likes = message.likes || [];
