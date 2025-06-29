@@ -201,6 +201,31 @@ const lifeGoalSchema = new mongoose.Schema({
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
+const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
+
+// Daily Emotions Schema - NEW
+const dailyEmotionSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  emotion: { 
+    type: String, 
+    enum: ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'], 
+    required: true 
+  },
+  intensity: { type: Number, min: 1, max: 5, default: 3 }, // Optional intensity rating
+  notes: { type: String, maxlength: 500 }, // Optional notes
+  date: { type: Date, required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Ensure one emotion per user per day
+dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
+
+const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
+
+// Insights Schema - NEW
+const insightSchema = new mongoose.Schema({
+
 // Insights Schema - NEW
 const insightSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -2026,6 +2051,141 @@ app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete insight' });
   }
 });
+
+// ==========================================
+// EMOTION TRACKER API ROUTES - NEW
+// ==========================================
+
+// Get user's emotion history
+app.get('/api/emotions', authenticateToken, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+    
+    const emotions = await DailyEmotion.find({
+      userId: req.user.userId,
+      date: { $gte: startDate }
+    }).sort({ date: -1 });
+    
+    res.json(emotions);
+  } catch (error) {
+    console.error('Get emotions error:', error);
+    res.status(500).json({ error: 'Failed to fetch emotions' });
+  }
+});
+
+// Record today's emotion
+app.post('/api/emotions', authenticateToken, async (req, res) => {
+  try {
+    const { emotion, intensity, notes } = req.body;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to midnight for consistent daily tracking
+    
+    // Validate emotion
+    const validEmotions = ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'];
+    if (!validEmotions.includes(emotion)) {
+      return res.status(400).json({ error: 'Invalid emotion' });
+    }
+    
+    // Update or create today's emotion entry
+    const emotionEntry = await DailyEmotion.findOneAndUpdate(
+      { 
+        userId: req.user.userId, 
+        date: today 
+      },
+      { 
+        emotion, 
+        intensity: intensity || 3,
+        notes: notes || '',
+        updatedAt: new Date()
+      },
+      { 
+        upsert: true, 
+        new: true 
+      }
+    );
+    
+    console.log('🎭 Emotion recorded:', { userId: req.user.userId, emotion, date: today });
+    res.json(emotionEntry);
+    
+  } catch (error) {
+    console.error('Record emotion error:', error);
+    if (error.code === 11000) {
+      res.status(400).json({ error: 'Emotion already recorded for today' });
+    } else {
+      res.status(500).json({ error: 'Failed to record emotion' });
+    }
+  }
+});
+
+// Get today's emotion
+app.get('/api/emotions/today', authenticateToken, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const todaysEmotion = await DailyEmotion.findOne({
+      userId: req.user.userId,
+      date: today
+    });
+    
+    res.json(todaysEmotion);
+  } catch (error) {
+    console.error('Get today emotion error:', error);
+    res.status(500).json({ error: 'Failed to fetch today\'s emotion' });
+  }
+});
+
+// Delete emotion entry
+app.delete('/api/emotions/:id', authenticateToken, async (req, res) => {
+  try {
+    await DailyEmotion.findOneAndDelete({ 
+      _id: req.params.id, 
+      userId: req.user.userId 
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Delete emotion error:', error);
+    res.status(500).json({ error: 'Failed to delete emotion' });
+  }
+});
+
+// Get emotion statistics
+app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - parseInt(days));
+    
+    const emotions = await DailyEmotion.find({
+      userId: req.user.userId,
+      date: { $gte: startDate }
+    });
+    
+    // Calculate statistics
+    const stats = {
+      totalEntries: emotions.length,
+      averageIntensity: emotions.length > 0 ? 
+        emotions.reduce((sum, e) => sum + e.intensity, 0) / emotions.length : 0,
+      emotionCounts: {},
+      weeklyPattern: {}
+    };
+    
+    // Count emotions
+    emotions.forEach(emotion => {
+      stats.emotionCounts[emotion.emotion] = (stats.emotionCounts[emotion.emotion] || 0) + 1;
+    });
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Get emotion stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch emotion statistics' });
+  }
+});
+
+// Enhanced health check with reply system status + SETTINGS
+app.get('/health', (req, res) => {
 
 // Enhanced health check with reply system status + SETTINGS
 app.get('/health', (req, res) => {
