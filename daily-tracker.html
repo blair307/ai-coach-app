@@ -5,6 +5,254 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Tracker - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* COMPLETE MOBILE DAILY TRACKER FIX */
+/* Add this to your daily-tracker.html in a <style> tag or to styles.css */
+
+/* 1. FORCE CHECKBOXES TO SHOW ON MOBILE - OVERRIDE EXISTING CSS */
+@media (max-width: 768px) {
+    
+    /* CRITICAL: Override the existing mobile rules that hide checkboxes */
+    .goal-tracker-item {
+        display: flex !important;
+        flex-direction: row !important; /* Force horizontal layout */
+        align-items: center !important;
+        padding: 1.25rem !important;
+        margin-bottom: 1rem !important;
+        background: var(--surface) !important;
+        border-radius: 12px !important;
+        border: 2px solid var(--border) !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        text-align: left !important; /* Override any center alignment */
+    }
+    
+    /* CRITICAL: Force checkbox container to stay visible */
+    .goal-tracker-item > div:first-child {
+        margin-right: 1rem !important;
+        flex-shrink: 0 !important;
+        align-self: center !important;
+        margin-bottom: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        order: 1 !important; /* Ensure it comes first */
+    }
+    
+    /* CRITICAL: Force checkbox to be visible and touchable */
+    .goal-tracker-item input[type="checkbox"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 32px !important;
+        height: 32px !important;
+        transform: scale(1.5) !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        position: relative !important;
+        z-index: 10 !important;
+    }
+    
+    /* Content area */
+    .goal-tracker-item > div:nth-child(2) {
+        flex: 1 !important;
+        margin: 0 !important;
+        order: 2 !important;
+    }
+    
+    /* Status badge */
+    .goal-tracker-item > div:last-child {
+        margin-left: 0.75rem !important;
+        flex-shrink: 0 !important;
+        order: 3 !important;
+    }
+    
+    /* Remove problematic margin overrides */
+    .goal-tracker-item > div {
+        margin: 0 !important;
+    }
+}
+
+/* 2. FIX MODAL FALLING OFF SCREEN ON MOBILE */
+@media (max-width: 768px) {
+    
+    /* Fix the goal detail modal container */
+    #goalDetailModal {
+        display: none;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+        z-index: 9999 !important;
+        backdrop-filter: blur(4px) !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix the modal content positioning */
+    #goalDetailModal > div {
+        display: flex !important;
+        align-items: flex-start !important; /* Start from top on mobile */
+        justify-content: center !important;
+        width: 100% !important;
+        height: 100% !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important; /* Allow scrolling if content is tall */
+    }
+    
+    /* Fix the modal card itself */
+    #goalDetailModal > div > div {
+        background: white !important;
+        border-radius: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important; /* Prevent overflow */
+        max-height: 90vh !important;
+        overflow: hidden !important;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+        margin: 2rem 0 !important; /* Add top margin for status bar */
+        position: relative !important;
+        left: auto !important;
+        right: auto !important;
+        transform: none !important;
+    }
+    
+    /* Fix modal header */
+    #goalDetailModal #modalHeader {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        color: white !important;
+        padding: 1.5rem !important;
+        text-align: center !important;
+        border-radius: 16px 16px 0 0 !important;
+    }
+    
+    /* Fix modal body */
+    #goalDetailModal > div > div > div:nth-child(2) {
+        max-height: 60vh !important;
+        overflow-y: auto !important;
+        padding: 1.5rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Fix modal footer */
+    #goalDetailModal > div > div > div:last-child {
+        padding: 1rem 1.5rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        display: flex !important;
+        gap: 1rem !important;
+        justify-content: flex-end !important;
+        border-radius: 0 0 16px 16px !important;
+    }
+    
+    /* Fix buttons in modal */
+    #goalDetailModal .btn {
+        min-height: 44px !important;
+        touch-action: manipulation !important;
+        font-size: 1rem !important;
+        padding: 0.75rem 1.5rem !important;
+    }
+    
+    /* Fix the complete/incomplete buttons */
+    #markCompleteBtn,
+    #markIncompleteBtn {
+        flex: 1 !important;
+        max-width: none !important;
+        width: auto !important;
+    }
+}
+
+/* 3. EXTRA SMALL SCREENS (PHONES) */
+@media (max-width: 480px) {
+    
+    /* Even bigger checkboxes for small phones */
+    .goal-tracker-item input[type="checkbox"] {
+        width: 36px !important;
+        height: 36px !important;
+        transform: scale(1.3) !important;
+    }
+    
+    /* Adjust modal for very small screens */
+    #goalDetailModal {
+        padding: 0.5rem !important;
+    }
+    
+    #goalDetailModal > div > div {
+        margin: 1rem 0 !important;
+        border-radius: 12px !important;
+    }
+    
+    #goalDetailModal #modalHeader {
+        padding: 1rem !important;
+    }
+    
+    #goalDetailModal #modalHeader h2 {
+        font-size: 1.5rem !important;
+    }
+}
+
+/* 4. DEBUGGING - TEMPORARY VISUAL AIDS */
+.debug-mobile .goal-tracker-item {
+    border: 3px solid red !important;
+}
+
+.debug-mobile .goal-tracker-item > div:first-child {
+    border: 2px solid blue !important;
+    background: rgba(0, 0, 255, 0.1) !important;
+}
+
+.debug-mobile .goal-tracker-item input[type="checkbox"] {
+    border: 2px solid green !important;
+    background: rgba(0, 255, 0, 0.2) !important;
+}
+
+/* 5. ENSURE TOUCH TARGETS ARE ACCESSIBLE */
+@media (max-width: 768px) {
+    
+    /* Make sure clicks work properly */
+    .goal-tracker-item {
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Prevent modal from being cut off */
+    body.modal-open {
+        overflow: hidden !important;
+        position: fixed !important;
+        width: 100% !important;
+    }
+    
+    /* Improve checkbox accessibility */
+    .goal-tracker-item input[type="checkbox"] {
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: white !important;
+        border: 3px solid var(--border) !important;
+        border-radius: 4px !important;
+        position: relative !important;
+    }
+    
+    .goal-tracker-item input[type="checkbox"]:checked {
+        background: var(--primary) !important;
+        border-color: var(--primary) !important;
+    }
+    
+    .goal-tracker-item input[type="checkbox"]:checked::after {
+        content: '✓' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 1.2rem !important;
+    }
+}
+        </style>
 </head>
 <body data-page="daily-tracker">
     <div class="app-container">
@@ -1498,6 +1746,265 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+        // MOBILE MODAL JAVASCRIPT FIX
+// Add this to your daily-tracker.html JavaScript section
+
+// Enhanced openGoalDetail function for mobile
+function openGoalDetailMobile(goalId) {
+    const goal = currentGoals.find(g => g._id === goalId);
+    if (!goal) return;
+    
+    selectedGoal = goal;
+    const color = areaColors[goal.area] || '#6366f1';
+    
+    // Update modal content
+    document.getElementById('modalTitle').textContent = 'Goal Details';
+    document.getElementById('modalArea').textContent = goal.area;
+    document.getElementById('modalBigGoal').textContent = goal.bigGoal;
+    document.getElementById('modalDailyAction').textContent = goal.dailyAction;
+    document.getElementById('modalStreak').textContent = goal.streak || 0;
+    
+    let lastCompletedText = 'Never';
+    if (goal.lastCompletedDate) {
+        const lastDate = new Date(goal.lastCompletedDate);
+        const today = new Date();
+        const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 0) {
+            lastCompletedText = 'Today';
+        } else if (diffDays === 1) {
+            lastCompletedText = 'Yesterday';
+        } else {
+            lastCompletedText = `${diffDays} days ago`;
+        }
+    }
+    document.getElementById('modalLastCompleted').textContent = lastCompletedText;
+    
+    document.getElementById('modalHeader').style.background = `linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%)`;
+    
+    updateModalButtons();
+    
+    // MOBILE FIX: Ensure modal displays correctly
+    const modal = document.getElementById('goalDetailModal');
+    if (modal) {
+        // Prevent body scroll on mobile
+        document.body.style.overflow = 'hidden';
+        document.body.style.position = 'fixed';
+        document.body.style.width = '100%';
+        document.body.classList.add('modal-open');
+        
+        // Show modal
+        modal.style.display = 'block';
+        
+        // Force proper positioning on mobile
+        if (window.innerWidth <= 768) {
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100vw';
+            modal.style.height = '100vh';
+            modal.style.zIndex = '9999';
+            
+            // Ensure modal content is properly centered
+            const modalContent = modal.querySelector('div');
+            if (modalContent) {
+                modalContent.style.display = 'flex';
+                modalContent.style.alignItems = 'flex-start';
+                modalContent.style.justifyContent = 'center';
+                modalContent.style.padding = '1rem';
+                modalContent.style.boxSizing = 'border-box';
+                modalContent.style.overflowY = 'auto';
+                modalContent.style.width = '100%';
+                modalContent.style.height = '100%';
+            }
+        }
+    }
+}
+
+// Enhanced closeGoalDetail function for mobile
+function closeGoalDetailMobile() {
+    const modal = document.getElementById('goalDetailModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+    
+    // MOBILE FIX: Restore body scroll
+    document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.width = '';
+    document.body.classList.remove('modal-open');
+    
+    selectedGoal = null;
+}
+
+// Enhanced renderDailyGoals function with forced checkboxes
+function renderDailyGoalsMobile() {
+    const container = document.getElementById('dailyGoalsList');
+    
+    if (currentGoals.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                <div style="width: 80px; height: 80px; background: var(--border); border-radius: 50%; margin: 0 auto 2rem auto; display: flex; align-items: center; justify-content: center;">
+                    <div style="width: 40px; height: 40px; background: var(--text-muted); border-radius: 50%;"></div>
+                </div>
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-weight: 600;">No Goals Set Yet</h3>
+                <p style="margin-bottom: 2rem; line-height: 1.6;">Start by creating your first life goal to begin tracking your daily progress!</p>
+                <button onclick="window.location.href='goals.html'" class="btn btn-primary">
+                    Create Your First Goal
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    
+    currentGoals.forEach(goal => {
+        const color = areaColors[goal.area] || '#6366f1';
+        const isCompletedToday = isGoalCompletedToday(goal);
+        
+        html += `
+            <div class="goal-tracker-item" data-goal-id="${goal._id}" style="
+                display: flex !important; 
+                flex-direction: row !important;
+                align-items: center !important; 
+                padding: 1.25rem !important; 
+                margin-bottom: 1rem !important; 
+                background: var(--surface) !important; 
+                border-radius: 12px !important; 
+                border: 2px solid ${isCompletedToday ? color : 'var(--border)'} !important; 
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                ${isCompletedToday ? `background: linear-gradient(135deg, ${color}15 0%, ${color}05 100%) !important;` : ''}
+            " onclick="openGoalDetailMobile('${goal._id}')">
+                
+                <!-- FORCED CHECKBOX CONTAINER -->
+                <div style="
+                    margin-right: 1rem !important;
+                    flex-shrink: 0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    order: 1 !important;
+                ">
+                    <input type="checkbox" 
+                           id="goal-${goal._id}" 
+                           ${isCompletedToday ? 'checked' : ''} 
+                           onclick="event.stopPropagation(); toggleGoalCompletion('${goal._id}')"
+                           style="
+                               display: block !important;
+                               visibility: visible !important;
+                               opacity: 1 !important;
+                               width: 32px !important; 
+                               height: 32px !important; 
+                               accent-color: ${color} !important; 
+                               cursor: pointer !important;
+                               transform: scale(1.5) !important;
+                               margin: 0 !important;
+                               position: relative !important;
+                               z-index: 10 !important;
+                               pointer-events: auto !important;
+                           ">
+                </div>
+                
+                <!-- GOAL CONTENT -->
+                <div style="flex: 1 !important; margin: 0 !important; order: 2 !important;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                        <div style="
+                            background: ${color}; 
+                            color: white; 
+                            padding: 0.25rem 0.75rem; 
+                            border-radius: 12px; 
+                            font-size: 0.75rem; 
+                            font-weight: 600; 
+                            text-transform: uppercase;
+                        ">${goal.area}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">
+                            Streak: <span style="font-weight: 600; color: ${color};">${goal.streak || 0} days</span>
+                        </div>
+                    </div>
+                    <h3 style="
+                        margin: 0 0 0.5rem 0; 
+                        color: var(--text-primary); 
+                        font-size: 1.1rem; 
+                        font-weight: 600;
+                        ${isCompletedToday ? 'text-decoration: line-through; opacity: 0.7;' : ''}
+                    ">${goal.dailyAction}</h3>
+                    <p style="
+                        margin: 0; 
+                        color: var(--text-secondary); 
+                        font-size: 0.9rem; 
+                        line-height: 1.4;
+                        ${isCompletedToday ? 'opacity: 0.6;' : ''}
+                    ">${goal.bigGoal}</p>
+                </div>
+                
+                <!-- STATUS BADGE -->
+                <div style="margin-left: 0.75rem !important; flex-shrink: 0 !important; order: 3 !important;">
+                    ${isCompletedToday ? 
+                        `<div style="
+                            background: ${color}; 
+                            color: white; 
+                            padding: 0.5rem 1rem; 
+                            border-radius: 20px; 
+                            font-size: 0.875rem; 
+                            font-weight: 600;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        ">
+                            Complete
+                        </div>` : 
+                        `<div style="
+                            background: var(--border); 
+                            color: var(--text-muted); 
+                            padding: 0.5rem 1rem; 
+                            border-radius: 20px; 
+                            font-size: 0.875rem; 
+                            font-weight: 500;
+                        ">
+                            Pending
+                        </div>`
+                    }
+                </div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+// Replace the original functions with mobile-optimized versions
+if (window.innerWidth <= 768) {
+    window.openGoalDetail = openGoalDetailMobile;
+    window.closeGoalDetail = closeGoalDetailMobile;
+    window.renderDailyGoals = renderDailyGoalsMobile;
+    
+    console.log('✅ Mobile-optimized functions loaded');
+}
+
+// Add mobile-specific event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // Close modal when clicking outside on mobile
+    const modal = document.getElementById('goalDetailModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeGoalDetailMobile();
+            }
+        });
+    }
+    
+    // Prevent body scroll when modal is open
+    document.addEventListener('touchmove', function(e) {
+        if (document.body.classList.contains('modal-open')) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+});
+
+console.log('📱 Mobile fixes loaded!');
     </script>
         
 </body>
