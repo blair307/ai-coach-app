@@ -14,47 +14,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-    origin: function(origin, callback) {
-        // Allow requests with no origin (mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
-        
-        const allowedOrigins = [
-            'https://spontaneous-treacle-905d13.netlify.app',
-            /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,
-            /https:\/\/.*\.netlify\.app$/,
-            'http://localhost:3000',
-            'http://localhost:8080',
-            'http://localhost:5000',
-            'http://127.0.0.1:5500',
-            'http://localhost:3001'
-        ];
-        
-        const isAllowed = allowedOrigins.some(allowedOrigin => {
-            if (typeof allowedOrigin === 'string') {
-                return origin === allowedOrigin;
-            }
-            return allowedOrigin.test(origin);
-        });
-        
-        if (isAllowed) {
-            callback(null, true);
-        } else {
-            console.log('CORS blocked origin:', origin);
-            callback(null, true); // Allow anyway for now
-        }
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: [
-        'Content-Type', 
-        'Authorization', 
-        'X-Requested-With', 
-        'Accept',
-        'Origin',
-        'Cache-Control'
-    ],
-    optionsSuccessStatus: 200
+    origin: '*',
+    credentials: true
 }));
+
 
 // Increase payload limit for image uploads
 app.use(express.json({ limit: '50mb' }));
