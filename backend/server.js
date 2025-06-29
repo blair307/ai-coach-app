@@ -60,19 +60,6 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   console.log("⚠️ Email credentials not found - password reset will be disabled");
 }
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
-  .then(async () => {
-    console.log('✅ Connected to MongoDB');
-    try {
-      await createDefaultRooms();
-      await migrateGoalsToHistory();
-      console.log('✅ Initial setup completed');
-    } catch (error) {
-      console.error('❌ Setup error:', error);
-    }
-  })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // UPDATED User Schema with Settings Support + Password Reset
 const userSchema = new mongoose.Schema({
@@ -2228,6 +2215,25 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
+
+// Connect to MongoDB (MOVED TO BOTTOM)
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
+  .then(async () => {
+    console.log('✅ Connected to MongoDB');
+    try {
+      await createDefaultRooms();
+      await migrateGoalsToHistory();
+      console.log('✅ Initial setup completed');
+    } catch (error) {
+      console.error('❌ Setup error:', error);
+    }
+  })
+  .catch(err => console.error('❌ MongoDB connection error:', err));
+
+// Start server
+app.listen(PORT, () => {
+  // ... your existing server startup code
+});
 
 // Start server
 app.listen(PORT, () => {
