@@ -807,6 +807,54 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// Update user profile (when you click "Save Changes")
+app.put('/api/user/profile', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { firstName, lastName, email, company, timezone } = req.body;
+    
+    if (!firstName || !lastName || !email) {
+      return res.status(400).json({ error: 'First name, last name, and email are required' });
+    }
+    
+    // Check if email is already taken
+    const existingUser = await User.findOne({ 
+      email: email.toLowerCase(), 
+      _id: { $ne: userId } 
+    });
+    
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use by another account' });
+    }
+    
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.toLowerCase().trim(),
+        company: company?.trim() || '',
+        timezone: timezone || 'America/Chicago'
+      },
+      { new: true }
+    ).select('-password');
+    
+    res.json({
+      message: 'Profile updated successfully',
+      profile: {
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        company: updatedUser.company,
+        timezone: updatedUser.timezone
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
 // Billing endpoints
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
   try {
@@ -1718,10 +1766,6 @@ mongoose.connection.once('open', () => {
 // ==========================================
 // SETTINGS API ROUTES - STEP 2 ADD THESE
 // ==========================================
-
-
-// ADD THIS ROUTE - Put it right BEFORE the line that says:
-// app.put('/api/user/change-password', authenticateToken, async (req, res) => {
 
 // Get user settings (what the settings page calls first)
 app.get('/api/user/settings', authenticateToken, async (req, res) => {
