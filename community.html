@@ -1559,53 +1559,7 @@ function createMessageElement(message, isReply = false) {
     return messageDiv;
 }
             
-            // Simulate like count
-            const likes = message.likes || [];
-            const likeCount = likes.length || Math.floor(Math.random() * 3);
-            const isLikedByUser = likes.includes(currentUser?.id);
-            
-            // Build action buttons
-            let actionButtons = `
-                <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
-                        onclick="toggleLike('${message._id || message.id || Date.now()}')" 
-                        title="Like">
-                    ${isLikedByUser ? '♥' : '♡'}
-                </button>
-                <button class="action-btn reply-btn" 
-                        onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
-                        title="Reply">
-                    ↳
-                </button>
-            `;
-
-            // Add delete button ONLY for own messages
-            if (isOwnMessage) {
-                actionButtons += `
-                    <button class="action-btn delete-btn" 
-                            onclick="deleteMessage('${message._id || message.id || Date.now()}')" 
-                            title="Delete your message">
-                        🗑️
-                    </button>
-                `;
-            }
-            
-            messageDiv.innerHTML = `
-                <div class="message-header">
-                    ${avatarHTML}
-                    <span class="username">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
-                    <span class="message-timestamp">${timestamp}</span>
-                </div>
-                <div class="message-content">
-                    <p>${escapeHtml(content)}</p>
-                    <div class="message-actions">
-                        ${actionButtons}
-                    </div>
-                </div>
-                ${likeCount > 0 ? `<div style="margin-left: 3rem; margin-top: 0.5rem; color: var(--error); font-size: 0.875rem;">♥ ${likeCount}</div>` : ''}
-            `;
-
-            return messageDiv;
-        }
+          
 
         // Load messages for a room
         async function loadMessages(roomId) {
