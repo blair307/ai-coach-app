@@ -121,38 +121,20 @@
         </main>
     </div>
 
-<!-- Mood Tracker Section -->
+<!-- Emotion Tracker Section -->
 <div style="background: var(--background); border-radius: 16px; padding: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border); margin-top: 2rem;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
-        <h2 style="margin: 0; color: var(--text-primary);">Daily Mood Tracker</h2>
+        <h2 style="margin: 0; color: var(--text-primary);">Daily Emotion Tracker</h2>
         <div style="font-size: 0.875rem; color: var(--text-secondary);">
-            Track how you're feeling today
+            Track your emotional state today
         </div>
     </div>
     
-    <!-- Today's Mood Selection -->
+    <!-- Today's Emotion Selection -->
     <div style="margin-bottom: 2rem;">
-        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">How are you feeling today?</h3>
-        <div id="moodButtons" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-            <button onclick="selectMood('excellent')" class="mood-btn" data-mood="excellent" style="
-                padding: 1rem; 
-                border: 2px solid var(--border); 
-                border-radius: 12px; 
-                background: var(--surface); 
-                cursor: pointer; 
-                transition: all 0.3s ease;
-                text-align: center;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.5rem;
-            ">
-                <div style="font-size: 2rem;">🤩</div>
-                <div style="font-weight: 600; color: var(--text-primary);">Excellent</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">Energized & optimistic</div>
-            </button>
-            
-            <button onclick="selectMood('good')" class="mood-btn" data-mood="good" style="
+        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">How are you feeling emotionally today?</h3>
+        <div id="emotionButtons" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <button onclick="selectEmotion('happy')" class="emotion-btn" data-emotion="happy" style="
                 padding: 1rem; 
                 border: 2px solid var(--border); 
                 border-radius: 12px; 
@@ -166,11 +148,11 @@
                 gap: 0.5rem;
             ">
                 <div style="font-size: 2rem;">😊</div>
-                <div style="font-weight: 600; color: var(--text-primary);">Good</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">Positive & motivated</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Happy</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Joyful & positive</div>
             </button>
             
-            <button onclick="selectMood('okay')" class="mood-btn" data-mood="okay" style="
+            <button onclick="selectEmotion('excited')" class="emotion-btn" data-emotion="excited" style="
                 padding: 1rem; 
                 border: 2px solid var(--border); 
                 border-radius: 12px; 
@@ -183,12 +165,138 @@
                 align-items: center;
                 gap: 0.5rem;
             ">
-                <div style="font-size: 2rem;">😐</div>
-                <div style="font-weight: 600; color: var(--text-primary);">Okay</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">Neutral & balanced</div>
+                <div style="font-size: 2rem;">🤩</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Excited</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Energized & thrilled</div>
             </button>
             
-            <button onclick="selectMood('stressed')" class="mood-btn" data-mood="stressed" style="
+            <button onclick="selectEmotion('content')" class="emotion-btn" data-emotion="content" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😌</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Content</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Peaceful & satisfied</div>
+            </button>
+            
+            <button onclick="selectEmotion('hopeful')" class="emotion-btn" data-emotion="hopeful" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">🌟</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Hopeful</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Optimistic about future</div>
+            </button>
+            
+            <button onclick="selectEmotion('sad')" class="emotion-btn" data-emotion="sad" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😢</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Sad</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Down or melancholy</div>
+            </button>
+            
+            <button onclick="selectEmotion('angry')" class="emotion-btn" data-emotion="angry" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😠</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Angry</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Frustrated or mad</div>
+            </button>
+            
+            <button onclick="selectEmotion('disappointed')" class="emotion-btn" data-emotion="disappointed" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😞</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Disappointed</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Let down or unsatisfied</div>
+            </button>
+            
+            <button onclick="selectEmotion('lonely')" class="emotion-btn" data-emotion="lonely" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😔</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Lonely</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Isolated or disconnected</div>
+            </button>
+            
+            <button onclick="selectEmotion('scared')" class="emotion-btn" data-emotion="scared" style="
+                padding: 1rem; 
+                border: 2px solid var(--border); 
+                border-radius: 12px; 
+                background: var(--surface); 
+                cursor: pointer; 
+                transition: all 0.3s ease;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            ">
+                <div style="font-size: 2rem;">😨</div>
+                <div style="font-weight: 600; color: var(--text-primary);">Scared</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Anxious or fearful</div>
+            </button>
+            
+            <button onclick="selectEmotion('stressed')" class="emotion-btn" data-emotion="stressed" style="
                 padding: 1rem; 
                 border: 2px solid var(--border); 
                 border-radius: 12px; 
@@ -203,39 +311,21 @@
             ">
                 <div style="font-size: 2rem;">😰</div>
                 <div style="font-weight: 600; color: var(--text-primary);">Stressed</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">Overwhelmed or anxious</div>
-            </button>
-            
-            <button onclick="selectMood('down')" class="mood-btn" data-mood="down" style="
-                padding: 1rem; 
-                border: 2px solid var(--border); 
-                border-radius: 12px; 
-                background: var(--surface); 
-                cursor: pointer; 
-                transition: all 0.3s ease;
-                text-align: center;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 0.5rem;
-            ">
-                <div style="font-size: 2rem;">😔</div>
-                <div style="font-weight: 600; color: var(--text-primary);">Down</div>
-                <div style="font-size: 0.8rem; color: var(--text-secondary);">Low energy or sad</div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">Overwhelmed or pressured</div>
             </button>
         </div>
         
-        <!-- Selected Mood Display -->
-        <div id="selectedMoodDisplay" style="display: none; padding: 1rem; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border-radius: 12px; text-align: center;">
-            <p style="margin: 0; font-weight: 600;">Today's mood recorded: <span id="selectedMoodText"></span></p>
+        <!-- Selected Emotion Display -->
+        <div id="selectedEmotionDisplay" style="display: none; padding: 1rem; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border-radius: 12px; text-align: center;">
+            <p style="margin: 0; font-weight: 600;">Today's emotion recorded: <span id="selectedEmotionText"></span></p>
         </div>
     </div>
     
-    <!-- Weekly Mood History -->
+    <!-- Weekly Emotion History -->
     <div>
-        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">This Week's Mood Pattern</h3>
-        <div id="weeklyMoodChart" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
-            <!-- Weekly mood chart will be populated by JavaScript -->
+        <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.1rem;">This Week's Emotional Pattern</h3>
+        <div id="weeklyEmotionChart" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.75rem;">
+            <!-- Weekly emotion chart will be populated by JavaScript -->
         </div>
     </div>
 </div>
