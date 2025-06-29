@@ -2231,7 +2231,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
   .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
@@ -2243,4 +2243,13 @@ app.listen(PORT, () => {
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
   console.log(`⚙️ USER SETTINGS: ENABLED with Profile Photos & Data Export ✅`);
   console.log(`🔒 Security: Password Change & Account Deletion ✅`);
+});
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`❌ Port ${PORT} is already in use`);
+    process.exit(1);
+  } else {
+    console.error('❌ Server error:', error);
+  }
 });
