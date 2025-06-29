@@ -964,104 +964,115 @@
             }
         }
 
-        // Handle avatar upload - FIXED FOR 500 ERROR
-        async function handleAvatarUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+// Replace your handleAvatarUpload function with this improved version:
 
-            console.log('📷 Starting avatar upload:', file.name, file.size, file.type);
+async function handleAvatarUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
 
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                showMessage('profileMessage', 'Please select an image file', 'error');
-                return;
-            }
+  console.log('📷 Starting avatar upload:', file.name, file.size, file.type);
 
-            // Validate file size (10MB max)
-            if (file.size > 10 * 1024 * 1024) {
-                showMessage('profileMessage', 'Image must be smaller than 10MB', 'error');
-                return;
-            }
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showMessage('profileMessage', 'Please select an image file', 'error');
+    return;
+  }
 
-            try {
-                showMessage('profileMessage', 'Uploading photo...', 'success');
-                
-                // Convert to base64
-                const base64 = await fileToBase64(file);
-                console.log('📷 Base64 conversion complete, length:', base64.length);
-                
-                const token = getAuthToken();
-                if (!token) {
-                    throw new Error('Authentication token not found');
-                }
+  // Check original file size FIRST (before base64 conversion)
+  const maxSizeBytes = 3 * 1024 * 1024; // 3MB limit (will be ~4MB in base64)
+  if (file.size > maxSizeBytes) {
+    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+    showMessage('profileMessage', `Image is ${sizeMB}MB. Please use an image smaller than 3MB.`, 'error');
+    return;
+  }
 
-                console.log('📷 Sending upload request to server...');
-                const response = await fetch(`${API_BASE_URL}/api/user/photo`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        profilePhoto: base64
-                    })
-                });
+  try {
+    showMessage('profileMessage', 'Uploading photo...', 'success');
+    
+    // Convert to base64
+    const base64 = await fileToBase64(file);
+    
+    // Log actual sizes for debugging
+    const originalSizeMB = (file.size / 1024 / 1024).toFixed(2);
+    const base64SizeMB = (base64.length / 1024 / 1024).toFixed(2);
+    console.log('📷 Original size:', originalSizeMB + 'MB');
+    console.log('📷 Base64 size:', base64SizeMB + 'MB');
+    console.log('📷 Base64 length:', base64.length);
+    
+    // Double-check base64 size
+    if (base64.length > 5000000) { // 5MB in base64
+      showMessage('profileMessage', `Processed image is too large (${base64SizeMB}MB). Please try a smaller image.`, 'error');
+      return;
+    }
+    
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
 
-                console.log('📷 Server response status:', response.status);
-                console.log('📷 Server response headers:', Object.fromEntries(response.headers.entries()));
+    console.log('📷 Sending upload request to server...');
+    const response = await fetch(`${API_BASE_URL}/api/user/photo`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        profilePhoto: base64
+      })
+    });
 
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('📷 Server error response:', errorText);
-                    
-                    // Try to parse as JSON for better error message
-                    let errorMessage = 'Failed to upload photo';
-                    try {
-                        const errorData = JSON.parse(errorText);
-                        errorMessage = errorData.error || errorData.message || errorMessage;
-                    } catch (parseError) {
-                        // If not JSON, use the raw text if it's informative
-                        if (errorText && errorText.length > 0 && errorText.length < 200) {
-                            errorMessage = errorText;
-                        }
-                    }
-                    
-                    // Add more specific error handling based on status code
-                    if (response.status === 413) {
-                        errorMessage = 'Image file is too large for the server. Please try a smaller image.';
-                    } else if (response.status === 500) {
-                        errorMessage = 'Server error occurred. Please try again or contact support.';
-                    } else if (response.status === 400) {
-                        errorMessage = 'Invalid image format. Please try a different image.';
-                    }
-                    
-                    throw new Error(errorMessage);
-                }
+    console.log('📷 Server response status:', response.status);
 
-                const result = await response.json();
-                console.log('📷 Upload successful:', result);
-                
-                // Update avatar display - PERMANENTLY STORED
-                document.getElementById('currentAvatar').innerHTML = `<img src="${base64}" alt="Profile Photo">`;
-                document.getElementById('removePhotoBtn').style.display = 'inline-block';
-                
-                showMessage('profileMessage', 'Profile photo updated and saved permanently!', 'success');
-
-            } catch (error) {
-                console.error('❌ Error uploading photo:', error);
-                
-                // Provide more helpful error messages
-                let userMessage = error.message || 'Failed to upload photo';
-                
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    userMessage = 'Network error. Please check your connection and try again.';
-                } else if (error.message.includes('base64')) {
-                    userMessage = 'Error processing image. Please try a different image format.';
-                }
-                
-                showMessage('profileMessage', userMessage, 'error');
-            }
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('📷 Server error response:', errorText);
+      
+      let errorMessage = 'Failed to upload photo';
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch (parseError) {
+        if (errorText && errorText.length > 0 && errorText.length < 200) {
+          errorMessage = errorText;
         }
+      }
+      
+      // Handle specific error types
+      if (response.status === 413) {
+        errorMessage = 'Image file is too large for the server. Please try a smaller image.';
+      } else if (response.status === 500) {
+        errorMessage = 'Server error occurred. Please try again or contact support.';
+      } else if (response.status === 400) {
+        errorMessage = 'Invalid image format. Please try a different image.';
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const result = await response.json();
+    console.log('📷 Upload successful:', result);
+    
+    // Update avatar display
+    document.getElementById('currentAvatar').innerHTML = `<img src="${base64}" alt="Profile Photo">`;
+    document.getElementById('removePhotoBtn').style.display = 'inline-block';
+    
+    showMessage('profileMessage', 'Profile photo updated and saved permanently!', 'success');
+
+  } catch (error) {
+    console.error('❌ Error uploading photo:', error);
+    
+    let userMessage = error.message || 'Failed to upload photo';
+    
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      userMessage = 'Network error. Please check your connection and try again.';
+    } else if (error.message.includes('base64')) {
+      userMessage = 'Error processing image. Please try a different image format.';
+    }
+    
+    showMessage('profileMessage', userMessage, 'error');
+  }
+}
 
         // Remove profile photo
         async function removeProfilePhoto() {
