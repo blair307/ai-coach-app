@@ -13,17 +13,20 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors({
     origin: [
         /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,  // Matches any deployment
         'https://spontaneous-treacle-905d13.netlify.app',
+        /https:\/\/.*\.netlify\.app$/,  // Allow any Netlify app
         'http://localhost:3000',
-        'http://localhost:8080'
+        'http://localhost:8080',
+        'http://localhost:5000',
+        'http://127.0.0.1:5500',  // Live Server
+        'http://localhost:3001'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 // Increase payload limit for image uploads
