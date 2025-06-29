@@ -488,7 +488,7 @@ function isGoalCompletedToday(goal) {
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
     loadDailyGoals();
-    initializeMoodTracker(); // NEW: Initialize mood tracker
+    initializeEmotionTracker(); // NEW: Initialize emotion tracker
     updateNotificationCount();
     setInterval(updateNotificationCount, 30000);
     
@@ -1595,10 +1595,10 @@ window.debugUIRefresh = debugUIRefresh;
         // ENHANCED: Add this to the window for debugging
 window.debugUIRefresh = debugUIRefresh;
 
-// Export mood tracker functions for global access
-window.selectMood = selectMood;
-window.getMoodStats = getMoodStats;
-window.initializeMoodTracker = initializeMoodTracker;
+// Export emotion tracker functions for global access
+window.selectEmotion = selectEmotion;
+window.getEmotionStats = getEmotionStats;
+window.initializeEmotionTracker = initializeEmotionTracker;
         
 // Add CSS animations
 const style = document.createElement('style');
