@@ -3388,7 +3388,21 @@ body {
     display: none !important;
 }
 
-/* FIXED: Authentication container - full viewport coverage */
+/* ===============================================
+   AUTHENTICATION PAGE FIXES
+   Add this to your styles.css file
+   =============================================== */
+
+/* FIXED: Remove default margins and ensure full coverage */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+/* FIXED: Authentication container - full edge coverage with scrolling */
 .auth-container {
     min-height: 100vh;
     display: flex;
@@ -3397,30 +3411,27 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     padding: 2rem;
     position: relative;
-    /* FIXED: Remove any margins and ensure full coverage */
-    margin: 0;
-    width: 100vw;
-    /* FIXED: Position to cover entire viewport */
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-/* FIXED: Hero section - full edge-to-edge coverage */
-.hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 10rem 2rem 8rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-    /* FIXED: Ensure full width coverage */
     margin: 0;
     width: 100%;
-    /* FIXED: Remove any potential white space */
     box-sizing: border-box;
+}
+
+/* FIXED: Auth card sizing */
+.auth-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 3rem;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    max-width: 450px;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-sizing: border-box;
+    margin: 0 auto;
+}
+
+.auth-card.large {
+    max-width: 550px;
 }
 
 /* FIXED: Form input sizing - prevent overflow */
@@ -3435,9 +3446,7 @@ body {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     background: var(--background);
-    /* FIXED: Ensure proper box sizing */
     box-sizing: border-box;
-    /* FIXED: Prevent overflow */
     max-width: 100%;
     min-width: 0;
 }
@@ -3447,47 +3456,64 @@ body {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    /* FIXED: Ensure proper sizing */
     width: 100%;
     box-sizing: border-box;
 }
 
 .form-row .form-group {
-    /* FIXED: Prevent child overflow */
     min-width: 0;
     width: 100%;
 }
 
-/* FIXED: Auth card sizing */
-.auth-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    padding: 3rem;
-    border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-xl);
-    max-width: 450px;
-    width: 100%;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    /* FIXED: Ensure proper box sizing */
+/* FIXED: Payment section inputs */
+#card-element {
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    transition: all 0.3s ease;
     box-sizing: border-box;
-    /* FIXED: Prevent overflow on small screens */
-    margin: 0 auto;
-}
-
-.auth-card.large {
-    max-width: 550px;
-}
-
-/* FIXED: Body and html to remove default margins */
-html, body {
-    margin: 0;
-    padding: 0;
     width: 100%;
-    height: 100%;
-    overflow-x: hidden;
 }
 
-/* FIXED: Ensure navbar spans full width */
+/* FIXED: Coupon input container */
+.coupon-section > div[style*="display: flex"] {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.coupon-section .form-group {
+    flex: 1;
+    margin-bottom: 0;
+    min-width: 0;
+}
+
+/* FIXED: Form actions layout */
+.form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* FIXED: Hero section - full edge-to-edge coverage */
+.hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10rem 2rem 8rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* FIXED: Navbar full width */
 .navbar {
     background: var(--glass);
     backdrop-filter: blur(20px) saturate(180%);
@@ -3495,7 +3521,6 @@ html, body {
     position: sticky;
     top: 0;
     z-index: 100;
-    /* FIXED: Full width coverage */
     width: 100%;
     margin: 0;
     box-sizing: border-box;
@@ -3507,7 +3532,6 @@ html, body {
     color: white;
     text-align: center;
     padding: 3rem 2rem;
-    /* FIXED: Full width coverage */
     width: 100%;
     margin: 0;
     box-sizing: border-box;
@@ -3517,107 +3541,15 @@ html, body {
 .features {
     padding: 8rem 2rem;
     background: var(--background);
-    /* FIXED: Full width coverage */
     width: 100%;
     margin: 0;
     box-sizing: border-box;
 }
 
-/* FIXED: Payment section inputs */
-#card-element {
-    padding: 1rem;
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--background);
-    transition: all 0.3s ease;
-    /* FIXED: Proper box sizing */
-    box-sizing: border-box;
-    width: 100%;
-}
-
-/* FIXED: Coupon input container */
-.coupon-section > div[style*="display: flex"] {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-end;
-    /* FIXED: Prevent overflow */
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.coupon-section .form-group {
-    flex: 1;
-    margin-bottom: 0;
-    /* FIXED: Prevent overflow */
-    min-width: 0;
-}
-
-/* FIXED: Mobile responsive improvements */
-@media (max-width: 768px) {
-    .auth-container {
-        padding: 1rem;
-        /* FIXED: Ensure mobile coverage */
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100vw;
-        height: 100vh;
-    }
-    
-    .auth-card {
-        padding: 2rem 1.5rem;
-        max-width: 100%;
-        width: calc(100% - 2rem);
-        margin: 0;
-    }
-    
-    .form-row {
-        grid-template-columns: 1fr;
-        gap: 0.5rem;
-    }
-    
-    /* FIXED: Ensure inputs don't overflow on mobile */
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-        font-size: 16px; /* Prevents zoom on iOS */
-        padding: 0.875rem;
-        /* FIXED: Mobile-specific sizing */
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-    
-    .hero {
-        padding: 6rem 1rem 4rem;
-        /* FIXED: Mobile full coverage */
-        margin: 0;
-        width: 100%;
-    }
-}
-
-/* FIXED: Very small screens */
-@media (max-width: 480px) {
-    .auth-card {
-        padding: 1.5rem 1rem;
-        border-radius: var(--radius-lg);
-    }
-    
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-        padding: 0.75rem;
-        font-size: 16px;
-    }
-}
-
-/* FIXED: Remove any default container margins */
+/* FIXED: Container margins */
 .container, .nav-container {
     margin-left: auto;
     margin-right: auto;
-    /* FIXED: Ensure containers don't create white space */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -3635,24 +3567,69 @@ html, body {
     gap: 2rem;
     max-width: 800px;
     margin: 0 auto;
-    /* FIXED: Prevent overflow */
     width: 100%;
     box-sizing: border-box;
 }
 
-/* FIXED: Form actions layout */
-.form-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    /* FIXED: Full width */
-    width: 100%;
-    box-sizing: border-box;
-}
+/* ===============================================
+   MOBILE RESPONSIVE FIXES
+   =============================================== */
 
 @media (max-width: 768px) {
+    .auth-container {
+        padding: 1rem;
+        min-height: 100vh;
+        width: 100%;
+        align-items: flex-start;
+        padding-top: 2rem;
+    }
+    
+    .auth-card {
+        padding: 2rem 1.5rem;
+        max-width: 100%;
+        width: calc(100% - 2rem);
+        margin: 0;
+        flex-shrink: 0;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    
     .form-actions {
         grid-template-columns: 1fr;
         gap: 0.75rem;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 0.875rem;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .hero {
+        padding: 6rem 1rem 4rem;
+        margin: 0;
+        width: 100%;
+    }
+}
+
+/* FIXED: Very small screens */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 1.5rem 1rem;
+        border-radius: var(--radius-lg);
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        padding: 0.75rem;
+        font-size: 16px;
     }
 }
