@@ -1793,8 +1793,6 @@ app.get('/api/user/settings', authenticateToken, async (req, res) => {
   }
 });
 
-
-
 // Change password (when you update password)
 app.put('/api/user/change-password', authenticateToken, async (req, res) => {
   try {
