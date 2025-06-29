@@ -152,6 +152,7 @@ const messageSchema = new mongoose.Schema({
   content: String,
   avatar: { type: String, default: 'U' },
   avatarColor: { type: String, default: '#6366f1' },
+    profilePhoto: { type: String }, // NEW: Store user profile photos
   // NEW: Reply functionality fields
   replyTo: {
     messageId: { type: mongoose.Schema.Types.ObjectId, ref: 'Message' },
@@ -1092,8 +1093,8 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       
     console.log(`📨 Retrieved ${messages.length} messages for room ${req.params.id}`);
     
-    // Process messages to ensure proper reply structure and handle deleted messages
-    const processedMessages = messages.map(message => {
+  // Process messages to ensure proper reply structure and handle deleted messages
+    const processedMessages = await Promise.all(messages.map(async (message) => {
       const messageObj = message.toObject();
       
       // Ensure backward compatibility
@@ -1106,14 +1107,25 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         messageObj.content = '[Message deleted by user]';
         messageObj.message = '[Message deleted by user]';
         messageObj.isDeleted = true;
-        // Keep username for threading but mark as deleted
         if (!messageObj.username.includes('(deleted)')) {
           messageObj.username = messageObj.username + ' (deleted)';
         }
       }
       
+      // POPULATE PROFILE PHOTO if not already present
+      if (!messageObj.profilePhoto && messageObj.userId) {
+        try {
+          const user = await User.findById(messageObj.userId).select('profilePhoto');
+          if (user && user.profilePhoto) {
+            messageObj.profilePhoto = user.profilePhoto;
+          }
+        } catch (error) {
+          console.log('⚠️ Could not populate profile photo for user:', messageObj.userId);
+        }
+      }
+      
       return messageObj;
-    });
+    }));
     
     res.json(processedMessages);
   } catch (error) {
@@ -1137,6 +1149,7 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       content: req.body.content,
       message: req.body.content, // For compatibility
       avatarColor: req.body.avatarColor || '#6366f1'
+        profilePhoto: user?.profilePhoto || null
     };
 
     // Handle reply data if this is a reply
