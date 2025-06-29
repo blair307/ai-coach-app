@@ -13,11 +13,18 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors({
-    origin: '*',
-    credentials: true
+    origin: [
+        /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,  // Matches any deployment
+        'https://spontaneous-treacle-905d13.netlify.app',
+        'http://localhost:3000',
+        'http://localhost:8080'
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
 
 // Increase payload limit for image uploads
 app.use(express.json({ limit: '50mb' }));
@@ -172,7 +179,7 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
-// Life Goals Schema - SINGLE DEFINITION ONLY
+// Life Goals Schema
 const lifeGoalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   area: { type: String, enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], required: true },
@@ -191,27 +198,7 @@ const lifeGoalSchema = new mongoose.Schema({
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
-// Daily Emotions Schema - EMOTION TRACKER (NOT MOOD)
-const dailyEmotionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  emotion: { 
-    type: String, 
-    enum: ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'], 
-    required: true 
-  },
-  intensity: { type: Number, min: 1, max: 5, default: 3 }, // Optional intensity rating
-  notes: { type: String, maxlength: 500 }, // Optional notes
-  date: { type: Date, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-// Ensure one emotion per user per day
-dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
-
-const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
-
-// Insights Schema - SINGLE DEFINITION ONLY
+// Insights Schema - NEW
 const insightSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   type: { type: String, enum: ['stress', 'communication', 'productivity', 'emotional', 'leadership'], required: true },
@@ -908,9 +895,7 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
       LifeGoal.deleteMany({ userId }),
       Notification.deleteMany({ userId }),
       Chat.findOneAndDelete({ userId }),
-      Message.deleteMany({ userId }),
-      DailyEmotion.deleteMany({ userId }),
-      Insight.deleteMany({ userId })
+      Message.deleteMany({ userId })
     ]);
 
     res.json({ message: 'Account deleted successfully' });
@@ -1021,7 +1006,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     chat.updatedAt = new Date();
     await chat.save();
 
-    // Generate insights after successful chat - NEW
+// Generate insights after successful chat - NEW
     if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
@@ -1372,6 +1357,8 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to create room' });
   }
 });
+
+// REPLACE WITH THIS NEW CODE:
 
 // ENHANCED: Get messages with reply support, deleted message handling, AND PROFILE PHOTOS
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
@@ -2037,139 +2024,7 @@ app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==========================================
-// EMOTION TRACKER API ROUTES - NEW
-// ==========================================
-
-// Get user's emotion history
-app.get('/api/emotions', authenticateToken, async (req, res) => {
-  try {
-    const { days = 30 } = req.query;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
-    
-    const emotions = await DailyEmotion.find({
-      userId: req.user.userId,
-      date: { $gte: startDate }
-    }).sort({ date: -1 });
-    
-    res.json(emotions);
-  } catch (error) {
-    console.error('Get emotions error:', error);
-    res.status(500).json({ error: 'Failed to fetch emotions' });
-  }
-});
-
-// Record today's emotion
-app.post('/api/emotions', authenticateToken, async (req, res) => {
-  try {
-    const { emotion, intensity, notes } = req.body;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to midnight for consistent daily tracking
-    
-    // Validate emotion
-    const validEmotions = ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'];
-    if (!validEmotions.includes(emotion)) {
-      return res.status(400).json({ error: 'Invalid emotion' });
-    }
-    
-    // Update or create today's emotion entry
-    const emotionEntry = await DailyEmotion.findOneAndUpdate(
-      { 
-        userId: req.user.userId, 
-        date: today 
-      },
-      { 
-        emotion, 
-        intensity: intensity || 3,
-        notes: notes || '',
-        updatedAt: new Date()
-      },
-      { 
-        upsert: true, 
-        new: true 
-      }
-    );
-    
-    console.log('🎭 Emotion recorded:', { userId: req.user.userId, emotion, date: today });
-    res.json(emotionEntry);
-    
-  } catch (error) {
-    console.error('Record emotion error:', error);
-    if (error.code === 11000) {
-      res.status(400).json({ error: 'Emotion already recorded for today' });
-    } else {
-      res.status(500).json({ error: 'Failed to record emotion' });
-    }
-  }
-});
-
-// Get today's emotion
-app.get('/api/emotions/today', authenticateToken, async (req, res) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todaysEmotion = await DailyEmotion.findOne({
-      userId: req.user.userId,
-      date: today
-    });
-    
-    res.json(todaysEmotion);
-  } catch (error) {
-    console.error('Get today emotion error:', error);
-    res.status(500).json({ error: 'Failed to fetch today\'s emotion' });
-  }
-});
-
-// Delete emotion entry
-app.delete('/api/emotions/:id', authenticateToken, async (req, res) => {
-  try {
-    await DailyEmotion.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.user.userId 
-    });
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Delete emotion error:', error);
-    res.status(500).json({ error: 'Failed to delete emotion' });
-  }
-});
-
-// Get emotion statistics
-app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
-  try {
-    const { days = 30 } = req.query;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
-    
-    const emotions = await DailyEmotion.find({
-      userId: req.user.userId,
-      date: { $gte: startDate }
-    });
-    
-    // Calculate statistics
-    const stats = {
-      totalEntries: emotions.length,
-      averageIntensity: emotions.length > 0 ? 
-        emotions.reduce((sum, e) => sum + e.intensity, 0) / emotions.length : 0,
-      emotionCounts: {},
-      weeklyPattern: {}
-    };
-    
-    // Count emotions
-    emotions.forEach(emotion => {
-      stats.emotionCounts[emotion.emotion] = (stats.emotionCounts[emotion.emotion] || 0) + 1;
-    });
-    
-    res.json(stats);
-  } catch (error) {
-    console.error('Get emotion stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch emotion statistics' });
-  }
-});
-
-// Enhanced health check with reply system status + SETTINGS + EMOTIONS
+// Enhanced health check with reply system status + SETTINGS
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -2188,9 +2043,7 @@ app.get('/health', (req, res) => {
       messageDeleting: 'enabled',
       userSettings: 'enabled',
       profilePhotos: 'enabled',
-      dataExport: 'enabled',
-      emotionTracker: 'enabled',
-      insights: 'enabled'
+      dataExport: 'enabled'
     }
   });
 });
@@ -2228,6 +2081,4 @@ app.listen(PORT, () => {
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
   console.log(`⚙️ USER SETTINGS: ENABLED with Profile Photos & Data Export ✅`);
   console.log(`🔒 Security: Password Change & Account Deletion ✅`);
-  console.log(`🎭 EMOTION TRACKER: ENABLED with Daily Tracking & Analytics ✅`);
-  console.log(`💡 AI INSIGHTS: ENABLED with Pattern Detection ✅`);
 });
