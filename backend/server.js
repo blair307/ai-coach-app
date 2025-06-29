@@ -78,6 +78,9 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
+  company: { type: String, default: '' },              // NEW: Store company name
+  timezone: { type: String, default: 'America/Chicago' }, // NEW: Store timezone
+  profilePhoto: { type: String },                      // N
   createdAt: { type: Date, default: Date.now }
 });
 
