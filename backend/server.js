@@ -1,4 +1,4 @@
-// Complete AI Coach Backend Server with Enhanced Reply Notifications + SETTINGS SUPPORT
+// Complete AI Coach Backend Server with Enhanced Reply Notifications
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
@@ -13,25 +13,19 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors({
     origin: [
         /https:\/\/.*--spontaneous-treacle-905d13\.netlify\.app$/,  // Matches any deployment
         'https://spontaneous-treacle-905d13.netlify.app',
-        /https:\/\/.*\.netlify\.app$/,  // Allow any Netlify app
         'http://localhost:3000',
-        'http://localhost:8080',
-        'http://localhost:5000',
-        'http://127.0.0.1:5500',  // Live Server
-        'http://localhost:3001'
+        'http://localhost:8080'
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
-
-// Increase payload limit for image uploads
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json());
 
 // Initialize services
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -60,8 +54,12 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   console.log("⚠️ Email credentials not found - password reset will be disabled");
 }
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// UPDATED User Schema with Settings Support + Password Reset
+// Updated User Schema with Streak Tracking + Password Reset
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -80,19 +78,6 @@ const userSchema = new mongoose.Schema({
   },
   resetPasswordToken: String,
   resetPasswordExpires: Date,
-  // NEW SETTINGS FIELDS - Step 4
-  company: String,
-  timezone: { type: String, default: 'America/Chicago' },
-  profilePhoto: String,
-  settings: {
-    emailNotifications: { type: Boolean, default: true },
-    coachingReminders: { type: Boolean, default: true },
-    communityMentions: { type: Boolean, default: true },
-    goalReminders: { type: Boolean, default: true },
-    weeklyReports: { type: Boolean, default: true },
-    profileVisibility: { type: Boolean, default: true },
-    activityStatus: { type: Boolean, default: false }
-  },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -197,118 +182,6 @@ const lifeGoalSchema = new mongoose.Schema({
 
 const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
 
-// Daily Emotions Schema - NEW
-const dailyEmotionSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  emotion: { 
-    type: String, 
-    enum: ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'], 
-    required: true 
-  },
-  intensity: { type: Number, min: 1, max: 5, default: 3 }, // Optional intensity rating
-  notes: { type: String, maxlength: 500 }, // Optional notes
-  date: { type: Date, required: true },
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-// Ensure one emotion per user per day
-dailyEmotionSchema.index({ userId: 1, date: 1 }, { unique: true });
-
-const DailyEmotion = mongoose.model('DailyEmotion', dailyEmotionSchema);
-
-
-// Insights Schema - NEW
-const insightSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['stress', 'communication', 'productivity', 'emotional', 'leadership'], required: true },
-  insight: { type: String, required: true },
-  confidence: { type: Number, min: 0, max: 1, default: 0.7 },
-  source: { type: String, enum: ['ai_analysis', 'pattern_detection', 'user_feedback'] },
-  chatSession: { type: String },
-  createdAt: { type: Date, default: Date.now },
-  isRead: { type: Boolean, default: false }
-});
-
-const Insight = mongoose.model('Insight', insightSchema);
-
-// Generate insights from chat conversations - NEW
-async function generateInsights(userId, messages) {
-  try {
-    if (!openai || messages.length < 6) return; // Need enough conversation
-    
-    console.log('🧠 Generating insights for user:', userId);
-    
-    // Get recent user messages for analysis
-    const userMessages = messages
-      .filter(msg => msg.role === 'user')
-      .slice(-8) // Last 8 user messages
-      .map(msg => msg.content)
-      .join('\n');
-    
-    if (userMessages.length < 50) return; // Need substantial content
-    
-    // Use OpenAI to analyze patterns
-    const analysisPrompt = `Analyze these entrepreneur conversation messages and identify 1-2 actionable insights about their stress patterns, communication style, productivity, emotional state, or leadership challenges.
-
-Messages:
-${userMessages}
-
-Format response as:
-TYPE: specific actionable insight under 80 characters
-
-Types: stress, communication, productivity, emotional, leadership
-Be specific and actionable, not generic.`;
-    
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: analysisPrompt }],
-      max_tokens: 200,
-      temperature: 0.3
-    });
-    
-    const analysisResult = completion.choices[0].message.content;
-    console.log('🔍 AI Analysis Result:', analysisResult);
-    
-    // Parse insights from AI response
-    const insightLines = analysisResult.split('\n').filter(line => line.includes(':'));
-    
-    for (const line of insightLines) {
-      const parts = line.split(':');
-      if (parts.length >= 2) {
-        const type = parts[0].trim().toLowerCase();
-        const insight = parts.slice(1).join(':').trim();
-        
-        if (insight && insight.length > 15) {
-          // Check if similar insight already exists
-          const existingInsight = await Insight.findOne({
-            userId,
-            type,
-            insight: { $regex: insight.substring(0, 15), $options: 'i' },
-            createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-          });
-          
-          if (!existingInsight) {
-            const newInsight = new Insight({
-              userId,
-              type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
-              insight: insight.charAt(0).toUpperCase() + insight.slice(1),
-              source: 'ai_analysis',
-              confidence: 0.8
-            });
-            
-            await newInsight.save();
-            console.log('💡 Generated insight:', newInsight.insight);
-          }
-        }
-      }
-    }
-    
-  } catch (error) {
-    console.error('Error generating insights:', error);
-  }
-}
-
 // Function to update user streak
 async function updateUserStreak(userId) {
   try {
@@ -404,7 +277,7 @@ app.get('/', (req, res) => {
 
 // Test route
 app.get('/test', (req, res) => {
-  res.json({ message: 'Enhanced reply system deployed with SETTINGS!', timestamp: new Date() });
+  res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
 });
 
 // Register new user with payment
@@ -434,18 +307,7 @@ app.post('/api/auth/register', async (req, res) => {
         currentStreak: 1,
         lastLoginDate: new Date(),
         longestStreak: 1
-      },
-      // Initialize default settings
-      settings: {
-        emailNotifications: true,
-        coachingReminders: true,
-        communityMentions: true,
-        goalReminders: true,
-        weeklyReports: true,
-        profileVisibility: true,
-        activityStatus: false
-      },
-      timezone: 'America/Chicago'
+      }
     });
 
     await user.save();
@@ -622,309 +484,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// ==========================================
-// NEW SETTINGS API ROUTES - Step 3
-// ==========================================
-
-// Get user settings and profile
-app.get('/api/user/settings', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.userId).select('-password -resetPasswordToken');
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({
-      settings: user.settings || {
-        emailNotifications: true,
-        coachingReminders: true,
-        communityMentions: true,
-        goalReminders: true,
-        weeklyReports: true,
-        profileVisibility: true,
-        activityStatus: false
-      },
-      profile: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        company: user.company || '',
-        timezone: user.timezone || 'America/Chicago',
-        profilePhoto: user.profilePhoto || null
-      }
-    });
-  } catch (error) {
-    console.error('Get settings error:', error);
-    res.status(500).json({ error: 'Failed to get settings' });
-  }
-});
-
-// Update user profile information
-app.put('/api/user/profile', authenticateToken, async (req, res) => {
-  try {
-    const { firstName, lastName, email, company, timezone } = req.body;
-    
-    // Check if email is already taken by another user
-    if (email) {
-      const existingUser = await User.findOne({ 
-        email: email.toLowerCase(), 
-        _id: { $ne: req.user.userId } 
-      });
-      if (existingUser) {
-        return res.status(400).json({ error: 'Email already in use by another account' });
-      }
-    }
-
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      { 
-        firstName, 
-        lastName, 
-        email: email?.toLowerCase(), 
-        company, 
-        timezone 
-      },
-      { new: true, runValidators: true }
-    ).select('-password -resetPasswordToken');
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ 
-      message: 'Profile updated successfully', 
-      user: {
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        company: user.company,
-        timezone: user.timezone
-      }
-    });
-  } catch (error) {
-    console.error('Update profile error:', error);
-    if (error.code === 11000) {
-      return res.status(400).json({ error: 'Email already in use' });
-    }
-    res.status(500).json({ error: 'Failed to update profile' });
-  }
-});
-
-// Update user settings (notification preferences, privacy settings)
-app.put('/api/user/settings', authenticateToken, async (req, res) => {
-  try {
-    const settings = req.body;
-    
-    // Validate settings object
-    const validSettings = [
-      'emailNotifications', 'coachingReminders', 'communityMentions', 
-      'goalReminders', 'weeklyReports', 'profileVisibility', 'activityStatus'
-    ];
-    
-    const filteredSettings = {};
-    for (const [key, value] of Object.entries(settings)) {
-      if (validSettings.includes(key) && typeof value === 'boolean') {
-        filteredSettings[`settings.${key}`] = value;
-      }
-    }
-
-    const user = await User.findByIdAndUpdate(
-      req.user.userId, 
-      filteredSettings,
-      { new: true }
-    );
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ 
-      message: 'Settings updated successfully',
-      settings: user.settings
-    });
-  } catch (error) {
-    console.error('Update settings error:', error);
-    res.status(500).json({ error: 'Failed to update settings' });
-  }
-});
-
-// Upload/Update profile photo
-app.put('/api/user/photo', authenticateToken, async (req, res) => {
-  try {
-    const { profilePhoto } = req.body;
-    
-    if (!profilePhoto) {
-      return res.status(400).json({ error: 'Profile photo data required' });
-    }
-
-    // Basic validation for base64 image data
-    if (!profilePhoto.startsWith('data:image/')) {
-      return res.status(400).json({ error: 'Invalid image format' });
-    }
-
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      { profilePhoto },
-      { new: true }
-    ).select('firstName lastName profilePhoto');
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ 
-      message: 'Profile photo updated successfully',
-      profilePhoto: user.profilePhoto
-    });
-  } catch (error) {
-    console.error('Upload photo error:', error);
-    res.status(500).json({ error: 'Failed to upload photo' });
-  }
-});
-
-// Remove profile photo
-app.delete('/api/user/photo', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      { $unset: { profilePhoto: 1 } },
-      { new: true }
-    );
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({ message: 'Profile photo removed successfully' });
-  } catch (error) {
-    console.error('Remove photo error:', error);
-    res.status(500).json({ error: 'Failed to remove photo' });
-  }
-});
-
-// Change password from settings
-app.put('/api/user/change-password', authenticateToken, async (req, res) => {
-  try {
-    const { currentPassword, newPassword } = req.body;
-    
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Current password and new password are required' });
-    }
-
-    if (newPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters long' });
-    }
-
-    const user = await User.findById(req.user.userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    // Verify current password
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password);
-    if (!isValidPassword) {
-      return res.status(400).json({ error: 'Current password is incorrect' });
-    }
-
-    // Hash and save new password
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.findByIdAndUpdate(req.user.userId, { password: hashedPassword });
-
-    res.json({ message: 'Password updated successfully' });
-  } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({ error: 'Failed to change password' });
-  }
-});
-
-// Export user data
-app.get('/api/user/export', authenticateToken, async (req, res) => {
-  try {
-    const { type } = req.query;
-    const userId = req.user.userId;
-
-    let exportData = {
-      exportDate: new Date().toISOString(),
-      userId: userId
-    };
-
-    switch (type) {
-      case 'coaching':
-        const chatHistory = await Chat.findOne({ userId });
-        exportData.type = 'Coaching History Export';
-        exportData.sessions = chatHistory ? chatHistory.messages.filter(m => m.role === 'user').length : 0;
-        exportData.messages = chatHistory ? chatHistory.messages : [];
-        break;
-
-      case 'goals':
-        const goals = await LifeGoal.find({ userId });
-        exportData.type = 'Goals & Progress Export';
-        exportData.goals = goals;
-        break;
-
-      case 'all':
-        const user = await User.findById(userId).select('-password -resetPasswordToken');
-        const allGoals = await LifeGoal.find({ userId });
-        const allChats = await Chat.findOne({ userId });
-        const notifications = await Notification.find({ userId }).limit(100);
-
-        exportData.type = 'Complete Data Export';
-        exportData.profile = user;
-        exportData.goals = allGoals;
-        exportData.chatHistory = allChats;
-        exportData.notifications = notifications;
-        break;
-
-      default:
-        return res.status(400).json({ error: 'Invalid export type' });
-    }
-
-    res.json(exportData);
-  } catch (error) {
-    console.error('Export data error:', error);
-    res.status(500).json({ error: 'Failed to export data' });
-  }
-});
-
-// Clear chat history
-app.delete('/api/user/chat-history', authenticateToken, async (req, res) => {
-  try {
-    await Chat.findOneAndDelete({ userId: req.user.userId });
-    res.json({ message: 'Chat history cleared successfully' });
-  } catch (error) {
-    console.error('Clear chat history error:', error);
-    res.status(500).json({ error: 'Failed to clear chat history' });
-  }
-});
-
-// Delete user account
-app.delete('/api/user/account', authenticateToken, async (req, res) => {
-  try {
-    const { confirmation } = req.body;
-    
-    if (confirmation !== 'DELETE MY ACCOUNT') {
-      return res.status(400).json({ error: 'Invalid confirmation text' });
-    }
-
-    const userId = req.user.userId;
-
-    // Delete all user data
-    await Promise.all([
-      User.findByIdAndDelete(userId),
-      Goal.deleteMany({ userId }),
-      LifeGoal.deleteMany({ userId }),
-      Notification.deleteMany({ userId }),
-      Chat.findOneAndDelete({ userId }),
-      Message.deleteMany({ userId })
-    ]);
-
-    res.json({ message: 'Account deleted successfully' });
-  } catch (error) {
-    console.error('Delete account error:', error);
-    res.status(500).json({ error: 'Failed to delete account' });
-  }
-});
-
 // Create Stripe subscription
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
@@ -1025,11 +584,6 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     );
     chat.updatedAt = new Date();
     await chat.save();
-
-// Generate insights after successful chat - NEW
-    if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
-      setTimeout(() => generateInsights(userId, chat.messages), 3000);
-    }
 
     res.json({ response });
 
@@ -1378,9 +932,7 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
-// REPLACE WITH THIS NEW CODE:
-
-// ENHANCED: Get messages with reply support, deleted message handling, AND PROFILE PHOTOS
+// ENHANCED: Get messages with reply support and deleted message handling
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const messages = await Message.find({ roomId: req.params.id })
@@ -1389,31 +941,9 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       
     console.log(`📨 Retrieved ${messages.length} messages for room ${req.params.id}`);
     
-    // NEW: Add profile photos to all messages (including old ones)
-    const messagesWithPhotos = await Promise.all(messages.map(async (message) => {
-      const messageObj = message.toObject();
-      
-      // Get user's current profile photo for this message
-      if (messageObj.userId) {
-        try {
-          const user = await User.findById(messageObj.userId).select('profilePhoto firstName lastName');
-          if (user && user.profilePhoto) {
-            messageObj.profilePhoto = user.profilePhoto;
-          }
-          // Also ensure we have the latest username
-          if (user && user.firstName && user.lastName) {
-            messageObj.username = `${user.firstName} ${user.lastName}`;
-          }
-        } catch (error) {
-          console.log('Could not fetch user data for message:', messageObj.userId);
-        }
-      }
-      
-      return messageObj;
-    }));
-    
     // Process messages to ensure proper reply structure and handle deleted messages
-    const processedMessages = messagesWithPhotos.map(messageObj => {
+    const processedMessages = messages.map(message => {
+      const messageObj = message.toObject();
       
       // Ensure backward compatibility
       if (!messageObj.content && messageObj.message) {
@@ -1441,13 +971,13 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Send message with reply notifications AND PROFILE PHOTOS
+// ENHANCED: Send message with reply notifications
 app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
     const username = user ? `${user.firstName} ${user.lastName}` : 'User';
     
-    // Create the message with profile photo
+    // Create the message
     const messageData = {
       roomId: req.params.id,
       userId: req.user.userId,
@@ -1455,9 +985,7 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       avatar: req.body.avatar || user?.firstName?.charAt(0).toUpperCase() || 'U',
       content: req.body.content,
       message: req.body.content, // For compatibility
-      avatarColor: req.body.avatarColor || '#6366f1',
-      // NEW: Add profile photo to every message
-      profilePhoto: user?.profilePhoto || null
+      avatarColor: req.body.avatarColor || '#6366f1'
     };
 
     // Handle reply data if this is a reply
@@ -1994,190 +1522,7 @@ async function migrateGoalsToHistory() {
   }
 }
 
-// ==========================================
-// INSIGHTS API ROUTES - NEW
-// ==========================================
-
-// Get user insights
-app.get('/api/insights', authenticateToken, async (req, res) => {
-  try {
-    const { limit = 5, type } = req.query;
-    
-    let query = { userId: req.user.userId };
-    if (type && type !== 'all') {
-      query.type = type;
-    }
-    
-    const insights = await Insight.find(query)
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit));
-    
-    res.json(insights);
-  } catch (error) {
-    console.error('Get insights error:', error);
-    res.status(500).json({ error: 'Failed to fetch insights' });
-  }
-});
-
-// Mark insight as read
-app.put('/api/insights/:id/read', authenticateToken, async (req, res) => {
-  try {
-    await Insight.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.userId },
-      { isRead: true }
-    );
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Mark insight read error:', error);
-    res.status(500).json({ error: 'Failed to mark insight as read' });
-  }
-});
-
-// Delete insight
-app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
-  try {
-    await Insight.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Delete insight error:', error);
-    res.status(500).json({ error: 'Failed to delete insight' });
-  }
-});
-
-// ==========================================
-// EMOTION TRACKER API ROUTES - NEW
-// ==========================================
-
-// Get user's emotion history
-app.get('/api/emotions', authenticateToken, async (req, res) => {
-  try {
-    const { days = 30 } = req.query;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
-    
-    const emotions = await DailyEmotion.find({
-      userId: req.user.userId,
-      date: { $gte: startDate }
-    }).sort({ date: -1 });
-    
-    res.json(emotions);
-  } catch (error) {
-    console.error('Get emotions error:', error);
-    res.status(500).json({ error: 'Failed to fetch emotions' });
-  }
-});
-
-// Record today's emotion
-app.post('/api/emotions', authenticateToken, async (req, res) => {
-  try {
-    const { emotion, intensity, notes } = req.body;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to midnight for consistent daily tracking
-    
-    // Validate emotion
-    const validEmotions = ['happy', 'excited', 'content', 'hopeful', 'sad', 'angry', 'disappointed', 'lonely', 'scared', 'stressed'];
-    if (!validEmotions.includes(emotion)) {
-      return res.status(400).json({ error: 'Invalid emotion' });
-    }
-    
-    // Update or create today's emotion entry
-    const emotionEntry = await DailyEmotion.findOneAndUpdate(
-      { 
-        userId: req.user.userId, 
-        date: today 
-      },
-      { 
-        emotion, 
-        intensity: intensity || 3,
-        notes: notes || '',
-        updatedAt: new Date()
-      },
-      { 
-        upsert: true, 
-        new: true 
-      }
-    );
-    
-    console.log('🎭 Emotion recorded:', { userId: req.user.userId, emotion, date: today });
-    res.json(emotionEntry);
-    
-  } catch (error) {
-    console.error('Record emotion error:', error);
-    if (error.code === 11000) {
-      res.status(400).json({ error: 'Emotion already recorded for today' });
-    } else {
-      res.status(500).json({ error: 'Failed to record emotion' });
-    }
-  }
-});
-
-// Get today's emotion
-app.get('/api/emotions/today', authenticateToken, async (req, res) => {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const todaysEmotion = await DailyEmotion.findOne({
-      userId: req.user.userId,
-      date: today
-    });
-    
-    res.json(todaysEmotion);
-  } catch (error) {
-    console.error('Get today emotion error:', error);
-    res.status(500).json({ error: 'Failed to fetch today\'s emotion' });
-  }
-});
-
-// Delete emotion entry
-app.delete('/api/emotions/:id', authenticateToken, async (req, res) => {
-  try {
-    await DailyEmotion.findOneAndDelete({ 
-      _id: req.params.id, 
-      userId: req.user.userId 
-    });
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Delete emotion error:', error);
-    res.status(500).json({ error: 'Failed to delete emotion' });
-  }
-});
-
-// Get emotion statistics
-app.get('/api/emotions/stats', authenticateToken, async (req, res) => {
-  try {
-    const { days = 30 } = req.query;
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - parseInt(days));
-    
-    const emotions = await DailyEmotion.find({
-      userId: req.user.userId,
-      date: { $gte: startDate }
-    });
-    
-    // Calculate statistics
-    const stats = {
-      totalEntries: emotions.length,
-      averageIntensity: emotions.length > 0 ? 
-        emotions.reduce((sum, e) => sum + e.intensity, 0) / emotions.length : 0,
-      emotionCounts: {},
-      weeklyPattern: {}
-    };
-    
-    // Count emotions
-    emotions.forEach(emotion => {
-      stats.emotionCounts[emotion.emotion] = (stats.emotionCounts[emotion.emotion] || 0) + 1;
-    });
-    
-    res.json(stats);
-  } catch (error) {
-    console.error('Get emotion stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch emotion statistics' });
-  }
-});
-
-
-// Enhanced health check with reply system status + SETTINGS
+// Enhanced health check with reply system status
 app.get('/health', (req, res) => {
   res.json({
     status: 'healthy',
@@ -2193,10 +1538,7 @@ app.get('/health', (req, res) => {
       replyNotifications: 'enabled',
       communityRooms: 'enabled',
       lifeGoals: 'enabled',
-      messageDeleting: 'enabled',
-      userSettings: 'enabled',
-      profilePhotos: 'enabled',
-      dataExport: 'enabled'
+      messageDeleting: 'enabled'
     }
   });
 });
@@ -2215,23 +1557,14 @@ app.use((req, res) => {
   res.status(404).json({ message: 'Endpoint not found' });
 });
 
-
-// Connect to MongoDB (MOVED TO BOTTOM)
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
-  .then(async () => {
-    console.log('✅ Connected to MongoDB');
-    try {
-      await createDefaultRooms();
-      await migrateGoalsToHistory();
-      console.log('✅ Initial setup completed');
-    } catch (error) {
-      console.error('❌ Setup error:', error);
-    }
-  })
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+// Initialize default rooms after MongoDB connection
+mongoose.connection.once('open', () => {
+  createDefaultRooms();
+  migrateGoalsToHistory();
+});
 
 // Start server
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
@@ -2241,15 +1574,4 @@ const server = app.listen(PORT, () => {
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
   console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
-  console.log(`⚙️ USER SETTINGS: ENABLED with Profile Photos & Data Export ✅`);
-  console.log(`🔒 Security: Password Change & Account Deletion ✅`);
-});
-
-server.on('error', (error) => {
-  if (error.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use`);
-    process.exit(1);
-  } else {
-    console.error('❌ Server error:', error);
-  }
 });
