@@ -1752,17 +1752,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint not found' });
-});
-
-// Initialize default rooms after MongoDB connection
-mongoose.connection.once('open', () => {
-  createDefaultRooms();
-  migrateGoalsToHistory();
-});
-
 // ==========================================
 // SETTINGS API ROUTES - STEP 2 ADD THESE
 // ==========================================
@@ -1973,6 +1962,19 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to delete account' });
   }
 });
+
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found' });
+});
+
+// Initialize default rooms after MongoDB connection
+mongoose.connection.once('open', () => {
+  createDefaultRooms();
+  migrateGoalsToHistory();
+});
+
 
 // Start server
 app.listen(PORT, () => {
