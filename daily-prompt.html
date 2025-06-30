@@ -1147,5 +1147,27 @@
 
         console.log('✅ Daily Prompt page script loaded');
     </script>
+    <script>
+let selectedEmotion = 'content'; // default
+
+document.addEventListener('DOMContentLoaded', function() {
+  const emotionButtons = document.querySelectorAll('.emotion-btn');
+  
+  emotionButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      // Remove selected class from all buttons
+      emotionButtons.forEach(btn => btn.classList.remove('selected'));
+      
+      // Add selected class to clicked button
+      this.classList.add('selected');
+      
+      // Store selected emotion
+      selectedEmotion = this.dataset.emotion;
+      
+      console.log('Selected emotion:', selectedEmotion);
+    });
+  });
+});
+</script>
 </body>
 </html>
