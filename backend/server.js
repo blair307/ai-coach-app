@@ -2320,7 +2320,6 @@ app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
         promptId,
         response: response.trim(),
         mood: mood || 'neutral',
-        isPublic: isPublic || false,
         wordCount: response.trim().split(/\s+/).length,
         timeToComplete: timeToComplete
       });
