@@ -917,6 +917,34 @@ async function createDailyPromptNotification() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // First, ensure today's assignment exists
+    let assignment = await DailyPromptAssignment.findOne({ date: today })
+      .populate('promptId');
+
+    if (!assignment) {
+      const nextPrompt = await getNextPrompt();
+      if (!nextPrompt) {
+        console.log('⚠️ No prompts available for assignment');
+        return;
+      }
+
+      assignment = new DailyPromptAssignment({
+        date: today,
+        promptId: nextPrompt._id,
+        responseCount: 0
+      });
+      
+      await assignment.save();
+      await assignment.populate('promptId');
+
+      nextPrompt.usageCount += 1;
+      nextPrompt.lastUsed = new Date();
+      await nextPrompt.save();
+      
+      console.log(`✅ Created new daily prompt assignment: "${nextPrompt.prompt}"`);
+    }
+
+    // Check if notifications already sent today
     const existingNotifications = await Notification.countDocuments({
       type: 'system',
       title: { $regex: 'Daily Prompt Available', $options: 'i' },
@@ -929,28 +957,6 @@ async function createDailyPromptNotification() {
     if (existingNotifications > 0) {
       console.log('📅 Daily prompt notifications already sent today');
       return;
-    }
-
-    let assignment = await DailyPromptAssignment.findOne({ date: today })
-      .populate('promptId');
-
-    if (!assignment) {
-      const nextPrompt = await getNextPrompt();
-      if (!nextPrompt) {
-        console.log('⚠️ No prompts available for notification');
-        return;
-      }
-
-      assignment = new DailyPromptAssignment({
-        date: today,
-        promptId: nextPrompt._id
-      });
-      await assignment.save();
-      await assignment.populate('promptId');
-
-      nextPrompt.usageCount += 1;
-      nextPrompt.lastUsed = new Date();
-      await nextPrompt.save();
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
@@ -969,8 +975,10 @@ async function createDailyPromptNotification() {
       createdAt: new Date()
     }));
 
-    await Notification.insertMany(notifications);
-    console.log(`✅ Created ${notifications.length} daily prompt notifications`);
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+      console.log(`✅ Created ${notifications.length} daily prompt notifications`);
+    }
 
   } catch (error) {
     console.error('❌ Error creating daily prompt notifications:', error);
@@ -987,6 +995,48 @@ app.post('/api/admin/daily-prompt-tasks', authenticateToken, async (req, res) =>
     res.status(500).json({ error: 'Failed to run daily tasks' });
   }
 });
+
+// Manual endpoint to force new prompt
+app.post('/api/admin/force-new-prompt', authenticateToken, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Delete existing assignment for today
+    await DailyPromptAssignment.deleteOne({ date: today });
+    console.log('🗑️ Deleted existing assignment for today');
+    
+    // Get next prompt
+    const nextPrompt = await getNextPrompt();
+    if (!nextPrompt) {
+      return res.status(404).json({ error: 'No prompts available' });
+    }
+
+    // Create new assignment
+    const assignment = new DailyPromptAssignment({
+      date: today,
+      promptId: nextPrompt._id,
+      responseCount: 0
+    });
+    
+    await assignment.save();
+    
+    // Update prompt usage
+    nextPrompt.usageCount += 1;
+    nextPrompt.lastUsed = new Date();
+    await nextPrompt.save();
+    
+    res.json({ 
+      message: 'New prompt assignment created successfully',
+      prompt: nextPrompt.prompt,
+      date: assignment.date
+    });
+  } catch (error) {
+    console.error('Force new prompt error:', error);
+    res.status(500).json({ error: 'Failed to force new prompt' });
+  }
+});
+
 
 // Billing endpoints
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
