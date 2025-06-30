@@ -9,133 +9,70 @@
 
     <style>
         /* COMPLETE MOBILE DAILY TRACKER FIX */
-        @media (max-width: 768px) {
-            
-            /* CRITICAL: Override the existing mobile rules that hide checkboxes */
-            .goal-tracker-item {
-                display: flex !important;
-                flex-direction: row !important; /* Force horizontal layout */
-                align-items: center !important;
-                padding: 1.25rem !important;
-                margin-bottom: 1rem !important;
-                background: var(--surface) !important;
-                border-radius: 12px !important;
-                border: 2px solid var(--border) !important;
-                cursor: pointer !important;
-                transition: all 0.3s ease !important;
-                text-align: left !important; /* Override any center alignment */
-            }
-            
-            /* CRITICAL: Force checkbox container to stay visible */
-            .goal-tracker-item > div:first-child {
-                margin-right: 1rem !important;
-                flex-shrink: 0 !important;
-                align-self: center !important;
-                margin-bottom: 0 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                order: 1 !important; /* Ensure it comes first */
-            }
-            
-            /* CRITICAL: Force checkbox to be visible and touchable */
-            .goal-tracker-item input[type="checkbox"] {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                width: 32px !important;
-                height: 32px !important;
-                transform: scale(1.5) !important;
-                margin: 0 !important;
-                cursor: pointer !important;
-                pointer-events: auto !important;
-                position: relative !important;
-                z-index: 10 !important;
-            }
-            
-            /* Content area */
-            .goal-tracker-item > div:nth-child(2) {
-                flex: 1 !important;
-                margin: 0 !important;
-                order: 2 !important;
-            }
-            
-            /* Status badge */
-            .goal-tracker-item > div:last-child {
-                margin-left: 0.75rem !important;
-                flex-shrink: 0 !important;
-                order: 3 !important;
-            }
-            
-            /* Remove problematic margin overrides */
-            .goal-tracker-item > div {
-                margin: 0 !important;
-            }
-        }
-
-        /* FIXED: Progress chart layout - MOBILE RESPONSIVE */
-        #progressChart {
-            display: grid !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            overflow-x: auto !important; /* Allow horizontal scroll on mobile */
-            box-sizing: border-box !important;
-            padding: 0.5rem !important;
-        }
-
-        #progressChart > div {
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            min-width: 0 !important;
-            flex-shrink: 0 !important; /* Prevent shrinking */
-        }
-
-        /* FIXED: Weekly view - MOBILE FIRST */
-        .weekly-view #progressChart {
-            grid-template-columns: repeat(7, minmax(70px, 1fr)) !important;
-            gap: 0.5rem !important;
-        }
-
-        .weekly-view #progressChart > div {
-            min-width: 70px !important;
-            padding: 0.75rem 0.5rem !important;
-        }
-
-        /* FIXED: Monthly view - MOBILE FIRST */
-        .monthly-view #progressChart {
-            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)) !important;
-            gap: 0.25rem !important;
-        }
-
-        .monthly-view #progressChart > div {
-            min-width: 50px !important;
-            padding: 0.5rem 0.25rem !important;
-        }
-
-        /* DESKTOP IMPROVEMENTS */
-        @media (min-width: 769px) {
-            .weekly-view #progressChart {
-                grid-template-columns: repeat(7, 1fr) !important;
-                gap: 1rem !important;
-            }
-            
-            .weekly-view #progressChart > div {
-                min-width: 80px !important;
-                padding: 1rem !important;
-            }
-            
-            .monthly-view #progressChart {
-                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)) !important;
-                gap: 0.5rem !important;
-            }
-            
-            .monthly-view #progressChart > div {
-                min-width: 60px !important;
-                padding: 0.75rem !important;
-            }
-        }
-
+  @media (max-width: 768px) {
+    
+    /* CRITICAL: Override the existing mobile rules that hide checkboxes */
+    .goal-tracker-item {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        padding: 1.25rem !important;
+        margin-bottom: 1rem !important;
+        background: var(--surface) !important;
+        border-radius: 12px !important;
+        border: 2px solid var(--border) !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+        text-align: left !important;
+    }
+    
+    /* CRITICAL: Force checkbox container to stay visible */
+    .goal-tracker-item > div:first-child {
+        margin-right: 1rem !important;
+        flex-shrink: 0 !important;
+        align-self: center !important;
+        margin-bottom: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        order: 1 !important;
+    }
+    
+    /* CRITICAL: Force checkbox to be visible and touchable */
+    .goal-tracker-item input[type="checkbox"] {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        width: 40px !important;
+        height: 40px !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        background: white !important;
+        border: 3px solid #6366f1 !important;
+        border-radius: 6px !important;
+        margin: 0 !important;
+        cursor: pointer !important;
+        pointer-events: auto !important;
+        position: relative !important;
+        z-index: 10 !important;
+        transform: none !important;
+    }
+    
+    .goal-tracker-item input[type="checkbox"]:checked {
+        background: #6366f1 !important;
+        border-color: #6366f1 !important;
+    }
+    
+    .goal-tracker-item input[type="checkbox"]:checked::after {
+        content: '✓' !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        color: white !important;
+        font-weight: bold !important;
+        font-size: 1.5rem !important;
+    }
         /* EXTRA SMALL PHONES */
         @media (max-width: 480px) {
             .weekly-view #progressChart {
