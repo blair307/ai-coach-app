@@ -1,4 +1,3 @@
-
 // Complete AI Coach Backend Server with Enhanced Reply Notifications
 const express = require('express');
 const cors = require('cors');
@@ -1119,37 +1118,24 @@ app.post('/api/goals', authenticateToken, async (req, res) => {
 app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
   try {
     const goal = await Goal.findOne({ _id: req.params.id, userId: req.user.userId });
-    if (!goal) return res.status(404).json({ message: 'Goal not found' });
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    if (!goal.completionHistory) {
-      goal.completionHistory = [];
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
     }
-
-    const todayEntry = goal.completionHistory.find(entry => {
-      const entryDate = new Date(entry.date);
-      entryDate.setHours(0,0,0,0);
-      return entryDate.getTime() === today.getTime();
-    });
-
-    if (todayEntry) {
-      todayEntry.completed = true;
+    
+    goal.completed = !goal.completed;
+    if (goal.completed) {
+      goal.lastCompleted = new Date();
+      goal.streak += 1;
     } else {
-      goal.completionHistory.push({ date: today, completed: true });
+      goal.streak = Math.max(0, goal.streak - 1);
     }
-
+    
     await goal.save();
     res.json(goal);
-
   } catch (error) {
-    console.error('Error completing goal:', error);
-    res.status(500).json({ message: 'Failed to complete goal' });
+    res.status(500).json({ error: 'Failed to update goal' });
   }
 });
-
-
 
 app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
   try {
@@ -1593,103 +1579,163 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { completed, updateDate } = req.body;
+    const { bigGoal, dailyAction, completed, lastCompletedDate, updateDate } = req.body;
     const userId = req.user.userId;
 
     const goal = await LifeGoal.findOne({ _id: id, userId });
-    if (!goal) return res.status(404).json({ error: 'Goal not found' });
-
-    const targetDate = new Date(updateDate);
-    targetDate.setHours(0, 0, 0, 0);
-    const targetDateString = targetDate.toISOString().split('T')[0];
-
-    if (!goal.completionHistory) goal.completionHistory = [];
-
-    const existingEntryIndex = goal.completionHistory.findIndex(entry => {
-      const entryDate = new Date(entry.date);
-      entryDate.setHours(0, 0, 0, 0);
-      return entryDate.toISOString().split('T')[0] === targetDateString;
-    });
-
-    if (existingEntryIndex >= 0) {
-      goal.completionHistory[existingEntryIndex].completed = completed;
-    } else {
-      goal.completionHistory.push({ date: targetDate, completed });
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
     }
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    if (targetDate.getTime() === today.getTime()) {
+    // FIXED: Only update the specific goal, don't affect others
+    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
+    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
+    
+    if (completed !== undefined) {
+      // FIXED: Only update THIS goal's completion status for specific date
       goal.completed = completed;
-      goal.lastCompletedDate = completed ? new Date() : null;
+      
+      // FIXED: Use updateDate if provided, otherwise use today
+      const targetDate = updateDate ? new Date(updateDate) : new Date();
+      targetDate.setHours(0, 0, 0, 0);
+      
+      if (!goal.completionHistory) {
+        goal.completionHistory = [];
+      }
+      
+      const targetDateString = targetDate.toISOString().split('T')[0];
+      const existingEntryIndex = goal.completionHistory.findIndex(entry => {
+        const entryDate = new Date(entry.date);
+        const entryDateString = entryDate.toISOString().split('T')[0];
+        return entryDateString === targetDateString;
+      });
+      
+      if (completed && lastCompletedDate) {
+        goal.lastCompletedDate = new Date(lastCompletedDate);
+        
+        // FIXED: Update or add completion history for specific date only
+        if (existingEntryIndex >= 0) {
+          goal.completionHistory[existingEntryIndex].completed = true;
+        } else {
+          goal.completionHistory.push({
+            date: targetDate,
+            completed: true
+          });
+        }
+        
+        // FIXED: Calculate streak for THIS goal only based on actual completion history
+        const sortedHistory = goal.completionHistory
+          .filter(entry => entry.completed)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        let currentStreak = 0;
+        const oneDay = 24 * 60 * 60 * 1000;
+        
+        for (let i = 0; i < sortedHistory.length; i++) {
+          const entryDate = new Date(sortedHistory[i].date);
+          entryDate.setHours(0, 0, 0, 0);
+          
+          if (i === 0) {
+            // Check if most recent completion is today or yesterday
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const yesterday = new Date(today.getTime() - oneDay);
+            
+            if (entryDate.getTime() === today.getTime() || entryDate.getTime() === yesterday.getTime()) {
+              currentStreak = 1;
+            } else {
+              break;
+            }
+          } else {
+            const prevDate = new Date(sortedHistory[i-1].date);
+            prevDate.setHours(0, 0, 0, 0);
+            const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
+            
+            if (daysDiff === 1) {
+              currentStreak++;
+            } else {
+              break;
+            }
+          }
+        }
+        
+        goal.streak = currentStreak;
+        
+      } else if (!completed) {
+        // FIXED: Mark as incomplete for specific date only
+        if (existingEntryIndex >= 0) {
+          goal.completionHistory[existingEntryIndex].completed = false;
+        } else {
+          goal.completionHistory.push({
+            date: targetDate,
+            completed: false
+          });
+        }
+        
+        // FIXED: Recalculate streak without affecting other goals
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const sortedCompletedHistory = goal.completionHistory
+          .filter(entry => entry.completed)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        if (sortedCompletedHistory.length === 0) {
+          goal.streak = 0;
+        } else {
+          let streak = 0;
+          const oneDay = 24 * 60 * 60 * 1000;
+          
+          for (let i = 0; i < sortedCompletedHistory.length; i++) {
+            const entryDate = new Date(sortedCompletedHistory[i].date);
+            entryDate.setHours(0, 0, 0, 0);
+            
+            if (i === 0) {
+              const yesterday = new Date(today.getTime() - oneDay);
+              if (entryDate.getTime() === yesterday.getTime()) {
+                streak = 1;
+              } else {
+                break;
+              }
+            } else {
+              const prevDate = new Date(sortedCompletedHistory[i-1].date);
+              prevDate.setHours(0, 0, 0, 0);
+              const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
+              
+              if (daysDiff === 1) {
+                streak++;
+              } else {
+                break;
+              }
+            }
+          }
+          
+          goal.streak = streak;
+        }
+        
+        // FIXED: Only clear lastCompletedDate if it was for today
+        if (goal.lastCompletedDate) {
+          const lastCompletedDate = new Date(goal.lastCompletedDate);
+          lastCompletedDate.setHours(0, 0, 0, 0);
+          if (lastCompletedDate.getTime() === targetDate.getTime()) {
+            goal.lastCompletedDate = null;
+          }
+        }
+      }
     }
-
-    // Recalculate streak based on sorted completion history
- // Ensure sorted ascending (oldest to newest)
-const sortedHistory = goal.completionHistory
-  .filter(entry => entry.completed)
-  .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-let currentStreak = 0;
-let expectedDate = new Date();
-expectedDate.setHours(0,0,0,0);
-
-// Work backward from today
-for (let i = sortedHistory.length - 1; i >= 0; i--) {
-  const entryDate = new Date(sortedHistory[i].date);
-  entryDate.setHours(0,0,0,0);
-
-  if (entryDate.getTime() === expectedDate.getTime()) {
-    currentStreak++;
-    expectedDate.setDate(expectedDate.getDate() - 1); // move to previous day
-  } else if (entryDate.getTime() < expectedDate.getTime()) {
-    // Skip older entries out of sequence
-    break;
-  }
-}
-
-
-    goal.streak = currentStreak;
+    
     goal.updatedAt = new Date();
+    
+    // FIXED: Only save THIS specific goal
     await goal.save();
 
+    console.log(`✅ FIXED - Goal ${id} updated for date ${updateDate || 'today'} only`);
     res.json(goal);
   } catch (error) {
     console.error('Update life goal error:', error);
     res.status(500).json({ error: 'Failed to update life goal' });
   }
 });
-
-app.put('/api/life-goals/:id/incomplete', authenticateToken, async (req, res) => {
-  try {
-    const goal = await LifeGoal.findOne({ _id: req.params.id, userId: req.user.userId });
-    if (!goal) return res.status(404).json({ message: 'Goal not found' });
-
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    let todayEntry = goal.completionHistory.find(entry => {
-      const entryDate = new Date(entry.date);
-      entryDate.setHours(0,0,0,0);
-      return entryDate.getTime() === today.getTime();
-    });
-
-    if (todayEntry) {
-      todayEntry.completed = false;
-    } else {
-      goal.completionHistory.push({ date: today, completed: false });
-    }
-
-    goal.lastCompletedDate = null; // you could also adjust this depending on your logic
-    await goal.save();
-
-    res.json(goal);
-  } catch (error) {
-    console.error('Error marking incomplete:', error);
-    res.status(500).json({ message: 'Failed to mark goal as incomplete' });
-  }
-});
-
 
 app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
