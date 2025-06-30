@@ -2340,7 +2340,471 @@ app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
         difficulty: "medium",
         tags: ["assumptions", "learning"]
       },
-      // ADD ALL 100 PROMPTS HERE - I'll give you the complete list separately
+// 100 DAILY PROMPTS FOR ENTREPRENEURS
+// Add this array to the seed-prompts endpoint
+
+const prompts = [
+  // REFLECTION & MINDFULNESS (25 prompts)
+  {
+    prompt: "What's one decision you made today that you're proud of, and why?",
+    category: "reflection",
+    difficulty: "easy",
+    tags: ["decision-making", "self-awareness"]
+  },
+  {
+    prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["flow-state", "strengths"]
+  },
+  {
+    prompt: "What's something you learned about yourself through a recent challenge or setback?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["resilience", "growth"]
+  },
+  {
+    prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
+    category: "reflection",
+    difficulty: "hard",
+    tags: ["growth", "perspective"]
+  },
+  {
+    prompt: "What's one assumption you held about business that you've recently questioned or changed?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["assumptions", "learning"]
+  },
+  {
+    prompt: "Describe a time when you had to trust your gut instinct. What happened?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["intuition", "decision-making"]
+  },
+  {
+    prompt: "What's the most important lesson you've learned from a mentor or role model?",
+    category: "reflection",
+    difficulty: "easy",
+    tags: ["mentorship", "learning"]
+  },
+  {
+    prompt: "When do you feel most creative and innovative? What conditions enable this state?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["creativity", "productivity"]
+  },
+  {
+    prompt: "What's one fear that you've overcome in your entrepreneurial journey?",
+    category: "reflection",
+    difficulty: "hard",
+    tags: ["fear", "courage"]
+  },
+  {
+    prompt: "How has your definition of success evolved over the past year?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["success", "values"]
+  },
+  {
+    prompt: "What's something you do daily that brings you joy, even during stressful times?",
+    category: "mindfulness",
+    difficulty: "easy",
+    tags: ["joy", "stress-management"]
+  },
+  {
+    prompt: "Describe your ideal morning routine. How close is your current routine to this ideal?",
+    category: "mindfulness",
+    difficulty: "easy",
+    tags: ["routine", "self-care"]
+  },
+  {
+    prompt: "What's one way you've learned to manage overwhelm or stress in your business?",
+    category: "mindfulness",
+    difficulty: "medium",
+    tags: ["stress-management", "coping"]
+  },
+  {
+    prompt: "How do you typically recharge when you're feeling mentally exhausted?",
+    category: "mindfulness",
+    difficulty: "easy",
+    tags: ["recovery", "energy"]
+  },
+  {
+    prompt: "What's one mindful practice that has made a difference in your daily life?",
+    category: "mindfulness",
+    difficulty: "easy",
+    tags: ["mindfulness", "habits"]
+  },
+  {
+    prompt: "Describe a moment this week when you were fully present. What did you notice?",
+    category: "mindfulness",
+    difficulty: "medium",
+    tags: ["presence", "awareness"]
+  },
+  {
+    prompt: "What's your relationship with failure, and how has it changed over time?",
+    category: "reflection",
+    difficulty: "hard",
+    tags: ["failure", "resilience"]
+  },
+  {
+    prompt: "What's one piece of advice you wish you could give to every new entrepreneur?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["advice", "wisdom"]
+  },
+  {
+    prompt: "How do you define and maintain work-life balance in your current situation?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["balance", "boundaries"]
+  },
+  {
+    prompt: "What's something about your industry that excites you most right now?",
+    category: "reflection",
+    difficulty: "easy",
+    tags: ["passion", "industry"]
+  },
+  {
+    prompt: "Describe a recent 'aha' moment that shifted your perspective on something important.",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["insight", "breakthrough"]
+  },
+  {
+    prompt: "What's one way you've surprised yourself in your entrepreneurial journey?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["growth", "surprise"]
+  },
+  {
+    prompt: "How do you handle uncertainty and ambiguity in your business decisions?",
+    category: "reflection",
+    difficulty: "hard",
+    tags: ["uncertainty", "decision-making"]
+  },
+  {
+    prompt: "What's one tradition or ritual that keeps you grounded during busy periods?",
+    category: "mindfulness",
+    difficulty: "easy",
+    tags: ["grounding", "ritual"]
+  },
+  {
+    prompt: "What's the most valuable feedback you've received recently, and how did you apply it?",
+    category: "reflection",
+    difficulty: "medium",
+    tags: ["feedback", "improvement"]
+  },
+
+  // GOAL-SETTING & PLANNING (20 prompts)
+  {
+    prompt: "What's one goal you're working toward that scares and excites you equally?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["goals", "fear", "excitement"]
+  },
+  {
+    prompt: "If you could only accomplish one thing this quarter, what would it be and why?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["priorities", "focus"]
+  },
+  {
+    prompt: "What's one habit you want to build that would have the biggest impact on your business?",
+    category: "goal-setting",
+    difficulty: "easy",
+    tags: ["habits", "impact"]
+  },
+  {
+    prompt: "Describe your vision for your business five years from now. What does success look like?",
+    category: "goal-setting",
+    difficulty: "hard",
+    tags: ["vision", "long-term"]
+  },
+  {
+    prompt: "What's one skill you want to develop this year, and what's your plan to learn it?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["skills", "learning"]
+  },
+  {
+    prompt: "What's the biggest obstacle standing between you and your next major milestone?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["obstacles", "planning"]
+  },
+  {
+    prompt: "How do you measure progress on goals that don't have obvious metrics?",
+    category: "goal-setting",
+    difficulty: "hard",
+    tags: ["measurement", "progress"]
+  },
+  {
+    prompt: "What's one area of your business that you've been avoiding but know you need to address?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["avoidance", "priorities"]
+  },
+  {
+    prompt: "If you had unlimited resources for the next month, what would you focus on?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["resources", "priorities"]
+  },
+  {
+    prompt: "What's one system or process you could implement to make your work more efficient?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["efficiency", "systems"]
+  },
+  {
+    prompt: "What's your process for breaking down overwhelming projects into manageable steps?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["planning", "overwhelm"]
+  },
+  {
+    prompt: "What's one thing you could stop doing that would free up time for more important work?",
+    category: "goal-setting",
+    difficulty: "easy",
+    tags: ["elimination", "priorities"]
+  },
+  {
+    prompt: "How do you decide which opportunities to pursue and which to pass on?",
+    category: "goal-setting",
+    difficulty: "hard",
+    tags: ["opportunities", "decision-making"]
+  },
+  {
+    prompt: "What's one partnership or collaboration that could accelerate your progress?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["partnerships", "collaboration"]
+  },
+  {
+    prompt: "What's your strategy for staying motivated when progress feels slow?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["motivation", "persistence"]
+  },
+  {
+    prompt: "What's one area where you need to invest more time or resources to reach your goals?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["investment", "resources"]
+  },
+  {
+    prompt: "How do you balance long-term strategic thinking with day-to-day execution?",
+    category: "goal-setting",
+    difficulty: "hard",
+    tags: ["strategy", "execution"]
+  },
+  {
+    prompt: "What's one goal you achieved that taught you the most about yourself?",
+    category: "goal-setting",
+    difficulty: "medium",
+    tags: ["achievement", "self-knowledge"]
+  },
+  {
+    prompt: "What's your biggest 'what if' scenario, and how are you preparing for it?",
+    category: "goal-setting",
+    difficulty: "hard",
+    tags: ["scenarios", "preparation"]
+  },
+  {
+    prompt: "What's one small step you could take today toward a larger goal?",
+    category: "goal-setting",
+    difficulty: "easy",
+    tags: ["small-steps", "action"]
+  },
+
+  // LEADERSHIP & TEAM (15 prompts)
+  {
+    prompt: "What's one quality you admire in other leaders that you'd like to develop in yourself?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["leadership", "development"]
+  },
+  {
+    prompt: "How do you create psychological safety for your team or collaborators?",
+    category: "leadership",
+    difficulty: "hard",
+    tags: ["safety", "team-culture"]
+  },
+  {
+    prompt: "What's the most important thing you've learned about giving effective feedback?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["feedback", "communication"]
+  },
+  {
+    prompt: "How do you handle disagreements or conflicts within your team?",
+    category: "leadership",
+    difficulty: "hard",
+    tags: ["conflict", "resolution"]
+  },
+  {
+    prompt: "What's one way you've grown as a leader through a difficult situation?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["growth", "challenges"]
+  },
+  {
+    prompt: "How do you motivate others when you're feeling unmotivated yourself?",
+    category: "leadership",
+    difficulty: "hard",
+    tags: ["motivation", "leadership"]
+  },
+  {
+    prompt: "What's your approach to delegating tasks and responsibilities?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["delegation", "trust"]
+  },
+  {
+    prompt: "How do you celebrate wins and acknowledge your team's contributions?",
+    category: "leadership",
+    difficulty: "easy",
+    tags: ["recognition", "celebration"]
+  },
+  {
+    prompt: "What's one leadership mistake you made and what did you learn from it?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["mistakes", "learning"]
+  },
+  {
+    prompt: "How do you balance being supportive with holding people accountable?",
+    category: "leadership",
+    difficulty: "hard",
+    tags: ["support", "accountability"]
+  },
+  {
+    prompt: "What's your philosophy on hiring and building a team?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["hiring", "team-building"]
+  },
+  {
+    prompt: "How do you communicate your vision in a way that inspires others?",
+    category: "leadership",
+    difficulty: "hard",
+    tags: ["vision", "inspiration"]
+  },
+  {
+    prompt: "What's one way you've learned to better understand your team members' perspectives?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["empathy", "understanding"]
+  },
+  {
+    prompt: "How do you model the behavior and values you want to see in your organization?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["modeling", "values"]
+  },
+  {
+    prompt: "What's your approach to developing others and helping them grow?",
+    category: "leadership",
+    difficulty: "medium",
+    tags: ["development", "mentoring"]
+  },
+
+  // GROWTH & INNOVATION (15 prompts)
+  {
+    prompt: "What's one assumption about your customers or market that you recently tested?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["assumptions", "testing"]
+  },
+  {
+    prompt: "How do you stay curious and open to new ideas in your field?",
+    category: "growth",
+    difficulty: "easy",
+    tags: ["curiosity", "learning"]
+  },
+  {
+    prompt: "What's one trend or change in your industry that you're watching closely?",
+    category: "growth",
+    difficulty: "easy",
+    tags: ["trends", "awareness"]
+  },
+  {
+    prompt: "Describe a time when you pivoted or changed direction. What led to that decision?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["pivot", "adaptation"]
+  },
+  {
+    prompt: "What's one experiment you're running or want to run in your business?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["experimentation", "testing"]
+  },
+  {
+    prompt: "How do you balance innovation with execution of proven strategies?",
+    category: "growth",
+    difficulty: "hard",
+    tags: ["innovation", "execution"]
+  },
+  {
+    prompt: "What's one way you've learned to better understand your customers' needs?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["customers", "needs"]
+  },
+  {
+    prompt: "What's the most counterintuitive thing you've learned about growing a business?",
+    category: "growth",
+    difficulty: "hard",
+    tags: ["counterintuitive", "insights"]
+  },
+  {
+    prompt: "How do you identify and prioritize growth opportunities?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["opportunities", "prioritization"]
+  },
+  {
+    prompt: "What's one way you've turned a constraint or limitation into an advantage?",
+    category: "growth",
+    difficulty: "hard",
+    tags: ["constraints", "creativity"]
+  },
+  {
+    prompt: "How do you measure the health and progress of your business beyond revenue?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["metrics", "health"]
+  },
+  {
+    prompt: "What's one area where you've had to unlearn something to make progress?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["unlearning", "progress"]
+  },
+  {
+    prompt: "How do you approach risk-taking in your business decisions?",
+    category: "growth",
+    difficulty: "hard",
+    tags: ["risk", "decisions"]
+  },
+  {
+    prompt: "What's one way you've improved your business based on customer feedback?",
+    category: "growth",
+    difficulty: "easy",
+    tags: ["feedback", "improvement"]
+  },
+  {
+    prompt: "What's the biggest opportunity you see in your industry right now?",
+    category: "growth",
+    difficulty: "medium",
+    tags: ["opportunity", "vision"]
+  },
+
+  // GRATITUDE & APPRECIATION (10 prompts)
+  {
+    prompt: "What's one thing about your entrepreneurial journey that you're genuinely grateful
     ];
 
     const savedPrompts = await DailyPrompt.insertMany(prompts);
