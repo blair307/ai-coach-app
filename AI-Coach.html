@@ -411,6 +411,66 @@
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
     });
+
+        // Load insights function
+async function loadInsights() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) return;
+        
+        const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/insights?limit=3', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const insights = await response.json();
+            displayInsights(insights);
+        }
+    } catch (error) {
+        console.error('Error loading insights:', error);
+    }
+}
+
+// Display insights function
+function displayInsights(insights) {
+    const insightsContainer = document.querySelector('.insights-list');
+    
+    if (!insights || insights.length === 0) {
+        insightsContainer.innerHTML = `
+            <div class="insight-item">
+                <p>No insights yet</p>
+                <small>Chat more to generate insights</small>
+            </div>
+        `;
+        return;
+    }
+    
+    const insightsHTML = insights.map(insight => `
+        <div class="insight-item">
+            <p>${insight.insight}</p>
+            <small>${insight.type} • ${new Date(insight.createdAt).toLocaleDateString()}</small>
+        </div>
+    `).join('');
+    
+    insightsContainer.innerHTML = insightsHTML;
+}
+
+// Load insights when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadInsights();
+    updateNotificationCount();
+    setInterval(updateNotificationCount, 30000);
+});
+
+// Also refresh insights after sending messages
+function refreshInsightsAfterChat() {
+    setTimeout(() => {
+        loadInsights();
+    }, 2000); // Wait 2 seconds after chat to allow insights to generate
+}
     </script>
 </body>
 </html>
