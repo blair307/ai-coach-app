@@ -429,9 +429,59 @@ app.get('/', (req, res) => {
   res.json({ message: 'AI Coach Backend is running!' });
 });
 
-// Test route
 app.get('/test', (req, res) => {
   res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
+});
+
+// SEED PROMPTS ENDPOINT - TEMP
+app.post('/test-seed', async (req, res) => {
+  try {
+    console.log('🌱 Test seed endpoint called');
+    
+    const existingCount = await DailyPrompt.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ 
+        message: `${existingCount} prompts already exist`, 
+        skipped: true 
+      });
+    }
+
+    const prompts = [
+      {
+        prompt: "What's one decision you made today that you're proud of, and why?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["decision-making", "self-awareness"]
+      },
+      {
+        prompt: "Describe a moment this week when you felt completely in your element.",
+        category: "reflection", 
+        difficulty: "medium",
+        tags: ["flow-state", "strengths"]
+      },
+      {
+        prompt: "What's something you learned about yourself through a recent challenge?",
+        category: "reflection",
+        difficulty: "medium", 
+        tags: ["resilience", "growth"]
+      }
+    ];
+
+    const savedPrompts = await DailyPrompt.insertMany(prompts);
+    
+    res.json({
+      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
+      count: savedPrompts.length,
+      success: true
+    });
+
+  } catch (error) {
+    console.error('❌ Seed error:', error);
+    res.status(500).json({ 
+      error: 'Failed to seed prompts',
+      details: error.message 
+    });
+  }
 });
 
 // Register new user with payment
