@@ -1,3 +1,33 @@
+app.put('/api/life-goals/:id/complete', authenticateToken, async (req, res) => {
+  try {
+    const goal = await LifeGoal.findOne({ _id: req.params.id, userId: req.user.userId });
+    if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    // Check if today is already in the completion history
+    let todayEntry = goal.completionHistory.find(entry => {
+      const entryDate = new Date(entry.date);
+      entryDate.setHours(0,0,0,0);
+      return entryDate.getTime() === today.getTime();
+    });
+
+    if (todayEntry) {
+      todayEntry.completed = true;
+    } else {
+      goal.completionHistory.push({ date: today, completed: true });
+    }
+
+    goal.lastCompletedDate = today;
+    await goal.save();
+
+    res.json(goal);
+  } catch (error) {
+    console.error('Error completing goal:', error);
+    res.status(500).json({ message: 'Failed to complete goal' });
+  }
+});
 // Complete AI Coach Backend Server with Enhanced Reply Notifications
 const express = require('express');
 const cors = require('cors');
@@ -1579,122 +1609,75 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { bigGoal, dailyAction, completed, lastCompletedDate, updateDate } = req.body;
+    const { completed, updateDate } = req.body;
     const userId = req.user.userId;
 
-    console.log(`🔄 Updating goal ${id} for date: ${updateDate}, completed: ${completed}`);
-
     const goal = await LifeGoal.findOne({ _id: id, userId });
-    if (!goal) {
-      return res.status(404).json({ error: 'Goal not found' });
+    if (!goal) return res.status(404).json({ error: 'Goal not found' });
+
+    const targetDate = new Date(updateDate);
+    targetDate.setHours(0, 0, 0, 0);
+    const targetDateString = targetDate.toISOString().split('T')[0];
+
+    if (!goal.completionHistory) goal.completionHistory = [];
+
+    const existingEntryIndex = goal.completionHistory.findIndex(entry => {
+      const entryDate = new Date(entry.date);
+      entryDate.setHours(0, 0, 0, 0);
+      return entryDate.toISOString().split('T')[0] === targetDateString;
+    });
+
+    if (existingEntryIndex >= 0) {
+      goal.completionHistory[existingEntryIndex].completed = completed;
+    } else {
+      goal.completionHistory.push({ date: targetDate, completed });
     }
 
-    // Update basic fields
-    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
-    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
-    
-    if (completed !== undefined && updateDate) {
-      // CRITICAL: Only update for the specific date provided
-      const targetDate = new Date(updateDate);
-      targetDate.setHours(0, 0, 0, 0);
-      const targetDateString = targetDate.toISOString().split('T')[0];
-      
-      console.log(`📅 Updating completion for specific date: ${targetDateString}`);
-      
-      // Initialize completion history if it doesn't exist
-      if (!goal.completionHistory) {
-        goal.completionHistory = [];
-      }
-      
-      // Find existing entry for this specific date
-      const existingEntryIndex = goal.completionHistory.findIndex(entry => {
-        if (!entry.date) return false;
-        const entryDate = new Date(entry.date);
-        entryDate.setHours(0, 0, 0, 0);
-        const entryDateString = entryDate.toISOString().split('T')[0];
-        return entryDateString === targetDateString;
-      });
-      
-      // Update or create entry for this specific date only
-      if (existingEntryIndex >= 0) {
-        // Update existing entry
-        goal.completionHistory[existingEntryIndex].completed = completed;
-        console.log(`📝 Updated existing entry for ${targetDateString}: ${completed}`);
-      } else {
-        // Create new entry
-        goal.completionHistory.push({
-          date: targetDate,
-          completed: completed
-        });
-        console.log(`➕ Created new entry for ${targetDateString}: ${completed}`);
-      }
-      
-      // Update overall completion status and lastCompletedDate only if it's for today
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayString = today.toISOString().split('T')[0];
-      
-      if (targetDateString === todayString) {
-        goal.completed = completed;
-        if (completed && lastCompletedDate) {
-          goal.lastCompletedDate = new Date(lastCompletedDate);
-        } else if (!completed) {
-          goal.lastCompletedDate = null;
-        }
-        console.log(`📅 Updated today's status: completed=${completed}`);
-      }
-      
-      // Recalculate streak based on completion history
-      const sortedHistory = goal.completionHistory
-        .filter(entry => entry.completed === true)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      let currentStreak = 0;
-      const oneDay = 24 * 60 * 60 * 1000;
-      
-      if (sortedHistory.length > 0) {
-        // Start from most recent completion
-        for (let i = 0; i < sortedHistory.length; i++) {
-          const entryDate = new Date(sortedHistory[i].date);
-          entryDate.setHours(0, 0, 0, 0);
-          
-          if (i === 0) {
-            // Check if most recent completion is today or yesterday
-            const diffFromToday = (today.getTime() - entryDate.getTime()) / oneDay;
-            if (diffFromToday <= 1) {
-              currentStreak = 1;
-            } else {
-              break;
-            }
-          } else {
-            // Check if this completion is consecutive with previous
-            const prevDate = new Date(sortedHistory[i-1].date);
-            prevDate.setHours(0, 0, 0, 0);
-            const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
-            
-            if (daysDiff === 1) {
-              currentStreak++;
-            } else {
-              break;
-            }
-          }
-        }
-      }
-      
-      goal.streak = currentStreak;
-      console.log(`🔥 Updated streak: ${currentStreak}`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (targetDate.getTime() === today.getTime()) {
+      goal.completed = completed;
+      goal.lastCompletedDate = completed ? new Date() : null;
     }
-    
+
+    // Recalculate streak based on sorted completion history
+    const sortedHistory = goal.completionHistory
+      .filter(entry => entry.completed)
+      .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    let currentStreak = 0;
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    if (sortedHistory.length > 0) {
+      for (let i = 0; i < sortedHistory.length; i++) {
+        const entryDate = new Date(sortedHistory[i].date);
+        entryDate.setHours(0, 0, 0, 0);
+
+        if (i === 0) {
+          const diff = (today.getTime() - entryDate.getTime()) / oneDay;
+          if (diff <= 1) currentStreak = 1;
+          else break;
+        } else {
+          const prevDate = new Date(sortedHistory[i - 1].date);
+          prevDate.setHours(0, 0, 0, 0);
+          const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
+          if (daysDiff === 1) currentStreak++;
+          else break;
+        }
+      }
+    }
+
+    goal.streak = currentStreak;
     goal.updatedAt = new Date();
     await goal.save();
 
-    console.log(`✅ Goal ${id} successfully updated`);
     res.json(goal);
   } catch (error) {
     console.error('Update life goal error:', error);
     res.status(500).json({ error: 'Failed to update life goal' });
   }
 });
+
 
 app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
