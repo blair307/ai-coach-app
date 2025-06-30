@@ -820,23 +820,32 @@ function setupEmotionSelector() {
         option.addEventListener('click', function() {
             console.log('🎭 Emotion clicked:', this.dataset.emotion);
             
-            // Remove selected class from all options
-            document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+            // Reset all options to default style
+            document.querySelectorAll('.mood-option').forEach(opt => {
+                opt.classList.remove('selected');
+                opt.style.background = 'white';
+                opt.style.color = '';
+                opt.style.borderColor = '#e2e8f0';
+            });
             
-            // Add selected class to clicked option
-            this.classList.add('selected');
-            this.style.background = '#6366f1';
-            this.style.color = 'white';
-            
-            // Store selected emotion
-            selectedEmotion = this.dataset.emotion;
-            console.log('✅ Selected emotion set to:', selectedEmotion);
+            // Check if clicking the same option (to unselect)
+            if (selectedEmotion === this.dataset.emotion) {
+                selectedEmotion = 'content'; // Reset to default
+                console.log('🔄 Emotion unselected, reset to default: content');
+            } else {
+                // Select the new option
+                this.classList.add('selected');
+                this.style.background = '#6366f1';
+                this.style.color = 'white';
+                this.style.borderColor = '#6366f1';
+                selectedEmotion = this.dataset.emotion;
+                console.log('✅ Selected emotion set to:', selectedEmotion);
+            }
         });
     });
     
     console.log('🎯 Emotion selector initialized with', document.querySelectorAll('.mood-option').length, 'options');
 }
-
 async function initializePage() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
