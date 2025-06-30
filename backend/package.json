@@ -15,5 +15,6 @@
     "stripe": "^13.6.0",
     "openai": "^4.12.4",
     "nodemailer": "^6.9.7"
+    "node-cron": "^3.0.3",
   }
 }
