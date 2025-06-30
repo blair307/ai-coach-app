@@ -600,54 +600,22 @@ const areaColors = {
     finances: '#059669'
 };
 
-// FINAL FIX: Completely isolated goal completion checker
 function isGoalCompletedToday(goal) {
     const today = new Date();
-    const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    console.log(`🔍 FINAL FIX - Checking completion for goal ${goal._id}:`, {
-        goalId: goal._id,
-        todayDateString: todayDateString,
-        lastCompletedDate: goal.lastCompletedDate,
-        completed: goal.completed
-    });
+    today.setHours(0, 0, 0, 0);
+    const todayDateString = today.toISOString().split('T')[0];
 
-    // METHOD 1: Check lastCompletedDate (most reliable)
-    if (goal.lastCompletedDate) {
-        const completedDate = new Date(goal.lastCompletedDate);
-        const completedDateString = completedDate.toISOString().split('T')[0];
-        const isCompletedToday = completedDateString === todayDateString;
-        
-        console.log(`📅 FINAL FIX - lastCompletedDate check:`, {
-            completedDateString,
-            todayDateString,
-            isCompletedToday
-        });
-        
-        if (isCompletedToday) {
-            console.log(`✅ FINAL FIX - Goal completed today via lastCompletedDate`);
-            return true;
-        }
-    }
-
-    // METHOD 2: Check completion history if available
-    if (goal.completionHistory && Array.isArray(goal.completionHistory) && goal.completionHistory.length > 0) {
-        const todayEntry = goal.completionHistory.find(entry => {
+    if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
+        return goal.completionHistory.some(entry => {
             if (!entry.date) return false;
             const entryDate = new Date(entry.date);
-            const entryDateString = entryDate.toISOString().split('T')[0];
-            return entryDateString === todayDateString;
+            entryDate.setHours(0, 0, 0, 0);
+            return entryDate.toISOString().split('T')[0] === todayDateString && entry.completed;
         });
-        
-        if (todayEntry) {
-            console.log(`✅ FINAL FIX - Found today's entry in completion history:`, todayEntry);
-            return todayEntry.completed;
-        }
     }
-
-    console.log(`❌ FINAL FIX - No completion data found for goal ${goal._id} - defaulting to false`);
     return false;
 }
+
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
