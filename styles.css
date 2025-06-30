@@ -4237,3 +4237,58 @@ input[type="checkbox"] + label {
   color: #6366f1;
   font-weight: 600;
 }
+
+/* Fix for emotion buttons layout */
+.emotion-btn {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 12px 8px !important;
+  margin: 4px !important;
+  background: white !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  font-size: 12px !important;
+  font-family: inherit !important;
+  width: auto !important;
+  min-width: 80px !important;
+  max-width: 120px !important;
+  text-align: center !important;
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.emotion-btn:hover {
+  border-color: #6366f1 !important;
+  background: #f8fafc !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+}
+
+.emotion-btn.selected {
+  border-color: #6366f1 !important;
+  background: #eef2ff !important;
+  color: #6366f1 !important;
+  font-weight: 600 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+/* Container styling */
+.form-controls > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+  padding: 0 !important;
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+/* Make sure the container doesn't overflow */
+.daily-prompt-container,
+.form-container {
+  overflow: visible !important;
+  position: relative !important;
+}
