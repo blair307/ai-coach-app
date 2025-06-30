@@ -600,22 +600,54 @@ const areaColors = {
     finances: '#059669'
 };
 
+// FINAL FIX: Completely isolated goal completion checker
 function isGoalCompletedToday(goal) {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayDateString = today.toISOString().split('T')[0];
+    const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    console.log(`🔍 FINAL FIX - Checking completion for goal ${goal._id}:`, {
+        goalId: goal._id,
+        todayDateString: todayDateString,
+        lastCompletedDate: goal.lastCompletedDate,
+        completed: goal.completed
+    });
 
-    if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
-        return goal.completionHistory.some(entry => {
+    // METHOD 1: Check lastCompletedDate (most reliable)
+    if (goal.lastCompletedDate) {
+        const completedDate = new Date(goal.lastCompletedDate);
+        const completedDateString = completedDate.toISOString().split('T')[0];
+        const isCompletedToday = completedDateString === todayDateString;
+        
+        console.log(`📅 FINAL FIX - lastCompletedDate check:`, {
+            completedDateString,
+            todayDateString,
+            isCompletedToday
+        });
+        
+        if (isCompletedToday) {
+            console.log(`✅ FINAL FIX - Goal completed today via lastCompletedDate`);
+            return true;
+        }
+    }
+
+    // METHOD 2: Check completion history if available
+    if (goal.completionHistory && Array.isArray(goal.completionHistory) && goal.completionHistory.length > 0) {
+        const todayEntry = goal.completionHistory.find(entry => {
             if (!entry.date) return false;
             const entryDate = new Date(entry.date);
-            entryDate.setHours(0, 0, 0, 0);
-            return entryDate.toISOString().split('T')[0] === todayDateString && entry.completed;
+            const entryDateString = entryDate.toISOString().split('T')[0];
+            return entryDateString === todayDateString;
         });
+        
+        if (todayEntry) {
+            console.log(`✅ FINAL FIX - Found today's entry in completion history:`, todayEntry);
+            return todayEntry.completed;
+        }
     }
+
+    console.log(`❌ FINAL FIX - No completion data found for goal ${goal._id} - defaulting to false`);
     return false;
 }
-
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
@@ -842,19 +874,16 @@ function calculateDayCompletion(date) {
     const isExactlyToday = targetDate.getTime() === today.getTime();
     const targetDateString = targetDate.toISOString().split('T')[0];
     
-    console.log(`📊 Calculating completion for ${targetDateString} (isToday: ${isExactlyToday})`);
-    
     let completedOnThisSpecificDate = 0;
     
     currentGoals.forEach((goal, index) => {
         let isCompletedOnThisDate = false;
         
         if (isExactlyToday) {
-            // FOR TODAY: Check current completion status
+            // FOR TODAY ONLY: Use current completion status
             isCompletedOnThisDate = isGoalCompletedToday(goal);
-            console.log(`📅 TODAY - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         } else {
-            // FOR HISTORICAL DAYS: Only check completion history
+            // FOR OTHER DAYS: NEVER use today's completion status
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
                     if (!entry.date) return false;
@@ -870,7 +899,6 @@ function calculateDayCompletion(date) {
                     isCompletedOnThisDate = true;
                 }
             }
-            console.log(`📅 HISTORICAL ${targetDateString} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -879,11 +907,9 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
-    console.log(`📊 FINAL for ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
-    
     return percentage;
 }
-        
+
 // FINAL FIX: Weekly progress with mobile-first responsive design
 function renderWeeklyProgress() {
     console.log('📊 === RENDERING WEEKLY PROGRESS (FINAL FIX) ===');
@@ -1118,26 +1144,25 @@ function renderGoalsByArea() {
     container.innerHTML = html;
 }
 
+// FINAL FIX: Server update that ONLY affects today
 async function updateGoalOnServerIsolated(goalId, completed) {
-    console.log(`📤 FIXED SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
+    console.log(`📤 FINAL SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
     
     const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
     if (!token) {
         throw new Error('No authentication token');
     }
 
-    // CRITICAL: Only send today's date and completion status
+    // FINAL FIX: Only send today's completion status
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+    today.setHours(0, 0, 0, 0); // Normalize to midnight
     
     const requestData = {
         completed: completed,
-        updateDate: todayString, // Tell server exactly which date to update
         lastCompletedDate: completed ? today.toISOString() : null
     };
     
-    console.log('📤 FIXED - Request data (specific date only):', requestData);
+    console.log('📤 FINAL FIX - Request data (completely isolated):', requestData);
 
     const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
         method: 'PUT',
@@ -1150,17 +1175,18 @@ async function updateGoalOnServerIsolated(goalId, completed) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Server error:', errorText);
+        console.error('❌ FINAL FIX - Server error response:', errorText);
         throw new Error(`Server error: ${response.status}`);
     }
 
     const updatedGoal = await response.json();
-    console.log('✅ Server returned updated goal:', updatedGoal);
+    console.log('✅ FINAL FIX - Server returned updated goal:', updatedGoal);
     
-    // Update the local goal
+    // FINAL FIX: Update the local goal
     const goalIndex = currentGoals.findIndex(g => g._id === goalId);
     if (goalIndex !== -1) {
         currentGoals[goalIndex] = updatedGoal;
+        console.log('🔄 FINAL FIX - Updated local goal in currentGoals array');
     }
     
     return updatedGoal;
