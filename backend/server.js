@@ -2804,7 +2804,161 @@ const prompts = [
 
   // GRATITUDE & APPRECIATION (10 prompts)
   {
-    prompt: "What's one thing about your entrepreneurial journey that you're genuinely grateful
+    prompt: "What's one thing about your entrepreneurial journey that you're genuinely grateful for today?",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["gratitude", "appreciation"]
+  },
+  {
+    prompt: "Who is someone who has supported your business journey, and how can you thank them?",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["support", "relationships"]
+  },
+  {
+    prompt: "What's one skill or strength you possess that you often take for granted?",
+    category: "gratitude",
+    difficulty: "medium",
+    tags: ["strengths", "self-appreciation"]
+  },
+  {
+    prompt: "Describe a recent moment when you felt proud of your progress, no matter how small.",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["progress", "pride"]
+  },
+  {
+    prompt: "What's one challenge you're currently facing that's actually helping you grow?",
+    category: "gratitude",
+    difficulty: "medium",
+    tags: ["challenges", "growth"]
+  },
+  {
+    prompt: "What's something about your current work environment or setup that you appreciate?",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["environment", "appreciation"]
+  },
+  {
+    prompt: "What's one resource, tool, or technology that has made your work significantly easier?",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["resources", "tools"]
+  },
+  {
+    prompt: "What's one mistake or failure you're now grateful for because of what it taught you?",
+    category: "gratitude",
+    difficulty: "medium",
+    tags: ["mistakes", "learning"]
+  },
+  {
+    prompt: "What's one aspect of your personality that serves you well in business?",
+    category: "gratitude",
+    difficulty: "medium",
+    tags: ["personality", "self-awareness"]
+  },
+  {
+    prompt: "What's one simple pleasure or small joy that you experienced today?",
+    category: "gratitude",
+    difficulty: "easy",
+    tags: ["joy", "simple-pleasures"]
+  },
+
+  // CHALLENGES & PROBLEM-SOLVING (15 prompts)
+  {
+    prompt: "What's the most creative solution you've come up with to solve a business problem?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["creativity", "problem-solving"]
+  },
+  {
+    prompt: "Describe a time when you had to make a difficult decision with incomplete information.",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["decisions", "uncertainty"]
+  },
+  {
+    prompt: "What's one limitation you're currently working within, and how are you adapting?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["limitations", "adaptation"]
+  },
+  {
+    prompt: "How do you approach problems that seem to have no clear solution?",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["complex-problems", "approach"]
+  },
+  {
+    prompt: "What's one area where you've had to become more resilient this year?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["resilience", "growth"]
+  },
+  {
+    prompt: "What's the biggest 'impossible' thing you accomplished that once seemed out of reach?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["achievement", "possibility"]
+  },
+  {
+    prompt: "How do you maintain perspective during particularly stressful or overwhelming periods?",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["perspective", "stress"]
+  },
+  {
+    prompt: "What's one question you wish you had asked earlier in a difficult situation?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["questions", "hindsight"]
+  },
+  {
+    prompt: "How do you typically respond when your first solution to a problem doesn't work?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["persistence", "adaptation"]
+  },
+  {
+    prompt: "What's one way you've learned to better manage your energy during challenging times?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["energy", "management"]
+  },
+  {
+    prompt: "What's the most important thing you've learned about asking for help?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["help", "vulnerability"]
+  },
+  {
+    prompt: "How do you separate what you can control from what you can't in difficult situations?",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["control", "acceptance"]
+  },
+  {
+    prompt: "What's one way you've turned a weakness into a strength?",
+    category: "challenge",
+    difficulty: "medium",
+    tags: ["weakness", "transformation"]
+  },
+  {
+    prompt: "What's your process for learning from setbacks without dwelling on them?",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["setbacks", "learning"]
+  },
+  {
+    prompt: "What's one uncomfortable conversation you had that led to a breakthrough?",
+    category: "challenge",
+    difficulty: "hard",
+    tags: ["conversations", "breakthrough"]
+  }
+];
+
+// Export the prompts array
+module.exports = prompts;
     ];
 
     const savedPrompts = await DailyPrompt.insertMany(prompts);
