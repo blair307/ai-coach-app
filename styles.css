@@ -4067,17 +4067,59 @@ html, body {
     box-sizing: border-box;
 }
 
-/* Make all icons single color */
-.icon, .btn-icon, [class*="icon-"] {
-  filter: none !important;
-  color: #6366f1; /* Your primary color */
+// Add this JavaScript to force single color icons
+// Put this in your main JS file or in a <script> tag
+
+function forceSingleColorIcons() {
+  const primaryColor = '#6366f1'; // Your brand color
+  
+  // Target all possible icon selectors
+  const iconSelectors = [
+    'svg',
+    '.icon',
+    '.fa',
+    '.fas',
+    '.far',
+    '.fab',
+    '[class*="fa-"]',
+    '[class*="icon-"]',
+    '.material-icons',
+    '.feather',
+    '.lucide',
+    '[data-lucide]',
+    '.heroicon'
+  ];
+  
+  iconSelectors.forEach(selector => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      // Set color
+      el.style.setProperty('color', primaryColor, 'important');
+      el.style.setProperty('fill', primaryColor, 'important');
+      el.style.setProperty('stroke', primaryColor, 'important');
+      
+      // Remove gradients and complex styling
+      el.style.setProperty('filter', 'none', 'important');
+      el.style.setProperty('background', 'none', 'important');
+      
+      // For SVG elements, also target paths
+      if (el.tagName === 'SVG') {
+        const paths = el.querySelectorAll('path, circle, rect, polygon');
+        paths.forEach(path => {
+          path.style.setProperty('fill', 'inherit', 'important');
+          path.style.setProperty('stroke', 'inherit', 'important');
+        });
+        
+        // Hide gradients
+        const gradients = el.querySelectorAll('linearGradient, radialGradient, defs');
+        gradients.forEach(grad => {
+          grad.style.display = 'none';
+        });
+      }
+    });
+  });
 }
 
-/* For SVG icons */
-svg {
-  fill: currentColor;
-  stroke: currentColor;
-}
 
 /* For Font Awesome or similar */
 .fa, .fas, .far, .fab {
