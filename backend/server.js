@@ -2272,6 +2272,63 @@ app.get('/api/manual-seed-prompts', authenticateToken, async (req, res) => {
   }
 });
 
+// Manual endpoint to add custom prompts
+app.post('/api/manual-add-custom-prompts', authenticateToken, async (req, res) => {
+  try {
+    console.log('🌱 Manual add custom prompts called by user:', req.user.userId);
+    
+    const { prompts } = req.body;
+    
+    if (!prompts || !Array.isArray(prompts)) {
+      return res.status(400).json({ 
+        error: 'Prompts array is required',
+        received: typeof prompts
+      });
+    }
+
+    console.log(`📝 Attempting to insert ${prompts.length} custom prompts`);
+    
+    // Validate each prompt has required fields
+    const validPrompts = prompts.filter(prompt => 
+      prompt.prompt && 
+      prompt.category && 
+      prompt.difficulty
+    );
+
+    if (validPrompts.length !== prompts.length) {
+      console.log(`⚠️ ${prompts.length - validPrompts.length} prompts were invalid and skipped`);
+    }
+
+    // Add default fields to each prompt
+    const promptsToInsert = validPrompts.map(prompt => ({
+      prompt: prompt.prompt,
+      category: prompt.category,
+      difficulty: prompt.difficulty,
+      tags: prompt.tags || [],
+      isActive: true,
+      usageCount: 0,
+      createdAt: new Date()
+    }));
+
+    const savedPrompts = await DailyPrompt.insertMany(promptsToInsert);
+    console.log(`✅ Successfully saved ${savedPrompts.length} custom prompts`);
+    
+    res.json({
+      message: `Successfully added ${savedPrompts.length} custom prompts!`,
+      count: savedPrompts.length,
+      success: true,
+      skipped: prompts.length - validPrompts.length,
+      examples: savedPrompts.slice(0, 3).map(p => p.prompt.substring(0, 50) + '...')
+    });
+
+  } catch (error) {
+    console.error('❌ Manual add custom prompts error:', error);
+    res.status(500).json({ 
+      error: 'Failed to add custom prompts',
+      details: error.message 
+    });
+  }
+});
 // ==========================================
 // DAILY PROMPTS API ROUTES
 // ==========================================
