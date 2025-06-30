@@ -1612,31 +1612,29 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     }
 
     // Recalculate streak based on sorted completion history
-    const sortedHistory = goal.completionHistory
-      .filter(entry => entry.completed)
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
+ // Ensure sorted ascending (oldest to newest)
+const sortedHistory = goal.completionHistory
+  .filter(entry => entry.completed)
+  .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    let currentStreak = 0;
-    const oneDay = 24 * 60 * 60 * 1000;
+let currentStreak = 0;
+let expectedDate = new Date();
+expectedDate.setHours(0,0,0,0);
 
-    if (sortedHistory.length > 0) {
-      for (let i = 0; i < sortedHistory.length; i++) {
-        const entryDate = new Date(sortedHistory[i].date);
-        entryDate.setHours(0, 0, 0, 0);
+// Work backward from today
+for (let i = sortedHistory.length - 1; i >= 0; i--) {
+  const entryDate = new Date(sortedHistory[i].date);
+  entryDate.setHours(0,0,0,0);
 
-        if (i === 0) {
-          const diff = (today.getTime() - entryDate.getTime()) / oneDay;
-          if (diff <= 1) currentStreak = 1;
-          else break;
-        } else {
-          const prevDate = new Date(sortedHistory[i - 1].date);
-          prevDate.setHours(0, 0, 0, 0);
-          const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
-          if (daysDiff === 1) currentStreak++;
-          else break;
-        }
-      }
-    }
+  if (entryDate.getTime() === expectedDate.getTime()) {
+    currentStreak++;
+    expectedDate.setDate(expectedDate.getDate() - 1); // move to previous day
+  } else if (entryDate.getTime() < expectedDate.getTime()) {
+    // Skip older entries out of sequence
+    break;
+  }
+}
+
 
     goal.streak = currentStreak;
     goal.updatedAt = new Date();
