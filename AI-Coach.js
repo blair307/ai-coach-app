@@ -192,11 +192,6 @@ function addMessageToChat(message, type, isTemporary = false) {
         saveConversationToStorage();
     }
 
-// Refresh insights after AI responses
-    if (type === 'ai' && !isTemporary) {
-        setTimeout(loadRecentInsights, 5000);
-    }
-    
     // Refresh insights after AI responses
     if (type === 'ai' && !isTemporary) {
         setTimeout(loadRecentInsights, 5000);
@@ -452,17 +447,18 @@ function clearChatHistory() {
     }
 }
 
-
-
 // ==========================================
-// INSIGHTS FUNCTIONALITY - NEW
+// INSIGHTS FUNCTIONALITY - FIXED SINGLE VERSION
 // ==========================================
 
-// Load real insights from backend
+// Load real insights from backend - SINGLE VERSION
 async function loadRecentInsights() {
   try {
     const token = getAuthToken();
-    if (!token) return;
+    if (!token) {
+        console.log('❌ No token for insights');
+        return;
+    }
     
     console.log('💡 Loading recent insights...');
     
@@ -479,13 +475,17 @@ async function loadRecentInsights() {
       updateInsightsDisplay(insights);
     } else {
       console.log('❌ Failed to load insights:', response.status);
+      // Show fallback insights
+      updateInsightsDisplay([]);
     }
   } catch (error) {
     console.error('Error loading insights:', error);
+    // Show fallback insights  
+    updateInsightsDisplay([]);
   }
 }
 
-// Update the insights display with real data
+// Update the insights display with real data - SINGLE VERSION
 function updateInsightsDisplay(insights) {
   const insightsContainer = document.querySelector('.insights-list');
   if (!insightsContainer) {
@@ -519,7 +519,7 @@ function updateInsightsDisplay(insights) {
   console.log('✅ Updated insights display');
 }
 
-// Format time ago helper
+// Format time ago helper - SINGLE VERSION
 function formatTimeAgo(dateString) {
   const date = new Date(dateString);
   const now = new Date();
@@ -531,10 +531,12 @@ function formatTimeAgo(dateString) {
   return `${Math.floor(diffInHours / 24)} days ago`;
 }
 
-// Mark insight as read
+// Mark insight as read - SINGLE VERSION
 async function markInsightAsRead(insightId) {
   try {
     const token = getAuthToken();
+    if (!token) return;
+    
     const response = await fetch(`${BACKEND_URL}/api/insights/${insightId}/read`, {
       method: 'PUT',
       headers: {
