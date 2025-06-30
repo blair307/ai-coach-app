@@ -2998,11 +2998,6 @@ app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
       count: savedPrompts.length
     });
 
-  } catch (error) {
-    console.error('Seed prompts error:', error);
-    res.status(500).json({ error: 'Failed to seed prompts' });
-  }
-});
 
 // Run daily prompt notifications at 8:00 AM every day
 cron.schedule('0 5 * * *', async () => {
