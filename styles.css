@@ -4067,3 +4067,19 @@ html, body {
     box-sizing: border-box;
 }
 
+/* Make all icons single color */
+.icon, .btn-icon, [class*="icon-"] {
+  filter: none !important;
+  color: #6366f1; /* Your primary color */
+}
+
+/* For SVG icons */
+svg {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+/* For Font Awesome or similar */
+.fa, .fas, .far, .fab {
+  color: inherit;
+}
