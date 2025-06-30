@@ -9,9 +9,6 @@
 
     <style>
         /* COMPLETE MOBILE DAILY TRACKER FIX */
-        /* Add this to your daily-tracker.html in a <style> tag or to styles.css */
-
-        /* 1. FORCE CHECKBOXES TO SHOW ON MOBILE - OVERRIDE EXISTING CSS */
         @media (max-width: 768px) {
             
             /* CRITICAL: Override the existing mobile rules that hide checkboxes */
@@ -73,6 +70,89 @@
             /* Remove problematic margin overrides */
             .goal-tracker-item > div {
                 margin: 0 !important;
+            }
+        }
+
+        /* FIXED: Progress chart layout - MOBILE RESPONSIVE */
+        #progressChart {
+            display: grid !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow-x: auto !important; /* Allow horizontal scroll on mobile */
+            box-sizing: border-box !important;
+            padding: 0.5rem !important;
+        }
+
+        #progressChart > div {
+            box-sizing: border-box !important;
+            position: relative !important;
+            overflow: visible !important;
+            min-width: 0 !important;
+            flex-shrink: 0 !important; /* Prevent shrinking */
+        }
+
+        /* FIXED: Weekly view - MOBILE FIRST */
+        .weekly-view #progressChart {
+            grid-template-columns: repeat(7, minmax(70px, 1fr)) !important;
+            gap: 0.5rem !important;
+        }
+
+        .weekly-view #progressChart > div {
+            min-width: 70px !important;
+            padding: 0.75rem 0.5rem !important;
+        }
+
+        /* FIXED: Monthly view - MOBILE FIRST */
+        .monthly-view #progressChart {
+            grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)) !important;
+            gap: 0.25rem !important;
+        }
+
+        .monthly-view #progressChart > div {
+            min-width: 50px !important;
+            padding: 0.5rem 0.25rem !important;
+        }
+
+        /* DESKTOP IMPROVEMENTS */
+        @media (min-width: 769px) {
+            .weekly-view #progressChart {
+                grid-template-columns: repeat(7, 1fr) !important;
+                gap: 1rem !important;
+            }
+            
+            .weekly-view #progressChart > div {
+                min-width: 80px !important;
+                padding: 1rem !important;
+            }
+            
+            .monthly-view #progressChart {
+                grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)) !important;
+                gap: 0.5rem !important;
+            }
+            
+            .monthly-view #progressChart > div {
+                min-width: 60px !important;
+                padding: 0.75rem !important;
+            }
+        }
+
+        /* EXTRA SMALL PHONES */
+        @media (max-width: 480px) {
+            .weekly-view #progressChart {
+                grid-template-columns: repeat(7, minmax(60px, 1fr)) !important;
+                gap: 0.25rem !important;
+            }
+            
+            .weekly-view #progressChart > div {
+                min-width: 60px !important;
+                padding: 0.5rem 0.25rem !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .monthly-view #progressChart > div {
+                min-width: 45px !important;
+                padding: 0.4rem 0.2rem !important;
+                font-size: 0.7rem !important;
             }
         }
 
@@ -196,21 +276,6 @@
             }
         }
 
-        /* 4. DEBUGGING - TEMPORARY VISUAL AIDS */
-        .debug-mobile .goal-tracker-item {
-            border: 3px solid red !important;
-        }
-
-        .debug-mobile .goal-tracker-item > div:first-child {
-            border: 2px solid blue !important;
-            background: rgba(0, 0, 255, 0.1) !important;
-        }
-
-        .debug-mobile .goal-tracker-item input[type="checkbox"] {
-            border: 2px solid green !important;
-            background: rgba(0, 255, 0, 0.2) !important;
-        }
-
         /* 5. ENSURE TOUCH TARGETS ARE ACCESSIBLE */
         @media (max-width: 768px) {
             
@@ -254,74 +319,78 @@
             }
         }
 
-        /* FIXED: Progress chart layout */
-        #progressChart {
-            display: grid !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            overflow: visible !important;
-            box-sizing: border-box !important;
+        /* Additional CSS animations */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes slideOutRight {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100px); }
+        }
+        
+        .goal-tracker-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
         }
 
-        #progressChart > div {
-            box-sizing: border-box !important;
-            position: relative !important;
-            overflow: visible !important;
-            min-width: 0 !important;
+        .mood-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        /* FIXED: Weekly view */
-        .weekly-view #progressChart {
-            grid-template-columns: repeat(7, 1fr) !important;
-            gap: 1rem !important;
+        .mood-btn:active {
+            transform: scale(0.98) !important;
         }
-
-        .weekly-view #progressChart > div {
-            min-width: 80px !important;
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
-
-        /* FIXED: Monthly view */
-        .monthly-view #progressChart {
-            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)) !important;
-            gap: 0.5rem !important;
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-
-        .monthly-view #progressChart > div {
-            min-width: 60px !important;
-        }
-
-        /* FIXED: Mobile responsive */
+        
         @media (max-width: 768px) {
-            .weekly-view #progressChart {
-                grid-template-columns: repeat(7, 1fr) !important;
-                gap: 0.5rem !important;
+            #goalsByArea {
+                grid-template-columns: 1fr !important;
+            }
+
+            #moodButtons {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+                gap: 0.75rem !important;
             }
             
-            .weekly-view #progressChart > div {
-                min-width: 70px !important;
-                padding: 0.75rem 0.5rem !important;
+            .content-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 1rem !important;
             }
             
-            .monthly-view #progressChart {
-                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)) !important;
-                gap: 0.25rem !important;
+            .content-header h1 {
+                text-align: center !important;
+                font-size: 1.75rem !important;
             }
             
-            .monthly-view #progressChart > div {
-                min-width: 50px !important;
-                padding: 0.5rem 0.25rem !important;
+            .header-actions {
+                justify-content: center !important;
             }
         }
-
+        
         @media (max-width: 480px) {
-            .weekly-view #progressChart > div {
-                min-width: 60px !important;
-                font-size: 0.8rem !important;
+            #moodButtons {
+                grid-template-columns: repeat(2, 1fr) !important;
             }
             
-            .monthly-view #progressChart > div {
-                min-width: 45px !important;
-                font-size: 0.7rem !important;
+            .goal-tracker-item {
+                padding: 1rem !important;
             }
         }
     </style>
@@ -504,7 +573,7 @@
     <!-- Scripts -->
     <script src="sidebar-toggle.js"></script>
     <script>
-// ENHANCED Daily Tracker - Server Only Approach with Fixed Progress Calculation
+// FINAL FIXED Daily Tracker - Completely Isolated Day Tracking
 let currentGoals = [];
 let selectedGoal = null;
 let progressView = 'weekly';
@@ -523,50 +592,32 @@ const areaColors = {
     finances: '#059669'
 };
 
-// FIXED: PST timezone helper functions
-function getPSTDate(date = new Date()) {
-    // Convert any date to PST midnight for consistent daily boundaries
-    const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
-    const pstOffset = -8; // PST is UTC-8 (adjust to -7 for PDT if needed)
-    const pst = new Date(utc + (pstOffset * 3600000));
-    pst.setHours(0, 0, 0, 0); // Set to midnight PST
-    return pst;
-}
-
-function getTodayPST() {
-    return getPSTDate(new Date());
-}
-
-function formatDateForComparison(date) {
-    // Returns YYYY-MM-DD format in PST for reliable date comparison
-    const pstDate = getPSTDate(new Date(date));
-    return pstDate.toISOString().split('T')[0];
-}
-
-// FIXED: Goal completion checker - simplified and reliable
+// FINAL FIX: Completely isolated goal completion checker
 function isGoalCompletedToday(goal) {
-    const todayString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const today = new Date();
+    const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    console.log(`🔍 FIXED - Checking completion for goal ${goal._id}:`, {
+    console.log(`🔍 FINAL FIX - Checking completion for goal ${goal._id}:`, {
         goalId: goal._id,
-        todayString: todayString,
+        todayDateString: todayDateString,
         lastCompletedDate: goal.lastCompletedDate,
         completed: goal.completed
     });
 
     // METHOD 1: Check lastCompletedDate (most reliable)
     if (goal.lastCompletedDate) {
-        const completedDateString = new Date(goal.lastCompletedDate).toISOString().split('T')[0];
-        const isCompletedToday = completedDateString === todayString;
+        const completedDate = new Date(goal.lastCompletedDate);
+        const completedDateString = completedDate.toISOString().split('T')[0];
+        const isCompletedToday = completedDateString === todayDateString;
         
-        console.log(`📅 FIXED - lastCompletedDate check:`, {
+        console.log(`📅 FINAL FIX - lastCompletedDate check:`, {
             completedDateString,
-            todayString,
+            todayDateString,
             isCompletedToday
         });
         
         if (isCompletedToday) {
-            console.log(`✅ FIXED - Goal completed today via lastCompletedDate`);
+            console.log(`✅ FINAL FIX - Goal completed today via lastCompletedDate`);
             return true;
         }
     }
@@ -575,23 +626,18 @@ function isGoalCompletedToday(goal) {
     if (goal.completionHistory && Array.isArray(goal.completionHistory) && goal.completionHistory.length > 0) {
         const todayEntry = goal.completionHistory.find(entry => {
             if (!entry.date) return false;
-            const entryDateString = new Date(entry.date).toISOString().split('T')[0];
-            return entryDateString === todayString;
+            const entryDate = new Date(entry.date);
+            const entryDateString = entryDate.toISOString().split('T')[0];
+            return entryDateString === todayDateString;
         });
         
         if (todayEntry) {
-            console.log(`✅ FIXED - Found today's entry in completion history:`, todayEntry);
+            console.log(`✅ FINAL FIX - Found today's entry in completion history:`, todayEntry);
             return todayEntry.completed;
         }
     }
 
-    // METHOD 3: Fallback to basic completed field
-    if (goal.hasOwnProperty('completed')) {
-        console.log(`🔄 FIXED - Using basic completed field:`, goal.completed);
-        return goal.completed;
-    }
-
-    console.log(`❌ FIXED - No completion data found for goal ${goal._id} - defaulting to false`);
+    console.log(`❌ FINAL FIX - No completion data found for goal ${goal._id} - defaulting to false`);
     return false;
 }
 
@@ -599,7 +645,7 @@ function isGoalCompletedToday(goal) {
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
     loadDailyGoals();
-    initializeEmotionTracker(); // NEW: Initialize emotion tracker
+    initializeEmotionTracker(); 
     updateNotificationCount();
     
     // ADD THE FIX INITIALIZATION
@@ -808,41 +854,43 @@ function updateProgressStats() {
     console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
-// FIXED: Calculate day completion with proper date isolation
+// FINAL FIX: Completely isolated day completion calculation
 function calculateDayCompletion(date) {
     if (currentGoals.length === 0) return 0;
     
-    // CRITICAL FIX: Create isolated date comparison
+    // CRITICAL: Create completely isolated date comparison
     const targetDate = new Date(date);
     targetDate.setHours(0, 0, 0, 0); // Normalize to midnight
     
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize to midnight
     
-    const isToday = targetDate.getTime() === today.getTime();
+    const isExactlyToday = targetDate.getTime() === today.getTime();
+    const targetDateString = targetDate.toISOString().split('T')[0];
     
-    console.log(`📊 FIXED - Calculating for date: ${targetDate.toDateString()}, isToday: ${isToday}`);
+    console.log(`📊 FINAL FIX - Calculating for date: ${targetDateString}, isExactlyToday: ${isExactlyToday}`);
     
     let completedOnThisSpecificDate = 0;
     
     currentGoals.forEach((goal, index) => {
         let isCompletedOnThisDate = false;
         
-        if (isToday) {
-            // FOR TODAY ONLY: Use live completion status
+        if (isExactlyToday) {
+            // FOR TODAY ONLY: Use the same logic as isGoalCompletedToday()
             isCompletedOnThisDate = isGoalCompletedToday(goal);
-            console.log(`📊 TODAY - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
+            console.log(`📊 TODAY FINAL - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         } else {
-            // FOR OTHER DAYS: Only use historical data - NO BLEEDING INTO OTHER DAYS
+            // FOR OTHER DAYS: NEVER use today's completion status
+            // Only check historical completion history for exact date match
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
                     if (!entry.date) return false;
                     
                     const entryDate = new Date(entry.date);
                     entryDate.setHours(0, 0, 0, 0); // Normalize to midnight
+                    const entryDateString = entryDate.toISOString().split('T')[0];
                     
-                    const matches = entryDate.getTime() === targetDate.getTime();
-                    return matches;
+                    return entryDateString === targetDateString;
                 });
                 
                 if (exactDateEntry && exactDateEntry.completed === true) {
@@ -850,7 +898,18 @@ function calculateDayCompletion(date) {
                 }
             }
             
-            console.log(`📊 HISTORICAL ${targetDate.toDateString()} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
+            // FALLBACK: Check if lastCompletedDate matches this exact date (but not today)
+            if (!isCompletedOnThisDate && goal.lastCompletedDate) {
+                const lastCompletedDate = new Date(goal.lastCompletedDate);
+                lastCompletedDate.setHours(0, 0, 0, 0);
+                const lastCompletedString = lastCompletedDate.toISOString().split('T')[0];
+                
+                if (lastCompletedString === targetDateString) {
+                    isCompletedOnThisDate = true;
+                }
+            }
+            
+            console.log(`📊 HISTORICAL FINAL ${targetDateString} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -859,31 +918,21 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
-    console.log(`📊 FINAL for ${targetDate.toDateString()}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
+    console.log(`📊 FINAL RESULT for ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
     
     return percentage;
 }
 
-// FIXED: Weekly progress with proper grid layout and isolated calculations
+// FINAL FIX: Weekly progress with mobile-first responsive design
 function renderWeeklyProgress() {
-    console.log('📊 === RENDERING WEEKLY PROGRESS (FIXED) ===');
+    console.log('📊 === RENDERING WEEKLY PROGRESS (FINAL FIX) ===');
     
     const container = document.getElementById('progressChart');
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
     
-    // FIXED: Clear any existing content
+    // FINAL FIX: Clear any existing content
     container.innerHTML = '';
-    
-    // FIXED: Add proper grid container styles
-    container.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(7, 1fr);
-        gap: 1rem;
-        width: 100%;
-        max-width: 100%;
-        overflow: visible;
-    `;
     
     for (let i = 0; i < 7; i++) {
         const date = new Date(today);
@@ -897,35 +946,36 @@ function renderWeeklyProgress() {
         // CRITICAL: Calculate completion for this specific date only
         const completionRate = calculateDayCompletion(date);
         
-        console.log(`📊 Week render - ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
+        console.log(`📊 Week render FINAL - ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
         
         const dayElement = document.createElement('div');
         dayElement.style.cssText = `
             text-align: center;
-            padding: 1rem;
+            padding: 0.75rem 0.5rem;
             background: ${isToday ? 'var(--primary)' : 'var(--surface)'};
             color: ${isToday ? 'white' : 'var(--text-primary)'};
             border-radius: 12px;
             border: 2px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
-            min-width: 80px;
+            min-width: 70px;
             box-sizing: border-box;
             position: relative;
             overflow: visible;
+            flex-shrink: 0;
         `;
         
         dayElement.innerHTML = `
             <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">${dayName}</div>
             <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">${dayNumber}</div>
             <div style="
-                width: 40px; 
-                height: 40px; 
+                width: 35px; 
+                height: 35px; 
                 border-radius: 50%; 
                 background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
                 margin: 0 auto; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
-                font-size: 0.8rem; 
+                font-size: 0.75rem; 
                 font-weight: 600;
                 color: ${isToday ? 'white' : 'var(--text-secondary)'};
             ">
@@ -936,26 +986,18 @@ function renderWeeklyProgress() {
         container.appendChild(dayElement);
     }
     
-    console.log('📊 === WEEKLY PROGRESS RENDERED (FIXED) ===');
+    console.log('📊 === WEEKLY PROGRESS RENDERED (FINAL FIX) ===');
 }
 
-// FIXED: Monthly progress with same isolated logic
+// FINAL FIX: Monthly progress with same isolated logic
 function renderMonthlyProgress() {
-    console.log('📊 === RENDERING MONTHLY PROGRESS (FIXED) ===');
+    console.log('📊 === RENDERING MONTHLY PROGRESS (FINAL FIX) ===');
     
     const container = document.getElementById('progressChart');
     const today = new Date();
     
-    // FIXED: Clear and setup container
+    // FINAL FIX: Clear and setup container
     container.innerHTML = '';
-    container.style.cssText = `
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-        gap: 0.5rem;
-        width: 100%;
-        max-width: 100%;
-        overflow: visible;
-    `;
     
     for (let i = 0; i < 30; i++) {
         const date = new Date(today);
@@ -972,30 +1014,31 @@ function renderMonthlyProgress() {
         const dayElement = document.createElement('div');
         dayElement.style.cssText = `
             text-align: center;
-            padding: 0.75rem;
+            padding: 0.5rem 0.25rem;
             background: ${isToday ? 'var(--primary)' : 'var(--surface)'};
             color: ${isToday ? 'white' : 'var(--text-primary)'};
             border-radius: 8px;
             border: 1px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
-            min-width: 60px;
+            min-width: 50px;
             box-sizing: border-box;
             position: relative;
             overflow: visible;
+            flex-shrink: 0;
         `;
         
         dayElement.innerHTML = `
-            <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem;">${monthName}</div>
-            <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;">${dayNumber}</div>
+            <div style="font-size: 0.65rem; font-weight: 500; margin-bottom: 0.25rem;">${monthName}</div>
+            <div style="font-size: 0.9rem; font-weight: 700; margin-bottom: 0.25rem;">${dayNumber}</div>
             <div style="
-                width: 30px; 
-                height: 30px; 
+                width: 25px; 
+                height: 25px; 
                 border-radius: 50%; 
                 background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
                 margin: 0 auto; 
                 display: flex; 
                 align-items: center; 
                 justify-content: center; 
-                font-size: 0.7rem; 
+                font-size: 0.65rem; 
                 font-weight: 600;
                 color: ${isToday ? 'white' : 'var(--text-secondary)'};
             ">
@@ -1006,10 +1049,10 @@ function renderMonthlyProgress() {
         container.appendChild(dayElement);
     }
     
-    console.log('📊 === MONTHLY PROGRESS RENDERED (FIXED) ===');
+    console.log('📊 === MONTHLY PROGRESS RENDERED (FINAL FIX) ===');
 }
 
-// FIXED: Progress view switching with proper CSS classes
+// FINAL FIX: Progress view switching with proper CSS classes
 function showWeeklyProgress() {
     progressView = 'weekly';
     
@@ -1114,16 +1157,16 @@ function renderGoalsByArea() {
     container.innerHTML = html;
 }
 
-// FIXED: Server update with isolated date tracking
+// FINAL FIX: Server update that ONLY affects today
 async function updateGoalOnServerIsolated(goalId, completed) {
-    console.log(`📤 FIXED SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
+    console.log(`📤 FINAL SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
     
     const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
     if (!token) {
         throw new Error('No authentication token');
     }
 
-    // FIXED: Send only today's completion status, don't affect other dates
+    // FINAL FIX: Only send today's completion status
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize to midnight
     
@@ -1132,7 +1175,7 @@ async function updateGoalOnServerIsolated(goalId, completed) {
         lastCompletedDate: completed ? today.toISOString() : null
     };
     
-    console.log('📤 FIXED - Request data (isolated):', requestData);
+    console.log('📤 FINAL FIX - Request data (completely isolated):', requestData);
 
     const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
         method: 'PUT',
@@ -1145,26 +1188,26 @@ async function updateGoalOnServerIsolated(goalId, completed) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ FIXED - Server error response:', errorText);
+        console.error('❌ FINAL FIX - Server error response:', errorText);
         throw new Error(`Server error: ${response.status}`);
     }
 
     const updatedGoal = await response.json();
-    console.log('✅ FIXED - Server returned updated goal:', updatedGoal);
+    console.log('✅ FINAL FIX - Server returned updated goal:', updatedGoal);
     
-    // FIXED: Update the local goal without affecting calculations for other dates
+    // FINAL FIX: Update the local goal
     const goalIndex = currentGoals.findIndex(g => g._id === goalId);
     if (goalIndex !== -1) {
         currentGoals[goalIndex] = updatedGoal;
-        console.log('🔄 FIXED - Updated local goal in currentGoals array');
+        console.log('🔄 FINAL FIX - Updated local goal in currentGoals array');
     }
     
     return updatedGoal;
 }
 
-// FIXED: Goal completion toggling with isolated updates
+// FINAL FIX: Goal completion toggling that ONLY affects today
 async function toggleGoalCompletion(goalId) {
-    console.log('🔄 FIXED TOGGLE - goalId:', goalId);
+    console.log('🔄 FINAL FIX TOGGLE - goalId:', goalId);
     
     try {
         const goal = currentGoals.find(g => g._id === goalId);
@@ -1176,8 +1219,8 @@ async function toggleGoalCompletion(goalId) {
         const currentlyCompleted = isGoalCompletedToday(goal);
         const newState = !currentlyCompleted;
         
-        console.log('📋 FIXED - Current state:', currentlyCompleted);
-        console.log('🔄 FIXED - Setting to:', newState);
+        console.log('📋 FINAL FIX - Current state:', currentlyCompleted);
+        console.log('🔄 FINAL FIX - Setting to:', newState);
         
         // Show immediate feedback
         const checkbox = document.getElementById(`goal-${goalId}`);
@@ -1186,16 +1229,16 @@ async function toggleGoalCompletion(goalId) {
             checkbox.disabled = true;
         }
         
-        // Call the server with isolated date update
+        // Call the server
         await updateGoalOnServerIsolated(goalId, newState);
         
-        // FIXED: Update UI components in isolation
-        console.log('🔄 FIXED - UPDATING UI COMPONENTS...');
+        // FINAL FIX: Update UI components
+        console.log('🔄 FINAL FIX - UPDATING UI COMPONENTS...');
         renderDailyGoals();        // Goal cards
         updateProgressStats();     // Top hero numbers
         renderGoalsByArea();       // Area progress
         
-        // CRITICAL FIX: Only refresh the current view, don't recalculate all dates
+        // CRITICAL: Only refresh the current view
         if (progressView === 'weekly') {
             renderWeeklyProgress();
         } else {
@@ -1211,7 +1254,7 @@ async function toggleGoalCompletion(goalId) {
         showSuccess(newState ? 'Goal completed! 🎉' : 'Goal marked as incomplete.');
         
     } catch (error) {
-        console.error('❌ FIXED Toggle failed:', error);
+        console.error('❌ FINAL FIX Toggle failed:', error);
         showError('Failed to update goal. Please try again.');
         
         // Reset checkbox on error
@@ -1734,131 +1777,8 @@ async function getEmotionStats() {
     return null;
 }
 
-// Apply the fixed CSS
-function applyFixedProgressCSS() {
-    const existingStyle = document.getElementById('fixed-progress-css');
-    if (existingStyle) {
-        existingStyle.remove();
-    }
-    
-    const style = document.createElement('style');
-    style.id = 'fixed-progress-css';
-    style.textContent = `
-        /* Additional CSS animations */
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        
-        @keyframes slideOutRight {
-            from { opacity: 1; transform: translateX(0); }
-            to { opacity: 0; transform: translateX(100px); }
-        }
-        
-        .goal-tracker-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .mood-btn:hover {
-            transform: scale(1.05) !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .mood-btn:active {
-            transform: scale(0.98) !important;
-        }
-        
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        @media (max-width: 768px) {
-            .goal-tracker-item {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                text-align: left !important;
-                padding: 1.25rem !important;
-            }
-            
-            .goal-tracker-item > div {
-                margin: 0.5rem 0 !important;
-            }
-            
-            .goal-tracker-item > div:first-child {
-                align-self: flex-start !important;
-                margin-bottom: 1rem !important;
-            }
-            
-            #progressChart {
-                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
-                gap: 0.75rem !important;
-            }
-            
-            #goalsByArea {
-                grid-template-columns: 1fr !important;
-            }
-
-            #moodButtons {
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
-                gap: 0.75rem !important;
-            }
-            
-            .content-header {
-                flex-direction: column !important;
-                align-items: stretch !important;
-                gap: 1rem !important;
-            }
-            
-            .content-header h1 {
-                text-align: center !important;
-                font-size: 1.75rem !important;
-            }
-            
-            .header-actions {
-                justify-content: center !important;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            #progressChart {
-                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)) !important;
-                gap: 0.5rem !important;
-            }
-            
-            #progressChart > div {
-                padding: 0.5rem 0.25rem !important;
-                min-width: 50px !important;
-            }
-
-            #moodButtons {
-                grid-template-columns: repeat(2, 1fr) !important;
-            }
-            
-            .goal-tracker-item {
-                padding: 1rem !important;
-            }
-        }
-    `;
-    document.head.appendChild(style);
-    
-    console.log('✅ Fixed progress CSS applied');
-}
-
 // Initialize fixes
 function initializeProgressFixes() {
-    applyFixedProgressCSS();
-    
     // Start with weekly view
     showWeeklyProgress();
     
@@ -1885,112 +1805,13 @@ function debugUIRefresh() {
     console.log('🐛 UI refresh complete');
 }
 
-// ENHANCED: Add this to the window for debugging
+// Export functions for global access
 window.debugUIRefresh = debugUIRefresh;
-
-// Export emotion tracker functions for global access
 window.selectEmotion = selectEmotion;
 window.getEmotionStats = getEmotionStats;
 window.initializeEmotionTracker = initializeEmotionTracker;
 
-// MOBILE MODAL JAVASCRIPT FIX
-// Enhanced openGoalDetail function for mobile
-function openGoalDetailMobile(goalId) {
-    const goal = currentGoals.find(g => g._id === goalId);
-    if (!goal) return;
-    
-    selectedGoal = goal;
-    const color = areaColors[goal.area] || '#6366f1';
-    
-    // Update modal content
-    document.getElementById('modalTitle').textContent = 'Goal Details';
-    document.getElementById('modalArea').textContent = goal.area;
-    document.getElementById('modalBigGoal').textContent = goal.bigGoal;
-    document.getElementById('modalDailyAction').textContent = goal.dailyAction;
-    document.getElementById('modalStreak').textContent = goal.streak || 0;
-    
-    let lastCompletedText = 'Never';
-    if (goal.lastCompletedDate) {
-        const lastDate = new Date(goal.lastCompletedDate);
-        const today = new Date();
-        const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-        
-        if (diffDays === 0) {
-            lastCompletedText = 'Today';
-        } else if (diffDays === 1) {
-            lastCompletedText = 'Yesterday';
-        } else {
-            lastCompletedText = `${diffDays} days ago`;
-        }
-    }
-    document.getElementById('modalLastCompleted').textContent = lastCompletedText;
-    
-    document.getElementById('modalHeader').style.background = `linear-gradient(135deg, ${color} 0%, ${adjustBrightness(color, -20)} 100%)`;
-    
-    updateModalButtons();
-    
-    // MOBILE FIX: Ensure modal displays correctly
-    const modal = document.getElementById('goalDetailModal');
-    if (modal) {
-        // Prevent body scroll on mobile
-        document.body.style.overflow = 'hidden';
-        document.body.style.position = 'fixed';
-        document.body.style.width = '100%';
-        document.body.classList.add('modal-open');
-        
-        // Show modal
-        modal.style.display = 'block';
-        
-        // Force proper positioning on mobile
-        if (window.innerWidth <= 768) {
-            modal.style.position = 'fixed';
-            modal.style.top = '0';
-            modal.style.left = '0';
-            modal.style.width = '100vw';
-            modal.style.height = '100vh';
-            modal.style.zIndex = '9999';
-            
-            // Ensure modal content is properly centered
-            const modalContent = modal.querySelector('div');
-            if (modalContent) {
-                modalContent.style.display = 'flex';
-                modalContent.style.alignItems = 'flex-start';
-                modalContent.style.justifyContent = 'center';
-                modalContent.style.padding = '1rem';
-                modalContent.style.boxSizing = 'border-box';
-                modalContent.style.overflowY = 'auto';
-                modalContent.style.width = '100%';
-                modalContent.style.height = '100%';
-            }
-        }
-    }
-}
-
-// Enhanced closeGoalDetail function for mobile
-function closeGoalDetailMobile() {
-    const modal = document.getElementById('goalDetailModal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-    
-    // MOBILE FIX: Restore body scroll
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.width = '';
-    document.body.classList.remove('modal-open');
-    
-    selectedGoal = null;
-}
-
-// Replace the original functions with mobile-optimized versions
-if (window.innerWidth <= 768) {
-    window.openGoalDetail = openGoalDetailMobile;
-    window.closeGoalDetail = closeGoalDetailMobile;
-    
-    console.log('✅ Mobile-optimized functions loaded');
-}
-
-console.log('📱 Complete fixed daily tracker loaded!');
+console.log('✅ FINAL FIXED Daily Tracker loaded - Mobile responsive with isolated day tracking!');
 
     </script>
         
