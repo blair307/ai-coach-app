@@ -2910,20 +2910,7 @@ app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
         difficulty: "hard",
         tags: ["conversations", "breakthrough"]
       }
-    ];
 
-    const savedPrompts = await DailyPrompt.insertMany(prompts);
-    
-    res.json({
-      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
-      count: savedPrompts.length
-    });
-
-  } catch (error) {
-    console.error('Seed prompts error:', error);
-    res.status(500).json({ error: 'Failed to seed prompts' });
-  }
-});
     ];
 
     const savedPrompts = await DailyPrompt.insertMany(prompts);
