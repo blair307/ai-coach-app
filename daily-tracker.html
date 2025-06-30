@@ -393,6 +393,77 @@
                 padding: 1rem !important;
             }
         }
+
+/* MOBILE LAYOUT FIX - Prevent Cards from Falling Off Screen */
+@media (max-width: 768px) {
+    
+    /* Fix the Progress Overview container */
+    #progressChart {
+        display: flex !important; /* Use flexbox instead of grid on mobile */
+        overflow-x: auto !important; /* Allow horizontal scrolling */
+        gap: 0.5rem !important;
+        padding: 0.5rem !important;
+        -webkit-overflow-scrolling: touch !important; /* Smooth scrolling on iOS */
+    }
+    
+    /* Fix individual day cards */
+    #progressChart > div {
+        flex-shrink: 0 !important; /* Prevent cards from shrinking */
+        min-width: 70px !important; /* Minimum width */
+        max-width: 70px !important; /* Maximum width to prevent stretching */
+        padding: 0.75rem 0.5rem !important;
+        text-align: center !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Weekly view specific */
+    .weekly-view #progressChart > div {
+        min-width: 75px !important;
+        max-width: 75px !important;
+    }
+    
+    /* Monthly view specific */
+    .monthly-view #progressChart > div {
+        min-width: 50px !important;
+        max-width: 50px !important;
+        padding: 0.5rem 0.25rem !important;
+    }
+    
+    /* Add scroll indicator */
+    #progressChart::after {
+        content: "→" !important;
+        position: absolute !important;
+        right: 0.5rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        background: rgba(0,0,0,0.1) !important;
+        padding: 0.25rem !important;
+        border-radius: 50% !important;
+        font-size: 0.8rem !important;
+        pointer-events: none !important;
+    }
+    
+    /* Hide scroll indicator if not needed */
+    #progressChart:not([data-scrollable])::after {
+        display: none !important;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small phones */
+    .weekly-view #progressChart > div {
+        min-width: 65px !important;
+        max-width: 65px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    .monthly-view #progressChart > div {
+        min-width: 45px !important;
+        max-width: 45px !important;
+        font-size: 0.7rem !important;
+    }
+}
+        
     </style>
 </head>
 <body data-page="daily-tracker">
