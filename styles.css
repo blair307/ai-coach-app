@@ -4188,6 +4188,51 @@ function forceSingleColorIcons() {
   text-align: center;
 }
 
+    /* Updated styles for your emotion buttons */
+.emotion-btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 16px;
+  margin: 4px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-family: inherit;
+  min-width: 90px;
+  text-align: center;
+}
+
+.emotion-btn:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.emotion-btn.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+  color: #6366f1;
+  font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* Container for the emotion buttons */
+.form-controls div:has(.emotion-btn) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Also hide the share checkbox since you removed that feature */
+input[type="checkbox"] + label {
+  display: none !important;
+}
 .emotion-btn.selected .emotion-label {
   color: #6366f1;
   font-weight: 600;
