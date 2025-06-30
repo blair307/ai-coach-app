@@ -1812,47 +1812,7 @@ window.getEmotionStats = getEmotionStats;
 window.initializeEmotionTracker = initializeEmotionTracker;
 
 console.log('✅ FINAL FIXED Daily Tracker loaded - Mobile responsive with isolated day tracking!');
-// Add this function to your JavaScript section
-function fixMobileLayout() {
-    const progressChart = document.getElementById('progressChart');
-    if (!progressChart) return;
-    
-    // Check if we're on mobile
-    if (window.innerWidth <= 768) {
-        const container = progressChart.parentElement;
-        
-        // Set horizontal scroll
-        progressChart.style.display = 'flex';
-        progressChart.style.overflowX = 'auto';
-        progressChart.style.gap = '0.5rem';
-        progressChart.style.padding = '0.5rem';
-        
-        // Set fixed widths for cards
-        const cards = progressChart.children;
-        for (let card of cards) {
-            card.style.flexShrink = '0';
-            card.style.minWidth = '70px';
-            card.style.maxWidth = '70px';
-        }
-        
-        console.log('📱 Mobile layout fixed');
-    }
-}
 
-// Call the fix function after rendering
-function renderWeeklyProgress() {
-    // ... existing code ...
-    
-    // Add this at the end of the function
-    setTimeout(fixMobileLayout, 100);
-}
-
-function renderMonthlyProgress() {
-    // ... existing code ...
-    
-    // Add this at the end of the function  
-    setTimeout(fixMobileLayout, 100);
-}
         
     </script>
         
