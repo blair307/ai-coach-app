@@ -4125,3 +4125,70 @@ function forceSingleColorIcons() {
 .fa, .fas, .far, .fab {
   color: inherit;
 }
+
+/* Emotion Selector Styles */
+.emotion-selector {
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.emotion-selector h3 {
+  margin: 0 0 16px 0;
+  color: #334155;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.emotion-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+  max-width: 600px;
+}
+
+.emotion-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 8px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 80px;
+}
+
+.emotion-btn:hover {
+  border-color: #6366f1;
+  background: #f8fafc;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.emotion-btn.selected {
+  border-color: #6366f1;
+  background: #eef2ff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.emotion-emoji {
+  font-size: 24px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.emotion-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
+  text-align: center;
+}
+
+.emotion-btn.selected .emotion-label {
+  color: #6366f1;
+  font-weight: 600;
+}
