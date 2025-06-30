@@ -701,247 +701,58 @@
                                         oninput="updateWordCount()"
                                     ></textarea>
                                     <div class="word-count" id="wordCount">0 words</div>
-                                </div>
+                              </div>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fixed Emotion Selector Layout</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            padding: 2rem;
-            margin: 0;
-        }
+                                <div class="emotion-selector" style="margin-bottom: 2rem;">
+                                    <h3>How are you feeling today?</h3>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; margin-bottom: 2rem;">
+                                        <div class="mood-option" data-emotion="sad" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😢</span>
+                                            <span style="font-size: 12px; color: #475569;">Sad</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="angry" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😠</span>
+                                            <span style="font-size: 12px; color: #475569;">Angry</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="disappointed" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😞</span>
+                                            <span style="font-size: 12px; color: #475569;">Disappointed</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="happy" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😊</span>
+                                            <span style="font-size: 12px; color: #475569;">Happy</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="numb" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😶</span>
+                                            <span style="font-size: 12px; color: #475569;">Numb</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="lonely" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😔</span>
+                                            <span style="font-size: 12px; color: #475569;">Lonely</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="hopeful" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">🌅</span>
+                                            <span style="font-size: 12px; color: #475569;">Hopeful</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="excited" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">🎉</span>
+                                            <span style="font-size: 12px; color: #475569;">Excited</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="content" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😌</span>
+                                            <span style="font-size: 12px; color: #475569;">Content</span>
+                                        </div>
+                                        <div class="mood-option" data-emotion="afraid" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
+                                            <span style="font-size: 20px; margin-bottom: 4px;">😰</span>
+                                            <span style="font-size: 12px; color: #475569;">Afraid</span>
+                                        </div>
+                                    </div>
 
-        .emotion-selector {
-            background: white;
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .emotion-selector h3 {
-            margin: 0 0 1.5rem 0;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .emotion-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 2rem; /* Added more space between emotions and form controls */
-        }
-
-        .mood-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 12px 8px;
-            background: white;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            min-width: 90px;
-            max-width: 120px;
-            text-align: center;
-            flex: 0 0 auto;
-            transition: all 0.2s ease;
-        }
-
-        .mood-option:hover {
-            border-color: #6366f1;
-            transform: translateY(-1px);
-        }
-
-        .mood-option.selected {
-            background: #6366f1;
-            color: white;
-            border-color: #6366f1;
-        }
-
-        .mood-option.selected span:last-child {
-            color: white;
-        }
-
-        .mood-emoji {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-
-        .mood-label {
-            font-size: 12px;
-            color: #475569;
-        }
-
-        .form-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-            padding-top: 1rem; /* Additional padding for visual separation */
-            border-top: 1px solid #f1f5f9; /* Subtle divider line */
-        }
-
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .checkbox-group input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            accent-color: #6366f1;
-        }
-
-        .checkbox-group label {
-            font-size: 0.9rem;
-            color: #475569;
-            cursor: pointer;
-        }
-
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background: #6366f1;
-            color: white;
-        }
-
-        .btn-primary:hover:not(:disabled) {
-            background: #4f46e5;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-            .form-controls {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 1rem;
-            }
-
-            .checkbox-group {
-                justify-content: center;
-            }
-        }
-    </style>
-</head>
-<body>
-  <!-- Replace your existing emotion selector section with this: -->
-
-<div class="emotion-selector" style="margin-bottom: 2rem;">
-  <h3>How are you feeling today?</h3>
-  <div style="display: flex; flex-wrap: wrap; gap: 12px; max-width: 100%; margin-bottom: 2rem;">
-    <div class="mood-option" data-emotion="sad" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😢</span>
-      <span style="font-size: 12px; color: #475569;">Sad</span>
-    </div>
-    <div class="mood-option" data-emotion="angry" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😠</span>
-      <span style="font-size: 12px; color: #475569;">Angry</span>
-    </div>
-    <div class="mood-option" data-emotion="disappointed" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😞</span>
-      <span style="font-size: 12px; color: #475569;">Disappointed</span>
-    </div>
-    <div class="mood-option" data-emotion="happy" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😊</span>
-      <span style="font-size: 12px; color: #475569;">Happy</span>
-    </div>
-    <div class="mood-option" data-emotion="numb" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😶</span>
-      <span style="font-size: 12px; color: #475569;">Numb</span>
-    </div>
-    <div class="mood-option" data-emotion="lonely" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😔</span>
-      <span style="font-size: 12px; color: #475569;">Lonely</span>
-    </div>
-    <div class="mood-option" data-emotion="hopeful" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">🌅</span>
-      <span style="font-size: 12px; color: #475569;">Hopeful</span>
-    </div>
-    <div class="mood-option" data-emotion="excited" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">🎉</span>
-      <span style="font-size: 12px; color: #475569;">Excited</span>
-    </div>
-    <div class="mood-option" data-emotion="content" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😌</span>
-      <span style="font-size: 12px; color: #475569;">Content</span>
-    </div>
-    <div class="mood-option" data-emotion="afraid" style="display: flex; flex-direction: column; align-items: center; padding: 12px 8px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; min-width: 90px; max-width: 120px; text-align: center; flex: 0 0 auto;">
-      <span style="font-size: 20px; margin-bottom: 4px;">😰</span>
-      <span style="font-size: 12px; color: #475569;">Afraid</span>
-    </div>
-  </div>
-
-  <!-- Keep only this form-controls section -->
-  <div class="form-controls" style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
-    <button type="submit" class="btn btn-primary" id="submitBtn">
-      Save Response
-    </button>
-  </div>
-</div>
-
-<!-- REMOVE the duplicate form-controls section that appears later in your form -->
-
-   <script>
-let selectedEmotion = 'content'; // default
-
-document.addEventListener('DOMContentLoaded', function() {
-  setupEmotionSelector();
-});
-
-function setupEmotionSelector() {
-  // Add event listeners to mood options
-  document.querySelectorAll('.mood-option').forEach(option => {
-    option.addEventListener('click', function() {
-      console.log('🎭 Emotion clicked:', this.dataset.emotion);
-      
-      // Remove selected class from all options
-      document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
-      
-      // Add selected class to clicked option
-      this.classList.add('selected');
-      
-      // Store selected emotion
-      selectedEmotion = this.dataset.emotion;
-      console.log('✅ Selected emotion set to:', selectedEmotion);
-    });
-  });
-  
-  console.log('🎯 Emotion selector initialized');
-}
-</script>
-</body>
-</html>
-                                  
+                                    <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                                            Save Response
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         </div>
@@ -989,390 +800,321 @@ function setupEmotionSelector() {
     <!-- Mobile Overlay -->
     <div class="mobile-overlay" id="mobileOverlay"></div>
 
-    <script>
-        // Daily Prompt Page JavaScript
-        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
-        let currentPrompt = null;
-        let currentResponse = null;
-        let selectedMood = 'neutral';
-        let responseStartTime = null;
+<script>
+// Daily Prompt Page JavaScript
+const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+let currentPrompt = null;
+let currentResponse = null;
+let selectedEmotion = 'content';
+let responseStartTime = null;
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🌅 Daily Prompt page loading...');
-            initializePage();
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🌅 Daily Prompt page loading...');
+    initializePage();
+    setupEmotionSelector();
+});
+
+function setupEmotionSelector() {
+    document.querySelectorAll('.mood-option').forEach(option => {
+        option.addEventListener('click', function() {
+            console.log('🎭 Emotion clicked:', this.dataset.emotion);
+            
+            // Remove selected class from all options
+            document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
+            
+            // Add selected class to clicked option
+            this.classList.add('selected');
+            this.style.background = '#6366f1';
+            this.style.color = 'white';
+            
+            // Store selected emotion
+            selectedEmotion = this.dataset.emotion;
+            console.log('✅ Selected emotion set to:', selectedEmotion);
+        });
+    });
+    
+    console.log('🎯 Emotion selector initialized with', document.querySelectorAll('.mood-option').length, 'options');
+}
+
+async function initializePage() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const today = new Date();
+        document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            month: 'short', 
+            day: 'numeric' 
         });
 
-        async function initializePage() {
-            try {
-                // Check authentication
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                if (!token) {
-                    window.location.href = 'index.html';
-                    return;
-                }
+        await Promise.all([
+            loadTodayPrompt(),
+            loadUserStats(),
+            loadHistory()
+        ]);
 
-                // Set current date
-                const today = new Date();
-                document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    month: 'short', 
-                    day: 'numeric' 
-                });
+        setupFormHandlers();
+        console.log('✅ Daily Prompt page initialized successfully');
 
-                // Load today's prompt and user stats
-                await Promise.all([
-                    loadTodayPrompt(),
-                    loadUserStats(),
-                    loadHistory()
-                ]);
+    } catch (error) {
+        console.error('❌ Error initializing page:', error);
+        showError('Failed to load daily prompt. Please refresh the page.');
+    }
+}
 
-                // Set up form handlers
-                setupFormHandlers();
-
-                console.log('✅ Daily Prompt page initialized successfully');
-
-            } catch (error) {
-                console.error('❌ Error initializing page:', error);
-                showError('Failed to load daily prompt. Please refresh the page.');
+async function loadTodayPrompt() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const response = await fetch(`${API_BASE_URL}/api/daily-prompt/today`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to load prompt: ${response.status}`);
         }
 
-        // Load today's prompt
-        async function loadTodayPrompt() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                const response = await fetch(`${API_BASE_URL}/api/daily-prompt/today`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+        const data = await response.json();
+        currentPrompt = data.prompt;
+        currentResponse = data.userResponse;
 
-                if (!response.ok) {
-                    throw new Error(`Failed to load prompt: ${response.status}`);
-                }
+        document.getElementById('promptText').textContent = data.prompt.prompt;
+        document.getElementById('promptCategory').textContent = data.prompt.category.charAt(0).toUpperCase() + data.prompt.category.slice(1);
+        document.getElementById('communityCount').textContent = `${data.assignment.responseCount} responses`;
 
-                const data = await response.json();
-                currentPrompt = data.prompt;
-                currentResponse = data.userResponse;
+        document.getElementById('loadingPrompt').style.display = 'none';
+        document.getElementById('promptContent').style.display = 'block';
 
-                // Update UI
-                document.getElementById('promptText').textContent = data.prompt.prompt;
-                document.getElementById('promptCategory').textContent = data.prompt.category.charAt(0).toUpperCase() + data.prompt.category.slice(1);
-                document.getElementById('communityCount').textContent = `${data.assignment.responseCount} responses`;
-
-                // Show prompt content
-                document.getElementById('loadingPrompt').style.display = 'none';
-                document.getElementById('promptContent').style.display = 'block';
-
-                // If user already responded, populate form
-                if (data.hasResponded && currentResponse) {
-                    document.getElementById('responseText').value = currentResponse.response;
-                    selectedMood = currentResponse.mood || 'neutral';
-                    document.querySelector(`[data-mood="${selectedMood}"]`).classList.add('selected');
-                    document.getElementById('sharePublic').checked = currentResponse.isPublic || false;
-                    document.getElementById('submitBtn').textContent = 'Update Response';
-                    updateWordCount();
-                }
-
-                // Start timing for new responses
-                if (!data.hasResponded) {
-                    responseStartTime = Date.now();
-                }
-
-            } catch (error) {
-                console.error('❌ Error loading today\'s prompt:', error);
-                document.getElementById('loadingPrompt').innerHTML = `
-                    <div style="color: var(--error);">
-                        ⚠️ Failed to load today's prompt. 
-                        <button onclick="loadTodayPrompt()" class="btn btn-primary" style="margin-left: 1rem;">Try Again</button>
-                    </div>
-                `;
+        if (data.hasResponded && currentResponse) {
+            document.getElementById('responseText').value = currentResponse.response;
+            selectedEmotion = currentResponse.mood || 'content';
+            const selectedOption = document.querySelector(`[data-emotion="${selectedEmotion}"]`);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+                selectedOption.style.background = '#6366f1';
+                selectedOption.style.color = 'white';
             }
+            document.getElementById('submitBtn').textContent = 'Update Response';
+            updateWordCount();
         }
 
-        // Load user stats
-        async function loadUserStats() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                const response = await fetch(`${API_BASE_URL}/api/daily-prompt/stats`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const stats = await response.json();
-                    
-                    // Update header stats
-                    document.getElementById('streakCount').textContent = stats.currentStreak;
-                    document.getElementById('totalCount').textContent = stats.totalResponses;
-
-                    // Update detailed stats
-                    document.getElementById('totalResponsesStat').textContent = stats.totalResponses;
-                    document.getElementById('currentStreakStat').textContent = stats.currentStreak;
-                    document.getElementById('longestStreakStat').textContent = stats.longestStreak;
-                    document.getElementById('avgWordsStat').textContent = stats.averageWordCount;
-
-                    // Show stats grid
-                    document.getElementById('statsGrid').style.display = 'grid';
-                }
-            } catch (error) {
-                console.error('❌ Error loading user stats:', error);
-            }
+        if (!data.hasResponded) {
+            responseStartTime = Date.now();
         }
 
-        // Load response history
-        async function loadHistory() {
-            try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                const response = await fetch(`${API_BASE_URL}/api/daily-prompt/history?limit=5`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+    } catch (error) {
+        console.error('❌ Error loading today\'s prompt:', error);
+        document.getElementById('loadingPrompt').innerHTML = `
+            <div style="color: var(--error);">
+                ⚠️ Failed to load today's prompt. 
+                <button onclick="loadTodayPrompt()" class="btn btn-primary" style="margin-left: 1rem;">Try Again</button>
+            </div>
+        `;
+    }
+}
 
-                if (response.ok) {
-                    const data = await response.json();
-                    displayHistory(data.responses);
-                }
-            } catch (error) {
-                console.error('❌ Error loading history:', error);
-                document.getElementById('historyGrid').innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        No previous responses found.
-                    </div>
-                `;
+async function loadUserStats() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const response = await fetch(`${API_BASE_URL}/api/daily-prompt/stats`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
-        }
+        });
 
-        // Display history items
-        function displayHistory(responses) {
-            const historyGrid = document.getElementById('historyGrid');
-            
-            if (!responses || responses.length === 0) {
-                historyGrid.innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
-                        No previous responses yet. Start building your reflection journey!
-                    </div>
-                `;
-                return;
+        if (response.ok) {
+            const stats = await response.json();
+            document.getElementById('streakCount').textContent = stats.currentStreak;
+            document.getElementById('totalCount').textContent = stats.totalResponses;
+            document.getElementById('totalResponsesStat').textContent = stats.totalResponses;
+            document.getElementById('currentStreakStat').textContent = stats.currentStreak;
+            document.getElementById('longestStreakStat').textContent = stats.longestStreak;
+            document.getElementById('avgWordsStat').textContent = stats.averageWordCount;
+            document.getElementById('statsGrid').style.display = 'grid';
+        }
+    } catch (error) {
+        console.error('❌ Error loading user stats:', error);
+    }
+}
+
+async function loadHistory() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const response = await fetch(`${API_BASE_URL}/api/daily-prompt/history?limit=5`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
 
-            historyGrid.innerHTML = responses.map(response => {
-                const date = new Date(response.createdAt).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
-
-                const truncatedResponse = response.response.length > 150 
-                    ? response.response.substring(0, 150) + '...'
-                    : response.response;
-
-                return `
-                    <div class="history-item">
-                        <div class="history-date">${date}</div>
-                        <div class="history-prompt">${response.promptId.prompt}</div>
-                        <div class="history-response">${truncatedResponse}</div>
-                        <div class="history-meta">
-                            <span>🎭 ${response.mood}</span>
-                            <span>📝 ${response.wordCount} words</span>
-                            ${response.isPublic ? '<span>🌐 Shared</span>' : ''}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+        if (response.ok) {
+            const data = await response.json();
+            displayHistory(data.responses);
         }
+    } catch (error) {
+        console.error('❌ Error loading history:', error);
+        document.getElementById('historyGrid').innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                No previous responses found.
+            </div>
+        `;
+    }
+}
 
-        // Set up form handlers
-        function setupFormHandlers() {
-            // Mood selector
-            document.querySelectorAll('.mood-option').forEach(option => {
-                option.addEventListener('click', function() {
-                    document.querySelectorAll('.mood-option').forEach(opt => opt.classList.remove('selected'));
-                    this.classList.add('selected');
-                    selectedMood = this.dataset.mood;
-                });
-            });
+function displayHistory(responses) {
+    const historyGrid = document.getElementById('historyGrid');
+    
+    if (!responses || responses.length === 0) {
+        historyGrid.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                No previous responses yet. Start building your reflection journey!
+            </div>
+        `;
+        return;
+    }
 
-// Emotion selection handling
-let selectedEmotion = 'content'; // default
+    historyGrid.innerHTML = responses.map(response => {
+        const date = new Date(response.createdAt).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
 
-document.addEventListener('DOMContentLoaded', function() {
-  const emotionButtons = document.querySelectorAll('.emotion-btn');
-  
-  emotionButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Remove selected class from all buttons
-      emotionButtons.forEach(btn => btn.classList.remove('selected'));
-      
-      // Add selected class to clicked button
-      this.classList.add('selected');
-      
-      // Store selected emotion
-      selectedEmotion = this.dataset.emotion;
-      
-      console.log('Selected emotion:', selectedEmotion);
+        const truncatedResponse = response.response.length > 150 
+            ? response.response.substring(0, 150) + '...'
+            : response.response;
+
+        return `
+            <div class="history-item">
+                <div class="history-date">${date}</div>
+                <div class="history-prompt">${response.promptId.prompt}</div>
+                <div class="history-response">${truncatedResponse}</div>
+                <div class="history-meta">
+                    <span>🎭 ${response.mood}</span>
+                    <span>📝 ${response.wordCount} words</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function setupFormHandlers() {
+    document.getElementById('responseForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        await submitResponse();
     });
-  });
-});
-            
-            // Form submission
-            document.getElementById('responseForm').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                await submitResponse();
-            });
+}
+
+async function submitResponse() {
+    try {
+        const responseText = document.getElementById('responseText').value.trim();
+        if (!responseText) {
+            showError('Please write a response before submitting.');
+            return;
         }
 
-        // Submit response
-        async function submitResponse() {
-            try {
-                const responseText = document.getElementById('responseText').value.trim();
-                if (!responseText) {
-                    showError('Please write a response before submitting.');
-                    return;
-                }
+        console.log('📤 Submitting response with emotion:', selectedEmotion);
 
-                const submitBtn = document.getElementById('submitBtn');
-                const originalText = submitBtn.textContent;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Saving...';
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving...';
 
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-                const timeToComplete = responseStartTime ? Math.floor((Date.now() - responseStartTime) / 1000) : null;
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const timeToComplete = responseStartTime ? Math.floor((Date.now() - responseStartTime) / 1000) : null;
 
-                const requestData = {
-                    promptId: currentPrompt._id,
-                    response: responseText,
-mood: selectedEmotion,
-                    timeToComplete: timeToComplete
-                };
+        const requestData = {
+            promptId: currentPrompt._id,
+            response: responseText,
+            mood: selectedEmotion,
+            timeToComplete: timeToComplete
+        };
 
-                const response = await fetch(`${API_BASE_URL}/api/daily-prompt/respond`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(requestData)
-                });
+        const response = await fetch(`${API_BASE_URL}/api/daily-prompt/respond`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
 
-                if (!response.ok) {
-                    throw new Error(`Failed to submit response: ${response.status}`);
-                }
-
-                const data = await response.json();
-                
-                // Show success message
-                document.getElementById('successMessage').style.display = 'block';
-                setTimeout(() => {
-                    document.getElementById('successMessage').style.display = 'none';
-                }, 3000);
-
-                // Update button text
-                submitBtn.textContent = 'Update Response';
-
-                // Refresh stats and history
-                await loadUserStats();
-                await loadHistory();
-
-                console.log('✅ Response submitted successfully');
-
-            } catch (error) {
-                console.error('❌ Error submitting response:', error);
-                showError('Failed to save response. Please try again.');
-            } finally {
-                const submitBtn = document.getElementById('submitBtn');
-                submitBtn.disabled = false;
-                if (submitBtn.textContent === 'Saving...') {
-                    submitBtn.textContent = 'Save Response';
-                }
-            }
+        if (!response.ok) {
+            throw new Error(`Failed to submit response: ${response.status}`);
         }
 
-        // Update word count
-        function updateWordCount() {
-            const text = document.getElementById('responseText').value.trim();
-            const wordCount = text ? text.split(/\s+/).length : 0;
-            document.getElementById('wordCount').textContent = `${wordCount} words`;
+        const data = await response.json();
+        console.log('✅ Response submitted successfully');
+        
+        document.getElementById('successMessage').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('successMessage').style.display = 'none';
+        }, 3000);
+
+        submitBtn.textContent = 'Update Response';
+        await loadUserStats();
+        await loadHistory();
+
+    } catch (error) {
+        console.error('❌ Error submitting response:', error);
+        showError('Failed to save response. Please try again.');
+    } finally {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = false;
+        if (submitBtn.textContent === 'Saving...') {
+            submitBtn.textContent = 'Save Response';
         }
+    }
+}
 
-        // Load more history
-        function loadMoreHistory() {
-            // This could open a modal or navigate to a dedicated history page
-            alert('Full history page coming soon!');
+function updateWordCount() {
+    const text = document.getElementById('responseText').value.trim();
+    const wordCount = text ? text.split(/\s+/).length : 0;
+    document.getElementById('wordCount').textContent = `${wordCount} words`;
+}
+
+function loadMoreHistory() {
+    alert('Full history page coming soon!');
+}
+
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const overlay = document.getElementById('mobileOverlay');
+    
+    if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle('open');
+        if (overlay) {
+            overlay.classList.toggle('active');
+            overlay.onclick = () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+            };
         }
+    } else {
+        sidebar.classList.toggle('hidden');
+        mainContent.classList.toggle('sidebar-hidden');
+    }
+}
 
-        // Sidebar toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.querySelector('.main-content');
-            const overlay = document.getElementById('mobileOverlay');
-            
-            if (window.innerWidth <= 1024) {
-                // Mobile behavior
-                sidebar.classList.toggle('open');
-                if (overlay) {
-                    overlay.classList.toggle('active');
-                    
-                    // Close sidebar when clicking overlay
-                    overlay.onclick = () => {
-                        sidebar.classList.remove('open');
-                        overlay.classList.remove('active');
-                    };
-                }
-            } else {
-                // Desktop behavior
-                sidebar.classList.toggle('hidden');
-                mainContent.classList.toggle('sidebar-hidden');
-            }
-        }
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
 
-        // Logout function
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        }
+function showError(message) {
+    alert(message);
+}
 
-        // Show error message
-        function showError(message) {
-            // Simple alert for now - could be enhanced with toast notifications
-            alert(message);
-        }
-
-        // Show success message
-        function showSuccess(message) {
-            // Simple alert for now - could be enhanced with toast notifications
-            console.log('✅', message);
-        }
-
-        console.log('✅ Daily Prompt page script loaded');
-    </script>
-    <script>
-let selectedEmotion = 'content'; // default
-
-document.addEventListener('DOMContentLoaded', function() {
-  const emotionButtons = document.querySelectorAll('.emotion-btn');
-  
-  emotionButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      // Remove selected class from all buttons
-      emotionButtons.forEach(btn => btn.classList.remove('selected'));
-      
-      // Add selected class to clicked button
-      this.classList.add('selected');
-      
-      // Store selected emotion
-      selectedEmotion = this.dataset.emotion;
-      
-      console.log('Selected emotion:', selectedEmotion);
-    });
-  });
-});
+console.log('✅ Daily Prompt page script loaded');
 </script>
+    
 </body>
 </html>
