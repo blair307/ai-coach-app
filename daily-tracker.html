@@ -862,21 +862,17 @@ function updateProgressStats() {
     console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
-// FINAL FIX: Completely isolated day completion calculation
 function calculateDayCompletion(date) {
     if (currentGoals.length === 0) return 0;
     
-    // CRITICAL: Create completely isolated date comparison
     const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0); // Normalize to midnight
+    targetDate.setHours(0, 0, 0, 0);
     
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to midnight
+    today.setHours(0, 0, 0, 0);
     
     const isExactlyToday = targetDate.getTime() === today.getTime();
     const targetDateString = targetDate.toISOString().split('T')[0];
-    
-    console.log(`📊 FINAL FIX - Calculating for date: ${targetDateString}, isExactlyToday: ${isExactlyToday}`);
     
     let completedOnThisSpecificDate = 0;
     
@@ -884,18 +880,16 @@ function calculateDayCompletion(date) {
         let isCompletedOnThisDate = false;
         
         if (isExactlyToday) {
-            // FOR TODAY ONLY: Use the same logic as isGoalCompletedToday()
+            // FOR TODAY ONLY: Use current completion status
             isCompletedOnThisDate = isGoalCompletedToday(goal);
-            console.log(`📊 TODAY FINAL - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         } else {
             // FOR OTHER DAYS: NEVER use today's completion status
-            // Only check historical completion history for exact date match
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
                     if (!entry.date) return false;
                     
                     const entryDate = new Date(entry.date);
-                    entryDate.setHours(0, 0, 0, 0); // Normalize to midnight
+                    entryDate.setHours(0, 0, 0, 0);
                     const entryDateString = entryDate.toISOString().split('T')[0];
                     
                     return entryDateString === targetDateString;
@@ -905,19 +899,6 @@ function calculateDayCompletion(date) {
                     isCompletedOnThisDate = true;
                 }
             }
-            
-            // FALLBACK: Check if lastCompletedDate matches this exact date (but not today)
-            if (!isCompletedOnThisDate && goal.lastCompletedDate) {
-                const lastCompletedDate = new Date(goal.lastCompletedDate);
-                lastCompletedDate.setHours(0, 0, 0, 0);
-                const lastCompletedString = lastCompletedDate.toISOString().split('T')[0];
-                
-                if (lastCompletedString === targetDateString) {
-                    isCompletedOnThisDate = true;
-                }
-            }
-            
-            console.log(`📊 HISTORICAL FINAL ${targetDateString} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -926,8 +907,6 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
-    console.log(`📊 FINAL RESULT for ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
-    
     return percentage;
 }
 
