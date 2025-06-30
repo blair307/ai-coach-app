@@ -1122,7 +1122,7 @@ app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
     if (!goal) return res.status(404).json({ message: 'Goal not found' });
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0,0,0,0);
 
     if (!goal.completionHistory) {
       goal.completionHistory = [];
@@ -1130,7 +1130,7 @@ app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
 
     const todayEntry = goal.completionHistory.find(entry => {
       const entryDate = new Date(entry.date);
-      entryDate.setHours(0, 0, 0, 0);
+      entryDate.setHours(0,0,0,0);
       return entryDate.getTime() === today.getTime();
     });
 
@@ -1148,6 +1148,7 @@ app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Failed to complete goal' });
   }
 });
+
 
 
 app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
