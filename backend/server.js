@@ -2407,6 +2407,71 @@ app.post('/api/temp-seed', async (req, res) => {
   }
 });
 
+// Temporary no-auth seed endpoint - ADD THIS
+app.post('/api/temp-seed', async (req, res) => {
+  try {
+    console.log('🌱 Temp seed endpoint called');
+    
+    const existingCount = await DailyPrompt.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ 
+        message: `${existingCount} prompts already exist`, 
+        skipped: true 
+      });
+    }
+
+    const prompts = [
+      {
+        prompt: "What's one decision you made today that you're proud of, and why?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["decision-making", "self-awareness"]
+      },
+      {
+        prompt: "Describe a moment this week when you felt completely in your element.",
+        category: "reflection", 
+        difficulty: "medium",
+        tags: ["flow-state", "strengths"]
+      },
+      {
+        prompt: "What's something you learned about yourself through a recent challenge?",
+        category: "reflection",
+        difficulty: "medium", 
+        tags: ["resilience", "growth"]
+      },
+      {
+        prompt: "How has your definition of success evolved over the past year?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["success", "values"]
+      },
+      {
+        prompt: "What's one goal you're working toward that scares and excites you equally?",
+        category: "goal-setting",
+        difficulty: "medium",
+        tags: ["goals", "fear", "excitement"]
+      }
+    ];
+
+    console.log(`📝 Attempting to insert ${prompts.length} prompts`);
+    const savedPrompts = await DailyPrompt.insertMany(prompts);
+    console.log(`✅ Successfully saved ${savedPrompts.length} prompts`);
+    
+    res.json({
+      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
+      count: savedPrompts.length,
+      success: true
+    });
+
+  } catch (error) {
+    console.error('❌ Temp seed error:', error);
+    res.status(500).json({ 
+      error: 'Failed to seed prompts',
+      details: error.message 
+    });
+  }
+});
+
 // Admin endpoint to seed initial prompts
 app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
   try {
