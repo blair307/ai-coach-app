@@ -433,57 +433,6 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
 });
 
-// SEED PROMPTS ENDPOINT - TEMP
-app.post('/test-seed', async (req, res) => {
-  try {
-    console.log('🌱 Test seed endpoint called');
-    
-    const existingCount = await DailyPrompt.countDocuments();
-    if (existingCount > 0) {
-      return res.json({ 
-        message: `${existingCount} prompts already exist`, 
-        skipped: true 
-      });
-    }
-
-    const prompts = [
-      {
-        prompt: "What's one decision you made today that you're proud of, and why?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["decision-making", "self-awareness"]
-      },
-      {
-        prompt: "Describe a moment this week when you felt completely in your element.",
-        category: "reflection", 
-        difficulty: "medium",
-        tags: ["flow-state", "strengths"]
-      },
-      {
-        prompt: "What's something you learned about yourself through a recent challenge?",
-        category: "reflection",
-        difficulty: "medium", 
-        tags: ["resilience", "growth"]
-      }
-    ];
-
-    const savedPrompts = await DailyPrompt.insertMany(prompts);
-    
-    res.json({
-      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
-      count: savedPrompts.length,
-      success: true
-    });
-
-  } catch (error) {
-    console.error('❌ Seed error:', error);
-    res.status(500).json({ 
-      error: 'Failed to seed prompts',
-      details: error.message 
-    });
-  }
-});
-
 // Register new user with payment
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -905,7 +854,6 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
         subscription: user.subscription,
         streakData: user.streakData,
         createdAt: user.createdAt,
-        // ADD THESE NEW FIELDS FOR SETTINGS:
         company: user.company,
         timezone: user.timezone,
         profilePhoto: user.profilePhoto
@@ -917,7 +865,7 @@ app.get('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Update user profile (when you click "Save Changes")
+// Update user profile
 app.put('/api/user/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -927,7 +875,6 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'First name, last name, and email are required' });
     }
     
-    // Check if email is already taken
     const existingUser = await User.findOne({ 
       email: email.toLowerCase(), 
       _id: { $ne: userId } 
@@ -1076,7 +1023,7 @@ app.post('/api/community/send', authenticateToken, async (req, res) => {
       username,
       userId,
       message,
-      content: message, // For compatibility
+      content: message,
       timestamp: new Date()
     });
     
@@ -1196,7 +1143,6 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Notifications unread count with reply support
 app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
   try {
     const totalCount = await Notification.countDocuments({ 
@@ -1269,7 +1215,6 @@ app.post('/api/rooms', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Get messages with reply support and deleted message handling
 app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const messages = await Message.find({ roomId: req.params.id })
@@ -1278,16 +1223,13 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       
     console.log(`📨 Retrieved ${messages.length} messages for room ${req.params.id}`);
     
-  // Process messages to ensure proper reply structure and handle deleted messages
     const processedMessages = await Promise.all(messages.map(async (message) => {
       const messageObj = message.toObject();
       
-      // Ensure backward compatibility
       if (!messageObj.content && messageObj.message) {
         messageObj.content = messageObj.message;
       }
       
-      // Handle deleted messages
       if (messageObj.deleted) {
         messageObj.content = '[Message deleted by user]';
         messageObj.message = '[Message deleted by user]';
@@ -1297,7 +1239,6 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         }
       }
       
-      // POPULATE PROFILE PHOTO if not already present
       if (!messageObj.profilePhoto && messageObj.userId) {
         try {
           const user = await User.findById(messageObj.userId).select('profilePhoto');
@@ -1319,25 +1260,22 @@ app.get('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Send message with reply notifications
 app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
     const username = user ? `${user.firstName} ${user.lastName}` : 'User';
     
-    // Create the message
     const messageData = {
       roomId: req.params.id,
       userId: req.user.userId,
       username: username,
       avatar: req.body.avatar || user?.firstName?.charAt(0).toUpperCase() || 'U',
       content: req.body.content,
-      message: req.body.content, // For compatibility
+      message: req.body.content,
       avatarColor: req.body.avatarColor || '#6366f1',
-        profilePhoto: user?.profilePhoto || null
+      profilePhoto: user?.profilePhoto || null
     };
 
-    // Handle reply data if this is a reply
     if (req.body.replyTo) {
       messageData.replyTo = {
         messageId: req.body.replyTo.messageId,
@@ -1352,12 +1290,10 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         content: req.body.content.substring(0, 50) + '...'
       });
 
-      // CREATE NOTIFICATION for the person being replied to
       try {
-        // Find the user being replied to
         const repliedToUser = await User.findOne({
           $or: [
-            { _id: req.body.replyTo.userId }, // Try by ID first
+            { _id: req.body.replyTo.userId },
             { 
               $expr: {
                 $eq: [
@@ -1365,24 +1301,22 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
                   req.body.replyTo.username
                 ]
               }
-            } // Fallback to name matching
+            }
           ]
         });
 
         if (repliedToUser && repliedToUser._id.toString() !== req.user.userId) {
-          // Don't notify yourself
           const notification = new Notification({
             userId: repliedToUser._id,
             type: 'community',
             title: `💬 ${username} replied to your message`,
             content: `"${req.body.content.length > 100 ? req.body.content.substring(0, 100) + '...' : req.body.content}"`,
-            isReply: true, // Mark as reply notification
-            priority: 'high', // High priority for replies
+            isReply: true,
+            priority: 'high',
             createdAt: new Date()
           });
 
           await notification.save();
-          
           console.log('🔔 Reply notification created for:', repliedToUser.email);
         } else if (!repliedToUser) {
           console.log('⚠️ Could not find user to notify for reply:', req.body.replyTo.username);
@@ -1391,7 +1325,6 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
         }
       } catch (notificationError) {
         console.error('❌ Error creating reply notification:', notificationError);
-        // Don't fail the message send if notification fails
       }
     }
 
@@ -1411,7 +1344,6 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
   }
 });
 
-// ENHANCED: Delete message endpoint - WORKING VERSION
 app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
   try {
     const messageId = req.params.id;
@@ -1419,7 +1351,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     
     console.log('🗑️ DELETE REQUEST:', { messageId, userId, timestamp: new Date().toISOString() });
     
-    // Validate messageId format
     if (!mongoose.Types.ObjectId.isValid(messageId)) {
       console.log('❌ Invalid message ID format');
       return res.status(400).json({ 
@@ -1428,7 +1359,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       });
     }
     
-    // Find the message
     const message = await Message.findById(messageId);
     
     if (!message) {
@@ -1446,7 +1376,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       content: message.content?.substring(0, 30) + '...'
     });
     
-    // Check if the user owns this message
     if (message.userId !== userId) {
       console.log('❌ Permission denied. Message owner:', message.userId, 'Requester:', userId);
       return res.status(403).json({ 
@@ -1455,7 +1384,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
       });
     }
     
-    // Check if this message has replies
     const repliesCount = await Message.countDocuments({
       'replyTo.messageId': messageId
     });
@@ -1465,12 +1393,10 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
     if (repliesCount > 0) {
       console.log(`⚠️ Message has ${repliesCount} replies. Converting to deleted placeholder.`);
       
-      // Instead of deleting, convert to a placeholder
       message.content = '[Message deleted by user]';
-      message.message = '[Message deleted by user]'; // For backward compatibility
+      message.message = '[Message deleted by user]';
       message.deleted = true;
       message.deletedAt = new Date();
-      // Keep username for threading but mark as deleted
       if (!message.username.includes('(deleted)')) {
         message.username = message.username + ' (deleted)';
       }
@@ -1486,7 +1412,6 @@ app.delete('/api/messages/:id', authenticateToken, async (req, res) => {
         messageId: messageId
       });
     } else {
-      // No replies - safe to completely delete
       await Message.findByIdAndDelete(messageId);
       
       console.log('✅ Message completely deleted from database');
@@ -1524,16 +1449,13 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Room not found or you do not have permission to delete it' });
     }
     
-    // Delete all messages in the room
     await Message.deleteMany({ roomId: req.params.id });
     
-    // Delete related notifications
     await Notification.deleteMany({ 
       type: 'community',
       title: { $regex: room.name, $options: 'i' }
     });
     
-    // Delete the room
     await Room.findByIdAndDelete(req.params.id);
     
     console.log(`🗑️ Room "${room.name}" and related data deleted`);
@@ -1549,7 +1471,6 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
 // LIFE GOALS API ROUTES
 // ==========================================
 
-// Get all life goals for a user
 app.get('/api/life-goals', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -1561,7 +1482,6 @@ app.get('/api/life-goals', authenticateToken, async (req, res) => {
   }
 });
 
-// Create a new life goal
 app.post('/api/life-goals', authenticateToken, async (req, res) => {
   try {
     const { area, bigGoal, dailyAction } = req.body;
@@ -1587,7 +1507,6 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
 
     await lifeGoal.save();
 
-    // Create a notification for the user
     try {
       const notification = new Notification({
         userId,
@@ -1872,10 +1791,9 @@ async function migrateGoalsToHistory() {
 }
 
 // ==========================================
-// INSIGHTS API ROUTES - NEW
+// INSIGHTS API ROUTES
 // ==========================================
 
-// Get user insights
 app.get('/api/insights', authenticateToken, async (req, res) => {
   try {
     const { limit = 5, type } = req.query;
@@ -1896,7 +1814,6 @@ app.get('/api/insights', authenticateToken, async (req, res) => {
   }
 });
 
-// Mark insight as read
 app.put('/api/insights/:id/read', authenticateToken, async (req, res) => {
   try {
     await Insight.findOneAndUpdate(
@@ -1910,7 +1827,6 @@ app.put('/api/insights/:id/read', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete insight
 app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
   try {
     await Insight.findOneAndDelete({ _id: req.params.id, userId: req.user.userId });
@@ -1921,41 +1837,10 @@ app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Enhanced health check with reply system status
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    services: {
-      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
-      openai: openai ? 'available' : 'unavailable',
-      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
-      email: transporter ? 'configured' : 'not configured'
-    },
-    features: {
-      replySystem: 'enabled',
-      replyNotifications: 'enabled',
-      communityRooms: 'enabled',
-      lifeGoals: 'enabled',
-      messageDeleting: 'enabled'
-    }
-  });
-});
-
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { error: error.message })
-  });
-});
-
 // ==========================================
-// SETTINGS API ROUTES - STEP 2 ADD THESE
+// SETTINGS API ROUTES
 // ==========================================
 
-// Get user settings (what the settings page calls first)
 app.get('/api/user/settings', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -1981,7 +1866,6 @@ app.get('/api/user/settings', authenticateToken, async (req, res) => {
   }
 });
 
-// Change password (when you update password)
 app.put('/api/user/change-password', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2000,13 +1884,11 @@ app.put('/api/user/change-password', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
     
-    // Check if current password is correct
     const isValidPassword = await bcrypt.compare(currentPassword, user.password);
     if (!isValidPassword) {
       return res.status(400).json({ error: 'Current password is incorrect' });
     }
     
-    // Hash and save new password
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     
     await User.findByIdAndUpdate(userId, {
@@ -2020,7 +1902,6 @@ app.put('/api/user/change-password', authenticateToken, async (req, res) => {
   }
 });
 
-// Upload profile photo (when you upload a picture)
 app.put('/api/user/photo', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2030,12 +1911,10 @@ app.put('/api/user/photo', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Profile photo data is required' });
     }
     
-    // Check if it's a valid image
     if (!profilePhoto.startsWith('data:image/')) {
       return res.status(400).json({ error: 'Invalid image format' });
     }
     
-    // Check file size (limit to 5MB)
     if (profilePhoto.length > 7000000) {
       return res.status(400).json({ error: 'Image file is too large. Please use an image smaller than 5MB.' });
     }
@@ -2054,7 +1933,6 @@ app.put('/api/user/photo', authenticateToken, async (req, res) => {
   }
 });
 
-// Remove profile photo (when you click "Remove Photo")
 app.delete('/api/user/photo', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2070,7 +1948,6 @@ app.delete('/api/user/photo', authenticateToken, async (req, res) => {
   }
 });
 
-// Clear chat history (when you click "Clear Chat History")
 app.delete('/api/user/chat-history', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2084,7 +1961,6 @@ app.delete('/api/user/chat-history', authenticateToken, async (req, res) => {
   }
 });
 
-// Export user data (when you click "Export Data")
 app.get('/api/user/export', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2134,7 +2010,6 @@ app.get('/api/user/export', authenticateToken, async (req, res) => {
   }
 });
 
-// Delete account (when you type "DELETE MY ACCOUNT")
 app.delete('/api/user/account', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2144,7 +2019,6 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Invalid confirmation text' });
     }
     
-    // Delete all user data
     await Promise.all([
       User.findByIdAndDelete(userId),
       Goal.deleteMany({ userId }),
@@ -2162,23 +2036,197 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
   }
 });
 
+// MANUAL SEED ENDPOINT - WORKING VERSION
+app.get('/api/manual-seed-prompts', authenticateToken, async (req, res) => {
+  try {
+    console.log('🌱 Manual seed called by user:', req.user.userId);
+    
+    const existingCount = await DailyPrompt.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ 
+        message: `${existingCount} prompts already exist`, 
+        skipped: true,
+        existingCount
+      });
+    }
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint not found' });
-});
+    const prompts = [
+      {
+        prompt: "What's one decision you made today that you're proud of, and why?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["decision-making", "self-awareness"]
+      },
+      {
+        prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["flow-state", "strengths"]
+      },
+      {
+        prompt: "What's something you learned about yourself through a recent challenge or setback?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["resilience", "growth"]
+      },
+      {
+        prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
+        category: "reflection",
+        difficulty: "hard",
+        tags: ["growth", "perspective"]
+      },
+      {
+        prompt: "What's one assumption you held about business that you've recently questioned or changed?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["assumptions", "learning"]
+      },
+      {
+        prompt: "Describe a time when you had to trust your gut instinct. What happened?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["intuition", "decision-making"]
+      },
+      {
+        prompt: "What's the most important lesson you've learned from a mentor or role model?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["mentorship", "learning"]
+      },
+      {
+        prompt: "When do you feel most creative and innovative? What conditions enable this state?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["creativity", "productivity"]
+      },
+      {
+        prompt: "What's one fear that you've overcome in your entrepreneurial journey?",
+        category: "reflection",
+        difficulty: "hard",
+        tags: ["fear", "courage"]
+      },
+      {
+        prompt: "How has your definition of success evolved over the past year?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["success", "values"]
+      },
+      {
+        prompt: "What's something you do daily that brings you joy, even during stressful times?",
+        category: "mindfulness",
+        difficulty: "easy",
+        tags: ["joy", "stress-management"]
+      },
+      {
+        prompt: "What's one way you've learned to manage overwhelm or stress in your business?",
+        category: "mindfulness",
+        difficulty: "medium",
+        tags: ["stress-management", "coping"]
+      },
+      {
+        prompt: "How do you typically recharge when you're feeling mentally exhausted?",
+        category: "mindfulness",
+        difficulty: "easy",
+        tags: ["recovery", "energy"]
+      },
+      {
+        prompt: "What's one goal you're working toward that scares and excites you equally?",
+        category: "goal-setting",
+        difficulty: "medium",
+        tags: ["goals", "fear", "excitement"]
+      },
+      {
+        prompt: "If you could only accomplish one thing this quarter, what would it be and why?",
+        category: "goal-setting",
+        difficulty: "medium",
+        tags: ["priorities", "focus"]
+      },
+      {
+        prompt: "What's one habit you want to build that would have the biggest impact on your business?",
+        category: "goal-setting",
+        difficulty: "easy",
+        tags: ["habits", "impact"]
+      },
+      {
+        prompt: "What's one quality you admire in other leaders that you'd like to develop in yourself?",
+        category: "leadership",
+        difficulty: "medium",
+        tags: ["leadership", "development"]
+      },
+      {
+        prompt: "How do you handle disagreements or conflicts within your team?",
+        category: "leadership",
+        difficulty: "hard",
+        tags: ["conflict", "resolution"]
+      },
+      {
+        prompt: "What's one way you've grown as a leader through a difficult situation?",
+        category: "leadership",
+        difficulty: "medium",
+        tags: ["growth", "challenges"]
+      },
+      {
+        prompt: "How do you celebrate wins and acknowledge your team's contributions?",
+        category: "leadership",
+        difficulty: "easy",
+        tags: ["recognition", "celebration"]
+      },
+      {
+        prompt: "What's one assumption about your customers or market that you recently tested?",
+        category: "growth",
+        difficulty: "medium",
+        tags: ["assumptions", "testing"]
+      },
+      {
+        prompt: "How do you stay curious and open to new ideas in your field?",
+        category: "growth",
+        difficulty: "easy",
+        tags: ["curiosity", "learning"]
+      },
+      {
+        prompt: "What's one thing about your entrepreneurial journey that you're genuinely grateful for today?",
+        category: "gratitude",
+        difficulty: "easy",
+        tags: ["gratitude", "appreciation"]
+      },
+      {
+        prompt: "What's one challenge you're currently facing that's actually helping you grow?",
+        category: "gratitude",
+        difficulty: "medium",
+        tags: ["challenges", "growth"]
+      },
+      {
+        prompt: "What's the most creative solution you've come up with to solve a business problem?",
+        category: "challenge",
+        difficulty: "medium",
+        tags: ["creativity", "problem-solving"]
+      }
+    ];
 
-// Initialize default rooms after MongoDB connection
-mongoose.connection.once('open', () => {
-  createDefaultRooms();
-  migrateGoalsToHistory();
+    console.log(`📝 Attempting to insert ${prompts.length} prompts`);
+    const savedPrompts = await DailyPrompt.insertMany(prompts);
+    console.log(`✅ Successfully saved ${savedPrompts.length} prompts`);
+    
+    res.json({
+      message: `Successfully seeded ${savedPrompts.length} daily prompts!`,
+      count: savedPrompts.length,
+      success: true,
+      prompts: savedPrompts.slice(0, 3).map(p => p.prompt)
+    });
+
+  } catch (error) {
+    console.error('❌ Manual seed error:', error);
+    res.status(500).json({ 
+      error: 'Failed to seed prompts',
+      details: error.message 
+    });
+  }
 });
 
 // ==========================================
 // DAILY PROMPTS API ROUTES
 // ==========================================
 
-// Get today's prompt
 app.get('/api/daily-prompt/today', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2231,7 +2279,6 @@ app.get('/api/daily-prompt/today', authenticateToken, async (req, res) => {
   }
 });
 
-// Submit response to daily prompt
 app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2311,7 +2358,6 @@ app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's prompt history
 app.get('/api/daily-prompt/history', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2342,7 +2388,6 @@ app.get('/api/daily-prompt/history', authenticateToken, async (req, res) => {
   }
 });
 
-// Get user stats
 app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -2419,871 +2464,54 @@ app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
   }
 });
 
-// Temporary no-auth seed endpoint
-app.post('/api/seed-now', async (req, res) => {
-  try {
-    const existingCount = await DailyPrompt.countDocuments();
-    if (existingCount > 0) {
-      return res.json({ message: `${existingCount} prompts already exist`, skipped: true });
+// Enhanced health check
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    services: {
+      mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+      openai: openai ? 'available' : 'unavailable',
+      stripe: process.env.STRIPE_SECRET_KEY ? 'configured' : 'not configured',
+      email: transporter ? 'configured' : 'not configured'
+    },
+    features: {
+      replySystem: 'enabled',
+      replyNotifications: 'enabled',
+      communityRooms: 'enabled',
+      lifeGoals: 'enabled',
+      messageDeleting: 'enabled',
+      manualSeedEndpoint: 'enabled'
     }
-
-    // Just add a few test prompts first
-    const prompts = [
-      {
-        prompt: "What's one decision you made today that you're proud of, and why?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["decision-making", "self-awareness"]
-      },
-      {
-        prompt: "Describe a moment this week when you felt completely in your element.",
-        category: "reflection", 
-        difficulty: "medium",
-        tags: ["flow-state", "strengths"]
-      },
-      {
-        prompt: "What's something you learned about yourself through a recent challenge?",
-        category: "reflection",
-        difficulty: "medium", 
-        tags: ["resilience", "growth"]
-      }
-    ];
-
-    const savedPrompts = await DailyPrompt.insertMany(prompts);
-    res.json({ message: `Seeded ${savedPrompts.length} prompts successfully!`, count: savedPrompts.length });
-  } catch (error) {
-    console.error('Seed error:', error);
-    res.status(500).json({ error: error.message });
-  }
+  });
 });
 
-// Temporary no-auth seed endpoint - ADD THIS
-app.post('/api/temp-seed', async (req, res) => {
-  try {
-    console.log('🌱 Temp seed endpoint called');
-    
-    const existingCount = await DailyPrompt.countDocuments();
-    if (existingCount > 0) {
-      return res.json({ 
-        message: `${existingCount} prompts already exist`, 
-        skipped: true 
-      });
-    }
-
-    const prompts = [
-      {
-        prompt: "What's one decision you made today that you're proud of, and why?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["decision-making", "self-awareness"]
-      },
-      {
-        prompt: "Describe a moment this week when you felt completely in your element.",
-        category: "reflection", 
-        difficulty: "medium",
-        tags: ["flow-state", "strengths"]
-      },
-      {
-        prompt: "What's something you learned about yourself through a recent challenge?",
-        category: "reflection",
-        difficulty: "medium", 
-        tags: ["resilience", "growth"]
-      },
-      {
-        prompt: "How has your definition of success evolved over the past year?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["success", "values"]
-      },
-      {
-        prompt: "What's one goal you're working toward that scares and excites you equally?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["goals", "fear", "excitement"]
-      }
-    ];
-
-    console.log(`📝 Attempting to insert ${prompts.length} prompts`);
-    const savedPrompts = await DailyPrompt.insertMany(prompts);
-    console.log(`✅ Successfully saved ${savedPrompts.length} prompts`);
-    
-    res.json({
-      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
-      count: savedPrompts.length,
-      success: true
-    });
-
-  } catch (error) {
-    console.error('❌ Temp seed error:', error);
-    res.status(500).json({ 
-      error: 'Failed to seed prompts',
-      details: error.message 
-    });
-  }
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error('Unhandled error:', error);
+  res.status(500).json({
+    message: 'Internal server error',
+    ...(process.env.NODE_ENV === 'development' && { error: error.message })
+  });
 });
 
-// Admin endpoint to seed initial prompts
-app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
-  try {
-    const existingCount = await DailyPrompt.countDocuments();
-    if (existingCount > 0) {
-      return res.json({ message: `${existingCount} prompts already exist`, skipped: true });
-    }
-
-    const prompts = [
-      {
-        prompt: "What's one decision you made today that you're proud of, and why?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["decision-making", "self-awareness"]
-      },
-      {
-        prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["flow-state", "strengths"]
-      },
-      {
-        prompt: "What's something you learned about yourself through a recent challenge or setback?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["resilience", "growth"]
-      },
-      {
-        prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["growth", "perspective"]
-      },
-      {
-        prompt: "What's one assumption you held about business that you've recently questioned or changed?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["assumptions", "learning"]
-      },
-      {
-        prompt: "Describe a time when you had to trust your gut instinct. What happened?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["intuition", "decision-making"]
-      },
-      {
-        prompt: "What's the most important lesson you've learned from a mentor or role model?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["mentorship", "learning"]
-      },
-      {
-        prompt: "When do you feel most creative and innovative? What conditions enable this state?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["creativity", "productivity"]
-      },
-      {
-        prompt: "What's one fear that you've overcome in your entrepreneurial journey?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["fear", "courage"]
-      },
-      {
-        prompt: "How has your definition of success evolved over the past year?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["success", "values"]
-      },
-      {
-        prompt: "What's something you do daily that brings you joy, even during stressful times?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["joy", "stress-management"]
-      },
-      {
-        prompt: "Describe your ideal morning routine. How close is your current routine to this ideal?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["routine", "self-care"]
-      },
-      {
-        prompt: "What's one way you've learned to manage overwhelm or stress in your business?",
-        category: "mindfulness",
-        difficulty: "medium",
-        tags: ["stress-management", "coping"]
-      },
-      {
-        prompt: "How do you typically recharge when you're feeling mentally exhausted?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["recovery", "energy"]
-      },
-      {
-        prompt: "What's one mindful practice that has made a difference in your daily life?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["mindfulness", "habits"]
-      },
-      {
-        prompt: "Describe a moment this week when you were fully present. What did you notice?",
-        category: "mindfulness",
-        difficulty: "medium",
-        tags: ["presence", "awareness"]
-      },
-      {
-        prompt: "What's your relationship with failure, and how has it changed over time?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["failure", "resilience"]
-      },
-      {
-        prompt: "What's one piece of advice you wish you could give to every new entrepreneur?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["advice", "wisdom"]
-      },
-      {
-        prompt: "How do you define and maintain work-life balance in your current situation?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["balance", "boundaries"]
-      },
-      {
-        prompt: "What's something about your industry that excites you most right now?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["passion", "industry"]
-      },
-      {
-        prompt: "Describe a recent 'aha' moment that shifted your perspective on something important.",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["insight", "breakthrough"]
-      },
-      {
-        prompt: "What's one way you've surprised yourself in your entrepreneurial journey?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["growth", "surprise"]
-      },
-      {
-        prompt: "How do you handle uncertainty and ambiguity in your business decisions?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["uncertainty", "decision-making"]
-      },
-      {
-        prompt: "What's one tradition or ritual that keeps you grounded during busy periods?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["grounding", "ritual"]
-      },
-      {
-        prompt: "What's the most valuable feedback you've received recently, and how did you apply it?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["feedback", "improvement"]
-      },
-      {
-        prompt: "What's one goal you're working toward that scares and excites you equally?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["goals", "fear", "excitement"]
-      },
-      {
-        prompt: "If you could only accomplish one thing this quarter, what would it be and why?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["priorities", "focus"]
-      },
-      {
-        prompt: "What's one habit you want to build that would have the biggest impact on your business?",
-        category: "goal-setting",
-        difficulty: "easy",
-        tags: ["habits", "impact"]
-      },
-      {
-        prompt: "Describe your vision for your business five years from now. What does success look like?",
-        category: "goal-setting",
-        difficulty: "hard",
-        tags: ["vision", "long-term"]
-      },
-      {
-        prompt: "What's one skill you want to develop this year, and what's your plan to learn it?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["skills", "learning"]
-      },
-      {
-        prompt: "What's the biggest obstacle standing between you and your next major milestone?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["obstacles", "planning"]
-      },
-      {
-        prompt: "How do you measure progress on goals that don't have obvious metrics?",
-        category: "goal-setting",
-        difficulty: "hard",
-        tags: ["measurement", "progress"]
-      },
-      {
-        prompt: "What's one area of your business that you've been avoiding but know you need to address?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["avoidance", "priorities"]
-      },
-      {
-        prompt: "If you had unlimited resources for the next month, what would you focus on?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["resources", "priorities"]
-      },
-      {
-        prompt: "What's one system or process you could implement to make your work more efficient?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["efficiency", "systems"]
-      },
-      {
-        prompt: "What's your process for breaking down overwhelming projects into manageable steps?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["planning", "overwhelm"]
-      },
-      {
-        prompt: "What's one thing you could stop doing that would free up time for more important work?",
-        category: "goal-setting",
-        difficulty: "easy",
-        tags: ["elimination", "priorities"]
-      },
-      {
-        prompt: "How do you decide which opportunities to pursue and which to pass on?",
-        category: "goal-setting",
-        difficulty: "hard",
-        tags: ["opportunities", "decision-making"]
-      },
-      {
-        prompt: "What's one partnership or collaboration that could accelerate your progress?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["partnerships", "collaboration"]
-      },
-      {
-        prompt: "What's your strategy for staying motivated when progress feels slow?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["motivation", "persistence"]
-      },
-      {
-        prompt: "What's one area where you need to invest more time or resources to reach your goals?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["investment", "resources"]
-      },
-      {
-        prompt: "How do you balance long-term strategic thinking with day-to-day execution?",
-        category: "goal-setting",
-        difficulty: "hard",
-        tags: ["strategy", "execution"]
-      },
-      {
-        prompt: "What's one goal you achieved that taught you the most about yourself?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["achievement", "self-knowledge"]
-      },
-      {
-        prompt: "What's your biggest 'what if' scenario, and how are you preparing for it?",
-        category: "goal-setting",
-        difficulty: "hard",
-        tags: ["scenarios", "preparation"]
-      },
-      {
-        prompt: "What's one small step you could take today toward a larger goal?",
-        category: "goal-setting",
-        difficulty: "easy",
-        tags: ["small-steps", "action"]
-      },
-      {
-        prompt: "What's one quality you admire in other leaders that you'd like to develop in yourself?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["leadership", "development"]
-      },
-      {
-        prompt: "How do you create psychological safety for your team or collaborators?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["safety", "team-culture"]
-      },
-      {
-        prompt: "What's the most important thing you've learned about giving effective feedback?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["feedback", "communication"]
-      },
-      {
-        prompt: "How do you handle disagreements or conflicts within your team?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["conflict", "resolution"]
-      },
-      {
-        prompt: "What's one way you've grown as a leader through a difficult situation?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["growth", "challenges"]
-      },
-      {
-        prompt: "How do you motivate others when you're feeling unmotivated yourself?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["motivation", "leadership"]
-      },
-      {
-        prompt: "What's your approach to delegating tasks and responsibilities?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["delegation", "trust"]
-      },
-      {
-        prompt: "How do you celebrate wins and acknowledge your team's contributions?",
-        category: "leadership",
-        difficulty: "easy",
-        tags: ["recognition", "celebration"]
-      },
-      {
-        prompt: "What's one leadership mistake you made and what did you learn from it?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["mistakes", "learning"]
-      },
-      {
-        prompt: "How do you balance being supportive with holding people accountable?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["support", "accountability"]
-      },
-      {
-        prompt: "What's your philosophy on hiring and building a team?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["hiring", "team-building"]
-      },
-      {
-        prompt: "How do you communicate your vision in a way that inspires others?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["vision", "inspiration"]
-      },
-      {
-        prompt: "What's one way you've learned to better understand your team members' perspectives?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["empathy", "understanding"]
-      },
-      {
-        prompt: "How do you model the behavior and values you want to see in your organization?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["modeling", "values"]
-      },
-      {
-        prompt: "What's your approach to developing others and helping them grow?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["development", "mentoring"]
-      },
-      {
-        prompt: "What's one assumption about your customers or market that you recently tested?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["assumptions", "testing"]
-      },
-      {
-        prompt: "How do you stay curious and open to new ideas in your field?",
-        category: "growth",
-        difficulty: "easy",
-        tags: ["curiosity", "learning"]
-      },
-      {
-        prompt: "What's one trend or change in your industry that you're watching closely?",
-        category: "growth",
-        difficulty: "easy",
-        tags: ["trends", "awareness"]
-      },
-      {
-        prompt: "Describe a time when you pivoted or changed direction. What led to that decision?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["pivot", "adaptation"]
-      },
-      {
-        prompt: "What's one experiment you're running or want to run in your business?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["experimentation", "testing"]
-      },
-      {
-        prompt: "How do you balance innovation with execution of proven strategies?",
-        category: "growth",
-        difficulty: "hard",
-        tags: ["innovation", "execution"]
-      },
-      {
-        prompt: "What's one way you've learned to better understand your customers' needs?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["customers", "needs"]
-      },
-      {
-        prompt: "What's the most counterintuitive thing you've learned about growing a business?",
-        category: "growth",
-        difficulty: "hard",
-        tags: ["counterintuitive", "insights"]
-      },
-      {
-        prompt: "How do you identify and prioritize growth opportunities?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["opportunities", "prioritization"]
-      },
-      {
-        prompt: "What's one way you've turned a constraint or limitation into an advantage?",
-        category: "growth",
-        difficulty: "hard",
-        tags: ["constraints", "creativity"]
-      },
-      {
-        prompt: "How do you measure the health and progress of your business beyond revenue?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["metrics", "health"]
-      },
-      {
-        prompt: "What's one area where you've had to unlearn something to make progress?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["unlearning", "progress"]
-      },
-      {
-        prompt: "How do you approach risk-taking in your business decisions?",
-        category: "growth",
-        difficulty: "hard",
-        tags: ["risk", "decisions"]
-      },
-      {
-        prompt: "What's one way you've improved your business based on customer feedback?",
-        category: "growth",
-        difficulty: "easy",
-        tags: ["feedback", "improvement"]
-      },
-      {
-        prompt: "What's the biggest opportunity you see in your industry right now?",
-        category: "growth",
-        difficulty: "medium",
-        tags: ["opportunity", "vision"]
-      },
-      {
-        prompt: "What's one thing about your entrepreneurial journey that you're genuinely grateful for today?",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["gratitude", "appreciation"]
-      },
-      {
-        prompt: "Who is someone who has supported your business journey, and how can you thank them?",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["support", "relationships"]
-      },
-      {
-        prompt: "What's one skill or strength you possess that you often take for granted?",
-        category: "gratitude",
-        difficulty: "medium",
-        tags: ["strengths", "self-appreciation"]
-      },
-      {
-        prompt: "Describe a recent moment when you felt proud of your progress, no matter how small.",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["progress", "pride"]
-      },
-      {
-        prompt: "What's one challenge you're currently facing that's actually helping you grow?",
-        category: "gratitude",
-        difficulty: "medium",
-        tags: ["challenges", "growth"]
-      },
-      {
-        prompt: "What's something about your current work environment or setup that you appreciate?",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["environment", "appreciation"]
-      },
-      {
-        prompt: "What's one resource, tool, or technology that has made your work significantly easier?",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["resources", "tools"]
-      },
-      {
-        prompt: "What's one mistake or failure you're now grateful for because of what it taught you?",
-        category: "gratitude",
-        difficulty: "medium",
-        tags: ["mistakes", "learning"]
-      },
-      {
-        prompt: "What's one aspect of your personality that serves you well in business?",
-        category: "gratitude",
-        difficulty: "medium",
-        tags: ["personality", "self-awareness"]
-      },
-      {
-        prompt: "What's one simple pleasure or small joy that you experienced today?",
-        category: "gratitude",
-        difficulty: "easy",
-        tags: ["joy", "simple-pleasures"]
-      },
-      {
-        prompt: "What's the most creative solution you've come up with to solve a business problem?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["creativity", "problem-solving"]
-      },
-      {
-        prompt: "Describe a time when you had to make a difficult decision with incomplete information.",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["decisions", "uncertainty"]
-      },
-      {
-        prompt: "What's one limitation you're currently working within, and how are you adapting?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["limitations", "adaptation"]
-      },
-      {
-        prompt: "How do you approach problems that seem to have no clear solution?",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["complex-problems", "approach"]
-      },
-      {
-        prompt: "What's one area where you've had to become more resilient this year?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["resilience", "growth"]
-      },
-      {
-        prompt: "What's the biggest 'impossible' thing you accomplished that once seemed out of reach?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["achievement", "possibility"]
-      },
-      {
-        prompt: "How do you maintain perspective during particularly stressful or overwhelming periods?",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["perspective", "stress"]
-      },
-      {
-        prompt: "What's one question you wish you had asked earlier in a difficult situation?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["questions", "hindsight"]
-      },
-      {
-        prompt: "How do you typically respond when your first solution to a problem doesn't work?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["persistence", "adaptation"]
-      },
-      {
-        prompt: "What's one way you've learned to better manage your energy during challenging times?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["energy", "management"]
-      },
-      {
-        prompt: "What's the most important thing you've learned about asking for help?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["help", "vulnerability"]
-      },
-      {
-        prompt: "How do you separate what you can control from what you can't in difficult situations?",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["control", "acceptance"]
-      },
-      {
-        prompt: "What's one way you've turned a weakness into a strength?",
-        category: "challenge",
-        difficulty: "medium",
-        tags: ["weakness", "transformation"]
-      },
-      {
-        prompt: "What's your process for learning from setbacks without dwelling on them?",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["setbacks", "learning"]
-      },
-      {
-        prompt: "What's one uncomfortable conversation you had that led to a breakthrough?",
-        category: "challenge",
-        difficulty: "hard",
-        tags: ["conversations", "breakthrough"]
-      }
-
-    ];
-
-    const savedPrompts = await DailyPrompt.insertMany(prompts);
-    
-    res.json({
-      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
-      count: savedPrompts.length
-    });
-
-} catch (error) {
-    console.error('Seed prompts error:', error);
-    res.status(500).json({ error: 'Failed to seed prompts' });
-  }
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Endpoint not found' });
 });
 
-// MANUAL SEED ENDPOINT - ADD THIS HERE
-app.get('/api/manual-seed-prompts', authenticateToken, async (req, res) => {
-  try {
-    console.log('🌱 Manual seed called by user:', req.user.userId);
-    
-    // Check if prompts already exist
-    const existingCount = await DailyPrompt.countDocuments();
-    if (existingCount > 0) {
-      return res.json({ 
-        message: `${existingCount} prompts already exist`, 
-        skipped: true,
-        existingCount
-      });
-    }
+// Initialize default rooms after MongoDB connection
+mongoose.connection.once('open', () => {
+  createDefaultRooms();
+  migrateGoalsToHistory();
+});
 
-    // Full set of 25 quality prompts
-    const prompts = [
-      {
-        prompt: "What's one decision you made today that you're proud of, and why?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["decision-making", "self-awareness"]
-      },
-      {
-        prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["flow-state", "strengths"]
-      },
-      {
-        prompt: "What's something you learned about yourself through a recent challenge or setback?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["resilience", "growth"]
-      },
-      {
-        prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["growth", "perspective"]
-      },
-      {
-        prompt: "What's one assumption you held about business that you've recently questioned or changed?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["assumptions", "learning"]
-      },
-      {
-        prompt: "Describe a time when you had to trust your gut instinct. What happened?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["intuition", "decision-making"]
-      },
-      {
-        prompt: "What's the most important lesson you've learned from a mentor or role model?",
-        category: "reflection",
-        difficulty: "easy",
-        tags: ["mentorship", "learning"]
-      },
-      {
-        prompt: "When do you feel most creative and innovative? What conditions enable this state?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["creativity", "productivity"]
-      },
-      {
-        prompt: "What's one fear that you've overcome in your entrepreneurial journey?",
-        category: "reflection",
-        difficulty: "hard",
-        tags: ["fear", "courage"]
-      },
-      {
-        prompt: "How has your definition of success evolved over the past year?",
-        category: "reflection",
-        difficulty: "medium",
-        tags: ["success", "values"]
-      },
-      {
-        prompt: "What's something you do daily that brings you joy, even during stressful times?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["joy", "stress-management"]
-      },
-      {
-        prompt: "What's one way you've learned to manage overwhelm or stress in your business?",
-        category: "mindfulness",
-        difficulty: "medium",
-        tags: ["stress-management", "coping"]
-      },
-      {
-        prompt: "How do you typically recharge when you're feeling mentally exhausted?",
-        category: "mindfulness",
-        difficulty: "easy",
-        tags: ["recovery", "energy"]
-      },
-      {
-        prompt: "What's one goal you're working toward that scares and excites you equally?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["goals", "fear", "excitement"]
-      },
-      {
-        prompt: "If you could only accomplish one thing this quarter, what would it be and why?",
-        category: "goal-setting",
-        difficulty: "medium",
-        tags: ["priorities", "focus"]
-      },
-      {
-        prompt: "What's one habit you want to build that would have the biggest impact on your business?",
-        category: "goal-setting",
-        difficulty: "easy",
-        tags: ["habits", "impact"]
-      },
-      {
-        prompt: "What's one quality you admire in other leaders that you'd like to develop in yourself?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["leadership", "development"]
-      },
-      {
-        prompt: "How do you handle disagreements or conflicts within your team?",
-        category: "leadership",
-        difficulty: "hard",
-        tags: ["conflict", "resolution"]
-      },
-      {
-        prompt: "What's one way you've grown as a leader through a difficult situation?",
-        category: "leadership",
-        difficulty: "medium",
-        tags: ["growth", "challenges"
-               
 // Run daily prompt notifications at 8:00 AM every day
 cron.schedule('0 5 * * *', async () => {
   console.log('🌅 Running daily prompt notifications...');
   await createDailyPromptNotification();
 }, {
-  timezone: "America/Chicago" // Change to your timezone
+  timezone: "America/Chicago"
 });
 
 console.log('⏰ Daily prompt scheduler started');
@@ -3299,4 +2527,5 @@ app.listen(PORT, () => {
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
   console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
+  console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
 });
