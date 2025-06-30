@@ -1678,6 +1678,36 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
+app.put('/api/life-goals/:id/incomplete', authenticateToken, async (req, res) => {
+  try {
+    const goal = await LifeGoal.findOne({ _id: req.params.id, userId: req.user.userId });
+    if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    let todayEntry = goal.completionHistory.find(entry => {
+      const entryDate = new Date(entry.date);
+      entryDate.setHours(0,0,0,0);
+      return entryDate.getTime() === today.getTime();
+    });
+
+    if (todayEntry) {
+      todayEntry.completed = false;
+    } else {
+      goal.completionHistory.push({ date: today, completed: false });
+    }
+
+    goal.lastCompletedDate = null; // you could also adjust this depending on your logic
+    await goal.save();
+
+    res.json(goal);
+  } catch (error) {
+    console.error('Error marking incomplete:', error);
+    res.status(500).json({ message: 'Failed to mark goal as incomplete' });
+  }
+});
+
 
 app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
