@@ -874,16 +874,19 @@ function calculateDayCompletion(date) {
     const isExactlyToday = targetDate.getTime() === today.getTime();
     const targetDateString = targetDate.toISOString().split('T')[0];
     
+    console.log(`📊 Calculating completion for ${targetDateString} (isToday: ${isExactlyToday})`);
+    
     let completedOnThisSpecificDate = 0;
     
     currentGoals.forEach((goal, index) => {
         let isCompletedOnThisDate = false;
         
         if (isExactlyToday) {
-            // FOR TODAY ONLY: Use current completion status
+            // FOR TODAY: Check current completion status
             isCompletedOnThisDate = isGoalCompletedToday(goal);
+            console.log(`📅 TODAY - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         } else {
-            // FOR OTHER DAYS: NEVER use today's completion status
+            // FOR HISTORICAL DAYS: Only check completion history
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
                     if (!entry.date) return false;
@@ -899,6 +902,7 @@ function calculateDayCompletion(date) {
                     isCompletedOnThisDate = true;
                 }
             }
+            console.log(`📅 HISTORICAL ${targetDateString} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -907,9 +911,11 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
+    console.log(`📊 FINAL for ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
+    
     return percentage;
 }
-
+        
 // FINAL FIX: Weekly progress with mobile-first responsive design
 function renderWeeklyProgress() {
     console.log('📊 === RENDERING WEEKLY PROGRESS (FINAL FIX) ===');
