@@ -178,7 +178,7 @@ const dailyPromptResponseSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   promptId: { type: mongoose.Schema.Types.ObjectId, ref: 'DailyPrompt', required: true },
   response: { type: String, required: true },
-  mood: { type: String, enum: ['excited', 'optimistic', 'neutral', 'contemplative', 'challenged', 'grateful'], default: 'neutral' },
+ mood: { type: String, enum: ['sad', 'angry', 'disappointed', 'happy', 'numb', 'lonely', 'hopeful', 'excited', 'content', 'afraid'], default: 'content' },
   wordCount: { type: Number },
   timeToComplete: { type: Number },
   createdAt: { type: Date, default: Date.now },
