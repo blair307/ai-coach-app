@@ -4120,19 +4120,9 @@ function forceSingleColorIcons() {
   });
 }
 
-
-/* For Font Awesome or similar */
-.fa, .fas, .far, .fab {
-  color: inherit;
-}
-
-/* Emotion Selector Styles */
 .emotion-selector {
   margin: 20px 0;
-  padding: 20px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  width: 100%;
 }
 
 .emotion-selector h3 {
@@ -4143,214 +4133,58 @@ function forceSingleColorIcons() {
 }
 
 .emotion-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 12px;
-  max-width: 600px;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  max-width: 100% !important;
 }
 
-.emotion-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 8px;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 80px;
-}
-
-.emotion-btn:hover {
-  border-color: #6366f1;
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-}
-
-.emotion-btn.selected {
-  border-color: #6366f1;
-  background: #eef2ff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-.emotion-emoji {
-  font-size: 24px;
-  margin-bottom: 6px;
-  display: block;
-}
-
-.emotion-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: #475569;
-  text-align: center;
-}
-
-    /* Updated styles for your emotion buttons */
-.emotion-btn {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 16px;
-  margin: 4px;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  font-family: inherit;
-  min-width: 90px;
-  text-align: center;
-}
-
-.emotion-btn:hover {
-  border-color: #6366f1;
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-}
-
-.emotion-btn.selected {
-  border-color: #6366f1;
-  background: #eef2ff;
-  color: #6366f1;
-  font-weight: 600;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-/* Container for the emotion buttons */
-.form-controls div:has(.emotion-btn) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 8px;
-}
-
-/* Also hide the share checkbox since you removed that feature */
-input[type="checkbox"] + label {
-  display: none !important;
-}
-.emotion-btn.selected .emotion-label {
-  color: #6366f1;
-  font-weight: 600;
-}
-
-/* Fix for emotion buttons layout */
-.emotion-btn {
+.mood-option {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
+  justify-content: center !important;
   padding: 12px 8px !important;
-  margin: 4px !important;
   background: white !important;
   border: 2px solid #e2e8f0 !important;
   border-radius: 8px !important;
   cursor: pointer !important;
   transition: all 0.2s ease !important;
-  font-size: 12px !important;
-  font-family: inherit !important;
-  width: auto !important;
-  min-width: 80px !important;
+  min-width: 90px !important;
   max-width: 120px !important;
+  flex: 0 0 auto !important;
   text-align: center !important;
-  position: relative !important;
-  z-index: 1 !important;
+  box-sizing: border-box !important;
 }
 
-.emotion-btn:hover {
+.mood-option:hover {
   border-color: #6366f1 !important;
   background: #f8fafc !important;
   transform: translateY(-2px) !important;
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
 }
 
-.emotion-btn.selected {
+.mood-option.selected {
   border-color: #6366f1 !important;
   background: #eef2ff !important;
-  color: #6366f1 !important;
-  font-weight: 600 !important;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
 }
 
-/* Container styling */
-.form-controls > div {
-  display: flex !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-  margin-top: 12px !important;
-  padding: 0 !important;
-  max-width: 100% !important;
-  overflow: visible !important;
-}
-
-/* Make sure the container doesn't overflow */
-.daily-prompt-container,
-.form-container {
-  overflow: visible !important;
-  position: relative !important;
-}
-
-.emotion-selector {
-  margin: 20px 0;
-}
-
-.emotion-selector h3 {
-  margin: 0 0 16px 0;
-  color: #334155;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.emotion-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: 12px;
-  max-width: 100%;
-}
-
-.mood-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 12px 8px;
-  background: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 70px;
-  text-align: center;
-}
-
-.mood-option:hover {
-  border-color: #6366f1;
-  background: #f8fafc;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
-}
-
-.mood-option.selected {
-  border-color: #6366f1;
-  background: #eef2ff;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
 .emotion-emoji {
-  font-size: 24px;
-  margin-bottom: 6px;
-  display: block;
+  font-size: 20px !important;
+  margin-bottom: 4px !important;
+  display: block !important;
+  line-height: 1 !important;
 }
 
 .emotion-label {
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+  line-height: 1.2 !important;
 }
 
 .mood-option.selected .emotion-label {
-  color: #6366f1;
-  font-weight: 600;
+  color: #6366f1 !important;
+  font-weight: 600 !important;
 }
