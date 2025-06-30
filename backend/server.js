@@ -1,33 +1,4 @@
-app.put('/api/life-goals/:id/complete', authenticateToken, async (req, res) => {
-  try {
-    const goal = await LifeGoal.findOne({ _id: req.params.id, userId: req.user.userId });
-    if (!goal) return res.status(404).json({ message: 'Goal not found' });
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
-
-    // Check if today is already in the completion history
-    let todayEntry = goal.completionHistory.find(entry => {
-      const entryDate = new Date(entry.date);
-      entryDate.setHours(0,0,0,0);
-      return entryDate.getTime() === today.getTime();
-    });
-
-    if (todayEntry) {
-      todayEntry.completed = true;
-    } else {
-      goal.completionHistory.push({ date: today, completed: true });
-    }
-
-    goal.lastCompletedDate = today;
-    await goal.save();
-
-    res.json(goal);
-  } catch (error) {
-    console.error('Error completing goal:', error);
-    res.status(500).json({ message: 'Failed to complete goal' });
-  }
-});
 // Complete AI Coach Backend Server with Enhanced Reply Notifications
 const express = require('express');
 const cors = require('cors');
