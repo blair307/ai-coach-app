@@ -1119,24 +1119,36 @@ app.post('/api/goals', authenticateToken, async (req, res) => {
 app.put('/api/goals/:id/complete', authenticateToken, async (req, res) => {
   try {
     const goal = await Goal.findOne({ _id: req.params.id, userId: req.user.userId });
-    if (!goal) {
-      return res.status(404).json({ error: 'Goal not found' });
+    if (!goal) return res.status(404).json({ message: 'Goal not found' });
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!goal.completionHistory) {
+      goal.completionHistory = [];
     }
-    
-    goal.completed = !goal.completed;
-    if (goal.completed) {
-      goal.lastCompleted = new Date();
-      goal.streak += 1;
+
+    const todayEntry = goal.completionHistory.find(entry => {
+      const entryDate = new Date(entry.date);
+      entryDate.setHours(0, 0, 0, 0);
+      return entryDate.getTime() === today.getTime();
+    });
+
+    if (todayEntry) {
+      todayEntry.completed = true;
     } else {
-      goal.streak = Math.max(0, goal.streak - 1);
+      goal.completionHistory.push({ date: today, completed: true });
     }
-    
+
     await goal.save();
     res.json(goal);
+
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update goal' });
+    console.error('Error completing goal:', error);
+    res.status(500).json({ message: 'Failed to complete goal' });
   }
 });
+
 
 app.delete('/api/goals/:id', authenticateToken, async (req, res) => {
   try {
