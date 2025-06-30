@@ -168,6 +168,45 @@ const messageSchema = new mongoose.Schema({
 
 const Message = mongoose.model('Message', messageSchema);
 
+// Daily Prompt Schema
+const dailyPromptSchema = new mongoose.Schema({
+  prompt: { type: String, required: true },
+  category: { type: String, enum: ['reflection', 'goal-setting', 'mindfulness', 'leadership', 'growth', 'gratitude', 'challenge'], default: 'reflection' },
+  difficulty: { type: String, enum: ['easy', 'medium', 'hard'], default: 'medium' },
+  tags: [String],
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  usageCount: { type: Number, default: 0 },
+  lastUsed: { type: Date }
+});
+
+const DailyPrompt = mongoose.model('DailyPrompt', dailyPromptSchema);
+
+// Daily Prompt Response Schema
+const dailyPromptResponseSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  promptId: { type: mongoose.Schema.Types.ObjectId, ref: 'DailyPrompt', required: true },
+  response: { type: String, required: true },
+  mood: { type: String, enum: ['excited', 'optimistic', 'neutral', 'contemplative', 'challenged', 'grateful'], default: 'neutral' },
+  isPublic: { type: Boolean, default: false },
+  wordCount: { type: Number },
+  timeToComplete: { type: Number },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const DailyPromptResponse = mongoose.model('DailyPromptResponse', dailyPromptResponseSchema);
+
+// Daily Prompt Assignment Schema
+const dailyPromptAssignmentSchema = new mongoose.Schema({
+  date: { type: Date, required: true, unique: true },
+  promptId: { type: mongoose.Schema.Types.ObjectId, ref: 'DailyPrompt', required: true },
+  responseCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const DailyPromptAssignment = mongoose.model('DailyPromptAssignment', dailyPromptAssignmentSchema);
+
 // Life Goals Schema
 const lifeGoalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -320,6 +359,34 @@ async function updateUserStreak(userId) {
   } catch (error) {
     console.error('Error updating streak:', error);
     return { currentStreak: 0, longestStreak: 0 };
+  }
+}
+
+// Helper function to get next prompt
+async function getNextPrompt() {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    const availablePrompts = await DailyPrompt.find({
+      isActive: true,
+      $or: [
+        { lastUsed: { $lt: thirtyDaysAgo } },
+        { lastUsed: { $exists: false } }
+      ]
+    }).sort({ usageCount: 1, lastUsed: 1 });
+
+    if (availablePrompts.length === 0) {
+      const fallbackPrompt = await DailyPrompt.findOne({ isActive: true })
+        .sort({ lastUsed: 1 });
+      return fallbackPrompt;
+    }
+
+    const randomIndex = Math.floor(Math.random() * availablePrompts.length);
+    return availablePrompts[randomIndex];
+
+  } catch (error) {
+    console.error('Error getting next prompt:', error);
+    return null;
   }
 }
 
@@ -1989,6 +2056,305 @@ mongoose.connection.once('open', () => {
   migrateGoalsToHistory();
 });
 
+// ==========================================
+// DAILY PROMPTS API ROUTES
+// ==========================================
+
+// Get today's prompt
+app.get('/api/daily-prompt/today', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    let assignment = await DailyPromptAssignment.findOne({ date: today })
+      .populate('promptId');
+
+    if (!assignment) {
+      const nextPrompt = await getNextPrompt();
+      if (!nextPrompt) {
+        return res.status(404).json({ error: 'No prompts available' });
+      }
+
+      assignment = new DailyPromptAssignment({
+        date: today,
+        promptId: nextPrompt._id
+      });
+      await assignment.save();
+      await assignment.populate('promptId');
+
+      nextPrompt.usageCount += 1;
+      nextPrompt.lastUsed = new Date();
+      await nextPrompt.save();
+    }
+
+    const userResponse = await DailyPromptResponse.findOne({
+      userId,
+      promptId: assignment.promptId._id,
+      createdAt: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    res.json({
+      prompt: assignment.promptId,
+      assignment: {
+        date: assignment.date,
+        responseCount: assignment.responseCount
+      },
+      userResponse: userResponse,
+      hasResponded: !!userResponse
+    });
+
+  } catch (error) {
+    console.error('Get today\'s prompt error:', error);
+    res.status(500).json({ error: 'Failed to get today\'s prompt' });
+  }
+});
+
+// Submit response to daily prompt
+app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { promptId, response, mood, isPublic, timeToComplete } = req.body;
+
+    if (!promptId || !response || !response.trim()) {
+      return res.status(400).json({ error: 'Prompt ID and response are required' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existingResponse = await DailyPromptResponse.findOne({
+      userId,
+      promptId,
+      createdAt: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    if (existingResponse) {
+      existingResponse.response = response.trim();
+      existingResponse.mood = mood || 'neutral';
+      existingResponse.isPublic = isPublic || false;
+      existingResponse.wordCount = response.trim().split(/\s+/).length;
+      existingResponse.timeToComplete = timeToComplete;
+      existingResponse.updatedAt = new Date();
+      await existingResponse.save();
+
+      res.json({
+        message: 'Response updated successfully',
+        response: existingResponse,
+        isUpdate: true
+      });
+    } else {
+      const newResponse = new DailyPromptResponse({
+        userId,
+        promptId,
+        response: response.trim(),
+        mood: mood || 'neutral',
+        isPublic: isPublic || false,
+        wordCount: response.trim().split(/\s+/).length,
+        timeToComplete: timeToComplete
+      });
+
+      await newResponse.save();
+
+      await DailyPromptAssignment.findOneAndUpdate(
+        { date: today, promptId },
+        { $inc: { responseCount: 1 } }
+      );
+
+      try {
+        const notification = new Notification({
+          userId,
+          type: 'system',
+          title: '✅ Daily Prompt Completed!',
+          content: `Great job reflecting today! You've completed your daily prompt with a ${newResponse.wordCount}-word response.`,
+          priority: 'normal'
+        });
+        await notification.save();
+      } catch (notifError) {
+        console.error('Error creating daily prompt notification:', notifError);
+      }
+
+      res.json({
+        message: 'Response submitted successfully',
+        response: newResponse,
+        isUpdate: false
+      });
+    }
+
+  } catch (error) {
+    console.error('Submit daily prompt response error:', error);
+    res.status(500).json({ error: 'Failed to submit response' });
+  }
+});
+
+// Get user's prompt history
+app.get('/api/daily-prompt/history', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { limit = 10, page = 1 } = req.query;
+
+    const responses = await DailyPromptResponse.find({ userId })
+      .populate('promptId', 'prompt category difficulty')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const totalResponses = await DailyPromptResponse.countDocuments({ userId });
+    const totalPages = Math.ceil(totalResponses / parseInt(limit));
+
+    res.json({
+      responses,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        totalResponses,
+        hasMore: parseInt(page) < totalPages
+      }
+    });
+
+  } catch (error) {
+    console.error('Get prompt history error:', error);
+    res.status(500).json({ error: 'Failed to get prompt history' });
+  }
+});
+
+// Get user stats
+app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const totalResponses = await DailyPromptResponse.countDocuments({ userId });
+    
+    const responses = await DailyPromptResponse.find({ userId })
+      .sort({ createdAt: -1 })
+      .limit(30);
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    
+    if (responses.length > 0) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const todayResponse = responses.find(r => {
+        const responseDate = new Date(r.createdAt);
+        responseDate.setHours(0, 0, 0, 0);
+        return responseDate.getTime() === today.getTime();
+      });
+
+      if (todayResponse) {
+        currentStreak = 1;
+        
+        for (let i = 1; i < responses.length; i++) {
+          const currentDate = new Date(responses[i-1].createdAt);
+          const prevDate = new Date(responses[i].createdAt);
+          currentDate.setHours(0, 0, 0, 0);
+          prevDate.setHours(0, 0, 0, 0);
+          
+          const dayDiff = (currentDate - prevDate) / (1000 * 60 * 60 * 24);
+          
+          if (dayDiff === 1) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      let tempStreak = 1;
+      longestStreak = 1;
+      
+      for (let i = 1; i < responses.length; i++) {
+        const currentDate = new Date(responses[i-1].createdAt);
+        const prevDate = new Date(responses[i].createdAt);
+        currentDate.setHours(0, 0, 0, 0);
+        prevDate.setHours(0, 0, 0, 0);
+        
+        const dayDiff = (currentDate - prevDate) / (1000 * 60 * 60 * 24);
+        
+        if (dayDiff === 1) {
+          tempStreak++;
+          longestStreak = Math.max(longestStreak, tempStreak);
+        } else {
+          tempStreak = 1;
+        }
+      }
+    }
+
+    res.json({
+      totalResponses,
+      currentStreak,
+      longestStreak,
+      averageWordCount: responses.length > 0 ? 
+        Math.round(responses.reduce((sum, r) => sum + (r.wordCount || 0), 0) / responses.length) : 0
+    });
+
+  } catch (error) {
+    console.error('Get daily prompt stats error:', error);
+    res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// Admin endpoint to seed initial prompts
+app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
+  try {
+    const existingCount = await DailyPrompt.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ message: `${existingCount} prompts already exist`, skipped: true });
+    }
+
+    const prompts = [
+      {
+        prompt: "What's one decision you made today that you're proud of, and why?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["decision-making", "self-awareness"]
+      },
+      {
+        prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["flow-state", "strengths"]
+      },
+      {
+        prompt: "What's something you learned about yourself through a recent challenge or setback?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["resilience", "growth"]
+      },
+      {
+        prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
+        category: "reflection",
+        difficulty: "hard",
+        tags: ["growth", "perspective"]
+      },
+      {
+        prompt: "What's one assumption you held about business that you've recently questioned or changed?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["assumptions", "learning"]
+      },
+      // ADD ALL 100 PROMPTS HERE - I'll give you the complete list separately
+    ];
+
+    const savedPrompts = await DailyPrompt.insertMany(prompts);
+    
+    res.json({
+      message: `Successfully seeded ${savedPrompts.length} daily prompts`,
+      count: savedPrompts.length
+    });
+
+  } catch (error) {
+    console.error('Seed prompts error:', error);
+    res.status(500).json({ error: 'Failed to seed prompts' });
+  }
+});
 
 // Start server
 app.listen(PORT, () => {
