@@ -8,6 +8,7 @@ const Stripe = require('stripe');
 const OpenAI = require('openai');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const cron = require('node-cron');
 require('dotenv').config();
 
 const app = express();
@@ -921,6 +922,83 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Update profile error:', error);
     res.status(500).json({ error: 'Failed to update profile' });
+  }
+});
+
+// Function to create daily prompt notification
+async function createDailyPromptNotification() {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const existingNotifications = await Notification.countDocuments({
+      type: 'system',
+      title: { $regex: 'Daily Prompt Available', $options: 'i' },
+      createdAt: {
+        $gte: today,
+        $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+      }
+    });
+
+    if (existingNotifications > 0) {
+      console.log('📅 Daily prompt notifications already sent today');
+      return;
+    }
+
+    let assignment = await DailyPromptAssignment.findOne({ date: today })
+      .populate('promptId');
+
+    if (!assignment) {
+      const nextPrompt = await getNextPrompt();
+      if (!nextPrompt) {
+        console.log('⚠️ No prompts available for notification');
+        return;
+      }
+
+      assignment = new DailyPromptAssignment({
+        date: today,
+        promptId: nextPrompt._id
+      });
+      await assignment.save();
+      await assignment.populate('promptId');
+
+      nextPrompt.usageCount += 1;
+      nextPrompt.lastUsed = new Date();
+      await nextPrompt.save();
+    }
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const activeUsers = await User.find({
+      'streakData.lastLoginDate': { $gte: thirtyDaysAgo }
+    });
+
+    console.log(`📨 Creating daily prompt notifications for ${activeUsers.length} active users`);
+
+    const notifications = activeUsers.map(user => ({
+      userId: user._id,
+      type: 'system',
+      title: '🌅 Daily Prompt Available!',
+      content: `Today's reflection: "${assignment.promptId.prompt.substring(0, 100)}${assignment.promptId.prompt.length > 100 ? '...' : ''}"`,
+      priority: 'normal',
+      createdAt: new Date()
+    }));
+
+    await Notification.insertMany(notifications);
+    console.log(`✅ Created ${notifications.length} daily prompt notifications`);
+
+  } catch (error) {
+    console.error('❌ Error creating daily prompt notifications:', error);
+  }
+}
+
+// Manual trigger endpoint for testing
+app.post('/api/admin/daily-prompt-tasks', authenticateToken, async (req, res) => {
+  try {
+    await createDailyPromptNotification();
+    res.json({ message: 'Daily prompt notifications sent successfully' });
+  } catch (error) {
+    console.error('Error running daily tasks:', error);
+    res.status(500).json({ error: 'Failed to run daily tasks' });
   }
 });
 
@@ -2925,6 +3003,16 @@ app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to seed prompts' });
   }
 });
+
+// Run daily prompt notifications at 8:00 AM every day
+cron.schedule('0 5 * * *', async () => {
+  console.log('🌅 Running daily prompt notifications...');
+  await createDailyPromptNotification();
+}, {
+  timezone: "America/Chicago" // Change to your timezone
+});
+
+console.log('⏰ Daily prompt scheduler started');
 
 // Start server
 app.listen(PORT, () => {
