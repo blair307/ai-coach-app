@@ -2420,7 +2420,7 @@ app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
 });
 
 // Temporary no-auth seed endpoint
-app.post('/api/temp-seed', async (req, res) => {
+app.post('/api/seed-now', async (req, res) => {
   try {
     const existingCount = await DailyPrompt.countDocuments();
     if (existingCount > 0) {
@@ -3147,6 +3147,137 @@ app.post('/api/admin/seed-prompts', authenticateToken, async (req, res) => {
   }
 });
 
+// MANUAL SEED ENDPOINT - ADD THIS HERE
+app.get('/api/manual-seed-prompts', authenticateToken, async (req, res) => {
+  try {
+    console.log('🌱 Manual seed called by user:', req.user.userId);
+    
+    // Check if prompts already exist
+    const existingCount = await DailyPrompt.countDocuments();
+    if (existingCount > 0) {
+      return res.json({ 
+        message: `${existingCount} prompts already exist`, 
+        skipped: true,
+        existingCount
+      });
+    }
+
+    // Full set of 25 quality prompts
+    const prompts = [
+      {
+        prompt: "What's one decision you made today that you're proud of, and why?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["decision-making", "self-awareness"]
+      },
+      {
+        prompt: "Describe a moment this week when you felt completely in your element. What were you doing?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["flow-state", "strengths"]
+      },
+      {
+        prompt: "What's something you learned about yourself through a recent challenge or setback?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["resilience", "growth"]
+      },
+      {
+        prompt: "If you could have a conversation with yourself from one year ago, what would you tell them?",
+        category: "reflection",
+        difficulty: "hard",
+        tags: ["growth", "perspective"]
+      },
+      {
+        prompt: "What's one assumption you held about business that you've recently questioned or changed?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["assumptions", "learning"]
+      },
+      {
+        prompt: "Describe a time when you had to trust your gut instinct. What happened?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["intuition", "decision-making"]
+      },
+      {
+        prompt: "What's the most important lesson you've learned from a mentor or role model?",
+        category: "reflection",
+        difficulty: "easy",
+        tags: ["mentorship", "learning"]
+      },
+      {
+        prompt: "When do you feel most creative and innovative? What conditions enable this state?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["creativity", "productivity"]
+      },
+      {
+        prompt: "What's one fear that you've overcome in your entrepreneurial journey?",
+        category: "reflection",
+        difficulty: "hard",
+        tags: ["fear", "courage"]
+      },
+      {
+        prompt: "How has your definition of success evolved over the past year?",
+        category: "reflection",
+        difficulty: "medium",
+        tags: ["success", "values"]
+      },
+      {
+        prompt: "What's something you do daily that brings you joy, even during stressful times?",
+        category: "mindfulness",
+        difficulty: "easy",
+        tags: ["joy", "stress-management"]
+      },
+      {
+        prompt: "What's one way you've learned to manage overwhelm or stress in your business?",
+        category: "mindfulness",
+        difficulty: "medium",
+        tags: ["stress-management", "coping"]
+      },
+      {
+        prompt: "How do you typically recharge when you're feeling mentally exhausted?",
+        category: "mindfulness",
+        difficulty: "easy",
+        tags: ["recovery", "energy"]
+      },
+      {
+        prompt: "What's one goal you're working toward that scares and excites you equally?",
+        category: "goal-setting",
+        difficulty: "medium",
+        tags: ["goals", "fear", "excitement"]
+      },
+      {
+        prompt: "If you could only accomplish one thing this quarter, what would it be and why?",
+        category: "goal-setting",
+        difficulty: "medium",
+        tags: ["priorities", "focus"]
+      },
+      {
+        prompt: "What's one habit you want to build that would have the biggest impact on your business?",
+        category: "goal-setting",
+        difficulty: "easy",
+        tags: ["habits", "impact"]
+      },
+      {
+        prompt: "What's one quality you admire in other leaders that you'd like to develop in yourself?",
+        category: "leadership",
+        difficulty: "medium",
+        tags: ["leadership", "development"]
+      },
+      {
+        prompt: "How do you handle disagreements or conflicts within your team?",
+        category: "leadership",
+        difficulty: "hard",
+        tags: ["conflict", "resolution"]
+      },
+      {
+        prompt: "What's one way you've grown as a leader through a difficult situation?",
+        category: "leadership",
+        difficulty: "medium",
+        tags: ["growth", "challenges"
+               
 // Run daily prompt notifications at 8:00 AM every day
 cron.schedule('0 5 * * *', async () => {
   console.log('🌅 Running daily prompt notifications...');
