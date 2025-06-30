@@ -9,251 +9,322 @@
 
     <style>
         /* COMPLETE MOBILE DAILY TRACKER FIX */
-/* Add this to your daily-tracker.html in a <style> tag or to styles.css */
+        /* Add this to your daily-tracker.html in a <style> tag or to styles.css */
 
-/* 1. FORCE CHECKBOXES TO SHOW ON MOBILE - OVERRIDE EXISTING CSS */
-@media (max-width: 768px) {
-    
-    /* CRITICAL: Override the existing mobile rules that hide checkboxes */
-    .goal-tracker-item {
-        display: flex !important;
-        flex-direction: row !important; /* Force horizontal layout */
-        align-items: center !important;
-        padding: 1.25rem !important;
-        margin-bottom: 1rem !important;
-        background: var(--surface) !important;
-        border-radius: 12px !important;
-        border: 2px solid var(--border) !important;
-        cursor: pointer !important;
-        transition: all 0.3s ease !important;
-        text-align: left !important; /* Override any center alignment */
-    }
-    
-    /* CRITICAL: Force checkbox container to stay visible */
-    .goal-tracker-item > div:first-child {
-        margin-right: 1rem !important;
-        flex-shrink: 0 !important;
-        align-self: center !important;
-        margin-bottom: 0 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        order: 1 !important; /* Ensure it comes first */
-    }
-    
-    /* CRITICAL: Force checkbox to be visible and touchable */
-    .goal-tracker-item input[type="checkbox"] {
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        width: 32px !important;
-        height: 32px !important;
-        transform: scale(1.5) !important;
-        margin: 0 !important;
-        cursor: pointer !important;
-        pointer-events: auto !important;
-        position: relative !important;
-        z-index: 10 !important;
-    }
-    
-    /* Content area */
-    .goal-tracker-item > div:nth-child(2) {
-        flex: 1 !important;
-        margin: 0 !important;
-        order: 2 !important;
-    }
-    
-    /* Status badge */
-    .goal-tracker-item > div:last-child {
-        margin-left: 0.75rem !important;
-        flex-shrink: 0 !important;
-        order: 3 !important;
-    }
-    
-    /* Remove problematic margin overrides */
-    .goal-tracker-item > div {
-        margin: 0 !important;
-    }
-}
+        /* 1. FORCE CHECKBOXES TO SHOW ON MOBILE - OVERRIDE EXISTING CSS */
+        @media (max-width: 768px) {
+            
+            /* CRITICAL: Override the existing mobile rules that hide checkboxes */
+            .goal-tracker-item {
+                display: flex !important;
+                flex-direction: row !important; /* Force horizontal layout */
+                align-items: center !important;
+                padding: 1.25rem !important;
+                margin-bottom: 1rem !important;
+                background: var(--surface) !important;
+                border-radius: 12px !important;
+                border: 2px solid var(--border) !important;
+                cursor: pointer !important;
+                transition: all 0.3s ease !important;
+                text-align: left !important; /* Override any center alignment */
+            }
+            
+            /* CRITICAL: Force checkbox container to stay visible */
+            .goal-tracker-item > div:first-child {
+                margin-right: 1rem !important;
+                flex-shrink: 0 !important;
+                align-self: center !important;
+                margin-bottom: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                order: 1 !important; /* Ensure it comes first */
+            }
+            
+            /* CRITICAL: Force checkbox to be visible and touchable */
+            .goal-tracker-item input[type="checkbox"] {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                width: 32px !important;
+                height: 32px !important;
+                transform: scale(1.5) !important;
+                margin: 0 !important;
+                cursor: pointer !important;
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 10 !important;
+            }
+            
+            /* Content area */
+            .goal-tracker-item > div:nth-child(2) {
+                flex: 1 !important;
+                margin: 0 !important;
+                order: 2 !important;
+            }
+            
+            /* Status badge */
+            .goal-tracker-item > div:last-child {
+                margin-left: 0.75rem !important;
+                flex-shrink: 0 !important;
+                order: 3 !important;
+            }
+            
+            /* Remove problematic margin overrides */
+            .goal-tracker-item > div {
+                margin: 0 !important;
+            }
+        }
 
-/* 2. FIX MODAL FALLING OFF SCREEN ON MOBILE */
-@media (max-width: 768px) {
-    
-    /* Fix the goal detail modal container */
-    #goalDetailModal {
-        display: none;
-        position: fixed !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        background: rgba(0, 0, 0, 0.5) !important;
-        z-index: 9999 !important;
-        backdrop-filter: blur(4px) !important;
-        padding: 1rem !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Fix the modal content positioning */
-    #goalDetailModal > div {
-        display: flex !important;
-        align-items: flex-start !important; /* Start from top on mobile */
-        justify-content: center !important;
-        width: 100% !important;
-        height: 100% !important;
-        padding: 1rem !important;
-        box-sizing: border-box !important;
-        overflow-y: auto !important; /* Allow scrolling if content is tall */
-    }
-    
-    /* Fix the modal card itself */
-    #goalDetailModal > div > div {
-        background: white !important;
-        border-radius: 16px !important;
-        width: 100% !important;
-        max-width: 100% !important; /* Prevent overflow */
-        max-height: 90vh !important;
-        overflow: hidden !important;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
-        margin: 2rem 0 !important; /* Add top margin for status bar */
-        position: relative !important;
-        left: auto !important;
-        right: auto !important;
-        transform: none !important;
-    }
-    
-    /* Fix modal header */
-    #goalDetailModal #modalHeader {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-        padding: 1.5rem !important;
-        text-align: center !important;
-        border-radius: 16px 16px 0 0 !important;
-    }
-    
-    /* Fix modal body */
-    #goalDetailModal > div > div > div:nth-child(2) {
-        max-height: 60vh !important;
-        overflow-y: auto !important;
-        padding: 1.5rem !important;
-        box-sizing: border-box !important;
-    }
-    
-    /* Fix modal footer */
-    #goalDetailModal > div > div > div:last-child {
-        padding: 1rem 1.5rem !important;
-        border-top: 1px solid var(--border) !important;
-        background: var(--surface) !important;
-        display: flex !important;
-        gap: 1rem !important;
-        justify-content: flex-end !important;
-        border-radius: 0 0 16px 16px !important;
-    }
-    
-    /* Fix buttons in modal */
-    #goalDetailModal .btn {
-        min-height: 44px !important;
-        touch-action: manipulation !important;
-        font-size: 1rem !important;
-        padding: 0.75rem 1.5rem !important;
-    }
-    
-    /* Fix the complete/incomplete buttons */
-    #markCompleteBtn,
-    #markIncompleteBtn {
-        flex: 1 !important;
-        max-width: none !important;
-        width: auto !important;
-    }
-}
+        /* 2. FIX MODAL FALLING OFF SCREEN ON MOBILE */
+        @media (max-width: 768px) {
+            
+            /* Fix the goal detail modal container */
+            #goalDetailModal {
+                display: none;
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                background: rgba(0, 0, 0, 0.5) !important;
+                z-index: 9999 !important;
+                backdrop-filter: blur(4px) !important;
+                padding: 1rem !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Fix the modal content positioning */
+            #goalDetailModal > div {
+                display: flex !important;
+                align-items: flex-start !important; /* Start from top on mobile */
+                justify-content: center !important;
+                width: 100% !important;
+                height: 100% !important;
+                padding: 1rem !important;
+                box-sizing: border-box !important;
+                overflow-y: auto !important; /* Allow scrolling if content is tall */
+            }
+            
+            /* Fix the modal card itself */
+            #goalDetailModal > div > div {
+                background: white !important;
+                border-radius: 16px !important;
+                width: 100% !important;
+                max-width: 100% !important; /* Prevent overflow */
+                max-height: 90vh !important;
+                overflow: hidden !important;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
+                margin: 2rem 0 !important; /* Add top margin for status bar */
+                position: relative !important;
+                left: auto !important;
+                right: auto !important;
+                transform: none !important;
+            }
+            
+            /* Fix modal header */
+            #goalDetailModal #modalHeader {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                color: white !important;
+                padding: 1.5rem !important;
+                text-align: center !important;
+                border-radius: 16px 16px 0 0 !important;
+            }
+            
+            /* Fix modal body */
+            #goalDetailModal > div > div > div:nth-child(2) {
+                max-height: 60vh !important;
+                overflow-y: auto !important;
+                padding: 1.5rem !important;
+                box-sizing: border-box !important;
+            }
+            
+            /* Fix modal footer */
+            #goalDetailModal > div > div > div:last-child {
+                padding: 1rem 1.5rem !important;
+                border-top: 1px solid var(--border) !important;
+                background: var(--surface) !important;
+                display: flex !important;
+                gap: 1rem !important;
+                justify-content: flex-end !important;
+                border-radius: 0 0 16px 16px !important;
+            }
+            
+            /* Fix buttons in modal */
+            #goalDetailModal .btn {
+                min-height: 44px !important;
+                touch-action: manipulation !important;
+                font-size: 1rem !important;
+                padding: 0.75rem 1.5rem !important;
+            }
+            
+            /* Fix the complete/incomplete buttons */
+            #markCompleteBtn,
+            #markIncompleteBtn {
+                flex: 1 !important;
+                max-width: none !important;
+                width: auto !important;
+            }
+        }
 
-/* 3. EXTRA SMALL SCREENS (PHONES) */
-@media (max-width: 480px) {
-    
-    /* Even bigger checkboxes for small phones */
-    .goal-tracker-item input[type="checkbox"] {
-        width: 36px !important;
-        height: 36px !important;
-        transform: scale(1.3) !important;
-    }
-    
-    /* Adjust modal for very small screens */
-    #goalDetailModal {
-        padding: 0.5rem !important;
-    }
-    
-    #goalDetailModal > div > div {
-        margin: 1rem 0 !important;
-        border-radius: 12px !important;
-    }
-    
-    #goalDetailModal #modalHeader {
-        padding: 1rem !important;
-    }
-    
-    #goalDetailModal #modalHeader h2 {
-        font-size: 1.5rem !important;
-    }
-}
+        /* 3. EXTRA SMALL SCREENS (PHONES) */
+        @media (max-width: 480px) {
+            
+            /* Even bigger checkboxes for small phones */
+            .goal-tracker-item input[type="checkbox"] {
+                width: 36px !important;
+                height: 36px !important;
+                transform: scale(1.3) !important;
+            }
+            
+            /* Adjust modal for very small screens */
+            #goalDetailModal {
+                padding: 0.5rem !important;
+            }
+            
+            #goalDetailModal > div > div {
+                margin: 1rem 0 !important;
+                border-radius: 12px !important;
+            }
+            
+            #goalDetailModal #modalHeader {
+                padding: 1rem !important;
+            }
+            
+            #goalDetailModal #modalHeader h2 {
+                font-size: 1.5rem !important;
+            }
+        }
 
-/* 4. DEBUGGING - TEMPORARY VISUAL AIDS */
-.debug-mobile .goal-tracker-item {
-    border: 3px solid red !important;
-}
+        /* 4. DEBUGGING - TEMPORARY VISUAL AIDS */
+        .debug-mobile .goal-tracker-item {
+            border: 3px solid red !important;
+        }
 
-.debug-mobile .goal-tracker-item > div:first-child {
-    border: 2px solid blue !important;
-    background: rgba(0, 0, 255, 0.1) !important;
-}
+        .debug-mobile .goal-tracker-item > div:first-child {
+            border: 2px solid blue !important;
+            background: rgba(0, 0, 255, 0.1) !important;
+        }
 
-.debug-mobile .goal-tracker-item input[type="checkbox"] {
-    border: 2px solid green !important;
-    background: rgba(0, 255, 0, 0.2) !important;
-}
+        .debug-mobile .goal-tracker-item input[type="checkbox"] {
+            border: 2px solid green !important;
+            background: rgba(0, 255, 0, 0.2) !important;
+        }
 
-/* 5. ENSURE TOUCH TARGETS ARE ACCESSIBLE */
-@media (max-width: 768px) {
-    
-    /* Make sure clicks work properly */
-    .goal-tracker-item {
-        touch-action: manipulation !important;
-        -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
-    }
-    
-    /* Prevent modal from being cut off */
-    body.modal-open {
-        overflow: hidden !important;
-        position: fixed !important;
-        width: 100% !important;
-    }
-    
-    /* Improve checkbox accessibility */
-    .goal-tracker-item input[type="checkbox"] {
-        -webkit-appearance: none !important;
-        appearance: none !important;
-        background: white !important;
-        border: 3px solid var(--border) !important;
-        border-radius: 4px !important;
-        position: relative !important;
-    }
-    
-    .goal-tracker-item input[type="checkbox"]:checked {
-        background: var(--primary) !important;
-        border-color: var(--primary) !important;
-    }
-    
-    .goal-tracker-item input[type="checkbox"]:checked::after {
-        content: '✓' !important;
-        position: absolute !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        color: white !important;
-        font-weight: bold !important;
-        font-size: 1.2rem !important;
-    }
-}
-        </style>
+        /* 5. ENSURE TOUCH TARGETS ARE ACCESSIBLE */
+        @media (max-width: 768px) {
+            
+            /* Make sure clicks work properly */
+            .goal-tracker-item {
+                touch-action: manipulation !important;
+                -webkit-tap-highlight-color: rgba(0,0,0,0.1) !important;
+            }
+            
+            /* Prevent modal from being cut off */
+            body.modal-open {
+                overflow: hidden !important;
+                position: fixed !important;
+                width: 100% !important;
+            }
+            
+            /* Improve checkbox accessibility */
+            .goal-tracker-item input[type="checkbox"] {
+                -webkit-appearance: none !important;
+                appearance: none !important;
+                background: white !important;
+                border: 3px solid var(--border) !important;
+                border-radius: 4px !important;
+                position: relative !important;
+            }
+            
+            .goal-tracker-item input[type="checkbox"]:checked {
+                background: var(--primary) !important;
+                border-color: var(--primary) !important;
+            }
+            
+            .goal-tracker-item input[type="checkbox"]:checked::after {
+                content: '✓' !important;
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                color: white !important;
+                font-weight: bold !important;
+                font-size: 1.2rem !important;
+            }
+        }
+
+        /* FIXED: Progress chart layout */
+        #progressChart {
+            display: grid !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            overflow: visible !important;
+            box-sizing: border-box !important;
+        }
+
+        #progressChart > div {
+            box-sizing: border-box !important;
+            position: relative !important;
+            overflow: visible !important;
+            min-width: 0 !important;
+        }
+
+        /* FIXED: Weekly view */
+        .weekly-view #progressChart {
+            grid-template-columns: repeat(7, 1fr) !important;
+            gap: 1rem !important;
+        }
+
+        .weekly-view #progressChart > div {
+            min-width: 80px !important;
+        }
+
+        /* FIXED: Monthly view */
+        .monthly-view #progressChart {
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr)) !important;
+            gap: 0.5rem !important;
+        }
+
+        .monthly-view #progressChart > div {
+            min-width: 60px !important;
+        }
+
+        /* FIXED: Mobile responsive */
+        @media (max-width: 768px) {
+            .weekly-view #progressChart {
+                grid-template-columns: repeat(7, 1fr) !important;
+                gap: 0.5rem !important;
+            }
+            
+            .weekly-view #progressChart > div {
+                min-width: 70px !important;
+                padding: 0.75rem 0.5rem !important;
+            }
+            
+            .monthly-view #progressChart {
+                grid-template-columns: repeat(auto-fit, minmax(50px, 1fr)) !important;
+                gap: 0.25rem !important;
+            }
+            
+            .monthly-view #progressChart > div {
+                min-width: 50px !important;
+                padding: 0.5rem 0.25rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .weekly-view #progressChart > div {
+                min-width: 60px !important;
+                font-size: 0.8rem !important;
+            }
+            
+            .monthly-view #progressChart > div {
+                min-width: 45px !important;
+                font-size: 0.7rem !important;
+            }
+        }
+    </style>
 </head>
 <body data-page="daily-tracker">
     <div class="app-container">
@@ -369,7 +440,8 @@
                 </div>
             </div>
 
-         
+        </main>
+    </div>
 
     <!-- Goal Detail Modal -->
     <div id="goalDetailModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 9999; backdrop-filter: blur(4px);">
@@ -471,8 +543,7 @@ function formatDateForComparison(date) {
     return pstDate.toISOString().split('T')[0];
 }
 
-
-        // FIXED: Goal completion checker - simplified and reliable
+// FIXED: Goal completion checker - simplified and reliable
 function isGoalCompletedToday(goal) {
     const todayString = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
     
@@ -525,14 +596,16 @@ function isGoalCompletedToday(goal) {
 }
 
 // Initialize page
-// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     updateCurrentDate();
     loadDailyGoals();
     initializeEmotionTracker(); // NEW: Initialize emotion tracker
     updateNotificationCount();
-    setInterval(updateNotificationCount, 30000);
     
+    // ADD THE FIX INITIALIZATION
+    setTimeout(initializeProgressFixes, 1000);
+    
+    setInterval(updateNotificationCount, 30000);
 });
 
 function updateCurrentDate() {
@@ -735,183 +808,237 @@ function updateProgressStats() {
     console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
-// FIXED: Progress overview calculation that matches the main progress logic
+// FIXED: Calculate day completion with proper date isolation
 function calculateDayCompletion(date) {
     if (currentGoals.length === 0) return 0;
     
-    const targetDatePST = formatDateForComparison(date);
-    const todayPST = formatDateForComparison(new Date());
+    // CRITICAL FIX: Create isolated date comparison
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0); // Normalize to midnight
     
-    console.log(`📊 Calculating completion for date: ${targetDatePST}`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight
     
-    let completedOnDate = 0;
+    const isToday = targetDate.getTime() === today.getTime();
+    
+    console.log(`📊 FIXED - Calculating for date: ${targetDate.toDateString()}, isToday: ${isToday}`);
+    
+    let completedOnThisSpecificDate = 0;
     
     currentGoals.forEach((goal, index) => {
         let isCompletedOnThisDate = false;
         
-        // FOR TODAY: Use the same exact logic as isGoalCompletedToday()
-        if (targetDatePST === todayPST) {
-            // Use the exact same logic as isGoalCompletedToday() for consistency
+        if (isToday) {
+            // FOR TODAY ONLY: Use live completion status
             isCompletedOnThisDate = isGoalCompletedToday(goal);
-            console.log(`📊 TODAY - Goal ${index + 1} (${goal.area}): ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
+            console.log(`📊 TODAY - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         } else {
-            // FOR OTHER DAYS: Use historical data
+            // FOR OTHER DAYS: Only use historical data - NO BLEEDING INTO OTHER DAYS
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
-                const dateEntry = goal.completionHistory.find(entry => {
-                    const entryDatePST = formatDateForComparison(entry.date);
-                    return entryDatePST === targetDatePST;
+                const exactDateEntry = goal.completionHistory.find(entry => {
+                    if (!entry.date) return false;
+                    
+                    const entryDate = new Date(entry.date);
+                    entryDate.setHours(0, 0, 0, 0); // Normalize to midnight
+                    
+                    const matches = entryDate.getTime() === targetDate.getTime();
+                    return matches;
                 });
-                if (dateEntry && dateEntry.completed) {
+                
+                if (exactDateEntry && exactDateEntry.completed === true) {
                     isCompletedOnThisDate = true;
                 }
             }
-            // Fallback to lastCompletedDate for historical days
-            else if (goal.lastCompletedDate) {
-                const completedDatePST = formatDateForComparison(goal.lastCompletedDate);
-                if (completedDatePST === targetDatePST) {
-                    isCompletedOnThisDate = true;
-                }
-            }
-            console.log(`📊 HISTORICAL (${targetDatePST}) - Goal ${index + 1} (${goal.area}): ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
+            
+            console.log(`📊 HISTORICAL ${targetDate.toDateString()} - Goal ${index + 1}: ${isCompletedOnThisDate ? 'COMPLETED' : 'NOT COMPLETED'}`);
         }
         
         if (isCompletedOnThisDate) {
-            completedOnDate++;
+            completedOnThisSpecificDate++;
         }
     });
     
-    const percentage = (completedOnDate / currentGoals.length) * 100;
-    console.log(`📊 Date ${targetDatePST}: ${completedOnDate}/${currentGoals.length} = ${percentage}%`);
+    const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
+    console.log(`📊 FINAL for ${targetDate.toDateString()}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
     
     return percentage;
 }
 
-// ENHANCED: Weekly progress with better debugging
+// FIXED: Weekly progress with proper grid layout and isolated calculations
 function renderWeeklyProgress() {
-    console.log('📊 === RENDERING WEEKLY PROGRESS ===');
+    console.log('📊 === RENDERING WEEKLY PROGRESS (FIXED) ===');
     
     const container = document.getElementById('progressChart');
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
     
-    let html = '';
+    // FIXED: Clear any existing content
+    container.innerHTML = '';
+    
+    // FIXED: Add proper grid container styles
+    container.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 1rem;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+    `;
     
     for (let i = 0; i < 7; i++) {
         const date = new Date(today);
-        date.setDate(today.getDate() - (6 - i));
+        date.setDate(today.getDate() - (6 - i)); // Go back 6 days, then forward
+        date.setHours(0, 0, 0, 0); // Ensure clean date
         
         const isToday = date.toDateString() === today.toDateString();
         const dayName = days[date.getDay()];
         const dayNumber = date.getDate();
         
+        // CRITICAL: Calculate completion for this specific date only
         const completionRate = calculateDayCompletion(date);
         
-        console.log(`📊 Week day ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
+        console.log(`📊 Week render - ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
         
-        html += `
+        const dayElement = document.createElement('div');
+        dayElement.style.cssText = `
+            text-align: center;
+            padding: 1rem;
+            background: ${isToday ? 'var(--primary)' : 'var(--surface)'};
+            color: ${isToday ? 'white' : 'var(--text-primary)'};
+            border-radius: 12px;
+            border: 2px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
+            min-width: 80px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: visible;
+        `;
+        
+        dayElement.innerHTML = `
+            <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">${dayName}</div>
+            <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">${dayNumber}</div>
             <div style="
-                text-align: center; 
-                padding: 1rem; 
-                background: ${isToday ? 'var(--primary)' : 'var(--surface)'}; 
-                color: ${isToday ? 'white' : 'var(--text-primary)'}; 
-                border-radius: 12px; 
-                border: 2px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
-                min-width: 80px;
+                width: 40px; 
+                height: 40px; 
+                border-radius: 50%; 
+                background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
+                margin: 0 auto; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                font-size: 0.8rem; 
+                font-weight: 600;
+                color: ${isToday ? 'white' : 'var(--text-secondary)'};
             ">
-                <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">${dayName}</div>
-                <div style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem;">${dayNumber}</div>
-                <div style="
-                    width: 40px; 
-                    height: 40px; 
-                    border-radius: 50%; 
-                    background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
-                    margin: 0 auto; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    font-size: 0.8rem; 
-                    font-weight: 600;
-                    color: ${isToday ? 'white' : 'var(--text-secondary)'};
-                ">
-                    ${Math.round(completionRate)}%
-                </div>
+                ${Math.round(completionRate)}%
             </div>
         `;
+        
+        container.appendChild(dayElement);
     }
     
-    container.innerHTML = html;
-    console.log('📊 === WEEKLY PROGRESS RENDERED ===');
+    console.log('📊 === WEEKLY PROGRESS RENDERED (FIXED) ===');
 }
 
-// ENHANCED: Monthly progress with same logic
+// FIXED: Monthly progress with same isolated logic
 function renderMonthlyProgress() {
-    console.log('📊 === RENDERING MONTHLY PROGRESS ===');
+    console.log('📊 === RENDERING MONTHLY PROGRESS (FIXED) ===');
     
     const container = document.getElementById('progressChart');
     const today = new Date();
     
-    let html = '';
+    // FIXED: Clear and setup container
+    container.innerHTML = '';
+    container.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+        gap: 0.5rem;
+        width: 100%;
+        max-width: 100%;
+        overflow: visible;
+    `;
     
     for (let i = 0; i < 30; i++) {
         const date = new Date(today);
         date.setDate(today.getDate() - (29 - i));
+        date.setHours(0, 0, 0, 0); // Ensure clean date
         
         const isToday = date.toDateString() === today.toDateString();
         const dayNumber = date.getDate();
         const monthName = date.toLocaleDateString('en-US', { month: 'short' });
         
+        // CRITICAL: Calculate completion for this specific date only
         const completionRate = calculateDayCompletion(date);
         
-        html += `
+        const dayElement = document.createElement('div');
+        dayElement.style.cssText = `
+            text-align: center;
+            padding: 0.75rem;
+            background: ${isToday ? 'var(--primary)' : 'var(--surface)'};
+            color: ${isToday ? 'white' : 'var(--text-primary)'};
+            border-radius: 8px;
+            border: 1px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
+            min-width: 60px;
+            box-sizing: border-box;
+            position: relative;
+            overflow: visible;
+        `;
+        
+        dayElement.innerHTML = `
+            <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem;">${monthName}</div>
+            <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;">${dayNumber}</div>
             <div style="
-                text-align: center; 
-                padding: 0.75rem; 
-                background: ${isToday ? 'var(--primary)' : 'var(--surface)'}; 
-                color: ${isToday ? 'white' : 'var(--text-primary)'}; 
-                border-radius: 8px; 
-                border: 1px solid ${isToday ? 'var(--primary)' : 'var(--border)'};
-                min-width: 60px;
+                width: 30px; 
+                height: 30px; 
+                border-radius: 50%; 
+                background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
+                margin: 0 auto; 
+                display: flex; 
+                align-items: center; 
+                justify-content: center; 
+                font-size: 0.7rem; 
+                font-weight: 600;
+                color: ${isToday ? 'white' : 'var(--text-secondary)'};
             ">
-                <div style="font-size: 0.7rem; font-weight: 500; margin-bottom: 0.25rem;">${monthName}</div>
-                <div style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;">${dayNumber}</div>
-                <div style="
-                    width: 30px; 
-                    height: 30px; 
-                    border-radius: 50%; 
-                    background: ${isToday ? 'rgba(255,255,255,0.2)' : 'var(--border)'}; 
-                    margin: 0 auto; 
-                    display: flex; 
-                    align-items: center; 
-                    justify-content: center; 
-                    font-size: 0.7rem; 
-                    font-weight: 600;
-                    color: ${isToday ? 'white' : 'var(--text-secondary)'};
-                ">
-                    ${Math.round(completionRate)}%
-                </div>
+                ${Math.round(completionRate)}%
             </div>
         `;
+        
+        container.appendChild(dayElement);
     }
     
-    container.innerHTML = html;
-    console.log('📊 === MONTHLY PROGRESS RENDERED ===');
+    console.log('📊 === MONTHLY PROGRESS RENDERED (FIXED) ===');
 }
 
+// FIXED: Progress view switching with proper CSS classes
 function showWeeklyProgress() {
     progressView = 'weekly';
+    
+    // Update button states
     document.getElementById('weeklyBtn').style.background = 'var(--primary)';
     document.getElementById('weeklyBtn').style.color = 'white';
     document.getElementById('monthlyBtn').style.background = 'var(--surface)';
     document.getElementById('monthlyBtn').style.color = 'var(--text-primary)';
+    
+    // Add CSS class for proper layout
+    document.body.classList.remove('monthly-view');
+    document.body.classList.add('weekly-view');
+    
     renderWeeklyProgress();
 }
 
 function showMonthlyProgress() {
     progressView = 'monthly';
+    
+    // Update button states
     document.getElementById('monthlyBtn').style.background = 'var(--primary)';
     document.getElementById('monthlyBtn').style.color = 'white';
     document.getElementById('weeklyBtn').style.background = 'var(--surface)';
     document.getElementById('weeklyBtn').style.color = 'var(--text-primary)';
+    
+    // Add CSS class for proper layout
+    document.body.classList.remove('weekly-view');
+    document.body.classList.add('monthly-view');
+    
     renderMonthlyProgress();
 }
 
@@ -987,23 +1114,25 @@ function renderGoalsByArea() {
     container.innerHTML = html;
 }
 
-// ENHANCED: Server update function that ensures completion data is created
-async function updateGoalOnServer(goalId, completed) {
-    console.log(`📤 UPDATING SERVER - goalId: ${goalId}, completed: ${completed}`);
+// FIXED: Server update with isolated date tracking
+async function updateGoalOnServerIsolated(goalId, completed) {
+    console.log(`📤 FIXED SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
     
     const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
     if (!token) {
         throw new Error('No authentication token');
     }
 
-    // ENHANCED: Include more comprehensive data to ensure tracking works
+    // FIXED: Send only today's completion status, don't affect other dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Normalize to midnight
+    
     const requestData = {
         completed: completed,
-        // Always include the completion date info
-        lastCompletedDate: completed ? new Date().toISOString() : null
+        lastCompletedDate: completed ? today.toISOString() : null
     };
     
-    console.log('📤 Enhanced request data:', requestData);
+    console.log('📤 FIXED - Request data (isolated):', requestData);
 
     const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
         method: 'PUT',
@@ -1016,26 +1145,26 @@ async function updateGoalOnServer(goalId, completed) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Server error response:', errorText);
+        console.error('❌ FIXED - Server error response:', errorText);
         throw new Error(`Server error: ${response.status}`);
     }
 
     const updatedGoal = await response.json();
-    console.log('✅ Server returned updated goal:', updatedGoal);
+    console.log('✅ FIXED - Server returned updated goal:', updatedGoal);
     
-    // ENHANCED: Update the local goal immediately to prevent UI lag
+    // FIXED: Update the local goal without affecting calculations for other dates
     const goalIndex = currentGoals.findIndex(g => g._id === goalId);
     if (goalIndex !== -1) {
         currentGoals[goalIndex] = updatedGoal;
-        console.log('🔄 Updated local goal in currentGoals array');
+        console.log('🔄 FIXED - Updated local goal in currentGoals array');
     }
     
     return updatedGoal;
 }
 
-// ENHANCED: Toggle function that forces complete UI refresh
+// FIXED: Goal completion toggling with isolated updates
 async function toggleGoalCompletion(goalId) {
-    console.log('🔄 TOGGLE CALLED - goalId:', goalId);
+    console.log('🔄 FIXED TOGGLE - goalId:', goalId);
     
     try {
         const goal = currentGoals.find(g => g._id === goalId);
@@ -1047,8 +1176,8 @@ async function toggleGoalCompletion(goalId) {
         const currentlyCompleted = isGoalCompletedToday(goal);
         const newState = !currentlyCompleted;
         
-        console.log('📋 Goal current state:', currentlyCompleted);
-        console.log('🔄 Setting to:', newState);
+        console.log('📋 FIXED - Current state:', currentlyCompleted);
+        console.log('🔄 FIXED - Setting to:', newState);
         
         // Show immediate feedback
         const checkbox = document.getElementById(`goal-${goalId}`);
@@ -1057,16 +1186,16 @@ async function toggleGoalCompletion(goalId) {
             checkbox.disabled = true;
         }
         
-        // Call the server
-        await updateGoalOnServer(goalId, newState);
+        // Call the server with isolated date update
+        await updateGoalOnServerIsolated(goalId, newState);
         
-        // ENHANCED: Force all UI updates including progress overview
-        console.log('🔄 UPDATING ALL UI COMPONENTS...');
+        // FIXED: Update UI components in isolation
+        console.log('🔄 FIXED - UPDATING UI COMPONENTS...');
         renderDailyGoals();        // Goal cards
         updateProgressStats();     // Top hero numbers
         renderGoalsByArea();       // Area progress
         
-        // CRITICAL: Update the progress overview charts
+        // CRITICAL FIX: Only refresh the current view, don't recalculate all dates
         if (progressView === 'weekly') {
             renderWeeklyProgress();
         } else {
@@ -1082,7 +1211,7 @@ async function toggleGoalCompletion(goalId) {
         showSuccess(newState ? 'Goal completed! 🎉' : 'Goal marked as incomplete.');
         
     } catch (error) {
-        console.error('❌ Toggle failed:', error);
+        console.error('❌ FIXED Toggle failed:', error);
         showError('Failed to update goal. Please try again.');
         
         // Reset checkbox on error
@@ -1191,7 +1320,7 @@ async function markAllComplete() {
         button.disabled = true;
         
         for (const goal of incompleteGoals) {
-            await updateGoalOnServer(goal._id, true);
+            await updateGoalOnServerIsolated(goal._id, true);
         }
         
         // FORCE COMPLETE UI REFRESH
@@ -1605,7 +1734,137 @@ async function getEmotionStats() {
     return null;
 }
 
+// Apply the fixed CSS
+function applyFixedProgressCSS() {
+    const existingStyle = document.getElementById('fixed-progress-css');
+    if (existingStyle) {
+        existingStyle.remove();
+    }
+    
+    const style = document.createElement('style');
+    style.id = 'fixed-progress-css';
+    style.textContent = `
+        /* Additional CSS animations */
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
         
+        @keyframes slideOutRight {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100px); }
+        }
+        
+        .goal-tracker-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .mood-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .mood-btn:active {
+            transform: scale(0.98) !important;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .goal-tracker-item {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                text-align: left !important;
+                padding: 1.25rem !important;
+            }
+            
+            .goal-tracker-item > div {
+                margin: 0.5rem 0 !important;
+            }
+            
+            .goal-tracker-item > div:first-child {
+                align-self: flex-start !important;
+                margin-bottom: 1rem !important;
+            }
+            
+            #progressChart {
+                grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
+                gap: 0.75rem !important;
+            }
+            
+            #goalsByArea {
+                grid-template-columns: 1fr !important;
+            }
+
+            #moodButtons {
+                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+                gap: 0.75rem !important;
+            }
+            
+            .content-header {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 1rem !important;
+            }
+            
+            .content-header h1 {
+                text-align: center !important;
+                font-size: 1.75rem !important;
+            }
+            
+            .header-actions {
+                justify-content: center !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            #progressChart {
+                grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)) !important;
+                gap: 0.5rem !important;
+            }
+            
+            #progressChart > div {
+                padding: 0.5rem 0.25rem !important;
+                min-width: 50px !important;
+            }
+
+            #moodButtons {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .goal-tracker-item {
+                padding: 1rem !important;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    console.log('✅ Fixed progress CSS applied');
+}
+
+// Initialize fixes
+function initializeProgressFixes() {
+    applyFixedProgressCSS();
+    
+    // Start with weekly view
+    showWeeklyProgress();
+    
+    console.log('✅ Progress tracking fixes initialized');
+}
+
 // DEBUGGING: Add this function to test UI updates manually
 function debugUIRefresh() {
     console.log('🐛 MANUAL UI REFRESH TEST');
@@ -1629,129 +1888,12 @@ function debugUIRefresh() {
 // ENHANCED: Add this to the window for debugging
 window.debugUIRefresh = debugUIRefresh;
 
-        // ENHANCED: Add this to the window for debugging
-window.debugUIRefresh = debugUIRefresh;
-
 // Export emotion tracker functions for global access
 window.selectEmotion = selectEmotion;
 window.getEmotionStats = getEmotionStats;
 window.initializeEmotionTracker = initializeEmotionTracker;
-        
-// Add CSS animations
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from { opacity: 0; transform: translateX(100px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    
-    @keyframes slideOutRight {
-        from { opacity: 1; transform: translateX(0); }
-        to { opacity: 0; transform: translateX(100px); }
-    }
-    
-    .goal-tracker-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-    }
 
-    /* NEW: Mood tracker styles */
-    .mood-btn:hover {
-        transform: scale(1.05) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-       .mood-btn:active {
-        transform: scale(0.98) !important;
-    }
-    
-    .loading-spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid var(--border);
-        border-top: 4px solid var(--primary);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    @media (max-width: 768px) {
-        .goal-tracker-item {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            text-align: left !important;
-            padding: 1.25rem !important;
-        }
-        
-        .goal-tracker-item > div {
-            margin: 0.5rem 0 !important;
-        }
-        
-        .goal-tracker-item > div:first-child {
-            align-self: flex-start !important;
-            margin-bottom: 1rem !important;
-        }
-        
-        #progressChart {
-            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr)) !important;
-            gap: 0.75rem !important;
-        }
-        
-        #goalsByArea {
-            grid-template-columns: 1fr !important;
-        }
-
-
-        #moodButtons {
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
-            gap: 0.75rem !important;
-        }
-        
-        .content-header {
-            flex-direction: column !important;
-            align-items: stretch !important;
-            gap: 1rem !important;
-        }
-        
-        .content-header h1 {
-            text-align: center !important;
-            font-size: 1.75rem !important;
-        }
-        
-        .header-actions {
-            justify-content: center !important;
-        }
-    }
-    
-    @media (max-width: 480px) {
-        #progressChart {
-            grid-template-columns: repeat(auto-fit, minmax(55px, 1fr)) !important;
-            gap: 0.5rem !important;
-        }
-        
-        #progressChart > div {
-            padding: 0.5rem 0.25rem !important;
-            min-width: 50px !important;
-        }
-
-         #moodButtons {
-            grid-template-columns: repeat(2, 1fr) !important;
-        }
-        
-        .goal-tracker-item {
-            padding: 1rem !important;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-        // MOBILE MODAL JAVASCRIPT FIX
-// Add this to your daily-tracker.html JavaScript section
-
+// MOBILE MODAL JAVASCRIPT FIX
 // Enhanced openGoalDetail function for mobile
 function openGoalDetailMobile(goalId) {
     const goal = currentGoals.find(g => g._id === goalId);
@@ -1840,173 +1982,16 @@ function closeGoalDetailMobile() {
     selectedGoal = null;
 }
 
-// Enhanced renderDailyGoals function with forced checkboxes
-function renderDailyGoalsMobile() {
-    const container = document.getElementById('dailyGoalsList');
-    
-    if (currentGoals.length === 0) {
-        container.innerHTML = `
-            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                <div style="width: 80px; height: 80px; background: var(--border); border-radius: 50%; margin: 0 auto 2rem auto; display: flex; align-items: center; justify-content: center;">
-                    <div style="width: 40px; height: 40px; background: var(--text-muted); border-radius: 50%;"></div>
-                </div>
-                <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-weight: 600;">No Goals Set Yet</h3>
-                <p style="margin-bottom: 2rem; line-height: 1.6;">Start by creating your first life goal to begin tracking your daily progress!</p>
-                <button onclick="window.location.href='goals.html'" class="btn btn-primary">
-                    Create Your First Goal
-                </button>
-            </div>
-        `;
-        return;
-    }
-
-    let html = '';
-    
-    currentGoals.forEach(goal => {
-        const color = areaColors[goal.area] || '#6366f1';
-        const isCompletedToday = isGoalCompletedToday(goal);
-        
-        html += `
-            <div class="goal-tracker-item" data-goal-id="${goal._id}" style="
-                display: flex !important; 
-                flex-direction: row !important;
-                align-items: center !important; 
-                padding: 1.25rem !important; 
-                margin-bottom: 1rem !important; 
-                background: var(--surface) !important; 
-                border-radius: 12px !important; 
-                border: 2px solid ${isCompletedToday ? color : 'var(--border)'} !important; 
-                cursor: pointer !important;
-                transition: all 0.3s ease !important;
-                ${isCompletedToday ? `background: linear-gradient(135deg, ${color}15 0%, ${color}05 100%) !important;` : ''}
-            " onclick="openGoalDetailMobile('${goal._id}')">
-                
-                <!-- FORCED CHECKBOX CONTAINER -->
-                <div style="
-                    margin-right: 1rem !important;
-                    flex-shrink: 0 !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    order: 1 !important;
-                ">
-                    <input type="checkbox" 
-                           id="goal-${goal._id}" 
-                           ${isCompletedToday ? 'checked' : ''} 
-                           onclick="event.stopPropagation(); toggleGoalCompletion('${goal._id}')"
-                           style="
-                               display: block !important;
-                               visibility: visible !important;
-                               opacity: 1 !important;
-                               width: 32px !important; 
-                               height: 32px !important; 
-                               accent-color: ${color} !important; 
-                               cursor: pointer !important;
-                               transform: scale(1.5) !important;
-                               margin: 0 !important;
-                               position: relative !important;
-                               z-index: 10 !important;
-                               pointer-events: auto !important;
-                           ">
-                </div>
-                
-                <!-- GOAL CONTENT -->
-                <div style="flex: 1 !important; margin: 0 !important; order: 2 !important;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
-                        <div style="
-                            background: ${color}; 
-                            color: white; 
-                            padding: 0.25rem 0.75rem; 
-                            border-radius: 12px; 
-                            font-size: 0.75rem; 
-                            font-weight: 600; 
-                            text-transform: uppercase;
-                        ">${goal.area}</div>
-                        <div style="font-size: 0.875rem; color: var(--text-muted);">
-                            Streak: <span style="font-weight: 600; color: ${color};">${goal.streak || 0} days</span>
-                        </div>
-                    </div>
-                    <h3 style="
-                        margin: 0 0 0.5rem 0; 
-                        color: var(--text-primary); 
-                        font-size: 1.1rem; 
-                        font-weight: 600;
-                        ${isCompletedToday ? 'text-decoration: line-through; opacity: 0.7;' : ''}
-                    ">${goal.dailyAction}</h3>
-                    <p style="
-                        margin: 0; 
-                        color: var(--text-secondary); 
-                        font-size: 0.9rem; 
-                        line-height: 1.4;
-                        ${isCompletedToday ? 'opacity: 0.6;' : ''}
-                    ">${goal.bigGoal}</p>
-                </div>
-                
-                <!-- STATUS BADGE -->
-                <div style="margin-left: 0.75rem !important; flex-shrink: 0 !important; order: 3 !important;">
-                    ${isCompletedToday ? 
-                        `<div style="
-                            background: ${color}; 
-                            color: white; 
-                            padding: 0.5rem 1rem; 
-                            border-radius: 20px; 
-                            font-size: 0.875rem; 
-                            font-weight: 600;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                        ">
-                            Complete
-                        </div>` : 
-                        `<div style="
-                            background: var(--border); 
-                            color: var(--text-muted); 
-                            padding: 0.5rem 1rem; 
-                            border-radius: 20px; 
-                            font-size: 0.875rem; 
-                            font-weight: 500;
-                        ">
-                            Pending
-                        </div>`
-                    }
-                </div>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
-}
-
 // Replace the original functions with mobile-optimized versions
 if (window.innerWidth <= 768) {
     window.openGoalDetail = openGoalDetailMobile;
     window.closeGoalDetail = closeGoalDetailMobile;
-    window.renderDailyGoals = renderDailyGoalsMobile;
     
     console.log('✅ Mobile-optimized functions loaded');
 }
 
-// Add mobile-specific event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Close modal when clicking outside on mobile
-    const modal = document.getElementById('goalDetailModal');
-    if (modal) {
-        modal.addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeGoalDetailMobile();
-            }
-        });
-    }
-    
-    // Prevent body scroll when modal is open
-    document.addEventListener('touchmove', function(e) {
-        if (document.body.classList.contains('modal-open')) {
-            e.preventDefault();
-        }
-    }, { passive: false });
-});
+console.log('📱 Complete fixed daily tracker loaded!');
 
-console.log('📱 Mobile fixes loaded!');
     </script>
         
 </body>
