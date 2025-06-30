@@ -1587,10 +1587,12 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Goal not found' });
     }
 
+    // CRITICAL FIX: Only update the specific goal, don't affect others
     if (bigGoal !== undefined) goal.bigGoal = bigGoal;
     if (dailyAction !== undefined) goal.dailyAction = dailyAction;
     
     if (completed !== undefined) {
+      // FIXED: Only update THIS goal's completion status
       goal.completed = completed;
       
       const today = new Date();
@@ -1600,10 +1602,11 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
         goal.completionHistory = [];
       }
       
+      const todayString = today.toISOString().split('T')[0];
       const existingTodayIndex = goal.completionHistory.findIndex(entry => {
         const entryDate = new Date(entry.date);
-        entryDate.setHours(0, 0, 0, 0);
-        return entryDate.getTime() === today.getTime();
+        const entryDateString = entryDate.toISOString().split('T')[0];
+        return entryDateString === todayString;
       });
       
       if (completed && lastCompletedDate) {
@@ -1618,6 +1621,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
           });
         }
         
+        // Calculate streak for THIS goal only
         const sortedHistory = goal.completionHistory
           .filter(entry => entry.completed)
           .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1651,6 +1655,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
         goal.streak = currentStreak;
         
       } else if (!completed) {
+        // Mark as incomplete for today only
         goal.lastCompletedDate = null;
         
         if (existingTodayIndex >= 0) {
@@ -1662,6 +1667,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
           });
         }
         
+        // Recalculate streak without today
         const sortedCompletedHistory = goal.completionHistory
           .filter(entry => entry.completed && new Date(entry.date).getTime() !== today.getTime())
           .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1702,6 +1708,8 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     }
     
     goal.updatedAt = new Date();
+    
+    // CRITICAL: Only save THIS specific goal
     await goal.save();
 
     res.json(goal);
