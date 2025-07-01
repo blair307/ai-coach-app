@@ -543,13 +543,13 @@ async function loadGoalsAndProgress() {
     }
 }
 
-        // Load progress data from server - NEW
+// Load progress data from server - ENHANCED
 async function loadProgressFromServer() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
         if (!token) {
             console.log('No auth token, using localStorage fallback');
-            loadDailyProgress(); // Fall back to localStorage
+            loadDailyProgress();
             return;
         }
 
@@ -574,19 +574,22 @@ async function loadProgressFromServer() {
             progressRecords.forEach(record => {
                 dailyProgress[record.date] = {};
                 record.goalProgress.forEach(gp => {
-                    dailyProgress[record.date][gp.goalId] = gp.completed;
+                    // Use string IDs to match what's in allGoals
+                    const goalIdStr = gp.goalId.toString();
+                    dailyProgress[record.date][goalIdStr] = gp.completed;
                 });
             });
             
             console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
+            console.log('📊 Today\'s progress:', dailyProgress[getTodayKey()] || 'No data for today');
         } else {
             console.log('Server progress not available, using localStorage');
-            loadDailyProgress(); // Fall back to localStorage
+            loadDailyProgress();
         }
 
     } catch (error) {
         console.error('Error loading progress from server:', error);
-        loadDailyProgress(); // Fall back to localStorage
+        loadDailyProgress();
     }
 }
         
@@ -917,7 +920,7 @@ async function saveProgressToServer(goalId, completed, area, date) {
                 // Calculate completion percentage for this day
                 const completedTasks = getCompletedTasksForDate(dateKey);
                 const totalTasks = allGoals.length;
-                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+               const percentage = totalTasks > 0 ? Math.min(100, Math.round((completedTasks / totalTasks) * 100)) : 0;
                 
                 const dayElement = document.createElement('div');
                 dayElement.className = `week-bar ${isToday ? 'today' : ''}`;
@@ -956,7 +959,7 @@ async function saveProgressToServer(goalId, completed, area, date) {
                 // Calculate completion percentage for this day
                 const completedTasks = getCompletedTasksForDate(dateKey);
                 const totalTasks = allGoals.length;
-                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+               const percentage = totalTasks > 0 ? Math.min(100, Math.round((completedTasks / totalTasks) * 100)) : 0;
                 
                 // Get day name for display
                 const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
