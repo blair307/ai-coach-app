@@ -4551,3 +4551,48 @@ function forceSingleColorIcons() {
         display: none !important;
     }
 }
+
+    /* SIMPLE MOBILE PROFILE FIX - FINAL ATTEMPT */
+@media (max-width: 768px) {
+    .content-header {
+        position: relative !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+    }
+    
+    .content-header h1 {
+        flex: 1 !important;
+        text-align: center !important;
+    }
+    
+    .header-actions {
+        position: absolute !important;
+        top: 50% !important;
+        right: 1rem !important;
+        transform: translateY(-50%) !important;
+        display: flex !important;
+        z-index: 999 !important;
+    }
+    
+    .header-actions .btn {
+        display: none !important;
+    }
+    
+    .profile-dropdown-container {
+        display: flex !important;
+    }
+    
+    .profile-avatar {
+        width: 44px !important;
+        height: 44px !important;
+        background: #6366f1 !important;
+        color: white !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 600 !important;
+        cursor: pointer !important;
+    }
+}
