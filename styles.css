@@ -4189,37 +4189,41 @@ function forceSingleColorIcons() {
   font-weight: 600 !important;
 }
 
-/* FIXED Profile Dropdown Styles - No Mobile Wrapper Needed */
+
+/* SIMPLE Profile Dropdown - Copy Notification Bell Style */
 .profile-dropdown-container {
     position: relative;
+    cursor: pointer;
+    margin-right: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s ease;
 }
 
 .profile-avatar {
+    position: relative;
     width: 44px;
     height: 44px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    background: rgba(99, 102, 241, 0.1);
     border: 2px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--primary);
-    font-weight: 600;
     font-size: 1rem;
-    overflow: hidden;
+    font-weight: 600;
+    color: var(--primary);
+    transition: all 0.3s ease;
     flex-shrink: 0;
+    cursor: pointer;
 }
 
 .profile-avatar:hover {
     background: rgba(99, 102, 241, 0.15);
     border-color: rgba(99, 102, 241, 0.3);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
 .profile-avatar img {
@@ -4227,18 +4231,6 @@ function forceSingleColorIcons() {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
-}
-
-/* When user has photo, remove background and border styling */
-.profile-avatar.has-photo {
-    background: transparent;
-    border: 2px solid var(--border);
-}
-
-.profile-avatar.has-photo:hover {
-    border-color: var(--primary);
-    background: transparent;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .profile-dropdown {
@@ -4250,16 +4242,13 @@ function forceSingleColorIcons() {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     z-index: 1000;
-    min-width: 160px;
+    min-width: 140px;
     margin-top: 0.5rem;
     overflow: hidden;
-    backdrop-filter: blur(20px);
 }
 
 .dropdown-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.25rem;
+    padding: 0.875rem 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-primary);
@@ -4275,83 +4264,4 @@ function forceSingleColorIcons() {
 .dropdown-item:hover {
     background: var(--primary);
     color: white;
-    transform: translateX(4px);
-}
-
-/* FIXED: Header Actions Alignment - Keep Original Behavior */
-.header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-/* FIXED: Notification and Profile containers should align naturally */
-.notification-icon-container,
-.profile-dropdown-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Mobile Responsive - Simple and Clean */
-@media (max-width: 768px) {
-    /* Keep header actions in column layout for mobile */
-    .content-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-    
-    .content-header h1 {
-        text-align: center;
-        margin-bottom: 0;
-    }
-    
-    .header-actions {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-    
-    /* Profile dropdown adjustments for mobile */
-    .profile-dropdown {
-        right: -1rem;
-        min-width: 140px;
-        margin-top: 0.75rem;
-    }
-    
-    .dropdown-item {
-        padding: 0.875rem 1rem;
-        font-size: 0.9rem;
-    }
-    
-    /* Ensure buttons are full width on mobile */
-    .header-actions .btn {
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-    .profile-dropdown {
-        right: -0.5rem;
-        min-width: 130px;
-    }
-    
-    .dropdown-item {
-        padding: 0.75rem 0.875rem;
-        font-size: 0.85rem;
-    }
-}
-    
-@keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
