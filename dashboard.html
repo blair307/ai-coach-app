@@ -215,37 +215,36 @@
             </ul>
         </nav>
 
-<!-- SIMPLE FIX - Just add profile dropdown, no mobile wrapper -->
-<header class="content-header">
-    <h1>Dashboard</h1>
-    <div class="header-actions">
-        <!-- Notification Icon -->
-        <div class="notification-icon-container" onclick="goToNotifications()">
-            <div class="notification-bell">
-               <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> 
-                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
-               </svg>
-                <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
-            </div>
+ <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <!-- Notification Icon -->
+                    <div class="notification-icon-container" onclick="goToNotifications()">
+                        <div class="notification-bell">
+                           <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> 
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
+                            </svg>
+                            <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
+                        </div>
+                        <div class="profile-dropdown-container">
+    <div class="profile-avatar" onclick="toggleProfileDropdown()" id="profileAvatar">
+        U
+    </div>
+    <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+        <div class="dropdown-item" onclick="goToBilling()">
+            Billing
         </div>
-        
-        <!-- Profile Dropdown -->
-        <div class="profile-dropdown-container">
-            <div class="profile-avatar" onclick="toggleProfileDropdown()" id="profileAvatar">
-                <!-- Will be populated by JavaScript -->
-            </div>
-            <div class="profile-dropdown" id="profileDropdown" style="display: none;">
-                <div class="dropdown-item" onclick="goToBilling()">
-                    Billing
-                </div>
-                <div class="dropdown-item" onclick="goToSettings()">
-                    Settings
-                </div>
-                <div class="dropdown-item" onclick="logout()">
-                    Logout
-                </div>
-            </div>
+        <div class="dropdown-item" onclick="goToSettings()">
+            Settings
         </div>
+        <div class="dropdown-item" onclick="logout()">
+            Logout
+        </div>
+    </div>
+</div>
+                    </div>
         
         <!-- Button (if exists on page) -->
         <button class="btn btn-primary" onclick="startCoachingSession()">
