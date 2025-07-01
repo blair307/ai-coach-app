@@ -211,6 +211,42 @@ const insightSchema = new mongoose.Schema({
 
 const Insight = mongoose.model('Insight', insightSchema);
 
+// Daily Progress Schema - NEW
+const dailyProgressSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  date: { type: String, required: true }, // YYYY-MM-DD format
+  goalProgress: [{
+    goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal', required: true },
+    completed: { type: Boolean, default: false },
+    completedAt: { type: Date },
+    area: { type: String, required: true } // Store area for easy filtering
+  }],
+  totalGoals: { type: Number, default: 0 },
+  completedGoals: { type: Number, default: 0 },
+  completionPercentage: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Compound index for efficient queries
+dailyProgressSchema.index({ userId: 1, date: 1 }, { unique: true });
+
+const DailyProgress = mongoose.model('DailyProgress', dailyProgressSchema);
+
+// Life Goals Schema - NEW
+const lifeGoalSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  area: { type: String, required: true }, // mind, spirit, body, work, relationships, fun, finances
+  bigGoal: { type: String, required: true },
+  dailyAction: { type: String, required: true },
+  streak: { type: Number, default: 0 },
+  lastCompletedDate: { type: Date },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
+
 // Generate insights from chat conversations - NEW
 async function generateInsights(userId, messages) {
   try {
@@ -2223,6 +2259,273 @@ app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get daily prompt stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
+  }
+});
+
+// ==========================================
+// DAILY PROGRESS API ROUTES - NEW
+// ==========================================
+
+// Get daily progress for a specific date or date range
+app.get('/api/daily-progress', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { date, startDate, endDate } = req.query;
+
+    let query = { userId };
+
+    if (date) {
+      // Single date
+      query.date = date;
+    } else if (startDate && endDate) {
+      // Date range
+      query.date = { $gte: startDate, $lte: endDate };
+    } else {
+      // Default to last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
+      const endDateStr = new Date().toISOString().split('T')[0];
+      query.date = { $gte: startDateStr, $lte: endDateStr };
+    }
+
+    const progressRecords = await DailyProgress.find(query)
+      .populate('goalProgress.goalId', 'area bigGoal dailyAction')
+      .sort({ date: -1 });
+
+    res.json(progressRecords);
+
+  } catch (error) {
+    console.error('Get daily progress error:', error);
+    res.status(500).json({ error: 'Failed to get daily progress' });
+  }
+});
+
+// Save/Update daily progress
+app.post('/api/daily-progress', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { date, goalId, completed, area } = req.body;
+
+    if (!date || !goalId || completed === undefined || !area) {
+      return res.status(400).json({ error: 'Date, goalId, completed status, and area are required' });
+    }
+
+    // Find or create daily progress record
+    let dailyProgress = await DailyProgress.findOne({ userId, date });
+
+    if (!dailyProgress) {
+      // Create new daily progress record
+      dailyProgress = new DailyProgress({
+        userId,
+        date,
+        goalProgress: [],
+        totalGoals: 0,
+        completedGoals: 0,
+        completionPercentage: 0
+      });
+    }
+
+    // Find existing goal progress or create new
+    let goalProgressIndex = dailyProgress.goalProgress.findIndex(
+      gp => gp.goalId.toString() === goalId
+    );
+
+    if (goalProgressIndex === -1) {
+      // Add new goal progress
+      dailyProgress.goalProgress.push({
+        goalId,
+        completed,
+        completedAt: completed ? new Date() : null,
+        area
+      });
+    } else {
+      // Update existing goal progress
+      dailyProgress.goalProgress[goalProgressIndex].completed = completed;
+      dailyProgress.goalProgress[goalProgressIndex].completedAt = completed ? new Date() : null;
+    }
+
+    // Recalculate totals
+    const completedCount = dailyProgress.goalProgress.filter(gp => gp.completed).length;
+    const totalCount = dailyProgress.goalProgress.length;
+
+    dailyProgress.completedGoals = completedCount;
+    dailyProgress.totalGoals = totalCount;
+    dailyProgress.completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+    dailyProgress.updatedAt = new Date();
+
+    await dailyProgress.save();
+
+    // Also update the goal's streak in the life-goals collection
+    try {
+      const goal = await LifeGoal.findById(goalId);
+      if (goal) {
+        if (completed) {
+          // Task completed - increment streak
+          goal.streak = (goal.streak || 0) + 1;
+          goal.lastCompletedDate = new Date();
+        } else {
+          // Task uncompleted - decrement streak
+          goal.streak = Math.max(0, (goal.streak || 0) - 1);
+        }
+        await goal.save();
+      }
+    } catch (goalError) {
+      console.error('Error updating goal streak:', goalError);
+    }
+
+    res.json({
+      message: 'Daily progress updated successfully',
+      progress: dailyProgress
+    });
+
+  } catch (error) {
+    console.error('Save daily progress error:', error);
+    res.status(500).json({ error: 'Failed to save daily progress' });
+  }
+});
+
+// Get progress summary for dashboard
+app.get('/api/daily-progress/summary', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get today's progress
+    const todayProgress = await DailyProgress.findOne({ userId, date: today });
+
+    // Get last 7 days for weekly streak calculation
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const startDate = sevenDaysAgo.toISOString().split('T')[0];
+
+    const weeklyProgress = await DailyProgress.find({
+      userId,
+      date: { $gte: startDate, $lte: today }
+    }).sort({ date: -1 });
+
+    // Calculate weekly streak (consecutive days with at least one completed task)
+    let weeklyStreak = 0;
+    for (const dayProgress of weeklyProgress) {
+      if (dayProgress.completedGoals > 0) {
+        weeklyStreak++;
+      } else {
+        break;
+      }
+    }
+
+    // Get total goals count
+    const totalGoals = await LifeGoal.countDocuments({ userId });
+
+    res.json({
+      today: {
+        totalTasks: todayProgress?.totalGoals || 0,
+        completed: todayProgress?.completedGoals || 0,
+        percentage: todayProgress?.completionPercentage || 0
+      },
+      weeklyStreak,
+      totalGoals,
+      weeklyProgress: weeklyProgress.map(wp => ({
+        date: wp.date,
+        completed: wp.completedGoals,
+        total: wp.totalGoals,
+        percentage: wp.completionPercentage
+      }))
+    });
+
+  } catch (error) {
+    console.error('Get progress summary error:', error);
+    res.status(500).json({ error: 'Failed to get progress summary' });
+  }
+});
+
+// ==========================================
+// LIFE GOALS API ROUTES - NEW
+// ==========================================
+
+app.get('/api/life-goals', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const goals = await LifeGoal.find({ userId }).sort({ createdAt: -1 });
+    res.json(goals);
+  } catch (error) {
+    console.error('Get life goals error:', error);
+    res.status(500).json({ error: 'Failed to get life goals' });
+  }
+});
+
+app.post('/api/life-goals', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { area, bigGoal, dailyAction } = req.body;
+
+    if (!area || !bigGoal || !dailyAction) {
+      return res.status(400).json({ error: 'Area, big goal, and daily action are required' });
+    }
+
+    const goal = new LifeGoal({
+      userId,
+      area,
+      bigGoal,
+      dailyAction,
+      streak: 0
+    });
+
+    await goal.save();
+    res.json(goal);
+
+  } catch (error) {
+    console.error('Create life goal error:', error);
+    res.status(500).json({ error: 'Failed to create life goal' });
+  }
+});
+
+app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const goalId = req.params.id;
+    const updateData = req.body;
+
+    const goal = await LifeGoal.findOneAndUpdate(
+      { _id: goalId, userId },
+      { ...updateData, updatedAt: new Date() },
+      { new: true }
+    );
+
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    res.json(goal);
+
+  } catch (error) {
+    console.error('Update life goal error:', error);
+    res.status(500).json({ error: 'Failed to update life goal' });
+  }
+});
+
+app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const goalId = req.params.id;
+
+    const goal = await LifeGoal.findOneAndDelete({ _id: goalId, userId });
+
+    if (!goal) {
+      return res.status(404).json({ error: 'Goal not found' });
+    }
+
+    // Also delete any daily progress records for this goal
+    await DailyProgress.updateMany(
+      { userId },
+      { $pull: { goalProgress: { goalId } } }
+    );
+
+    res.json({ message: 'Goal deleted successfully' });
+
+  } catch (error) {
+    console.error('Delete life goal error:', error);
+    res.status(500).json({ error: 'Failed to delete life goal' });
   }
 });
 
