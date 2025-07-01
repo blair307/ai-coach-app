@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -978,13 +977,22 @@ async function saveProgressToServer(goalId, completed, area, date) {
             }
         }
 
-        // Get completed tasks count for a specific date
-        function getCompletedTasksForDate(dateKey) {
-            if (!dailyProgress[dateKey]) return 0;
-            
-            return Object.values(dailyProgress[dateKey]).filter(completed => completed === true).length;
+// Get completed tasks count for a specific date - FIXED
+function getCompletedTasksForDate(dateKey) {
+    if (!dailyProgress[dateKey]) return 0;
+    
+    // Only count completions for goals that still exist
+    const currentGoalIds = allGoals.map(g => (g._id || g.id).toString());
+    
+    let count = 0;
+    Object.entries(dailyProgress[dateKey]).forEach(([goalId, completed]) => {
+        if (completed === true && currentGoalIds.includes(goalId.toString())) {
+            count++;
         }
-
+    });
+    
+    return count;
+}
         // Switch between weekly and monthly view
         function switchView(view) {
             currentView = view;
