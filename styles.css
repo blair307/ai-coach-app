@@ -4189,13 +4189,12 @@ function forceSingleColorIcons() {
   font-weight: 600 !important;
 }
 
-/* Updated Profile Dropdown Styles - Matches Notification Bell */
+/* FIXED Profile Dropdown Styles - No Mobile Wrapper Needed */
 .profile-dropdown-container {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 1rem;
 }
 
 .profile-avatar {
@@ -4279,14 +4278,14 @@ function forceSingleColorIcons() {
     transform: translateX(4px);
 }
 
-/* Header Actions Alignment Fix */
+/* FIXED: Header Actions Alignment - Keep Original Behavior */
 .header-actions {
     display: flex;
     gap: 1rem;
     align-items: center;
-    justify-content: flex-end;
 }
 
+/* FIXED: Notification and Profile containers should align naturally */
 .notification-icon-container,
 .profile-dropdown-container {
     display: flex;
@@ -4294,18 +4293,27 @@ function forceSingleColorIcons() {
     justify-content: center;
 }
 
-/* Mobile Styles */
+/* Mobile Responsive - Simple and Clean */
 @media (max-width: 768px) {
-    .profile-dropdown-container {
-        margin-left: 0.75rem;
+    /* Keep header actions in column layout for mobile */
+    .content-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        margin-bottom: 2rem;
     }
     
-    .profile-avatar {
-        width: 44px;
-        height: 44px;
-        font-size: 1rem;
+    .content-header h1 {
+        text-align: center;
+        margin-bottom: 0;
     }
     
+    .header-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    /* Profile dropdown adjustments for mobile */
     .profile-dropdown {
         right: -1rem;
         min-width: 140px;
@@ -4317,30 +4325,10 @@ function forceSingleColorIcons() {
         font-size: 0.9rem;
     }
     
-    /* Ensure header actions stack properly on mobile */
-    .header-actions {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: stretch;
-    }
-    
+    /* Ensure buttons are full width on mobile */
     .header-actions .btn {
         width: 100%;
-        order: 3; /* Put button last */
-    }
-    
-    .notification-icon-container,
-    .profile-dropdown-container {
-        order: 1; /* Put icons first */
-        align-self: center;
-    }
-    
-    /* Create a horizontal container for the icons on mobile */
-    .mobile-icons-container {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-        order: 1;
+        margin-top: 0.5rem;
     }
 }
 
@@ -4356,7 +4344,7 @@ function forceSingleColorIcons() {
         font-size: 0.85rem;
     }
 }
-
+    
 @keyframes dropdownSlide {
     from {
         opacity: 0;
