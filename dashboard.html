@@ -2138,38 +2138,10 @@ setTimeout(loadDashboardInsights, 2500);
     <script>
 // Profile Dropdown JavaScript - REPLACE EXISTING
 function initializeProfileDropdown() {
-        alert('Profile dropdown function called!'); // ADD THIS LINE
-    console.log('🔥 PROFILE DROPDOWN INITIALIZING'); // ADD THIS TOO
     const profileAvatar = document.getElementById('profileAvatar');
     const profileDropdown = document.getElementById('profileDropdown');
     const dropdownOverlay = document.getElementById('dropdownOverlay');
 
-    // ADD THIS DEBUG CODE:
-    if (profileAvatar) {
-        console.log('Profile avatar found!');
-        console.log('Avatar computed style:', window.getComputedStyle(profileAvatar).display);
-        console.log('Avatar visibility:', window.getComputedStyle(profileAvatar).visibility);
-        console.log('Avatar opacity:', window.getComputedStyle(profileAvatar).opacity);
-        
-        // Force it to be visible
-        profileAvatar.style.cssText = `
-            display: block !important;
-            position: fixed !important;
-            top: 20px !important;
-            right: 20px !important;
-            width: 60px !important;
-            height: 60px !important;
-            background: red !important;
-            z-index: 99999 !important;
-            border-radius: 50% !important;
-            color: white !important;
-            text-align: center !important;
-            line-height: 60px !important;
-            font-size: 24px !important;
-        `;
-    } else {
-        console.log('❌ Profile avatar element not found!');
-    }
 
     if (!profileAvatar || !profileDropdown || !dropdownOverlay) {
         console.log('Profile dropdown elements not found');
