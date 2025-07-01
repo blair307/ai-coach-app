@@ -520,29 +520,76 @@
             console.log('✅ Daily Tracker initialized');
         });
 
-        // Load goals and progress data
-        async function loadGoalsAndProgress() {
-            try {
-                console.log('📊 Loading goals and progress...');
-                
-                // Load goals from backend
-                await loadGoalsFromBackend();
-                
-                // Load today's progress
-                loadDailyProgress();
-                
-                // Generate the tracker interface
-                generateTrackerCards();
-                generateProgressOverview();
-                updateSummaryStats();
-                
-                console.log('✅ Goals and progress loaded successfully');
-                
-            } catch (error) {
-                console.error('❌ Error loading goals and progress:', error);
-                showEmptyState();
-            }
+async function loadGoalsAndProgress() {
+    try {
+        console.log('📊 Loading goals and progress...');
+        
+        // Load goals from backend
+        await loadGoalsFromBackend();
+        
+        // Load progress data from server
+        await loadProgressFromServer();
+        
+        // Generate the tracker interface
+        generateTrackerCards();
+        generateProgressOverview();
+        updateSummaryStats();
+        
+        console.log('✅ Goals and progress loaded successfully');
+        
+    } catch (error) {
+        console.error('❌ Error loading goals and progress:', error);
+        showEmptyState();
+    }
+}
+
+        // Load progress data from server - NEW
+async function loadProgressFromServer() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            console.log('No auth token, using localStorage fallback');
+            loadDailyProgress(); // Fall back to localStorage
+            return;
         }
+
+        // Get last 30 days of progress
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const startDate = thirtyDaysAgo.toISOString().split('T')[0];
+        const endDate = new Date().toISOString().split('T')[0];
+
+        const response = await fetch(`${API_BASE_URL}/api/daily-progress?startDate=${startDate}&endDate=${endDate}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const progressRecords = await response.json();
+            
+            // Convert server data to our local format
+            dailyProgress = {};
+            progressRecords.forEach(record => {
+                dailyProgress[record.date] = {};
+                record.goalProgress.forEach(gp => {
+                    dailyProgress[record.date][gp.goalId] = gp.completed;
+                });
+            });
+            
+            console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
+        } else {
+            console.log('Server progress not available, using localStorage');
+            loadDailyProgress(); // Fall back to localStorage
+        }
+
+    } catch (error) {
+        console.error('Error loading progress from server:', error);
+        loadDailyProgress(); // Fall back to localStorage
+    }
+}
+        
 
         // Load goals from backend API
         async function loadGoalsFromBackend() {
@@ -690,47 +737,47 @@
             `;
         }
 
-        // Toggle task completion
-        function toggleTask(goalId) {
-            const today = getTodayKey();
-            const goal = allGoals.find(g => (g._id || g.id) === goalId);
-            
-            if (!goal) {
-                console.error('Goal not found:', goalId);
-                return;
-            }
+async function toggleTask(goalId) {
+    const today = getTodayKey();
+    const goal = allGoals.find(g => (g._id || g.id) === goalId);
+    
+    if (!goal) {
+        console.error('Goal not found:', goalId);
+        return;
+    }
 
-            // Initialize today's progress if not exists
-            if (!dailyProgress[today]) {
-                dailyProgress[today] = {};
-            }
+    // Initialize today's progress if not exists
+    if (!dailyProgress[today]) {
+        dailyProgress[today] = {};
+    }
 
-            // Toggle completion status
-            const wasCompleted = dailyProgress[today][goalId] || false;
-            dailyProgress[today][goalId] = !wasCompleted;
+    // Toggle completion status
+    const wasCompleted = dailyProgress[today][goalId] || false;
+    const newCompleted = !wasCompleted;
+    dailyProgress[today][goalId] = newCompleted;
 
-            // Update goal streak
-            if (!wasCompleted) {
-                // Task completed
-                goal.streak = (goal.streak || 0) + 1;
-                goal.lastCompletedDate = new Date().toISOString();
-                showSuccessToast(`${goal.area} goal completed! 🎉`);
-            } else {
-                // Task uncompleted
-                goal.streak = Math.max(0, (goal.streak || 0) - 1);
-            }
+    // Update goal streak locally
+    if (newCompleted) {
+        goal.streak = (goal.streak || 0) + 1;
+        goal.lastCompletedDate = new Date().toISOString();
+        showSuccessToast(`${goal.area} goal completed! 🎉`);
+    } else {
+        goal.streak = Math.max(0, (goal.streak || 0) - 1);
+    }
 
-            // Save progress
-            saveDailyProgress();
-            saveGoalToBackend(goal);
+    // Save to server
+    await saveProgressToServer(goalId, newCompleted, goal.area, today);
 
-            // Update UI
-            updateTaskUI(goalId);
-            updateSummaryStats();
-            generateProgressOverview();
+    // Save locally as backup
+    saveDailyProgress();
 
-            console.log(`📝 Task ${goalId} ${!wasCompleted ? 'completed' : 'uncompleted'}`);
-        }
+    // Update UI
+    updateTaskUI(goalId);
+    updateSummaryStats();
+    generateProgressOverview();
+
+    console.log(`📝 Task ${goalId} ${newCompleted ? 'completed' : 'uncompleted'}`);
+}
 
         // Update task UI after toggle
         function updateTaskUI(goalId) {
