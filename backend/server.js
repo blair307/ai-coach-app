@@ -911,40 +911,42 @@ app.put('/api/user/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// Function to create daily prompt notification
+// REPLACE the existing createDailyPromptNotification function with this fixed version
 async function createDailyPromptNotification() {
   try {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // First, ensure today's assignment exists
-    let assignment = await DailyPromptAssignment.findOne({ date: today })
-      .populate('promptId');
+    console.log(`🌅 Creating daily prompt for ${today.toISOString().split('T')[0]}`);
 
-    if (!assignment) {
-      const nextPrompt = await getNextPrompt();
-      if (!nextPrompt) {
-        console.log('⚠️ No prompts available for assignment');
-        return;
-      }
+    // STEP 1: ALWAYS create/update today's assignment with a fresh prompt
+    // Delete any existing assignment for today first
+    await DailyPromptAssignment.deleteOne({ date: today });
+    console.log('🗑️ Cleared existing assignment for today');
 
-      assignment = new DailyPromptAssignment({
-        date: today,
-        promptId: nextPrompt._id,
-        responseCount: 0
-      });
-      
-      await assignment.save();
-      await assignment.populate('promptId');
-
-      nextPrompt.usageCount += 1;
-      nextPrompt.lastUsed = new Date();
-      await nextPrompt.save();
-      
-      console.log(`✅ Created new daily prompt assignment: "${nextPrompt.prompt}"`);
+    // Get a fresh prompt
+    const nextPrompt = await getNextPrompt();
+    if (!nextPrompt) {
+      console.log('⚠️ No prompts available for assignment');
+      return;
     }
 
-    // Check if notifications already sent today
+    // Create new assignment with fresh prompt
+    const assignment = new DailyPromptAssignment({
+      date: today,
+      promptId: nextPrompt._id,
+      responseCount: 0
+    });
+    
+    await assignment.save();
+    console.log(`✅ Created fresh daily prompt assignment: "${nextPrompt.prompt.substring(0, 50)}..."`);
+
+    // Update prompt usage stats
+    nextPrompt.usageCount += 1;
+    nextPrompt.lastUsed = new Date();
+    await nextPrompt.save();
+
+    // STEP 2: Send notifications (only if not already sent today)
     const existingNotifications = await Notification.countDocuments({
       type: 'system',
       title: { $regex: 'Daily Prompt Available', $options: 'i' },
@@ -955,10 +957,11 @@ async function createDailyPromptNotification() {
     });
 
     if (existingNotifications > 0) {
-      console.log('📅 Daily prompt notifications already sent today');
+      console.log('📅 Daily prompt notifications already sent today, skipping notifications');
       return;
     }
 
+    // Send notifications to active users
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const activeUsers = await User.find({
       'streakData.lastLoginDate': { $gte: thirtyDaysAgo }
@@ -970,7 +973,7 @@ async function createDailyPromptNotification() {
       userId: user._id,
       type: 'system',
       title: '🌅 Daily Prompt Available!',
-      content: `Today's reflection: "${assignment.promptId.prompt.substring(0, 100)}${assignment.promptId.prompt.length > 100 ? '...' : ''}"`,
+      content: `Today's reflection: "${nextPrompt.prompt.substring(0, 100)}${nextPrompt.prompt.length > 100 ? '...' : ''}"`,
       priority: 'normal',
       createdAt: new Date()
     }));
