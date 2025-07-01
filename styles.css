@@ -4478,3 +4478,21 @@ function forceSingleColorIcons() {
         z-index: 99999 !important;
     }
 }
+
+@media (max-width: 768px) {
+    .profile-dropdown-container {
+        display: flex !important;
+        position: relative !important;
+        z-index: 99999 !important;
+    }
+    
+    .header-actions .profile-dropdown-container {
+        display: flex !important;
+    }
+    
+    .profile-avatar {
+        width: 48px !important;
+        height: 48px !important;
+        display: flex !important;
+    }
+}
