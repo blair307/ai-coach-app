@@ -1209,10 +1209,10 @@ async function updateGoalOnServerIsolated(goalId, completed) {
     return updatedGoal;
 }
 
-// REPLACE your toggleGoalCompletion function with this version:
+// REPLACE your toggleGoalCompletion function with this final version:
 
 async function toggleGoalCompletion(goalId) {
-    console.log('🔄 FINAL FIX TOGGLE - goalId:', goalId);
+    console.log('🔄 VISUAL FIX TOGGLE - goalId:', goalId);
     
     try {
         const goal = currentGoals.find(g => g._id === goalId);
@@ -1224,8 +1224,8 @@ async function toggleGoalCompletion(goalId) {
         const currentlyCompleted = isGoalCompletedToday(goal);
         const newState = !currentlyCompleted;
         
-        console.log('📋 FINAL FIX - Current state:', currentlyCompleted);
-        console.log('🔄 FINAL FIX - Setting to:', newState);
+        console.log('📋 VISUAL FIX - Current state:', currentlyCompleted);
+        console.log('🔄 VISUAL FIX - Setting to:', newState);
         
         // Show immediate feedback
         const checkbox = document.getElementById(`goal-${goalId}`);
@@ -1237,25 +1237,35 @@ async function toggleGoalCompletion(goalId) {
         // Call the server
         await updateGoalOnServerIsolated(goalId, newState);
         
-        // CRITICAL FIX: Wait a moment for server data to settle, then refresh
-        console.log('🔄 DISPLAY FIX - Refreshing UI with proper delays...');
+        // VISUAL FIX: Update UI components in the correct order
+        console.log('🔄 VISUAL FIX - Refreshing UI components...');
         
-        // Update goal cards immediately
+        // 1. Update goal cards and stats first
         renderDailyGoals();
         updateProgressStats();
         renderGoalsByArea();
         
-        // DISPLAY FIX: Small delay before refreshing progress charts to ensure clean render
+        // 2. Force a complete progress chart refresh with a delay
         setTimeout(() => {
-            console.log('🔄 DISPLAY FIX - Refreshing progress charts with isolated calculations...');
+            console.log('🔄 VISUAL FIX - Force refreshing progress charts...');
             
-            // Force a complete re-render of the progress view
-            if (progressView === 'weekly') {
-                showWeeklyProgress();
-            } else {
-                showMonthlyProgress();
+            // Clear the container completely first
+            const container = document.getElementById('progressChart');
+            if (container) {
+                container.innerHTML = '<p style="text-align: center; padding: 1rem;">Updating...</p>';
             }
-        }, 500);
+            
+            // Then rebuild it completely
+            setTimeout(() => {
+                if (progressView === 'weekly') {
+                    renderWeeklyProgress();
+                } else {
+                    renderMonthlyProgress();
+                }
+                console.log('✅ VISUAL FIX - Progress chart refreshed completely');
+            }, 100);
+            
+        }, 300);
         
         // Re-enable checkbox
         if (checkbox) {
@@ -1266,7 +1276,7 @@ async function toggleGoalCompletion(goalId) {
         showSuccess(newState ? 'Goal completed! 🎉' : 'Goal marked as incomplete.');
         
     } catch (error) {
-        console.error('❌ FINAL FIX Toggle failed:', error);
+        console.error('❌ VISUAL FIX Toggle failed:', error);
         showError('Failed to update goal. Please try again.');
         
         // Reset checkbox on error
@@ -1277,7 +1287,6 @@ async function toggleGoalCompletion(goalId) {
         }
     }
 }
-
 function openGoalDetail(goalId) {
     const goal = currentGoals.find(g => g._id === goalId);
     if (!goal) return;
