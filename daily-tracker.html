@@ -184,57 +184,52 @@
             border-color: var(--primary);
         }
 
-        .calendar-grid {
+        .monthly-bars {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 1px;
-            background: var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 1rem;
             margin-bottom: 2rem;
         }
 
-        .calendar-header {
-            background: var(--surface);
-            padding: 0.75rem;
+        .month-bar {
             text-align: center;
-            font-weight: 600;
-            font-size: 0.875rem;
+        }
+
+        .month-day {
+            font-size: 0.8rem;
             color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
         }
 
-        .calendar-day {
-            background: var(--background);
-            min-height: 80px;
-            padding: 0.5rem;
-            display: flex;
-            flex-direction: column;
+        .month-bar-container {
+            height: 100px;
+            background: var(--surface);
+            border-radius: var(--radius);
             position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
         }
 
-        .day-number {
-            font-size: 0.875rem;
+        .month-progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            transition: height 0.5s ease;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .month-bar-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-
-        .day-progress {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .goal-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            opacity: 0.3;
-        }
-
-        .goal-dot.completed {
-            opacity: 1;
+            z-index: 2;
         }
 
         .weekly-bars {
@@ -325,6 +320,15 @@
             .goal-dot {
                 width: 6px;
                 height: 6px;
+            }
+
+            .monthly-bars {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .month-bar-container {
+                height: 80px;
             }
 
             .weekly-bars {
@@ -428,6 +432,11 @@
                 <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Complete your daily actions and build lasting habits across all areas of your life.</p>
             </div>
 
+            <!-- Daily Tasks by Life Area -->
+            <div class="tracker-grid" id="trackerGrid">
+                <!-- Task cards will be generated here -->
+            </div>
+
             <!-- Progress Overview -->
             <div class="progress-overview">
                 <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Progress Overview</h2>
@@ -447,8 +456,8 @@
 
                 <!-- Monthly View -->
                 <div id="monthlyView" style="display: none;">
-                    <div class="calendar-grid" id="monthlyCalendar">
-                        <!-- Monthly calendar will be generated here -->
+                    <div class="monthly-bars" id="monthlyBars">
+                        <!-- Monthly progress bars will be generated here -->
                     </div>
                 </div>
 
@@ -471,11 +480,6 @@
                         <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Total Goals</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Daily Tasks by Life Area -->
-            <div class="tracker-grid" id="trackerGrid">
-                <!-- Task cards will be generated here -->
             </div>
 
         </main>
@@ -850,57 +854,43 @@
 
         // Generate monthly progress view
         function generateMonthlyView() {
-            const monthlyCalendar = document.getElementById('monthlyCalendar');
+            const monthlyBars = document.getElementById('monthlyBars');
             const today = new Date();
             const year = today.getFullYear();
             const month = today.getMonth();
             
-            // Get first day of month and calculate grid
+            // Get first and last day of month
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            const startDate = new Date(firstDay);
-            startDate.setDate(firstDay.getDate() - firstDay.getDay());
+            const todayDate = today.getDate();
             
-            monthlyCalendar.innerHTML = '';
+            monthlyBars.innerHTML = '';
             
-            // Add weekday headers
-            const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            weekDays.forEach(day => {
-                const header = document.createElement('div');
-                header.className = 'calendar-header';
-                header.textContent = day;
-                monthlyCalendar.appendChild(header);
-            });
-            
-            // Generate calendar days
-            for (let i = 0; i < 42; i++) {
-                const date = new Date(startDate);
-                date.setDate(startDate.getDate() + i);
+            // Generate bars for each day of the month
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const date = new Date(year, month, day);
                 const dateKey = date.toISOString().split('T')[0];
-                const isToday = dateKey === getTodayKey();
-                const isCurrentMonth = date.getMonth() === month;
+                const isToday = day === todayDate;
+                
+                // Calculate completion percentage for this day
+                const completedTasks = getCompletedTasksForDate(dateKey);
+                const totalTasks = allGoals.length;
+                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                
+                // Get day name for display
+                const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
                 
                 const dayElement = document.createElement('div');
-                dayElement.className = `calendar-day ${isToday ? 'today' : ''}`;
+                dayElement.className = `month-bar ${isToday ? 'today' : ''}`;
+                dayElement.innerHTML = `
+                    <div class="month-day">${day} ${dayName}</div>
+                    <div class="month-bar-container">
+                        <div class="month-progress-bar" style="height: ${percentage}%;"></div>
+                        <div class="month-bar-percentage">${percentage}%</div>
+                    </div>
+                `;
                 
-                if (isCurrentMonth) {
-                    const completedTasks = getCompletedTasksForDate(dateKey);
-                    const goalDots = allGoals.map(goal => {
-                        const goalId = goal._id || goal.id;
-                        const isCompleted = dailyProgress[dateKey] && dailyProgress[dateKey][goalId];
-                        const color = areaConfig[goal.area]?.color || '#6366f1';
-                        return `<div class="goal-dot ${isCompleted ? 'completed' : ''}" style="background: ${color};"></div>`;
-                    }).join('');
-                    
-                    dayElement.innerHTML = `
-                        <div class="day-number">${date.getDate()}</div>
-                        <div class="day-progress">${goalDots}</div>
-                    `;
-                } else {
-                    dayElement.innerHTML = `<div class="day-number" style="opacity: 0.3;">${date.getDate()}</div>`;
-                }
-                
-                monthlyCalendar.appendChild(dayElement);
+                monthlyBars.appendChild(dayElement);
             }
         }
 
