@@ -2127,16 +2127,11 @@ setTimeout(loadDashboardInsights, 2500);
       
     </script>
     <script>
-// Updated Profile dropdown functionality
-let profileDropdownOpen = false;
-
+// SIMPLE Profile Dropdown JavaScript
 function toggleProfileDropdown() {
     const dropdown = document.getElementById('profileDropdown');
-    profileDropdownOpen = !profileDropdownOpen;
-    
-    if (profileDropdownOpen) {
+    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
         dropdown.style.display = 'block';
-        dropdown.style.animation = 'dropdownSlide 0.3s ease-out';
     } else {
         dropdown.style.display = 'none';
     }
@@ -2147,22 +2142,16 @@ document.addEventListener('click', function(event) {
     const container = document.querySelector('.profile-dropdown-container');
     const dropdown = document.getElementById('profileDropdown');
     
-    if (container && !container.contains(event.target)) {
+    if (!container.contains(event.target)) {
         dropdown.style.display = 'none';
-        profileDropdownOpen = false;
     }
 });
 
-// Updated: Load user profile photo or initials with better styling
+// Load user initials or photo
 async function loadProfileAvatar() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (!token) {
-            // Show default initials
-            const avatar = document.getElementById('profileAvatar');
-            if (avatar) avatar.innerHTML = 'U';
-            return;
-        }
+        if (!token) return;
 
         const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/user/settings', {
             headers: {
@@ -2176,38 +2165,26 @@ async function loadProfileAvatar() {
             const avatar = document.getElementById('profileAvatar');
             
             if (data.profile.profilePhoto) {
-                // Show profile photo and add special styling
                 avatar.innerHTML = `<img src="${data.profile.profilePhoto}" alt="Profile">`;
-                avatar.classList.add('has-photo');
             } else {
-                // Show initials and remove photo styling
                 const firstName = data.profile.firstName || '';
                 const lastName = data.profile.lastName || '';
                 const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'U';
                 avatar.innerHTML = initials;
-                avatar.classList.remove('has-photo');
             }
         }
     } catch (error) {
-        console.error('Error loading profile avatar:', error);
-        // Fallback to 'U' if there's an error
-        const avatar = document.getElementById('profileAvatar');
-        if (avatar) {
-            avatar.innerHTML = 'U';
-            avatar.classList.remove('has-photo');
-        }
+        console.log('Could not load profile');
     }
 }
 
 // Navigation functions
 function goToBilling() {
     window.location.href = 'billing.html';
-    toggleProfileDropdown();
 }
 
 function goToSettings() {
     window.location.href = 'settings.html';
-    toggleProfileDropdown();
 }
 
 function logout() {
@@ -2219,21 +2196,6 @@ function logout() {
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(loadProfileAvatar, 1000);
 });
-
-// Add this CSS animation if not already in your styles.css
-const style = document.createElement('style');
-style.textContent = `
-@keyframes dropdownSlide {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-`;
-document.head.appendChild(style);
+    </script>
 </body>
 </html>
