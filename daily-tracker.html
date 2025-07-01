@@ -779,6 +779,40 @@ async function toggleTask(goalId) {
     console.log(`📝 Task ${goalId} ${newCompleted ? 'completed' : 'uncompleted'}`);
 }
 
+       // Save progress to server - NEW
+async function saveProgressToServer(goalId, completed, area, date) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            console.log('No auth token, saving locally only');
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/api/daily-progress`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                date,
+                goalId,
+                completed,
+                area
+            })
+        });
+
+        if (response.ok) {
+            console.log('✅ Progress saved to server');
+        } else {
+            console.log('❌ Failed to save to server, using localStorage backup');
+        }
+
+    } catch (error) {
+        console.error('Error saving progress to server:', error);
+    }
+} 
+        
         // Update task UI after toggle
         function updateTaskUI(goalId) {
             const taskElement = document.querySelector(`[data-goal-id="${goalId}"]`);
