@@ -2127,8 +2127,14 @@ setTimeout(loadDashboardInsights, 2500);
       
     </script>
     <script>
-// SIMPLE Profile Dropdown JavaScript
-function toggleProfileDropdown() {
+// FIXED Profile Dropdown JavaScript - Prevent Event Conflicts
+function toggleProfileDropdown(event) {
+    // Stop the click from bubbling up to other elements
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
     const dropdown = document.getElementById('profileDropdown');
     if (dropdown.style.display === 'none' || dropdown.style.display === '') {
         dropdown.style.display = 'block';
@@ -2142,7 +2148,7 @@ document.addEventListener('click', function(event) {
     const container = document.querySelector('.profile-dropdown-container');
     const dropdown = document.getElementById('profileDropdown');
     
-    if (!container.contains(event.target)) {
+    if (container && !container.contains(event.target)) {
         dropdown.style.display = 'none';
     }
 });
