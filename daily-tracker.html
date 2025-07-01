@@ -907,8 +907,12 @@ function calculateDayCompletion(date) {
                 
                 console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: ${isCompletedOnThisDate} (found entry: ${!!exactDateEntry})`);
             } else {
-                console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: NO HISTORY`);
+                // FIXED: If no completion history, it's definitely NOT completed for previous days
+                console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: NO HISTORY = NOT COMPLETED`);
             }
+            
+            // CRITICAL FIX: For previous days, NEVER check lastCompletedDate or current completion status
+            // This prevents today's completion from contaminating previous days
         }
         
         if (isCompletedOnThisDate) {
