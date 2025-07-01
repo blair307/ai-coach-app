@@ -4190,11 +4190,11 @@ function forceSingleColorIcons() {
 }
 
 
-/* SIMPLE Profile Dropdown - Copy Notification Bell Style */
+/* FIXED Profile Dropdown - No Overlap */
 .profile-dropdown-container {
     position: relative;
     cursor: pointer;
-    margin-right: 1rem;
+    margin-left: 1rem; /* Changed from margin-right to margin-left */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4217,6 +4217,7 @@ function forceSingleColorIcons() {
     transition: all 0.3s ease;
     flex-shrink: 0;
     cursor: pointer;
+    z-index: 10; /* Add z-index to prevent overlap */
 }
 
 .profile-avatar:hover {
@@ -4264,4 +4265,11 @@ function forceSingleColorIcons() {
 .dropdown-item:hover {
     background: var(--primary);
     color: white;
+}
+
+/* ENSURE Header Actions Layout */
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
