@@ -1209,7 +1209,8 @@ async function updateGoalOnServerIsolated(goalId, completed) {
     return updatedGoal;
 }
 
-// FINAL FIX: Goal completion toggling that ONLY affects today
+// REPLACE your toggleGoalCompletion function with this version:
+
 async function toggleGoalCompletion(goalId) {
     console.log('🔄 FINAL FIX TOGGLE - goalId:', goalId);
     
@@ -1236,18 +1237,25 @@ async function toggleGoalCompletion(goalId) {
         // Call the server
         await updateGoalOnServerIsolated(goalId, newState);
         
-        // FINAL FIX: Update UI components
-        console.log('🔄 FINAL FIX - UPDATING UI COMPONENTS...');
-        renderDailyGoals();        // Goal cards
-        updateProgressStats();     // Top hero numbers
-        renderGoalsByArea();       // Area progress
+        // CRITICAL FIX: Wait a moment for server data to settle, then refresh
+        console.log('🔄 DISPLAY FIX - Refreshing UI with proper delays...');
         
-        // CRITICAL: Only refresh the current view
-        if (progressView === 'weekly') {
-            renderWeeklyProgress();
-        } else {
-            renderMonthlyProgress();
-        }
+        // Update goal cards immediately
+        renderDailyGoals();
+        updateProgressStats();
+        renderGoalsByArea();
+        
+        // DISPLAY FIX: Small delay before refreshing progress charts to ensure clean render
+        setTimeout(() => {
+            console.log('🔄 DISPLAY FIX - Refreshing progress charts with isolated calculations...');
+            
+            // Force a complete re-render of the progress view
+            if (progressView === 'weekly') {
+                showWeeklyProgress();
+            } else {
+                showMonthlyProgress();
+            }
+        }, 500);
         
         // Re-enable checkbox
         if (checkbox) {
