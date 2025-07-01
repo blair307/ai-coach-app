@@ -600,37 +600,14 @@ const areaColors = {
     finances: '#059669'
 };
 
-// FINAL FIX: Completely isolated goal completion checker
+// STRICT FIX: Completely isolated goal completion checker
 function isGoalCompletedToday(goal) {
     const today = new Date();
     const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
     
-    console.log(`🔍 FINAL FIX - Checking completion for goal ${goal._id}:`, {
-        goalId: goal._id,
-        todayDateString: todayDateString,
-        lastCompletedDate: goal.lastCompletedDate,
-        completed: goal.completed
-    });
+    console.log(`🔍 STRICT CHECK - Goal ${goal._id} for date ${todayDateString}`);
 
-    // METHOD 1: Check lastCompletedDate (most reliable)
-    if (goal.lastCompletedDate) {
-        const completedDate = new Date(goal.lastCompletedDate);
-        const completedDateString = completedDate.toISOString().split('T')[0];
-        const isCompletedToday = completedDateString === todayDateString;
-        
-        console.log(`📅 FINAL FIX - lastCompletedDate check:`, {
-            completedDateString,
-            todayDateString,
-            isCompletedToday
-        });
-        
-        if (isCompletedToday) {
-            console.log(`✅ FINAL FIX - Goal completed today via lastCompletedDate`);
-            return true;
-        }
-    }
-
-    // METHOD 2: Check completion history if available
+    // PRIORITY 1: Check completion history first (most reliable)
     if (goal.completionHistory && Array.isArray(goal.completionHistory) && goal.completionHistory.length > 0) {
         const todayEntry = goal.completionHistory.find(entry => {
             if (!entry.date) return false;
@@ -640,12 +617,31 @@ function isGoalCompletedToday(goal) {
         });
         
         if (todayEntry) {
-            console.log(`✅ FINAL FIX - Found today's entry in completion history:`, todayEntry);
-            return todayEntry.completed;
+            console.log(`✅ STRICT CHECK - Found today's entry in completion history:`, todayEntry);
+            return todayEntry.completed === true;
+        }
+        
+        console.log(`⚠️ STRICT CHECK - No entry found for today in completion history`);
+    }
+
+    // PRIORITY 2: STRICT lastCompletedDate check (only if it's actually today)
+    if (goal.lastCompletedDate) {
+        const completedDate = new Date(goal.lastCompletedDate);
+        const completedDateString = completedDate.toISOString().split('T')[0];
+        
+        console.log(`📅 STRICT CHECK - lastCompletedDate: ${completedDateString}, today: ${todayDateString}`);
+        
+        // STRICT: Only consider completed if lastCompletedDate is exactly today
+        if (completedDateString === todayDateString) {
+            console.log(`✅ STRICT CHECK - Goal completed today via lastCompletedDate`);
+            return true;
+        } else {
+            console.log(`❌ STRICT CHECK - lastCompletedDate is not today (it's ${completedDateString})`);
         }
     }
 
-    console.log(`❌ FINAL FIX - No completion data found for goal ${goal._id} - defaulting to false`);
+    // DEFAULT: Not completed
+    console.log(`❌ STRICT CHECK - Goal ${goal._id} is NOT completed today`);
     return false;
 }
 
@@ -697,6 +693,9 @@ async function loadDailyGoals() {
 
         currentGoals = await response.json();
         console.log('✅ Goals loaded:', currentGoals);
+        
+        // DEBUG: Check goal states immediately after loading
+        debugGoalStates();
         
         renderDailyGoals();
         updateProgressStats();
@@ -874,16 +873,19 @@ function calculateDayCompletion(date) {
     const isExactlyToday = targetDate.getTime() === today.getTime();
     const targetDateString = targetDate.toISOString().split('T')[0];
     
+    console.log(`📊 CALCULATING COMPLETION - Date: ${targetDateString}, IsToday: ${isExactlyToday}`);
+    
     let completedOnThisSpecificDate = 0;
     
     currentGoals.forEach((goal, index) => {
         let isCompletedOnThisDate = false;
         
         if (isExactlyToday) {
-            // FOR TODAY ONLY: Use current completion status
+            // FOR TODAY ONLY: Use live completion status
             isCompletedOnThisDate = isGoalCompletedToday(goal);
+            console.log(`📊 TODAY - Goal ${index + 1}: ${isCompletedOnThisDate}`);
         } else {
-            // FOR OTHER DAYS: NEVER use today's completion status
+            // FOR OTHER DAYS: STRICT history-only check, NEVER use today's status
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
                     if (!entry.date) return false;
@@ -899,6 +901,7 @@ function calculateDayCompletion(date) {
                     isCompletedOnThisDate = true;
                 }
             }
+            console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: ${isCompletedOnThisDate}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -907,6 +910,8 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
+    console.log(`📊 FINAL - ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
+    
     return percentage;
 }
 
@@ -1144,25 +1149,28 @@ function renderGoalsByArea() {
     container.innerHTML = html;
 }
 
-// FINAL FIX: Server update that ONLY affects today
+// ISOLATED FIX: Server update that ONLY affects today with explicit date
 async function updateGoalOnServerIsolated(goalId, completed) {
-    console.log(`📤 FINAL SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
+    console.log(`📤 ISOLATED SERVER UPDATE - goalId: ${goalId}, completed: ${completed}`);
     
     const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
     if (!token) {
         throw new Error('No authentication token');
     }
 
-    // FINAL FIX: Only send today's completion status
+    // CRITICAL FIX: Send explicit date to prevent server confusion
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize to midnight
+    today.setHours(0, 0, 0, 0);
+    const todayISOString = today.toISOString();
     
     const requestData = {
         completed: completed,
-        lastCompletedDate: completed ? today.toISOString() : null
+        lastCompletedDate: completed ? todayISOString : null,
+        updateDate: todayISOString, // EXPLICIT: Tell server which date we're updating
+        strictToday: true // EXPLICIT: Flag to server this is a today-only update
     };
     
-    console.log('📤 FINAL FIX - Request data (completely isolated):', requestData);
+    console.log('📤 ISOLATED FIX - Request data with explicit date:', requestData);
 
     const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
         method: 'PUT',
@@ -1175,18 +1183,18 @@ async function updateGoalOnServerIsolated(goalId, completed) {
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ FINAL FIX - Server error response:', errorText);
+        console.error('❌ ISOLATED FIX - Server error response:', errorText);
         throw new Error(`Server error: ${response.status}`);
     }
 
     const updatedGoal = await response.json();
-    console.log('✅ FINAL FIX - Server returned updated goal:', updatedGoal);
+    console.log('✅ ISOLATED FIX - Server returned updated goal:', updatedGoal);
     
-    // FINAL FIX: Update the local goal
+    // Update the local goal
     const goalIndex = currentGoals.findIndex(g => g._id === goalId);
     if (goalIndex !== -1) {
         currentGoals[goalIndex] = updatedGoal;
-        console.log('🔄 FINAL FIX - Updated local goal in currentGoals array');
+        console.log('🔄 ISOLATED FIX - Updated local goal in currentGoals array');
     }
     
     return updatedGoal;
@@ -1800,6 +1808,38 @@ window.initializeEmotionTracker = initializeEmotionTracker;
 
 console.log('✅ FINAL FIXED Daily Tracker loaded - Mobile responsive with isolated day tracking!');
 
+// DEBUGGING: Add this function to check goal states on page load
+function debugGoalStates() {
+    console.log('🐛 === DEBUGGING GOAL STATES ON PAGE LOAD ===');
+    
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    
+    currentGoals.forEach((goal, index) => {
+        console.log(`🐛 Goal ${index + 1} (${goal.area}):`);
+        console.log(`   - ID: ${goal._id}`);
+        console.log(`   - lastCompletedDate: ${goal.lastCompletedDate}`);
+        console.log(`   - completed: ${goal.completed}`);
+        console.log(`   - completionHistory length: ${goal.completionHistory ? goal.completionHistory.length : 0}`);
+        
+        if (goal.lastCompletedDate) {
+            const lastDate = new Date(goal.lastCompletedDate);
+            const lastDateString = lastDate.toISOString().split('T')[0];
+            console.log(`   - lastCompletedDate normalized: ${lastDateString}`);
+            console.log(`   - Is lastCompletedDate today? ${lastDateString === todayString}`);
+        }
+        
+        const isCompletedToday = isGoalCompletedToday(goal);
+        console.log(`   - ✅ isGoalCompletedToday(): ${isCompletedToday}`);
+        console.log('');
+    });
+    
+    console.log('🐛 === END DEBUGGING ===');
+}
+
+// Export the debug function for console access
+window.debugGoalStates = debugGoalStates;
+        
         
     </script>
         
