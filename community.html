@@ -1424,6 +1424,17 @@
                     return;
                 }
 
+ // CRITICAL: Stop ALL existing intervals first
+        for (let i = 1; i < 99999; i++) {
+            window.clearInterval(i);
+        }
+
+        const room = rooms.find(r => r._id === roomId);
+        if (!room) {
+            console.error('❌ Room not found:', roomId);
+            return;
+        }
+                
                 const room = rooms.find(r => r._id === roomId);
                 if (!room) {
                     console.error('❌ Room not found:', roomId);
