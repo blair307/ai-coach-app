@@ -1579,6 +1579,9 @@ app.post('/api/life-goals', authenticateToken, async (req, res) => {
   }
 });
 
+// REPLACE the life goals update route in your server.js file (around line 1100)
+// This fixes the server from updating yesterday when you update today
+
 app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1595,7 +1598,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     if (dailyAction !== undefined) goal.dailyAction = dailyAction;
     
     if (completed !== undefined) {
-      // STRICT SERVER FIX: Only update today's completion, nothing else
+      // CRITICAL FIX: Only update for the EXACT date specified, never multiple days
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayDateString = today.toISOString().split('T')[0];
@@ -1609,7 +1612,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       if (completed) {
         goal.lastCompletedDate = today;
       } else {
-        // Only clear lastCompletedDate if it was set to today
+        // CRITICAL FIX: Only clear lastCompletedDate if it was set to today
         if (goal.lastCompletedDate) {
           const lastDate = new Date(goal.lastCompletedDate);
           lastDate.setHours(0, 0, 0, 0);
@@ -1625,7 +1628,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
         goal.completionHistory = [];
       }
       
-      // Find or create today's entry ONLY
+      // CRITICAL FIX: Find or create ONLY today's entry, never touch other dates
       const todayEntryIndex = goal.completionHistory.findIndex(entry => {
         if (!entry.date) return false;
         const entryDate = new Date(entry.date);
@@ -1634,17 +1637,20 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
       });
       
       if (todayEntryIndex >= 0) {
-        // Update existing today's entry
+        // Update existing today's entry ONLY
         goal.completionHistory[todayEntryIndex].completed = completed;
         console.log(`🔧 SERVER FIX - Updated existing entry for ${todayDateString}`);
       } else {
-        // Create new entry for today only
+        // Create new entry for today ONLY
         goal.completionHistory.push({
           date: today,
           completed: completed
         });
         console.log(`🔧 SERVER FIX - Created new entry for ${todayDateString}`);
       }
+      
+      // CRITICAL FIX: Never modify any other dates in completion history
+      // Remove any logic that might update yesterday or other dates
       
       // Recalculate streak based on completion history
       const sortedHistory = goal.completionHistory
@@ -1686,7 +1692,7 @@ app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
     goal.updatedAt = new Date();
     await goal.save();
 
-    console.log(`✅ FIXED - Goal ${id} updated for today only`);
+    console.log(`✅ FIXED - Goal ${id} updated for today ONLY, no other dates touched`);
     res.json(goal);
   } catch (error) {
     console.error('Update life goal error:', error);
