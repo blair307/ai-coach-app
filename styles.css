@@ -1,4 +1,4 @@
-F/* Ultra Modern Entrepreneur Emotional Health Styles - CLEANED VERSION */
+/* Ultra Modern Entrepreneur Emotional Health Styles - CLEANED VERSION */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -4189,9 +4189,12 @@ function forceSingleColorIcons() {
   font-weight: 600 !important;
 }
 
-/* Profile Dropdown Styles */
+/* Updated Profile Dropdown Styles - Matches Notification Bell */
 .profile-dropdown-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-left: 1rem;
 }
 
@@ -4201,20 +4204,23 @@ function forceSingleColorIcons() {
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: 2px solid var(--border);
+    border: 2px solid rgba(99, 102, 241, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-    color: white;
+    background: rgba(99, 102, 241, 0.1);
+    color: var(--primary);
     font-weight: 600;
     font-size: 1rem;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .profile-avatar:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
     transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .profile-avatar img {
@@ -4222,6 +4228,18 @@ function forceSingleColorIcons() {
     height: 100%;
     object-fit: cover;
     border-radius: 50%;
+}
+
+/* When user has photo, remove background and border styling */
+.profile-avatar.has-photo {
+    background: transparent;
+    border: 2px solid var(--border);
+}
+
+.profile-avatar.has-photo:hover {
+    border-color: var(--primary);
+    background: transparent;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .profile-dropdown {
@@ -4233,7 +4251,7 @@ function forceSingleColorIcons() {
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     z-index: 1000;
-    min-width: 180px;
+    min-width: 160px;
     margin-top: 0.5rem;
     overflow: hidden;
     backdrop-filter: blur(20px);
@@ -4242,13 +4260,13 @@ function forceSingleColorIcons() {
 .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
     padding: 1rem 1.25rem;
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-primary);
     font-weight: 500;
     border-bottom: 1px solid var(--border);
+    background: var(--background);
 }
 
 .dropdown-item:last-child {
@@ -4256,31 +4274,86 @@ function forceSingleColorIcons() {
 }
 
 .dropdown-item:hover {
-    background: var(--surface);
-    color: var(--primary);
+    background: var(--primary);
+    color: white;
     transform: translateX(4px);
 }
 
-.dropdown-item span {
-    font-size: 1.1rem;
+/* Header Actions Alignment Fix */
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: flex-end;
 }
 
-/* Mobile adjustments */
+.notification-icon-container,
+.profile-dropdown-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile Styles */
 @media (max-width: 768px) {
-    .profile-dropdown {
-        right: -1rem;
-        min-width: 160px;
+    .profile-dropdown-container {
+        margin-left: 0.75rem;
     }
     
     .profile-avatar {
-        width: 40px;
-        height: 40px;
-        font-size: 0.9rem;
+        width: 44px;
+        height: 44px;
+        font-size: 1rem;
+    }
+    
+    .profile-dropdown {
+        right: -1rem;
+        min-width: 140px;
+        margin-top: 0.75rem;
     }
     
     .dropdown-item {
         padding: 0.875rem 1rem;
         font-size: 0.9rem;
+    }
+    
+    /* Ensure header actions stack properly on mobile */
+    .header-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+        order: 3; /* Put button last */
+    }
+    
+    .notification-icon-container,
+    .profile-dropdown-container {
+        order: 1; /* Put icons first */
+        align-self: center;
+    }
+    
+    /* Create a horizontal container for the icons on mobile */
+    .mobile-icons-container {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        order: 1;
+    }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+    .profile-dropdown {
+        right: -0.5rem;
+        min-width: 130px;
+    }
+    
+    .dropdown-item {
+        padding: 0.75rem 0.875rem;
+        font-size: 0.85rem;
     }
 }
 
