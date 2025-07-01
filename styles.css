@@ -3033,18 +3033,11 @@ body {
     }
 }
 
-/* CLEAN MOBILE CHAT EXPERIENCE - FIXED */
+/* CLEAN MOBILE CHAT EXPERIENCE */
 @media (max-width: 768px) {
-    /* Hide only specific buttons, keep profile dropdown */
-    .header-actions .btn:not(.profile-dropdown-container *) {
-        display: none !important;
-    }
-    
-    /* Keep header-actions visible for profile dropdown */
+    /* Hide header action buttons - New Session, Export Chat */
     .header-actions {
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center !important;
+        display: none !important;
     }
     
     /* Hide notification bell entirely on mobile */
