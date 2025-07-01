@@ -4190,19 +4190,13 @@ function forceSingleColorIcons() {
 }
 
 
-/* FIXED Profile Dropdown - No Overlap */
+/* SIMPLE Profile Dropdown - Fixed Positioning */
 .profile-dropdown-container {
     position: relative;
-    cursor: pointer;
-    margin-left: 1rem; /* Changed from margin-right to margin-left */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    margin-left: 1rem;
 }
 
 .profile-avatar {
-    position: relative;
     width: 44px;
     height: 44px;
     background: rgba(99, 102, 241, 0.1);
@@ -4214,17 +4208,13 @@ function forceSingleColorIcons() {
     font-size: 1rem;
     font-weight: 600;
     color: var(--primary);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
     cursor: pointer;
-    z-index: 10; /* Add z-index to prevent overlap */
+    transition: all 0.3s ease;
 }
 
 .profile-avatar:hover {
     background: rgba(99, 102, 241, 0.15);
-    border-color: rgba(99, 102, 241, 0.3);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .profile-avatar img {
@@ -4236,26 +4226,23 @@ function forceSingleColorIcons() {
 
 .profile-dropdown {
     position: absolute;
-    top: 100%;
+    top: 50px;
     right: 0;
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     z-index: 1000;
-    min-width: 140px;
-    margin-top: 0.5rem;
+    min-width: 120px;
     overflow: hidden;
 }
 
 .dropdown-item {
-    padding: 0.875rem 1rem;
+    padding: 12px 16px;
     cursor: pointer;
-    transition: all 0.2s ease;
-    color: var(--text-primary);
+    color: #334155;
     font-weight: 500;
-    border-bottom: 1px solid var(--border);
-    background: var(--background);
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .dropdown-item:last-child {
@@ -4263,13 +4250,6 @@ function forceSingleColorIcons() {
 }
 
 .dropdown-item:hover {
-    background: var(--primary);
+    background: #6366f1;
     color: white;
-}
-
-/* ENSURE Header Actions Layout */
-.header-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
 }
