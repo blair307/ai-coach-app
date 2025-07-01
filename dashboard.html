@@ -229,7 +229,23 @@
                             <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
                         </div>
                     </div>
-                    
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown-container">
+                        <div class="profile-avatar" onclick="toggleProfileDropdown()" id="profileAvatar">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="profile-dropdown" id="profileDropdown" style="display: none;">
+                            <div class="dropdown-item" onclick="goToBilling()">
+                                <span>💳</span> Billing
+                            </div>
+                            <div class="dropdown-item" onclick="goToSettings()">
+                                <span>⚙️</span> Settings
+                            </div>
+                            <div class="dropdown-item" onclick="logout()">
+                                <span>🚪</span> Logout
+                            </div>
+                        </div>
+                    </div>
                     <button class="btn btn-primary" onclick="startCoachingSession()">
                         Start Coaching Session
                     </button>
