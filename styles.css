@@ -4477,4 +4477,27 @@ function forceSingleColorIcons() {
     }
 }
 
-
+/* MOBILE DEBUG - Add this temporarily */
+@media (max-width: 768px) {
+    .profile-dropdown-container {
+        display: block !important;
+        position: fixed !important;
+        top: 20px !important;
+        right: 20px !important;
+        z-index: 99999 !important;
+        background: red !important;
+        padding: 10px !important;
+        border-radius: 10px !important;
+    }
+    
+    .profile-avatar {
+        display: block !important;
+        width: 50px !important;
+        height: 50px !important;
+        background: blue !important;
+        color: white !important;
+        border-radius: 50% !important;
+        text-align: center !important;
+        line-height: 50px !important;
+    }
+}
