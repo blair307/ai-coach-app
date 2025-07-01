@@ -4513,3 +4513,41 @@ function forceSingleColorIcons() {
         font-weight: bold !important;
     }
 }
+
+/* FINAL MOBILE PROFILE FIX */
+@media (max-width: 768px) {
+    .profile-dropdown-container {
+        display: flex !important;
+        position: relative !important;
+        z-index: 9999 !important;
+    }
+    
+    .profile-avatar {
+        display: flex !important;
+        width: 44px !important;
+        height: 44px !important;
+        border-radius: 50% !important;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+        color: white !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        cursor: pointer !important;
+        border: 2px solid white !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+    }
+    
+    /* Make sure header actions show the profile */
+    .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 1rem !important;
+    }
+    
+    /* Hide other buttons but keep profile */
+    .header-actions .btn:not(.profile-dropdown-container .btn) {
+        display: none !important;
+    }
+}
