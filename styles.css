@@ -3033,8 +3033,16 @@ body {
     }
 }
 
-/* CLEAN MOBILE CHAT EXPERIENCE */
+/* =================================
+   CLEAN MOBILE CHAT EXPERIENCE
+   Add this CSS to create a streamlined mobile interface
+   ================================= */
+
 @media (max-width: 768px) {
+    /* =================================
+       REMOVE UNNECESSARY HEADER ELEMENTS
+       ================================= */
+    
     /* Hide header action buttons - New Session, Export Chat */
     .header-actions {
         display: none !important;
@@ -3045,7 +3053,6 @@ body {
     .notification-bell {
         display: none !important;
     }
-}
     
     /* =================================
        REMOVE COACH INFO SECTION
