@@ -230,18 +230,15 @@
                         </div>
 
 <div class="profile-dropdown-container">
-    <div class="profile-avatar" onclick="toggleProfileDropdown(event)" id="profileAvatar">
+    <div class="profile-avatar" onclick="toggleProfileDropdown()" id="profileAvatar">
         U
     </div>
     <div class="profile-dropdown" id="profileDropdown" style="display: none;">
-        <div class="dropdown-item" onclick="goToBilling()">
-            Billing
-        </div>
-        <div class="dropdown-item" onclick="goToSettings()">
-            Settings
-        </div>
-        <div class="dropdown-item" onclick="logout()">
-            Logout
+        <div class="dropdown-item" onclick="goToBilling()">Billing</div>
+        <div class="dropdown-item" onclick="goToSettings()">Settings</div>
+        <div class="dropdown-item" onclick="logout()">Logout</div>
+    </div>
+</div>
         </div>
     </div>
 </div>
@@ -2134,81 +2131,14 @@ setTimeout(loadDashboardInsights, 2500);
       
     </script>
     <script>
-// FIXED Profile Dropdown JavaScript - Prevent Event Conflicts
-function toggleProfileDropdown(event) {
-    // Stop the click from bubbling up to other elements
-    if (event) {
-        event.stopPropagation();
-        event.preventDefault();
-    }
-    
+function toggleProfileDropdown() {
     const dropdown = document.getElementById('profileDropdown');
-    if (dropdown.style.display === 'none' || dropdown.style.display === '') {
-        dropdown.style.display = 'block';
-    } else {
-        dropdown.style.display = 'none';
-    }
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
 }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const container = document.querySelector('.profile-dropdown-container');
-    const dropdown = document.getElementById('profileDropdown');
-    
-    if (container && !container.contains(event.target)) {
-        dropdown.style.display = 'none';
-    }
-});
-
-// Load user initials or photo
-async function loadProfileAvatar() {
-    try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-        if (!token) return;
-
-        const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/user/settings', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            const avatar = document.getElementById('profileAvatar');
-            
-            if (data.profile.profilePhoto) {
-                avatar.innerHTML = `<img src="${data.profile.profilePhoto}" alt="Profile">`;
-            } else {
-                const firstName = data.profile.firstName || '';
-                const lastName = data.profile.lastName || '';
-                const initials = (firstName.charAt(0) + lastName.charAt(0)).toUpperCase() || 'U';
-                avatar.innerHTML = initials;
-            }
-        }
-    } catch (error) {
-        console.log('Could not load profile');
-    }
-}
-
-// Navigation functions
-function goToBilling() {
-    window.location.href = 'billing.html';
-}
-
-function goToSettings() {
-    window.location.href = 'settings.html';
-}
-
-function logout() {
-    localStorage.clear();
-    window.location.href = 'index.html';
-}
-
-// Load avatar when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(loadProfileAvatar, 1000);
-});
+function goToBilling() { window.location.href = 'billing.html'; }
+function goToSettings() { window.location.href = 'settings.html'; }
+function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
