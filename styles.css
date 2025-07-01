@@ -4402,3 +4402,64 @@ function forceSingleColorIcons() {
                 min-width: 180px;
             }
         }
+
+/* =================================
+   MOBILE PROFILE DROPDOWN FIXES
+   ================================= */
+
+@media (max-width: 768px) {
+    /* Make avatar more visible on mobile */
+    .profile-avatar {
+        width: 45px !important;
+        height: 45px !important;
+        font-size: 1rem !important;
+        border: 3px solid var(--primary) !important;
+        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3) !important;
+    }
+
+    /* Ensure dropdown appears above everything */
+    .profile-dropdown {
+        z-index: 9999 !important;
+        min-width: 240px !important;
+        right: -5px !important;
+    }
+
+    /* Make sure the overlay works on mobile */
+    .dropdown-overlay {
+        z-index: 9998 !important;
+    }
+
+    /* Better positioning for mobile */
+    .profile-dropdown-container {
+        z-index: 9999 !important;
+        position: relative !important;
+    }
+
+    /* Hide the "Start Coaching Session" button on mobile to give more space */
+    .header-actions .btn {
+        display: none !important;
+    }
+
+    /* Make header actions container more flexible */
+    .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 1rem !important;
+        width: auto !important;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    .profile-avatar {
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 0.95rem !important;
+    }
+
+    .profile-dropdown {
+        right: -10px !important;
+        min-width: 220px !important;
+    }
+}
