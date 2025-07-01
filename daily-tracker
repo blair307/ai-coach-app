@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%234f46e5'/></linearGradient></defs><rect width='32' height='32' fill='url(%23g)'/><text x='16' y='20' font-family='Arial' font-size='10' font-weight='bold' text-anchor='middle' fill='white'>EEH</text></svg>">
+    <title>Daily Tracker - Entrepreneur Emotional Health</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Daily Tracker Specific Styles */
+        .tracker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .tracker-card {
+            background: var(--background);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tracker-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .area-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .area-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            text-transform: capitalize;
+            margin: 0;
+        }
+
+        .area-progress {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .progress-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+        }
+
+        .progress-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .goal-task {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .goal-task:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .task-checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+        .task-checkbox.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .task-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .task-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-streak {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .streak-badge {
+            background: linear-gradient(135deg, var(--warning) 0%, #f97316 100%);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .last-completed {
+            color: var(--text-muted);
+        }
+
+        .progress-overview {
+            background: var(--background);
+            border-radius: var(--radius-xl);
+            padding: 2rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .toggle-btn {
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-header {
+            background: var(--surface);
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .calendar-day {
+            background: var(--background);
+            min-height: 80px;
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .day-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .day-progress {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .goal-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .goal-dot.completed {
+            opacity: 1;
+        }
+
+        .weekly-bars {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .week-bar {
+            text-align: center;
+        }
+
+        .week-day {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .bar-container {
+            height: 120px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            transition: height 0.5s ease;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        .bar-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            z-index: 2;
+        }
+
+        .today {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(14, 165, 233, 0.05) 100%);
+            border: 2px solid var(--primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .tracker-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                padding: 0.25rem;
+            }
+
+            .day-number {
+                font-size: 0.75rem;
+            }
+
+            .goal-dot {
+                width: 6px;
+                height: 6px;
+            }
+
+            .weekly-bars {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0.5rem;
+            }
+
+            .bar-container {
+                height: 100px;
+            }
+
+            .view-toggle {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body data-page="daily-tracker">
+    <div class="app-container">
+        <!-- Universal Hamburger Menu -->
+        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
+                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
+                <li><a href="community.html" class="menu-item">Community</a></li>
+                <li><a href="goals.html" class="menu-item">Goals</a></li>
+                <li><a href="daily-tracker.html" class="menu-item active">Daily Tracker</a></li>
+                <li><a href="daily-prompt.html" class="menu-item">Daily Prompt</a></li>
+                <li><a href="billing.html" class="menu-item">Billing</a></li>
+                <li><a href="settings.html" class="menu-item">Settings</a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <h1>Daily Tracker</h1>
+                <div class="header-actions">
+                    <!-- Notification Icon -->
+                    <div class="notification-icon-container" onclick="goToNotifications()">
+                        <div class="notification-bell">
+                           <svg class="bell-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 20px; height: 20px;"> 
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/> 
+                           </svg>
+                            <span class="notification-count" id="headerNotificationCount" style="display: none;">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Profile Dropdown -->
+                    <div class="profile-dropdown-container">
+                        <div class="profile-avatar" id="profileAvatar">U</div>
+                        <div class="dropdown-overlay" id="dropdownOverlay"></div>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-avatar" id="dropdownAvatar">U</div>
+                                <div class="dropdown-name" id="dropdownName">User</div>
+                                <div class="dropdown-email" id="dropdownEmail">user@example.com</div>
+                            </div>
+                            <div class="dropdown-menu">
+                                <a href="billing.html" class="dropdown-item">
+                                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    Billing
+                                </a>
+                                <a href="settings.html" class="dropdown-item">
+                                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    Settings
+                                </a>
+                                <button onclick="logout()" class="dropdown-item danger">
+                                    <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013 3v1"/>
+                                    </svg>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Hero Section -->
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; text-align: center; margin: -2rem -2rem 3rem -2rem; border-radius: 0 0 16px 16px;">
+                <h1 style="font-size: 2.5rem; margin-bottom: 1rem; font-weight: 800;">Track Your Daily Progress</h1>
+                <p style="font-size: 1.2rem; opacity: 0.9; max-width: 600px; margin: 0 auto;">Complete your daily actions and build lasting habits across all areas of your life.</p>
+            </div>
+
+            <!-- Progress Overview -->
+            <div class="progress-overview">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: var(--text-primary);">Progress Overview</h2>
+                
+                <!-- View Toggle -->
+                <div class="view-toggle">
+                    <button class="toggle-btn active" id="weeklyToggle" onclick="switchView('weekly')">This Week</button>
+                    <button class="toggle-btn" id="monthlyToggle" onclick="switchView('monthly')">This Month</button>
+                </div>
+
+                <!-- Weekly View -->
+                <div id="weeklyView">
+                    <div class="weekly-bars" id="weeklyBars">
+                        <!-- Weekly progress bars will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Monthly View -->
+                <div id="monthlyView" style="display: none;">
+                    <div class="calendar-grid" id="monthlyCalendar">
+                        <!-- Monthly calendar will be generated here -->
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid var(--border);">
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalTasksToday">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Tasks Today</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--success) 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="completedToday">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Completed</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--warning) 0%, #f97316 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="weeklyStreak">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Week Streak</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;" id="totalGoals">0</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted); text-transform: uppercase;">Total Goals</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daily Tasks by Life Area -->
+            <div class="tracker-grid" id="trackerGrid">
+                <!-- Task cards will be generated here -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Success Toast -->
+    <div id="successToast" style="display: none; position: fixed; bottom: 2rem; right: 2rem; background: var(--success); color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: var(--shadow-xl); z-index: 10000; font-weight: 500;">
+        <div id="toastMessage">Task completed! 🎉</div>
+    </div>
+
+    <script>
+        // Global variables
+        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+        let allGoals = [];
+        let dailyProgress = {};
+        let currentView = 'weekly';
+
+        // Area configurations (matching goals page)
+        const areaConfig = {
+            mind: { title: 'Mind', color: '#8b5cf6' },
+            spirit: { title: 'Spirit', color: '#06b6d4' },
+            body: { title: 'Body', color: '#10b981' },
+            work: { title: 'Work', color: '#f59e0b' },
+            relationships: { title: 'Relationships', color: '#ec4899' },
+            fun: { title: 'Fun', color: '#f97316' },
+            finances: { title: 'Finances', color: '#059669' }
+        };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Daily Tracker loading...');
+            
+            initializeProfileDropdown();
+            loadGoalsAndProgress();
+            updateNotificationCount();
+            setInterval(updateNotificationCount, 30000);
+            
+            console.log('✅ Daily Tracker initialized');
+        });
+
+        // Load goals and progress data
+        async function loadGoalsAndProgress() {
+            try {
+                console.log('📊 Loading goals and progress...');
+                
+                // Load goals from backend
+                await loadGoalsFromBackend();
+                
+                // Load today's progress
+                loadDailyProgress();
+                
+                // Generate the tracker interface
+                generateTrackerCards();
+                generateProgressOverview();
+                updateSummaryStats();
+                
+                console.log('✅ Goals and progress loaded successfully');
+                
+            } catch (error) {
+                console.error('❌ Error loading goals and progress:', error);
+                showEmptyState();
+            }
+        }
+
+        // Load goals from backend API
+        async function loadGoalsFromBackend() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                
+                if (!token) {
+                    console.log('No auth token found, using localStorage fallback');
+                    allGoals = [];
+                    return;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/api/life-goals`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    allGoals = await response.json();
+                    console.log('📋 Loaded goals from API:', allGoals.length);
+                } else {
+                    console.log('API not available, using localStorage fallback');
+                    const stored = localStorage.getItem('lifeGoals');
+                    if (stored) {
+                        const storedGoals = JSON.parse(stored);
+                        allGoals = [];
+                        Object.values(storedGoals).forEach(areaGoals => {
+                            allGoals.push(...areaGoals);
+                        });
+                    } else {
+                        allGoals = [];
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading goals from backend:', error);
+                allGoals = [];
+            }
+        }
+
+        // Load daily progress from localStorage
+        function loadDailyProgress() {
+            try {
+                const stored = localStorage.getItem('eeh_daily_progress');
+                dailyProgress = stored ? JSON.parse(stored) : {};
+                console.log('📈 Loaded daily progress data');
+            } catch (error) {
+                console.error('Error loading daily progress:', error);
+                dailyProgress = {};
+            }
+        }
+
+        // Save daily progress to localStorage
+        function saveDailyProgress() {
+            try {
+                localStorage.setItem('eeh_daily_progress', JSON.stringify(dailyProgress));
+                console.log('💾 Daily progress saved');
+            } catch (error) {
+                console.error('Error saving daily progress:', error);
+            }
+        }
+
+        // Generate tracker cards for each life area
+        function generateTrackerCards() {
+            const trackerGrid = document.getElementById('trackerGrid');
+            
+            if (allGoals.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            // Group goals by area
+            const goalsByArea = {};
+            allGoals.forEach(goal => {
+                if (!goalsByArea[goal.area]) {
+                    goalsByArea[goal.area] = [];
+                }
+                goalsByArea[goal.area].push(goal);
+            });
+
+            trackerGrid.innerHTML = '';
+
+            // Generate card for each area
+            Object.entries(goalsByArea).forEach(([area, goals]) => {
+                const config = areaConfig[area];
+                if (!config) return;
+
+                const card = createTrackerCard(area, goals, config);
+                trackerGrid.appendChild(card);
+            });
+        }
+
+        // Create a tracker card for a specific life area
+        function createTrackerCard(area, goals, config) {
+            const card = document.createElement('div');
+            card.className = 'tracker-card';
+            card.style.borderTop = `6px solid ${config.color}`;
+
+            const today = getTodayKey();
+            const completedToday = goals.filter(goal => isTaskCompletedToday(goal)).length;
+            const totalTasks = goals.length;
+            const progressPercentage = totalTasks > 0 ? Math.round((completedToday / totalTasks) * 100) : 0;
+
+            card.innerHTML = `
+                <div class="area-header">
+                    <h3 class="area-title" style="color: ${config.color};">${config.title}</h3>
+                    <div class="area-progress">
+                        <div class="progress-circle" style="background: ${config.color};">
+                            ${completedToday}/${totalTasks}
+                        </div>
+                        <div class="progress-label">${progressPercentage}%</div>
+                    </div>
+                </div>
+                <div class="tasks-list">
+                    ${goals.map(goal => createTaskHTML(goal, config.color)).join('')}
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Create HTML for a single task
+        function createTaskHTML(goal, color) {
+            const goalId = goal._id || goal.id;
+            const isCompleted = isTaskCompletedToday(goal);
+            const streak = goal.streak || 0;
+            const lastCompleted = getLastCompletedText(goal);
+
+            return `
+                <div class="goal-task" onclick="toggleTask('${goalId}')" data-goal-id="${goalId}">
+                    <div class="task-checkbox ${isCompleted ? 'completed' : ''}" style="border-color: ${color};">
+                        ${isCompleted ? '✓' : ''}
+                    </div>
+                    <div class="task-content">
+                        <div class="task-title">${escapeHtml(goal.bigGoal || goal.title || 'Untitled Goal')}</div>
+                        <div class="task-description">${escapeHtml(goal.dailyAction || 'No daily action defined')}</div>
+                        <div class="task-streak">
+                            ${streak > 0 ? `<span class="streak-badge">${streak} day streak</span>` : ''}
+                            <span class="last-completed">${lastCompleted}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Toggle task completion
+        function toggleTask(goalId) {
+            const today = getTodayKey();
+            const goal = allGoals.find(g => (g._id || g.id) === goalId);
+            
+            if (!goal) {
+                console.error('Goal not found:', goalId);
+                return;
+            }
+
+            // Initialize today's progress if not exists
+            if (!dailyProgress[today]) {
+                dailyProgress[today] = {};
+            }
+
+            // Toggle completion status
+            const wasCompleted = dailyProgress[today][goalId] || false;
+            dailyProgress[today][goalId] = !wasCompleted;
+
+            // Update goal streak
+            if (!wasCompleted) {
+                // Task completed
+                goal.streak = (goal.streak || 0) + 1;
+                goal.lastCompletedDate = new Date().toISOString();
+                showSuccessToast(`${goal.area} goal completed! 🎉`);
+            } else {
+                // Task uncompleted
+                goal.streak = Math.max(0, (goal.streak || 0) - 1);
+            }
+
+            // Save progress
+            saveDailyProgress();
+            saveGoalToBackend(goal);
+
+            // Update UI
+            updateTaskUI(goalId);
+            updateSummaryStats();
+            generateProgressOverview();
+
+            console.log(`📝 Task ${goalId} ${!wasCompleted ? 'completed' : 'uncompleted'}`);
+        }
+
+        // Update task UI after toggle
+        function updateTaskUI(goalId) {
+            const taskElement = document.querySelector(`[data-goal-id="${goalId}"]`);
+            if (!taskElement) return;
+
+            const goal = allGoals.find(g => (g._id || g.id) === goalId);
+            const isCompleted = isTaskCompletedToday(goal);
+            const checkbox = taskElement.querySelector('.task-checkbox');
+            const streakElement = taskElement.querySelector('.task-streak');
+
+            // Update checkbox
+            if (isCompleted) {
+                checkbox.classList.add('completed');
+                checkbox.innerHTML = '✓';
+            } else {
+                checkbox.classList.remove('completed');
+                checkbox.innerHTML = '';
+            }
+
+            // Update streak info
+            const streak = goal.streak || 0;
+            const lastCompleted = getLastCompletedText(goal);
+            streakElement.innerHTML = `
+                ${streak > 0 ? `<span class="streak-badge">${streak} day streak</span>` : ''}
+                <span class="last-completed">${lastCompleted}</span>
+            `;
+
+            // Update area progress circle
+            const area = goal.area;
+            const areaGoals = allGoals.filter(g => g.area === area);
+            const completedInArea = areaGoals.filter(g => isTaskCompletedToday(g)).length;
+            const totalInArea = areaGoals.length;
+            
+            // Find and update the progress circle for this area
+            const cards = document.querySelectorAll('.tracker-card');
+            cards.forEach(card => {
+                const areaTitle = card.querySelector('.area-title');
+                if (areaTitle && areaTitle.textContent.toLowerCase() === areaConfig[area]?.title.toLowerCase()) {
+                    const progressCircle = card.querySelector('.progress-circle');
+                    const progressLabel = card.querySelector('.progress-label');
+                    if (progressCircle && progressLabel) {
+                        progressCircle.textContent = `${completedInArea}/${totalInArea}`;
+                        const percentage = totalInArea > 0 ? Math.round((completedInArea / totalInArea) * 100) : 0;
+                        progressLabel.textContent = `${percentage}%`;
+                    }
+                }
+            });
+        }
+
+        // Check if task is completed today
+        function isTaskCompletedToday(goal) {
+            const today = getTodayKey();
+            const goalId = goal._id || goal.id;
+            return dailyProgress[today] && dailyProgress[today][goalId] === true;
+        }
+
+        // Get today's date key (YYYY-MM-DD)
+        function getTodayKey() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        // Get last completed text
+        function getLastCompletedText(goal) {
+            if (!goal.lastCompletedDate) return 'Never completed';
+            
+            const lastDate = new Date(goal.lastCompletedDate);
+            const today = new Date();
+            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 0) return 'Completed today';
+            if (diffDays === 1) return 'Completed yesterday';
+            return `Completed ${diffDays} days ago`;
+        }
+
+        // Generate progress overview (weekly/monthly)
+        function generateProgressOverview() {
+            if (currentView === 'weekly') {
+                generateWeeklyView();
+            } else {
+                generateMonthlyView();
+            }
+        }
+
+        // Generate weekly progress view
+        function generateWeeklyView() {
+            const weeklyBars = document.getElementById('weeklyBars');
+            const today = new Date();
+            const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            // Get start of week (Sunday)
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+            
+            weeklyBars.innerHTML = '';
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const dateKey = date.toISOString().split('T')[0];
+                const isToday = dateKey === getTodayKey();
+                
+                // Calculate completion percentage for this day
+                const completedTasks = getCompletedTasksForDate(dateKey);
+                const totalTasks = allGoals.length;
+                const percentage = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = `week-bar ${isToday ? 'today' : ''}`;
+                dayElement.innerHTML = `
+                    <div class="week-day">${weekDays[i]}</div>
+                    <div class="bar-container">
+                        <div class="progress-bar" style="height: ${percentage}%;"></div>
+                        <div class="bar-percentage">${percentage}%</div>
+                    </div>
+                `;
+                
+                weeklyBars.appendChild(dayElement);
+            }
+        }
+
+        // Generate monthly progress view
+        function generateMonthlyView() {
+            const monthlyCalendar = document.getElementById('monthlyCalendar');
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth();
+            
+            // Get first day of month and calculate grid
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(firstDay.getDate() - firstDay.getDay());
+            
+            monthlyCalendar.innerHTML = '';
+            
+            // Add weekday headers
+            const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            weekDays.forEach(day => {
+                const header = document.createElement('div');
+                header.className = 'calendar-header';
+                header.textContent = day;
+                monthlyCalendar.appendChild(header);
+            });
+            
+            // Generate calendar days
+            for (let i = 0; i < 42; i++) {
+                const date = new Date(startDate);
+                date.setDate(startDate.getDate() + i);
+                const dateKey = date.toISOString().split('T')[0];
+                const isToday = dateKey === getTodayKey();
+                const isCurrentMonth = date.getMonth() === month;
+                
+                const dayElement = document.createElement('div');
+                dayElement.className = `calendar-day ${isToday ? 'today' : ''}`;
+                
+                if (isCurrentMonth) {
+                    const completedTasks = getCompletedTasksForDate(dateKey);
+                    const goalDots = allGoals.map(goal => {
+                        const goalId = goal._id || goal.id;
+                        const isCompleted = dailyProgress[dateKey] && dailyProgress[dateKey][goalId];
+                        const color = areaConfig[goal.area]?.color || '#6366f1';
+                        return `<div class="goal-dot ${isCompleted ? 'completed' : ''}" style="background: ${color};"></div>`;
+                    }).join('');
+                    
+                    dayElement.innerHTML = `
+                        <div class="day-number">${date.getDate()}</div>
+                        <div class="day-progress">${goalDots}</div>
+                    `;
+                } else {
+                    dayElement.innerHTML = `<div class="day-number" style="opacity: 0.3;">${date.getDate()}</div>`;
+                }
+                
+                monthlyCalendar.appendChild(dayElement);
+            }
+        }
+
+        // Get completed tasks count for a specific date
+        function getCompletedTasksForDate(dateKey) {
+            if (!dailyProgress[dateKey]) return 0;
+            
+            return Object.values(dailyProgress[dateKey]).filter(completed => completed === true).length;
+        }
+
+        // Switch between weekly and monthly view
+        function switchView(view) {
+            currentView = view;
+            
+            // Update toggle buttons
+            document.getElementById('weeklyToggle').classList.toggle('active', view === 'weekly');
+            document.getElementById('monthlyToggle').classList.toggle('active', view === 'monthly');
+            
+            // Show/hide views
+            document.getElementById('weeklyView').style.display = view === 'weekly' ? 'block' : 'none';
+            document.getElementById('monthlyView').style.display = view === 'monthly' ? 'block' : 'none';
+            
+            // Generate the selected view
+            generateProgressOverview();
+        }
+
+        // Update summary statistics
+        function updateSummaryStats() {
+            const today = getTodayKey();
+            const totalTasks = allGoals.length;
+            const completedToday = getCompletedTasksForDate(today);
+            
+            // Calculate weekly streak (consecutive days with at least one completed task)
+            let weeklyStreak = 0;
+            const currentDate = new Date();
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(currentDate);
+                date.setDate(currentDate.getDate() - i);
+                const dateKey = date.toISOString().split('T')[0];
+                
+                if (getCompletedTasksForDate(dateKey) > 0) {
+                    weeklyStreak++;
+                } else {
+                    break;
+                }
+            }
+            
+            // Update DOM
+            document.getElementById('totalTasksToday').textContent = totalTasks;
+            document.getElementById('completedToday').textContent = completedToday;
+            document.getElementById('weeklyStreak').textContent = weeklyStreak;
+            document.getElementById('totalGoals').textContent = totalTasks;
+        }
+
+        // Save goal to backend
+        async function saveGoalToBackend(goal) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return;
+
+                const goalId = goal._id || goal.id;
+                const response = await fetch(`${API_BASE_URL}/api/life-goals/${goalId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(goal)
+                });
+
+                if (!response.ok) {
+                    console.log('Could not save to backend, using localStorage');
+                }
+            } catch (error) {
+                console.log('Backend save failed:', error.message);
+            }
+        }
+
+        // Show empty state when no goals exist
+        function showEmptyState() {
+            const trackerGrid = document.getElementById('trackerGrid');
+            trackerGrid.innerHTML = `
+                <div class="empty-state">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🎯</div>
+                    <h3>No Goals to Track Yet</h3>
+                    <p>Start by creating your first life goals to begin tracking your daily progress.</p>
+                    <button class="btn btn-primary" onclick="window.location.href='goals.html'">
+                        Create Your First Goals
+                    </button>
+                </div>
+            `;
+        }
+
+        // Show success toast
+        function showSuccessToast(message) {
+            const toast = document.getElementById('successToast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toastMessage.textContent = message;
+            toast.style.display = 'block';
+            toast.style.animation = 'slideInRight 0.3s ease-out';
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+
+        // Utility functions
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function goToNotifications() {
+            window.location.href = 'notifications.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('open');
+            
+            if (window.innerWidth > 768) {
+                mainContent.classList.toggle('shifted');
+            }
+        }
+
+        // Profile dropdown functionality
+        function initializeProfileDropdown() {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const profileDropdown = document.getElementById('profileDropdown');
+            const dropdownOverlay = document.getElementById('dropdownOverlay');
+
+            if (!profileAvatar || !profileDropdown || !dropdownOverlay) {
+                console.log('Profile dropdown elements not found');
+                return;
+            }
+
+            loadUserProfile();
+
+            profileAvatar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleProfileDropdown();
+            });
+
+            dropdownOverlay.addEventListener('click', function() {
+                closeProfileDropdown();
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeProfileDropdown();
+                }
+            });
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const overlay = document.getElementById('dropdownOverlay');
+            
+            if (dropdown.classList.contains('open')) {
+                closeProfileDropdown();
+            } else {
+                openProfileDropdown();
+            }
+        }
+
+        function openProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const overlay = document.getElementById('dropdownOverlay');
+            
+            dropdown.classList.add('open');
+            overlay.classList.add('active');
+        }
+
+        function closeProfileDropdown() {
+            const dropdown = document.getElementById('profileDropdown');
+            const overlay = document.getElementById('dropdownOverlay');
+            
+            dropdown.classList.remove('open');
+            overlay.classList.remove('active');
+        }
+
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('eeh_token') || localStorage.getItem('authToken');
+                if (!token) return;
+
+                const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateProfileDisplay(data.user);
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                updateProfileDisplay({
+                    firstName: 'User',
+                    lastName: '',
+                    email: 'user@example.com'
+                });
+            }
+        }
+
+        function updateProfileDisplay(user) {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const dropdownAvatar = document.getElementById('dropdownAvatar');
+            const dropdownName = document.getElementById('dropdownName');
+            const dropdownEmail = document.getElementById('dropdownEmail');
+
+            const initials = getInitials(user.firstName, user.lastName);
+            
+            if (dropdownName) {
+                dropdownName.textContent = `${user.firstName || 'User'} ${user.lastName || ''}`.trim();
+            }
+            if (dropdownEmail) {
+                dropdownEmail.textContent = user.email || '';
+            }
+
+            if (user.profilePhoto) {
+                if (profileAvatar) {
+                    profileAvatar.innerHTML = `<img src="${user.profilePhoto}" alt="Profile Photo">`;
+                }
+                if (dropdownAvatar) {
+                    dropdownAvatar.innerHTML = `<img src="${user.profilePhoto}" alt="Profile Photo">`;
+                }
+            } else {
+                if (profileAvatar) {
+                    profileAvatar.innerHTML = initials;
+                }
+                if (dropdownAvatar) {
+                    dropdownAvatar.innerHTML = initials;
+                }
+            }
+        }
+
+        function getInitials(firstName, lastName) {
+            const first = firstName ? firstName.charAt(0).toUpperCase() : '';
+            const last = lastName ? lastName.charAt(0).toUpperCase() : '';
+            return (first + last) || 'U';
+        }
+
+        // Notification functions
+        async function updateNotificationCount() {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                if (!token) return;
+                
+                const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const count = data.count || 0;
+                    const countElement = document.getElementById('headerNotificationCount');
+                    
+                    if (countElement) {
+                        countElement.textContent = count;
+                        countElement.setAttribute('data-count', count);
+                        countElement.style.display = count > 0 ? 'flex' : 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching notification count:', error);
+            }
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(100px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            
+            @keyframes slideOutRight {
+                from { opacity: 1; transform: translateX(0); }
+                to { opacity: 0; transform: translateX(100px); }
+            }
+        `;
+        document.head.appendChild(style);
+
+    </script>
+</body>
+</html>
