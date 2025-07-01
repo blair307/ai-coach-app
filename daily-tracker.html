@@ -861,6 +861,9 @@ function updateProgressStats() {
     console.log('📊 === PROGRESS STATS UPDATED ===');
 }
 
+
+// SURGICAL FIX: Replace your calculateDayCompletion() function with this one
+
 function calculateDayCompletion(date) {
     if (currentGoals.length === 0) return 0;
     
@@ -873,7 +876,7 @@ function calculateDayCompletion(date) {
     const isExactlyToday = targetDate.getTime() === today.getTime();
     const targetDateString = targetDate.toISOString().split('T')[0];
     
-    console.log(`📊 CALCULATING COMPLETION - Date: ${targetDateString}, IsToday: ${isExactlyToday}`);
+    console.log(`📊 FIXED CALCULATION - Date: ${targetDateString}, IsToday: ${isExactlyToday}`);
     
     let completedOnThisSpecificDate = 0;
     
@@ -888,7 +891,7 @@ function calculateDayCompletion(date) {
             // FOR OTHER DAYS: STRICT history-only check, NEVER use today's status
             if (goal.completionHistory && Array.isArray(goal.completionHistory)) {
                 const exactDateEntry = goal.completionHistory.find(entry => {
-                    if (!entry.date) return false;
+                    if (!entry || !entry.date) return false;
                     
                     const entryDate = new Date(entry.date);
                     entryDate.setHours(0, 0, 0, 0);
@@ -897,11 +900,15 @@ function calculateDayCompletion(date) {
                     return entryDateString === targetDateString;
                 });
                 
+                // CRITICAL FIX: Only consider completed if there's an explicit TRUE entry
                 if (exactDateEntry && exactDateEntry.completed === true) {
                     isCompletedOnThisDate = true;
                 }
+                
+                console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: ${isCompletedOnThisDate} (found entry: ${!!exactDateEntry})`);
+            } else {
+                console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: NO HISTORY`);
             }
-            console.log(`📊 HISTORY - Goal ${index + 1} for ${targetDateString}: ${isCompletedOnThisDate}`);
         }
         
         if (isCompletedOnThisDate) {
@@ -910,20 +917,21 @@ function calculateDayCompletion(date) {
     });
     
     const percentage = (completedOnThisSpecificDate / currentGoals.length) * 100;
-    console.log(`📊 FINAL - ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
+    console.log(`📊 FINAL FIXED - ${targetDateString}: ${completedOnThisSpecificDate}/${currentGoals.length} = ${percentage}%`);
     
     return percentage;
 }
 
-// FINAL FIX: Weekly progress with mobile-first responsive design
+/// ADDITIONAL FIX: Make sure progress charts are properly isolated
 function renderWeeklyProgress() {
-    console.log('📊 === RENDERING WEEKLY PROGRESS (FINAL FIX) ===');
+    console.log('📊 === RENDERING WEEKLY PROGRESS (FIXED VERSION) ===');
     
     const container = document.getElementById('progressChart');
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Critical: normalize today
     
-    // FINAL FIX: Clear any existing content
+    // FIXED: Clear any existing content
     container.innerHTML = '';
     
     for (let i = 0; i < 7; i++) {
@@ -931,14 +939,14 @@ function renderWeeklyProgress() {
         date.setDate(today.getDate() - (6 - i)); // Go back 6 days, then forward
         date.setHours(0, 0, 0, 0); // Ensure clean date
         
-        const isToday = date.toDateString() === today.toDateString();
+        const isToday = date.getTime() === today.getTime(); // Use .getTime() for exact comparison
         const dayName = days[date.getDay()];
         const dayNumber = date.getDate();
         
-        // CRITICAL: Calculate completion for this specific date only
+        // CRITICAL: Calculate completion for this specific date ONLY
         const completionRate = calculateDayCompletion(date);
         
-        console.log(`📊 Week render FINAL - ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
+        console.log(`📊 Week render FIXED - ${dayName} ${dayNumber}: ${completionRate}% (isToday: ${isToday})`);
         
         const dayElement = document.createElement('div');
         dayElement.style.cssText = `
@@ -978,17 +986,18 @@ function renderWeeklyProgress() {
         container.appendChild(dayElement);
     }
     
-    console.log('📊 === WEEKLY PROGRESS RENDERED (FINAL FIX) ===');
+    console.log('📊 === WEEKLY PROGRESS RENDERED (FIXED VERSION) ===');
 }
 
-// FINAL FIX: Monthly progress with same isolated logic
+// ALSO UPDATE: Monthly progress with same fix
 function renderMonthlyProgress() {
-    console.log('📊 === RENDERING MONTHLY PROGRESS (FINAL FIX) ===');
+    console.log('📊 === RENDERING MONTHLY PROGRESS (FIXED VERSION) ===');
     
     const container = document.getElementById('progressChart');
     const today = new Date();
+    today.setHours(0, 0, 0, 0); // Critical: normalize today
     
-    // FINAL FIX: Clear and setup container
+    // FIXED: Clear and setup container
     container.innerHTML = '';
     
     for (let i = 0; i < 30; i++) {
@@ -996,11 +1005,11 @@ function renderMonthlyProgress() {
         date.setDate(today.getDate() - (29 - i));
         date.setHours(0, 0, 0, 0); // Ensure clean date
         
-        const isToday = date.toDateString() === today.toDateString();
+        const isToday = date.getTime() === today.getTime(); // Use .getTime() for exact comparison
         const dayNumber = date.getDate();
         const monthName = date.toLocaleDateString('en-US', { month: 'short' });
         
-        // CRITICAL: Calculate completion for this specific date only
+        // CRITICAL: Calculate completion for this specific date ONLY
         const completionRate = calculateDayCompletion(date);
         
         const dayElement = document.createElement('div');
@@ -1041,7 +1050,7 @@ function renderMonthlyProgress() {
         container.appendChild(dayElement);
     }
     
-    console.log('📊 === MONTHLY PROGRESS RENDERED (FINAL FIX) ===');
+    console.log('📊 === MONTHLY PROGRESS RENDERED (FIXED VERSION) ===');
 }
 
 // FINAL FIX: Progress view switching with proper CSS classes
