@@ -197,25 +197,6 @@ const dailyPromptAssignmentSchema = new mongoose.Schema({
 
 const DailyPromptAssignment = mongoose.model('DailyPromptAssignment', dailyPromptAssignmentSchema);
 
-// Life Goals Schema
-const lifeGoalSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  area: { type: String, enum: ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'], required: true },
-  bigGoal: { type: String, required: true },
-  dailyAction: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-  streak: { type: Number, default: 0 },
-  lastCompletedDate: { type: Date },
-  completionHistory: [{ 
-    date: { type: Date, required: true },
-    completed: { type: Boolean, required: true }
-  }],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-const LifeGoal = mongoose.model('LifeGoal', lifeGoalSchema);
-
 // Insights Schema - NEW
 const insightSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -934,8 +915,7 @@ async function createDailyPromptNotification() {
     // Create new assignment with fresh prompt
     const assignment = new DailyPromptAssignment({
       date: today,
-      promptId: nextPrompt._id,
-      responseCount: 0
+      promptId: nextPrompt._id
     });
     
     await assignment.save();
@@ -1039,7 +1019,6 @@ app.post('/api/admin/force-new-prompt', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to force new prompt' });
   }
 });
-
 
 // Billing endpoints
 app.get('/api/billing/info', authenticateToken, async (req, res) => {
@@ -1520,298 +1499,6 @@ app.delete('/api/rooms/:id', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// LIFE GOALS API ROUTES
-// ==========================================
-
-app.get('/api/life-goals', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const goals = await LifeGoal.find({ userId }).sort({ createdAt: -1 });
-    res.json(goals);
-  } catch (error) {
-    console.error('Get life goals error:', error);
-    res.status(500).json({ error: 'Failed to fetch life goals' });
-  }
-});
-
-app.post('/api/life-goals', authenticateToken, async (req, res) => {
-  try {
-    const { area, bigGoal, dailyAction } = req.body;
-    const userId = req.user.userId;
-
-    if (!area || !bigGoal || !dailyAction) {
-      return res.status(400).json({ error: 'Area, big goal, and daily action are required' });
-    }
-
-    const validAreas = ['mind', 'spirit', 'body', 'work', 'relationships', 'fun', 'finances'];
-    if (!validAreas.includes(area)) {
-      return res.status(400).json({ error: 'Invalid area specified' });
-    }
-
-    const lifeGoal = new LifeGoal({
-      userId,
-      area,
-      bigGoal,
-      dailyAction,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    });
-
-    await lifeGoal.save();
-
-    try {
-      const notification = new Notification({
-        userId,
-        type: 'system',
-        title: `New ${area.charAt(0).toUpperCase() + area.slice(1)} Goal Created!`,
-        content: `You've set a new goal: "${dailyAction}". Start tracking your daily progress!`,
-        createdAt: new Date()
-      });
-      await notification.save();
-    } catch (notifError) {
-      console.error('Error creating notification:', notifError);
-    }
-
-    res.status(201).json(lifeGoal);
-  } catch (error) {
-    console.error('Create life goal error:', error);
-    res.status(500).json({ error: 'Failed to create life goal' });
-  }
-});
-
-// REPLACE the life goals update route in your server.js file (around line 1100)
-// This fixes the server from updating yesterday when you update today
-
-app.put('/api/life-goals/:id', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { bigGoal, dailyAction, completed, lastCompletedDate, updateDate } = req.body;
-    const userId = req.user.userId;
-
-    const goal = await LifeGoal.findOne({ _id: id, userId });
-    if (!goal) {
-      return res.status(404).json({ error: 'Goal not found' });
-    }
-
-    // Update goal fields
-    if (bigGoal !== undefined) goal.bigGoal = bigGoal;
-    if (dailyAction !== undefined) goal.dailyAction = dailyAction;
-    
-    if (completed !== undefined) {
-      // CRITICAL FIX: Only update for the EXACT date specified, never multiple days
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayDateString = today.toISOString().split('T')[0];
-      
-      console.log(`🔧 SERVER FIX - Updating goal ${id} for ONLY ${todayDateString}: ${completed}`);
-      
-      // Update basic completion status
-      goal.completed = completed;
-      
-      // Update lastCompletedDate only if completing today
-      if (completed) {
-        goal.lastCompletedDate = today;
-      } else {
-        // CRITICAL FIX: Only clear lastCompletedDate if it was set to today
-        if (goal.lastCompletedDate) {
-          const lastDate = new Date(goal.lastCompletedDate);
-          lastDate.setHours(0, 0, 0, 0);
-          const lastDateString = lastDate.toISOString().split('T')[0];
-          if (lastDateString === todayDateString) {
-            goal.lastCompletedDate = null;
-          }
-        }
-      }
-      
-      // Initialize completion history if it doesn't exist
-      if (!goal.completionHistory) {
-        goal.completionHistory = [];
-      }
-      
-      // CRITICAL FIX: Find or create ONLY today's entry, never touch other dates
-      const todayEntryIndex = goal.completionHistory.findIndex(entry => {
-        if (!entry.date) return false;
-        const entryDate = new Date(entry.date);
-        const entryDateString = entryDate.toISOString().split('T')[0];
-        return entryDateString === todayDateString;
-      });
-      
-      if (todayEntryIndex >= 0) {
-        // Update existing today's entry ONLY
-        goal.completionHistory[todayEntryIndex].completed = completed;
-        console.log(`🔧 SERVER FIX - Updated existing entry for ${todayDateString}`);
-      } else {
-        // Create new entry for today ONLY
-        goal.completionHistory.push({
-          date: today,
-          completed: completed
-        });
-        console.log(`🔧 SERVER FIX - Created new entry for ${todayDateString}`);
-      }
-      
-      // CRITICAL FIX: Never modify any other dates in completion history
-      // Remove any logic that might update yesterday or other dates
-      
-      // Recalculate streak based on completion history
-      const sortedHistory = goal.completionHistory
-        .filter(entry => entry.completed === true)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
-      
-      let currentStreak = 0;
-      const oneDay = 24 * 60 * 60 * 1000;
-      
-      for (let i = 0; i < sortedHistory.length; i++) {
-        const entryDate = new Date(sortedHistory[i].date);
-        entryDate.setHours(0, 0, 0, 0);
-        
-        if (i === 0) {
-          // Check if most recent completion is today or yesterday
-          const yesterday = new Date(today.getTime() - oneDay);
-          if (entryDate.getTime() === today.getTime() || entryDate.getTime() === yesterday.getTime()) {
-            currentStreak = 1;
-          } else {
-            break;
-          }
-        } else {
-          const prevDate = new Date(sortedHistory[i-1].date);
-          prevDate.setHours(0, 0, 0, 0);
-          const daysDiff = (prevDate.getTime() - entryDate.getTime()) / oneDay;
-          
-          if (daysDiff === 1) {
-            currentStreak++;
-          } else {
-            break;
-          }
-        }
-      }
-      
-      goal.streak = currentStreak;
-      console.log(`🔧 SERVER FIX - Recalculated streak: ${currentStreak}`);
-    }
-    
-    goal.updatedAt = new Date();
-    await goal.save();
-
-    console.log(`✅ FIXED - Goal ${id} updated for today ONLY, no other dates touched`);
-    res.json(goal);
-  } catch (error) {
-    console.error('Update life goal error:', error);
-    res.status(500).json({ error: 'Failed to update life goal' });
-  }
-});
-
-app.post('/api/life-goals/:id/track', authenticateToken, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { completed } = req.body;
-    const userId = req.user.userId;
-
-    const goal = await LifeGoal.findOne({ _id: id, userId });
-    if (!goal) {
-      return res.status(404).json({ error: 'Goal not found' });
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const lastCompleted = goal.lastCompletedDate ? new Date(goal.lastCompletedDate) : null;
-    
-    if (lastCompleted) {
-      lastCompleted.setHours(0, 0, 0, 0);
-      if (today.getTime() === lastCompleted.getTime()) {
-        return res.status(400).json({ error: 'Already tracked for today' });
-      }
-    }
-
-    goal.completed = completed;
-    goal.lastCompletedDate = new Date();
-    
-    if (completed) {
-      goal.streak += 1;
-    } else {
-      goal.streak = Math.max(0, goal.streak - 1);
-    }
-    
-    goal.updatedAt = new Date();
-    await goal.save();
-
-    res.json({
-      message: 'Progress tracked successfully',
-      streak: goal.streak,
-      completed: goal.completed
-    });
-  } catch (error) {
-    console.error('Track goal error:', error);
-    res.status(500).json({ error: 'Failed to track progress' });
-  }
-}); 
-
-app.get('/api/life-goals/stats', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    
-    const totalGoals = await LifeGoal.countDocuments({ userId });
-    const completedToday = await LifeGoal.countDocuments({ 
-      userId, 
-      lastCompletedDate: { 
-        $gte: new Date(new Date().setHours(0, 0, 0, 0)),
-        $lt: new Date(new Date().setHours(23, 59, 59, 999))
-      }
-    });
-    
-    const activeStreaks = await LifeGoal.find({ userId, streak: { $gt: 0 } });
-    const longestStreak = activeStreaks.length > 0 ? Math.max(...activeStreaks.map(g => g.streak)) : 0;
-    
-    const goalsByArea = await LifeGoal.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      { $group: { _id: '$area', count: { $sum: 1 } } }
-    ]);
-    
-    res.json({
-      totalGoals,
-      completedToday,
-      longestStreak,
-      goalsByArea: goalsByArea.reduce((acc, item) => {
-        acc[item._id] = item.count;
-        return acc;
-      }, {})
-    });
-  } catch (error) {
-    console.error('Get goal stats error:', error);
-    res.status(500).json({ error: 'Failed to fetch goal statistics' });
-  }
-});
-
-// Migration function
-async function migrateGoalsToHistory() {
-  try {
-    console.log('🔄 Starting goal history migration...');
-    
-    const goalsToMigrate = await LifeGoal.find({ 
-      completionHistory: { $exists: false } 
-    });
-    
-    console.log(`📊 Found ${goalsToMigrate.length} goals to migrate`);
-    
-    for (const goal of goalsToMigrate) {
-      goal.completionHistory = [];
-      
-      if (goal.lastCompletedDate) {
-        goal.completionHistory.push({
-          date: goal.lastCompletedDate,
-          completed: true
-        });
-      }
-      
-      await goal.save();
-    }
-    
-    console.log('✅ Goal history migration completed');
-  } catch (error) {
-    console.error('❌ Migration error:', error);
-  }
-}
-
-// ==========================================
 // INSIGHTS API ROUTES
 // ==========================================
 
@@ -2004,9 +1691,7 @@ app.get('/api/user/export', authenticateToken, async (req, res) => {
     
     if (type === 'all' || type === 'goals') {
       const goals = await Goal.find({ userId });
-      const lifeGoals = await LifeGoal.find({ userId });
       exportData.goals = goals;
-      exportData.lifeGoals = lifeGoals;
     }
     
     if (type === 'all' || type === 'coaching') {
@@ -2043,7 +1728,6 @@ app.delete('/api/user/account', authenticateToken, async (req, res) => {
     await Promise.all([
       User.findByIdAndDelete(userId),
       Goal.deleteMany({ userId }),
-      LifeGoal.deleteMany({ userId }),
       Chat.deleteMany({ userId }),
       Notification.deleteMany({ userId }),
       Insight.deleteMany({ userId }),
@@ -2301,6 +1985,7 @@ app.post('/api/manual-add-custom-prompts', authenticateToken, async (req, res) =
     });
   }
 });
+
 // ==========================================
 // DAILY PROMPTS API ROUTES
 // ==========================================
@@ -2556,7 +2241,6 @@ app.get('/health', (req, res) => {
       replySystem: 'enabled',
       replyNotifications: 'enabled',
       communityRooms: 'enabled',
-      lifeGoals: 'enabled',
       messageDeleting: 'enabled',
       manualSeedEndpoint: 'enabled'
     }
@@ -2580,7 +2264,6 @@ app.use((req, res) => {
 // Initialize default rooms after MongoDB connection
 mongoose.connection.once('open', () => {
   createDefaultRooms();
-  migrateGoalsToHistory();
 });
 
 // Run daily prompt notifications at 8:00 AM every day
@@ -2601,7 +2284,7 @@ app.listen(PORT, () => {
   console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅ Life Goals ✅`);
+  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
   console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
   console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
