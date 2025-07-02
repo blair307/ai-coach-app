@@ -4707,3 +4707,30 @@ body {
         display: flex !important;
     }
 }
+
+/* FORCE NOTIFICATION BELL ON MOBILE - NUCLEAR OPTION */
+.notification-icon-container,
+.notification-bell {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+}
+
+@media (max-width: 768px) {
+    .notification-icon-container,
+    .notification-bell {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .notification-count {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+}
