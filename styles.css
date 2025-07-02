@@ -3061,12 +3061,7 @@ body {
         display: flex !important;
     }
     
-    /* Hide notification bell entirely on mobile */
-    .notification-icon-container,
-    .notification-bell {
-        display: none !important;
-    }
-    
+
     /* =================================
        REMOVE COACH INFO SECTION
        ================================= */
