@@ -4794,3 +4794,55 @@ body {
         display: none !important;
     }
 }
+
+/* SPECIFIC FIX FOR GET STARTED BUTTON */
+
+/* Target the exact button classes */
+.nav-link.btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Hover state for Get Started button */
+.nav-link.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4) !important;
+    text-decoration: none !important;
+}
+
+/* Focus state for accessibility */
+.nav-link.btn-primary:focus {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    color: white !important;
+    outline: 2px solid #6366f1 !important;
+    outline-offset: 2px !important;
+}
+
+/* Active state when clicked */
+.nav-link.btn-primary:active {
+    background: linear-gradient(135deg, #3730a3 0%, #312e81 100%) !important;
+    color: white !important;
+    transform: translateY(0) !important;
+}
+
+/* Make sure text stays visible in all states */
+.nav-link.btn-primary,
+.nav-link.btn-primary:hover,
+.nav-link.btn-primary:focus,
+.nav-link.btn-primary:active,
+.nav-link.btn-primary:visited {
+    color: white !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
