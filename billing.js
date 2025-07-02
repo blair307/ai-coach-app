@@ -1,7 +1,7 @@
 // UPDATED BILLING.JS - Replace your existing billing.js with this
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_tTVxNijpdjtwFw13i0HbgCxJ'; // Replace with your actual key
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_0Ej0byBWJ6uXamOeILEwu9ea'; // Replace with your actual key
 
 let stripe;
 let elements;
