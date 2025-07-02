@@ -4570,9 +4570,9 @@ function forceSingleColorIcons() {
         z-index: 999 !important;
     }
     
-    .header-actions .btn {
-        display: none !important;
-    }
+.header-actions .btn:not(.notification-icon-container):not(.profile-dropdown-container) {
+    display: none !important;
+}
     
     .profile-dropdown-container {
         display: flex !important;
@@ -4697,10 +4697,9 @@ body {
         gap: 0.5rem;
     }
     
-    /* Hide other buttons but keep notification bell */
-    .header-actions .btn {
-        display: none;
-    }
+.header-actions .btn:not(.notification-icon-container):not(.profile-dropdown-container) {
+    display: none !important;
+}
     
     .notification-bell,
     .profile-dropdown-container {
@@ -4732,5 +4731,66 @@ body {
         display: flex !important;
         visibility: visible !important;
         opacity: 1 !important;
+    }
+}
+
+/* MOBILE NOTIFICATION BELL FIX */
+@media (max-width: 768px) {
+    /* Force notification bell visibility */
+    .notification-icon-container,
+    .notification-bell {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+    }
+    
+    .notification-icon-container {
+        margin-right: 1rem !important;
+        z-index: 1000 !important;
+    }
+    
+    .notification-bell {
+        width: 44px !important;
+        height: 44px !important;
+        background: rgba(99, 102, 241, 0.1) !important;
+        border: 2px solid rgba(99, 102, 241, 0.2) !important;
+        border-radius: 50% !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.2rem !important;
+    }
+    
+    .notification-count {
+        display: flex !important;
+        position: absolute !important;
+        top: -8px !important;
+        right: -8px !important;
+        background: #ef4444 !important;
+        color: white !important;
+        width: 20px !important;
+        height: 20px !important;
+        border-radius: 50% !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 0.75rem !important;
+        font-weight: 600 !important;
+    }
+    
+    .notification-count[data-count="0"],
+    .notification-count:empty {
+        display: none !important;
+    }
+    
+    /* Ensure header actions show both notification and profile */
+    .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 1rem !important;
+    }
+    
+    /* Hide other buttons but keep notification bell and profile */
+    .header-actions .btn:not(.profile-dropdown-container .btn) {
+        display: none !important;
     }
 }
