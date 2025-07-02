@@ -673,8 +673,8 @@ app.post('/api/payments/create-subscription', async (req, res) => {
 
     // IMPORTANT: Replace these with your actual Price IDs from Stripe Dashboard
     const priceIds = {
-      monthly: 'price_1RgSSkIjRmg2uv1caRs8eYu5', // Replace with your actual monthly price ID
-      yearly: 'price_1RgSV7IjRmg2uv1cEFS0hs2b'   // Replace with your actual yearly price ID
+      monthly: 'price_1RgTJQIjRmg2uv1cUchaF71t', // Replace with your actual monthly price ID
+      yearly: 'price_1RgTJuIjRmg2uv1cskIokp2r'   // Replace with your actual yearly price ID
     };
 
     const priceId = priceIds[plan];
