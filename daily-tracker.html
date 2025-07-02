@@ -758,14 +758,15 @@ async function toggleTask(goalId) {
     const newCompleted = !wasCompleted;
     dailyProgress[today][goalId] = newCompleted;
 
-    // Update goal streak locally
-    if (newCompleted) {
-        goal.streak = (goal.streak || 0) + 1;
-        goal.lastCompletedDate = new Date().toISOString();
-        showSuccessToast(`${goal.area} goal completed! 🎉`);
-    } else {
-        goal.streak = Math.max(0, (goal.streak || 0) - 1);
-    }
+   // Update goal streak locally
+if (newCompleted) {
+    goal.streak = (goal.streak || 0) + 1;
+    goal.lastCompletedDate = new Date().toISOString();
+    showSuccessToast(`${goal.area} goal completed! 🎉`);
+} else {
+    goal.streak = Math.max(0, (goal.streak || 0) - 1);
+    // Don't update lastCompletedDate when uncompleting - keep the actual last completion
+}
 
     // Save to server
     await saveProgressToServer(goalId, newCompleted, goal.area, today);
@@ -876,18 +877,34 @@ async function saveProgressToServer(goalId, completed, area, date) {
             return new Date().toISOString().split('T')[0];
         }
 
-        // Get last completed text
-        function getLastCompletedText(goal) {
-            if (!goal.lastCompletedDate) return 'Never completed';
-            
-            const lastDate = new Date(goal.lastCompletedDate);
-            const today = new Date();
-            const diffDays = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
-            
-            if (diffDays === 0) return 'Completed today';
-            if (diffDays === 1) return 'Completed yesterday';
-            return `Completed ${diffDays} days ago`;
-        }
+// Get last completed text - FIXED
+function getLastCompletedText(goal) {
+    const today = getTodayKey();
+    const goalId = goal._id || goal.id;
+    
+    // Check if completed today first
+    if (isTaskCompletedToday(goal)) {
+        return 'Completed today';
+    }
+    
+    // If not completed today, check last completion date
+    if (!goal.lastCompletedDate) {
+        return 'Never completed';
+    }
+    
+    const lastDate = new Date(goal.lastCompletedDate);
+    const todayDate = new Date();
+    const diffDays = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) {
+        // This shouldn't happen since we checked isTaskCompletedToday above
+        return 'Completed today';
+    }
+    if (diffDays === 1) {
+        return 'Completed yesterday';
+    }
+    return `Completed ${diffDays} days ago`;
+}
 
         // Generate progress overview (weekly/monthly)
         function generateProgressOverview() {
