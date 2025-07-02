@@ -720,22 +720,22 @@ async function loadGoalsFromBackend() {
             const goalId = goal._id || goal.id;
             const isCompleted = isTaskCompletedToday(goal);
             const streak = goal.streak || 0;
-            const lastCompleted = getLastCompletedText(goal);
 
-            return `
-                <div class="goal-task" onclick="toggleTask('${goalId}')" data-goal-id="${goalId}">
-                    <div class="task-checkbox ${isCompleted ? 'completed' : ''}" style="border-color: ${color};">
-                        ${isCompleted ? '✓' : ''}
-                    </div>
-                    <div class="task-content">
-                        <div class="task-title">${escapeHtml(goal.bigGoal || goal.title || 'Untitled Goal')}</div>
-                        <div class="task-description">${escapeHtml(goal.dailyAction || 'No daily action defined')}</div>
-                      <div class="task-streak">
-    ${streak > 0 ? `<span class="streak-badge">${streak} day streak</span>` : ''}
-</div>
-                    </div>
-                </div>
-            `;
+
+ return `
+    <div class="goal-task" onclick="toggleTask('${goalId}')" data-goal-id="${goalId}">
+        <div class="task-checkbox ${isCompleted ? 'completed' : ''}" style="border-color: ${color};">
+            ${isCompleted ? '✓' : ''}
+        </div>
+        <div class="task-content">
+            <div class="task-title">${escapeHtml(goal.bigGoal || goal.title || 'Untitled Goal')}</div>
+            <div class="task-description">${escapeHtml(goal.dailyAction || 'No daily action defined')}</div>
+            <div class="task-streak">
+                ${streak > 0 ? `<span class="streak-badge">${streak} day streak</span>` : ''}
+            </div>
+        </div>
+    </div>
+`;
         }
 
 async function toggleTask(goalId) {
