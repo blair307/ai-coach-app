@@ -4654,3 +4654,36 @@ body {
     margin-top: 0;
     padding-top: 0;
 }
+
+/* CENTER HEADER CONTENT VERTICALLY */
+.content-header {
+    display: flex;
+    align-items: center; /* This centers everything vertically */
+    justify-content: space-between;
+    min-height: 80px; /* Ensure consistent height */
+}
+
+.content-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #36454F;
+    margin: 0;
+    text-align: center;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center; /* Center the bio image and notification */
+    gap: 1rem;
+}
+
+.notification-bell,
+.profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
