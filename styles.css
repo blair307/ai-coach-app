@@ -4623,3 +4623,34 @@ function forceSingleColorIcons() {
     justify-content: center;
     align-items: center;
 }
+
+/* REDUCE TOP SPACING */
+.main-content {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.content-header {
+    margin-top: 0;
+    padding-top: 0.5rem; /* Reduce from default 1rem */
+    padding-bottom: 0.5rem; /* Also reduce bottom padding for balance */
+}
+
+/* If there's a hero section or any top container */
+.settings-container,
+.main-container,
+.page-container {
+    margin-top: 0;
+    padding-top: 1rem; /* Reduce top padding */
+}
+
+/* General body adjustment to remove any default spacing */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.app-container {
+    margin-top: 0;
+    padding-top: 0;
+}
