@@ -1,7 +1,7 @@
-// Signup and Payment JavaScript with Coupon System
+// UPDATED SIGNUP.JS - Replace your existing signup.js with this
 
 const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
-const STRIPE_PUBLISHABLE_KEY = 'pk_test_0Ej0byBWJ6uXamOeILEwu9ea'; // Replace with your Stripe key
+const STRIPE_PUBLISHABLE_KEY = 'pk_test_0Ej0byBWJ6uXamOeILEwu9ea'; // Replace with your actual key
 
 let stripe;
 let elements;
@@ -175,8 +175,11 @@ function applyFreeCoupon() {
     document.getElementById('submitButtonText').textContent = 'Create Free Account';
     
     // Remove required attributes from payment fields
-    document.getElementById('cardName').removeAttribute('required');
-    document.getElementById('billingCountry').removeAttribute('required');
+    const cardName = document.getElementById('cardName');
+    const billingCountry = document.getElementById('billingCountry');
+    
+    if (cardName) cardName.removeAttribute('required');
+    if (billingCountry) billingCountry.removeAttribute('required');
 }
 
 // Remove coupon
@@ -207,8 +210,11 @@ function removeCoupon() {
     document.getElementById('submitButtonText').textContent = 'Start My Journey';
     
     // Add back required attributes
-    document.getElementById('cardName').setAttribute('required', '');
-    document.getElementById('billingCountry').setAttribute('required', '');
+    const cardName = document.getElementById('cardName');
+    const billingCountry = document.getElementById('billingCountry');
+    
+    if (cardName) cardName.setAttribute('required', '');
+    if (billingCountry) billingCountry.setAttribute('required', '');
 }
 
 // Show coupon message
@@ -245,11 +251,16 @@ function validateSignupForm() {
     
     // If not free account, validate payment fields
     if (!isFreeAccount) {
-        const cardName = document.getElementById('cardName').value.trim();
-        const billingCountry = document.getElementById('billingCountry').value;
+        const cardName = document.getElementById('cardName');
+        const billingCountry = document.getElementById('billingCountry');
         
-        if (!cardName || !billingCountry) {
-            alert('Please fill in all payment information');
+        if (cardName && !cardName.value.trim()) {
+            alert('Please enter the name on your card');
+            return false;
+        }
+        
+        if (billingCountry && !billingCountry.value) {
+            alert('Please select your billing country');
             return false;
         }
     }
@@ -271,6 +282,7 @@ async function handleSubmit(event) {
     
     // Disable submit button and show loading
     submitButton.disabled = true;
+    const originalText = submitButton.textContent;
     submitButton.textContent = 'Processing...';
     loadingOverlay.style.display = 'flex';
     
@@ -283,7 +295,7 @@ async function handleSubmit(event) {
             await createFreeAccount(formData);
         } else {
             // Handle paid account creation
-            await createPaidAccount(formData);
+            await createPaidSubscription(formData);
         }
         
     } catch (error) {
@@ -292,7 +304,7 @@ async function handleSubmit(event) {
         
         // Re-enable submit button
         submitButton.disabled = false;
-        submitButton.textContent = isFreeAccount ? 'Create Free Account' : 'Start My Journey';
+        submitButton.textContent = originalText;
     } finally {
         loadingOverlay.style.display = 'none';
     }
@@ -309,7 +321,11 @@ async function createFreeAccount(formData) {
             ...formData,
             stripeCustomerId: null,
             paymentIntentId: 'free_account_' + Date.now(),
-            couponCode: appliedCoupon
+            couponCode: appliedCoupon,
+            subscription: {
+                plan: 'free',
+                status: 'active'
+            }
         })
     });
     
@@ -329,10 +345,12 @@ async function createFreeAccount(formData) {
     window.location.href = 'dashboard.html';
 }
 
-// Create paid account
-async function createPaidAccount(formData) {
-    // Create payment intent
-    const response = await fetch(`${API_BASE_URL}/api/payments/create-subscription`, {
+// Create paid subscription
+async function createPaidSubscription(formData) {
+    console.log('Creating paid subscription for:', formData.email);
+    
+    // Step 1: Create subscription and get client secret
+    const subscriptionResponse = await fetch(`${API_BASE_URL}/api/payments/create-subscription`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -340,14 +358,16 @@ async function createPaidAccount(formData) {
         body: JSON.stringify(formData)
     });
     
-    const { clientSecret, customerId } = await response.json();
-    
-    if (!response.ok) {
-        throw new Error('Failed to create payment intent');
+    if (!subscriptionResponse.ok) {
+        const errorData = await subscriptionResponse.json();
+        throw new Error(errorData.error || 'Failed to create subscription');
     }
     
-    // Confirm payment with Stripe
-    const result = await stripe.confirmCardPayment(clientSecret, {
+    const { subscriptionId, clientSecret, customerId } = await subscriptionResponse.json();
+    console.log('Subscription created:', subscriptionId);
+    
+    // Step 2: Confirm payment with Stripe
+    const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
         payment_method: {
             card: cardElement,
             billing_details: {
@@ -357,11 +377,26 @@ async function createPaidAccount(formData) {
         }
     });
     
-    if (result.error) {
-        throw new Error(result.error.message);
+    if (confirmError) {
+        console.error('Payment confirmation error:', confirmError);
+        
+        // Cancel the subscription since payment failed
+        try {
+            await fetch(`${API_BASE_URL}/api/billing/cancel-subscription-by-id`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ subscriptionId })
+            });
+        } catch (cancelError) {
+            console.error('Error canceling failed subscription:', cancelError);
+        }
+        
+        throw new Error(confirmError.message);
     }
     
-    // Create user account
+    console.log('Payment confirmed:', paymentIntent.status);
+    
+    // Step 3: Create user account with subscription info
     const accountResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
@@ -370,7 +405,13 @@ async function createPaidAccount(formData) {
         body: JSON.stringify({
             ...formData,
             stripeCustomerId: customerId,
-            paymentIntentId: result.paymentIntent.id
+            subscriptionId: subscriptionId,
+            paymentIntentId: paymentIntent.id,
+            subscription: {
+                plan: formData.plan,
+                status: 'active',
+                stripeSubscriptionId: subscriptionId
+            }
         })
     });
     
@@ -379,6 +420,8 @@ async function createPaidAccount(formData) {
     if (!accountResponse.ok) {
         throw new Error(accountData.message || 'Failed to create account');
     }
+    
+    console.log('Account created successfully');
     
     // Save auth data and redirect
     localStorage.setItem('authToken', accountData.token);
@@ -400,7 +443,6 @@ function getFormData() {
         email: document.getElementById('email').value.trim(),
         password: document.getElementById('password').value,
         plan: selectedPlan,
-        planAmount: isFreeAccount ? 0 : (selectedPlan === 'yearly' ? 92900 : 9700), // Amount in cents
         couponCode: appliedCoupon
     };
 }
