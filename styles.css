@@ -4687,3 +4687,28 @@ body {
     align-items: center;
     justify-content: center;
 }
+
+/* ENSURE NOTIFICATION BELL SHOWS ON MOBILE */
+@media (max-width: 768px) {
+    .notification-bell {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .header-actions {
+        display: flex !important;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* Hide other buttons but keep notification bell */
+    .header-actions .btn {
+        display: none;
+    }
+    
+    .notification-bell,
+    .profile-dropdown-container {
+        display: flex !important;
+    }
+}
