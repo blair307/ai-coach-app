@@ -722,7 +722,12 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
-    // Check if the coupon is valid with Stripe first
+      
+    const { email, plan, firstName, lastName, couponCode } = req.body;
+    
+    console.log('Creating subscription with coupon:', couponCode);
+
+// Check if the coupon is valid with Stripe first
 if (couponCode) {
   try {
     const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
@@ -737,10 +742,7 @@ if (couponCode) {
     });
   }
 }
-    const { email, plan, firstName, lastName, couponCode } = req.body;
-    
-    console.log('Creating subscription with coupon:', couponCode);
-    
+      
     // Create Stripe customer
     const customer = await stripe.customers.create({
       email: email,
