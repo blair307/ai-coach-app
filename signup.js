@@ -316,46 +316,6 @@ function applyFreeCoupon() {
     if (billingCountry) billingCountry.removeAttribute('required');
 }
 
-// Remove coupon
-function removeCoupon() {
-    isFreeAccount = false;
-    appliedCoupon = null;
-    
-    // Show payment section
-    document.getElementById('paymentSection').style.display = 'block';
-    
-   // Hide all notices
-    const freeNotice = document.getElementById('freeAccountNotice');
-    const oneMonthNotice = document.getElementById('oneMonthFreeNotice');
-    const sixMonthsNotice = document.getElementById('sixMonthsFreeNotice');
-    
-    if (freeNotice) freeNotice.style.display = 'none';
-    if (oneMonthNotice) oneMonthNotice.style.display = 'none';
-    if (sixMonthsNotice) sixMonthsNotice.style.display = 'none';
-    
-    // Reset prices
-    const originalPrices = document.querySelectorAll('.original-price');
-    const discountedPrices = document.querySelectorAll('.discounted-price');
-    
-    originalPrices.forEach(price => {
-        price.style.textDecoration = 'none';
-        price.style.opacity = '1';
-    });
-    
-    discountedPrices.forEach(price => {
-        price.style.display = 'none';
-    });
-    
-    // Reset submit button
-    document.getElementById('submitButtonText').textContent = 'Start My Journey';
-    
-    // Add back required attributes
-    const cardName = document.getElementById('cardName');
-    const billingCountry = document.getElementById('billingCountry');
-    
-    if (cardName) cardName.setAttribute('required', '');
-    if (billingCountry) billingCountry.setAttribute('required', '');
-}
 
 // Show coupon message
 function showCouponMessage(message, type) {
