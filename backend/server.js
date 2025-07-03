@@ -11,6 +11,16 @@ const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 require('dotenv').config();
 
+// Make sure all important settings are configured
+const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
+const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
+
+if (missingSettings.length > 0) {
+    console.error('❌ Missing required settings:', missingSettings);
+    console.error('Please check your .env file and add these settings');
+    process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -473,12 +483,18 @@ app.post('/api/auth/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-// Determine subscription plan based on coupon
-let finalPlan = plan;
+// Determine what type of account to create based on coupon
+let finalPlan = plan || 'yearly';
 let subscriptionStatus = 'active';
 
+// Handle special coupon cases
 if (couponCode === 'EEHCLIENT') {
+  // This is a completely free account
   finalPlan = 'free';
+  subscriptionStatus = 'active';
+} else if (couponCode === 'FREEMONTH' || couponCode === 'EEHCLIENT6') {
+  // These get discounts but keep their chosen plan
+  finalPlan = plan;
   subscriptionStatus = 'active';
 }
 
@@ -706,6 +722,21 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
+    // Check if the coupon is valid with Stripe first
+if (couponCode) {
+  try {
+    const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+    if (!stripeCoupon.valid) {
+      return res.status(400).json({ 
+        error: 'This coupon has expired or reached its usage limit' 
+      });
+    }
+  } catch (couponError) {
+    return res.status(400).json({ 
+      error: 'Invalid coupon code. Please check and try again.' 
+    });
+  }
+}
     const { email, plan, firstName, lastName, couponCode } = req.body;
     
     console.log('Creating subscription with coupon:', couponCode);
