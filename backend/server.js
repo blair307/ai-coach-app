@@ -451,10 +451,19 @@ app.get('/test', (req, res) => {
   res.json({ message: 'Enhanced reply system deployed!', timestamp: new Date() });
 });
 
-// Register new user with payment
 app.post('/api/auth/register', async (req, res) => {
   try {
-    const { firstName, lastName, email, password, plan, stripeCustomerId, paymentIntentId } = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      email, 
+      password, 
+      plan, 
+      stripeCustomerId, 
+      subscriptionId,
+      paymentIntentId, 
+      couponCode 
+    } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -463,23 +472,59 @@ app.post('/api/auth/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = new User({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword,
-      stripeCustomerId,
-      subscription: {
-        plan,
-        status: 'active',
-        stripeSubscriptionId: paymentIntentId
-      },
-      streakData: {
-        currentStreak: 1,
-        lastLoginDate: new Date(),
-        longestStreak: 1
-      }
-    });
+// Determine subscription plan based on coupon
+let finalPlan = plan;
+let subscriptionStatus = 'active';
+
+if (couponCode === 'EEHCLIENT') {
+  finalPlan = 'free';
+  subscriptionStatus = 'active';
+}
+
+const user = new User({
+  firstName,
+  lastName,
+  email,
+  password: hashedPassword,
+  stripeCustomerId,
+  subscription: {
+    plan: finalPlan,
+    status: subscriptionStatus,
+    stripeSubscriptionId: subscriptionId,
+    couponUsed: couponCode || null,
+    // Set period dates if subscription exists
+    ...(subscriptionId && subscriptionId !== 'free_account_' + Date.now() && {
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + (finalPlan === 'yearly' ? 365 : 30) * 24 * 60 * 60 * 1000)
+    })
+  },
+  streakData: {
+    currentStreak: 1,
+    lastLoginDate: new Date(),
+    longestStreak: 1
+  }
+});
+
+await user.save();
+
+// Create welcome notification based on coupon
+let welcomeMessage = 'Welcome to Entrepreneur Emotional Health!';
+if (couponCode === 'EEHCLIENT') {
+  welcomeMessage = '🎉 Welcome! Your free account is now active.';
+} else if (couponCode === 'FREEMONTH') {
+  welcomeMessage = '🎉 Welcome! Your first month is free.';
+} else if (couponCode === 'EEHCLIENT6') {
+  welcomeMessage = '🎉 Welcome! Your first 6 months are free.';
+}
+
+const notification = new Notification({
+  userId: user._id,
+  type: 'system',
+  title: 'Welcome to EEH!',
+  content: welcomeMessage,
+  priority: 'high'
+});
+await notification.save();
 
     await user.save();
 
@@ -489,20 +534,22 @@ app.post('/api/auth/register', async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    res.status(201).json({
-      message: 'User created successfully',
-      token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email
-      },
-      streakData: {
-        currentStreak: 1,
-        longestStreak: 1
-      }
-    });
+res.status(201).json({
+  message: 'User created successfully',
+  token,
+  user: {
+    id: user._id,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    subscription: user.subscription
+  },
+  streakData: {
+    currentStreak: 1,
+    longestStreak: 1
+  },
+  couponApplied: couponCode || null
+});
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ message: 'Registration failed', error: error.message });
@@ -655,11 +702,13 @@ app.post('/api/auth/reset-password', async (req, res) => {
   }
 });
 
-// REPLACE THE OLD /api/payments/create-subscription ENDPOINT WITH THIS:
+// REPLACE the existing /api/payments/create-subscription endpoint in server.js with this:
 
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
-    const { email, plan, firstName, lastName } = req.body;
+    const { email, plan, firstName, lastName, couponCode } = req.body;
+    
+    console.log('Creating subscription with coupon:', couponCode);
     
     // Create Stripe customer
     const customer = await stripe.customers.create({
@@ -667,14 +716,15 @@ app.post('/api/payments/create-subscription', async (req, res) => {
       name: `${firstName} ${lastName}`,
       metadata: { 
         plan: plan,
-        source: 'eeh_signup'
+        source: 'eeh_signup',
+        couponUsed: couponCode || 'none'
       }
     });
 
-    // IMPORTANT: Replace these with your actual Price IDs from Stripe Dashboard
+    // Price IDs - Replace with your actual Stripe Price IDs
     const priceIds = {
-      monthly: 'price_1RgsxOIjRmg2uv1cSW9gehLB', // Replace with your actual monthly price ID
-      yearly: 'price_1RgsxsIjRmg2uv1cd1jLtKfU'   // Replace with your actual yearly price ID
+      monthly: 'price_1RgsxOIjRmg2uv1cSW9gehLB', 
+      yearly: 'price_1RgsxsIjRmg2uv1cd1jLtKfU'   
     };
 
     const priceId = priceIds[plan];
@@ -682,8 +732,8 @@ app.post('/api/payments/create-subscription', async (req, res) => {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
 
-    // Create subscription with incomplete status for payment confirmation
-    const subscription = await stripe.subscriptions.create({
+    // Handle different coupon types
+    let subscriptionConfig = {
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
@@ -691,20 +741,116 @@ app.post('/api/payments/create-subscription', async (req, res) => {
       expand: ['latest_invoice.payment_intent'],
       metadata: {
         plan: plan,
-        userId: 'pending' // Will be updated after user creation
+        userId: 'pending',
+        couponCode: couponCode || 'none'
       }
-    });
+    };
+
+    // Apply coupon based on type
+    if (couponCode) {
+      switch (couponCode.toUpperCase()) {
+        case 'EEHCLIENT':
+          // 100% off forever - apply to subscription
+          subscriptionConfig.coupon = 'EEHCLIENT'; // Your Stripe coupon ID
+          break;
+          
+        case 'FREEMONTH':
+          // First month free - apply to subscription
+          subscriptionConfig.coupon = 'FREEMONTH'; // Your Stripe coupon ID
+          break;
+          
+        case 'EEHCLIENT6':
+          // 6 months free - apply to subscription
+          subscriptionConfig.coupon = 'EEHCLIENT6'; // Your Stripe coupon ID
+          break;
+          
+        default:
+          return res.status(400).json({ error: 'Invalid coupon code' });
+      }
+    }
+
+    // Create subscription
+    const subscription = await stripe.subscriptions.create(subscriptionConfig);
 
     res.json({
       subscriptionId: subscription.id,
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      customerId: customer.id
+      customerId: customer.id,
+      couponApplied: couponCode || null
     });
 
   } catch (error) {
     console.error('Subscription creation error:', error);
     res.status(500).json({ 
       error: 'Failed to create subscription',
+      message: error.message 
+    });
+  }
+});
+
+// ADD THIS NEW ENDPOINT - Validate coupon before applying
+app.post('/api/payments/validate-coupon', async (req, res) => {
+  try {
+    const { couponCode } = req.body;
+    
+    if (!couponCode) {
+      return res.status(400).json({ error: 'Coupon code is required' });
+    }
+
+    // Validate against your predefined coupons
+    const validCoupons = {
+      'EEHCLIENT': {
+        type: 'forever_free',
+        description: 'Completely free account',
+        discount: '100% off forever'
+      },
+      'FREEMONTH': {
+        type: 'first_month_free',
+        description: 'First month free',
+        discount: '100% off first month'
+      },
+      'EEHCLIENT6': {
+        type: 'six_months_free',
+        description: 'Six months free',
+        discount: '100% off for 6 months'
+      }
+    };
+
+    const coupon = validCoupons[couponCode.toUpperCase()];
+    
+    if (!coupon) {
+      return res.status(400).json({ 
+        valid: false, 
+        error: 'Invalid coupon code' 
+      });
+    }
+
+    // Optionally check with Stripe to ensure coupon is still active
+    try {
+      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+      if (!stripeCoupon.valid) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Coupon has expired or reached its usage limit' 
+        });
+      }
+    } catch (stripeError) {
+      console.error('Stripe coupon validation error:', stripeError);
+      // Continue with local validation if Stripe check fails
+    }
+
+    res.json({
+      valid: true,
+      coupon: {
+        code: couponCode.toUpperCase(),
+        ...coupon
+      }
+    });
+
+  } catch (error) {
+    console.error('Coupon validation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to validate coupon',
       message: error.message 
     });
   }
@@ -1103,6 +1249,160 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Billing info error:', error);
     res.status(500).json({ message: 'Failed to get billing info' });
+  }
+});
+
+// REPLACE the existing /api/payments/create-subscription endpoint in server.js with this:
+
+app.post('/api/payments/create-subscription', async (req, res) => {
+  try {
+    const { email, plan, firstName, lastName, couponCode } = req.body;
+    
+    console.log('Creating subscription with coupon:', couponCode);
+    
+    // Create Stripe customer
+    const customer = await stripe.customers.create({
+      email: email,
+      name: `${firstName} ${lastName}`,
+      metadata: { 
+        plan: plan,
+        source: 'eeh_signup',
+        couponUsed: couponCode || 'none'
+      }
+    });
+
+    // Price IDs - Replace with your actual Stripe Price IDs
+    const priceIds = {
+      monthly: 'price_1RgsxOIjRmg2uv1cSW9gehLB', 
+      yearly: 'price_1RgsxsIjRmg2uv1cd1jLtKfU'   
+    };
+
+    const priceId = priceIds[plan];
+    if (!priceId) {
+      return res.status(400).json({ error: 'Invalid plan selected' });
+    }
+
+    // Handle different coupon types
+    let subscriptionConfig = {
+      customer: customer.id,
+      items: [{ price: priceId }],
+      payment_behavior: 'default_incomplete',
+      payment_settings: { save_default_payment_method: 'on_subscription' },
+      expand: ['latest_invoice.payment_intent'],
+      metadata: {
+        plan: plan,
+        userId: 'pending',
+        couponCode: couponCode || 'none'
+      }
+    };
+
+    // Apply coupon based on type
+    if (couponCode) {
+      switch (couponCode.toUpperCase()) {
+        case 'EEHCLIENT':
+          // 100% off forever - apply to subscription
+          subscriptionConfig.coupon = 'EEHCLIENT'; // Your Stripe coupon ID
+          break;
+          
+        case 'FREEMONTH':
+          // First month free - apply to subscription
+          subscriptionConfig.coupon = 'FREEMONTH'; // Your Stripe coupon ID
+          break;
+          
+        case 'EEHCLIENT6':
+          // 6 months free - apply to subscription
+          subscriptionConfig.coupon = 'EEHCLIENT6'; // Your Stripe coupon ID
+          break;
+          
+        default:
+          return res.status(400).json({ error: 'Invalid coupon code' });
+      }
+    }
+
+    // Create subscription
+    const subscription = await stripe.subscriptions.create(subscriptionConfig);
+
+    res.json({
+      subscriptionId: subscription.id,
+      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
+      customerId: customer.id,
+      couponApplied: couponCode || null
+    });
+
+  } catch (error) {
+    console.error('Subscription creation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to create subscription',
+      message: error.message 
+    });
+  }
+});
+
+// ADD THIS NEW ENDPOINT - Validate coupon before applying
+app.post('/api/payments/validate-coupon', async (req, res) => {
+  try {
+    const { couponCode } = req.body;
+    
+    if (!couponCode) {
+      return res.status(400).json({ error: 'Coupon code is required' });
+    }
+
+    // Validate against your predefined coupons
+    const validCoupons = {
+      'EEHCLIENT': {
+        type: 'forever_free',
+        description: 'Completely free account',
+        discount: '100% off forever'
+      },
+      'FREEMONTH': {
+        type: 'first_month_free',
+        description: 'First month free',
+        discount: '100% off first month'
+      },
+      'EEHCLIENT6': {
+        type: 'six_months_free',
+        description: 'Six months free',
+        discount: '100% off for 6 months'
+      }
+    };
+
+    const coupon = validCoupons[couponCode.toUpperCase()];
+    
+    if (!coupon) {
+      return res.status(400).json({ 
+        valid: false, 
+        error: 'Invalid coupon code' 
+      });
+    }
+
+    // Optionally check with Stripe to ensure coupon is still active
+    try {
+      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+      if (!stripeCoupon.valid) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: 'Coupon has expired or reached its usage limit' 
+        });
+      }
+    } catch (stripeError) {
+      console.error('Stripe coupon validation error:', stripeError);
+      // Continue with local validation if Stripe check fails
+    }
+
+    res.json({
+      valid: true,
+      coupon: {
+        code: couponCode.toUpperCase(),
+        ...coupon
+      }
+    });
+
+  } catch (error) {
+    console.error('Coupon validation error:', error);
+    res.status(500).json({ 
+      error: 'Failed to validate coupon',
+      message: error.message 
+    });
   }
 });
 
