@@ -114,9 +114,7 @@ function selectPlan(planType) {
     updatePlanSelection();
 }
 
-// REPLACE THE applyCoupon() FUNCTION WITH THIS:
-
-function applyCoupon() {
+async function applyCoupon() {
     const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
     const couponMessage = document.getElementById('couponMessage');
     const applyCouponBtn = document.getElementById('applyCouponBtn');
@@ -128,33 +126,57 @@ function applyCoupon() {
     
     // Disable button while processing
     applyCouponBtn.disabled = true;
-    applyCouponBtn.textContent = 'Applying...';
+    applyCouponBtn.textContent = 'Validating...';
     
-    // Check coupon codes
-    if (couponCode === 'EEHCLIENT') {
-        // Apply completely free account
-        applyFreeCoupon();
-        showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
-        appliedCoupon = couponCode;
-    } else if (couponCode === 'FREEMONTH') {
-        // Apply one month free
-        applyOneMonthFree();
-        showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
-        appliedCoupon = couponCode;
-    } else if (couponCode === 'EEHCLIENT6') {
-        // Apply six months free
-        applySixMonthsFree();
-        showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
-        appliedCoupon = couponCode;
-    } else {
-        // Invalid coupon
-        showCouponMessage('Invalid coupon code. Please try again.', 'error');
+    try {
+        // Validate coupon with backend
+        const response = await fetch(`${API_BASE_URL}/api/payments/validate-coupon`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ couponCode })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok || !result.valid) {
+            throw new Error(result.error || 'Invalid coupon code');
+        }
+        
+        // Apply coupon based on type
+        const coupon = result.coupon;
+        appliedCoupon = coupon.code;
+        
+        switch (coupon.type) {
+            case 'forever_free':
+                applyFreeCoupon();
+                showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
+                break;
+                
+            case 'first_month_free':
+                applyOneMonthFree();
+                showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
+                break;
+                
+            case 'six_months_free':
+                applySixMonthsFree();
+                showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
+                break;
+                
+            default:
+                throw new Error('Unknown coupon type');
+        }
+        
+    } catch (error) {
+        console.error('Coupon validation error:', error);
+        showCouponMessage(error.message || 'Invalid coupon code. Please try again.', 'error');
         removeCoupon();
+    } finally {
+        // Re-enable button
+        applyCouponBtn.disabled = false;
+        applyCouponBtn.textContent = 'Apply';
     }
-    
-    // Re-enable button
-    applyCouponBtn.disabled = false;
-    applyCouponBtn.textContent = 'Apply';
 }
 
 // ADD THESE NEW FUNCTIONS AFTER THE removeCoupon() FUNCTION:
@@ -455,16 +477,60 @@ async function createPaidSubscription(formData) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
-    });
+    body: JSON.stringify({
+            ...formData,
+            couponCode: appliedCoupon // Add this line
+        })
     
     if (!subscriptionResponse.ok) {
         const errorData = await subscriptionResponse.json();
         throw new Error(errorData.error || 'Failed to create subscription');
     }
     
-    const { subscriptionId, clientSecret, customerId } = await subscriptionResponse.json();
+   const { subscriptionId, clientSecret, customerId, couponApplied } = await subscriptionResponse.json();
     console.log('Subscription created:', subscriptionId);
+
+// For completely free coupons, skip payment confirmation
+if (appliedCoupon === 'EEHCLIENT') {
+    console.log('Free account - skipping payment confirmation');
+    
+    // Create user account directly for free accounts
+    const accountResponse = await fetch(`${API_BASE_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            ...formData,
+            stripeCustomerId: customerId,
+            subscriptionId: subscriptionId,
+            paymentIntentId: 'free_with_coupon_' + Date.now(),
+            couponCode: appliedCoupon,
+            subscription: {
+                plan: 'free',
+                status: 'active',
+                stripeSubscriptionId: subscriptionId
+            }
+        })
+    });
+    
+    const accountData = await accountResponse.json();
+    
+    if (!accountResponse.ok) {
+        throw new Error(accountData.message || 'Failed to create account');
+    }
+    
+    // Save auth data and redirect
+    localStorage.setItem('authToken', accountData.token);
+    localStorage.setItem('userData', JSON.stringify(accountData.user));
+    localStorage.setItem('eeh_user_registration_date', new Date().toISOString());
+    
+    alert('Free account created successfully! Welcome to Entrepreneur Emotional Health!');
+    window.location.href = 'dashboard.html';
+    return;
+}
+
+// For discounted accounts, still need payment confirmation
     
     // Step 2: Confirm payment with Stripe
     const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
@@ -507,6 +573,7 @@ async function createPaidSubscription(formData) {
             stripeCustomerId: customerId,
             subscriptionId: subscriptionId,
             paymentIntentId: paymentIntent.id,
+            couponCode: appliedCoupon, // Add this line
             subscription: {
                 plan: formData.plan,
                 status: 'active',
