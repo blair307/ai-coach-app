@@ -63,7 +63,8 @@ const userSchema = new mongoose.Schema({
     status: String,
     stripeSubscriptionId: String,
     currentPeriodStart: Date,
-    currentPeriodEnd: Date
+    currentPeriodEnd: Date,
+   couponUsed: String  
   },
   streakData: {
     currentStreak: { type: Number, default: 0 },
