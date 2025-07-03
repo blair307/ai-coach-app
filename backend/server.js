@@ -1252,72 +1252,6 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
   }
 });
 
-// REPLACE the existing /api/payments/create-subscription endpoint in server.js with this:
-
-app.post('/api/payments/create-subscription', async (req, res) => {
-  try {
-    const { email, plan, firstName, lastName, couponCode } = req.body;
-    
-    console.log('Creating subscription with coupon:', couponCode);
-    
-    // Create Stripe customer
-    const customer = await stripe.customers.create({
-      email: email,
-      name: `${firstName} ${lastName}`,
-      metadata: { 
-        plan: plan,
-        source: 'eeh_signup',
-        couponUsed: couponCode || 'none'
-      }
-    });
-
-    // Price IDs - Replace with your actual Stripe Price IDs
-    const priceIds = {
-      monthly: 'price_1RgsxOIjRmg2uv1cSW9gehLB', 
-      yearly: 'price_1RgsxsIjRmg2uv1cd1jLtKfU'   
-    };
-
-    const priceId = priceIds[plan];
-    if (!priceId) {
-      return res.status(400).json({ error: 'Invalid plan selected' });
-    }
-
-    // Handle different coupon types
-    let subscriptionConfig = {
-      customer: customer.id,
-      items: [{ price: priceId }],
-      payment_behavior: 'default_incomplete',
-      payment_settings: { save_default_payment_method: 'on_subscription' },
-      expand: ['latest_invoice.payment_intent'],
-      metadata: {
-        plan: plan,
-        userId: 'pending',
-        couponCode: couponCode || 'none'
-      }
-    };
-
-    // Apply coupon based on type
-    if (couponCode) {
-      switch (couponCode.toUpperCase()) {
-        case 'EEHCLIENT':
-          // 100% off forever - apply to subscription
-          subscriptionConfig.coupon = 'EEHCLIENT'; // Your Stripe coupon ID
-          break;
-          
-        case 'FREEMONTH':
-          // First month free - apply to subscription
-          subscriptionConfig.coupon = 'FREEMONTH'; // Your Stripe coupon ID
-          break;
-          
-        case 'EEHCLIENT6':
-          // 6 months free - apply to subscription
-          subscriptionConfig.coupon = 'EEHCLIENT6'; // Your Stripe coupon ID
-          break;
-          
-        default:
-          return res.status(400).json({ error: 'Invalid coupon code' });
-      }
-    }
 
     // Create subscription
     const subscription = await stripe.subscriptions.create(subscriptionConfig);
@@ -2963,7 +2897,6 @@ async function handleSubscriptionUpdated(subscription) {
       user.subscription.currentPeriodStart = new Date(subscription.current_period_start * 1000);
       user.subscription.currentPeriodEnd = new Date(subscription.current_period_end * 1000);
       
-      await user.save();
       
       // Notify user of status changes
       if (subscription.status === 'past_due') {
