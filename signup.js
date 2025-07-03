@@ -114,7 +114,8 @@ function selectPlan(planType) {
     updatePlanSelection();
 }
 
-// Apply coupon code
+// REPLACE THE applyCoupon() FUNCTION WITH THIS:
+
 function applyCoupon() {
     const couponCode = document.getElementById('couponCode').value.trim().toUpperCase();
     const couponMessage = document.getElementById('couponMessage');
@@ -129,11 +130,21 @@ function applyCoupon() {
     applyCouponBtn.disabled = true;
     applyCouponBtn.textContent = 'Applying...';
     
-    // Check if it's the EEHCLIENT code
+    // Check coupon codes
     if (couponCode === 'EEHCLIENT') {
-        // Apply free account
+        // Apply completely free account
         applyFreeCoupon();
-        showCouponMessage('🎉 Coupon applied! Your account is now FREE!', 'success');
+        showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
+        appliedCoupon = couponCode;
+    } else if (couponCode === 'FREEMONTH') {
+        // Apply one month free
+        applyOneMonthFree();
+        showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
+        appliedCoupon = couponCode;
+    } else if (couponCode === 'EEHCLIENT6') {
+        // Apply six months free
+        applySixMonthsFree();
+        showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
         appliedCoupon = couponCode;
     } else {
         // Invalid coupon
@@ -144,6 +155,129 @@ function applyCoupon() {
     // Re-enable button
     applyCouponBtn.disabled = false;
     applyCouponBtn.textContent = 'Apply';
+}
+
+// ADD THESE NEW FUNCTIONS AFTER THE removeCoupon() FUNCTION:
+
+// Function to apply one month free
+function applyOneMonthFree() {
+    // Update pricing display to show first month free
+    const originalPrices = document.querySelectorAll('.original-price');
+    const discountedPrices = document.querySelectorAll('.discounted-price');
+    
+    // Show discount on pricing
+    originalPrices.forEach(price => {
+        price.style.textDecoration = 'line-through';
+        price.style.opacity = '0.7';
+    });
+    
+    discountedPrices.forEach(price => {
+        price.style.display = 'inline';
+        price.style.color = '#10b981';
+        price.style.fontWeight = 'bold';
+        price.textContent = 'First month FREE!';
+    });
+    
+    // Update submit button text
+    document.getElementById('submitButtonText').textContent = 'Start Free Trial (1 Month)';
+    
+    // Show one month free notice
+    showDiscountNotice('oneMonthFreeNotice', '🎉 First Month Free!', 'Your first month is completely free. Regular billing starts after 30 days.');
+}
+
+// Function to apply six months free
+function applySixMonthsFree() {
+    // Update pricing display to show six months free
+    const originalPrices = document.querySelectorAll('.original-price');
+    const discountedPrices = document.querySelectorAll('.discounted-price');
+    
+    // Show discount on pricing
+    originalPrices.forEach(price => {
+        price.style.textDecoration = 'line-through';
+        price.style.opacity = '0.7';
+    });
+    
+    discountedPrices.forEach(price => {
+        price.style.display = 'inline';
+        price.style.color = '#10b981';
+        price.style.fontWeight = 'bold';
+        price.textContent = 'First 6 months FREE!';
+    });
+    
+    // Update submit button text
+    document.getElementById('submitButtonText').textContent = 'Start Free Trial (6 Months)';
+    
+    // Show six months free notice
+    showDiscountNotice('sixMonthsFreeNotice', '🎉 Six Months Free!', 'Your first 6 months are completely free. Regular billing starts after 6 months.');
+}
+
+// Unified function to show discount notices
+function showDiscountNotice(noticeId, title, description) {
+    // Create or show notice
+    let notice = document.getElementById(noticeId);
+    if (!notice) {
+        notice = document.createElement('div');
+        notice.id = noticeId;
+        notice.className = 'free-account-notice';
+        notice.style.background = '#f0f9ff';
+        notice.style.border = '2px solid #10b981';
+        notice.style.borderRadius = '8px';
+        notice.style.padding = '1.5rem';
+        notice.style.marginBottom = '2rem';
+        notice.style.textAlign = 'center';
+        notice.innerHTML = `
+            <h3 style="color: #10b981; margin-bottom: 0.5rem;">${title}</h3>
+            <p style="margin: 0; color: #0f172a;">${description}</p>
+        `;
+        
+        // Insert after coupon section
+        const couponSection = document.querySelector('.coupon-section');
+        couponSection.parentNode.insertBefore(notice, couponSection.nextSibling);
+    }
+    
+    notice.style.display = 'block';
+}
+
+// REPLACE THE removeCoupon() FUNCTION WITH THIS:
+
+function removeCoupon() {
+    isFreeAccount = false;
+    appliedCoupon = null;
+    
+    // Show payment section
+    document.getElementById('paymentSection').style.display = 'block';
+    
+    // Hide all notices
+    const freeNotice = document.getElementById('freeAccountNotice');
+    const oneMonthNotice = document.getElementById('oneMonthFreeNotice');
+    const sixMonthsNotice = document.getElementById('sixMonthsFreeNotice');
+    
+    if (freeNotice) freeNotice.style.display = 'none';
+    if (oneMonthNotice) oneMonthNotice.style.display = 'none';
+    if (sixMonthsNotice) sixMonthsNotice.style.display = 'none';
+    
+    // Reset prices
+    const originalPrices = document.querySelectorAll('.original-price');
+    const discountedPrices = document.querySelectorAll('.discounted-price');
+    
+    originalPrices.forEach(price => {
+        price.style.textDecoration = 'none';
+        price.style.opacity = '1';
+    });
+    
+    discountedPrices.forEach(price => {
+        price.style.display = 'none';
+    });
+    
+    // Reset submit button
+    document.getElementById('submitButtonText').textContent = 'Start My Journey';
+    
+    // Add back required attributes
+    const cardName = document.getElementById('cardName');
+    const billingCountry = document.getElementById('billingCountry');
+    
+    if (cardName) cardName.setAttribute('required', '');
+    if (billingCountry) billingCountry.setAttribute('required', '');
 }
 
 // Apply free coupon (EEHCLIENT)
@@ -190,8 +324,14 @@ function removeCoupon() {
     // Show payment section
     document.getElementById('paymentSection').style.display = 'block';
     
-    // Hide free account notice
-    document.getElementById('freeAccountNotice').style.display = 'none';
+   // Hide all notices
+    const freeNotice = document.getElementById('freeAccountNotice');
+    const oneMonthNotice = document.getElementById('oneMonthFreeNotice');
+    const sixMonthsNotice = document.getElementById('sixMonthsFreeNotice');
+    
+    if (freeNotice) freeNotice.style.display = 'none';
+    if (oneMonthNotice) oneMonthNotice.style.display = 'none';
+    if (sixMonthsNotice) sixMonthsNotice.style.display = 'none';
     
     // Reset prices
     const originalPrices = document.querySelectorAll('.original-price');
