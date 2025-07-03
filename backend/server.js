@@ -693,7 +693,6 @@ app.post('/api/auth/reset-password', async (req, res) => {
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     
-    await user.save();
 
     res.status(200).json({ message: 'Password reset successful' });
 
@@ -1254,92 +1253,6 @@ app.get('/api/billing/info', authenticateToken, async (req, res) => {
 });
 
 
-    // Create subscription
-    const subscription = await stripe.subscriptions.create(subscriptionConfig);
-
-    res.json({
-      subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      customerId: customer.id,
-      couponApplied: couponCode || null
-    });
-
-  } catch (error) {
-    console.error('Subscription creation error:', error);
-    res.status(500).json({ 
-      error: 'Failed to create subscription',
-      message: error.message 
-    });
-  }
-});
-
-// ADD THIS NEW ENDPOINT - Validate coupon before applying
-app.post('/api/payments/validate-coupon', async (req, res) => {
-  try {
-    const { couponCode } = req.body;
-    
-    if (!couponCode) {
-      return res.status(400).json({ error: 'Coupon code is required' });
-    }
-
-    // Validate against your predefined coupons
-    const validCoupons = {
-      'EEHCLIENT': {
-        type: 'forever_free',
-        description: 'Completely free account',
-        discount: '100% off forever'
-      },
-      'FREEMONTH': {
-        type: 'first_month_free',
-        description: 'First month free',
-        discount: '100% off first month'
-      },
-      'EEHCLIENT6': {
-        type: 'six_months_free',
-        description: 'Six months free',
-        discount: '100% off for 6 months'
-      }
-    };
-
-    const coupon = validCoupons[couponCode.toUpperCase()];
-    
-    if (!coupon) {
-      return res.status(400).json({ 
-        valid: false, 
-        error: 'Invalid coupon code' 
-      });
-    }
-
-    // Optionally check with Stripe to ensure coupon is still active
-    try {
-      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
-      if (!stripeCoupon.valid) {
-        return res.status(400).json({ 
-          valid: false, 
-          error: 'Coupon has expired or reached its usage limit' 
-        });
-      }
-    } catch (stripeError) {
-      console.error('Stripe coupon validation error:', stripeError);
-      // Continue with local validation if Stripe check fails
-    }
-
-    res.json({
-      valid: true,
-      coupon: {
-        code: couponCode.toUpperCase(),
-        ...coupon
-      }
-    });
-
-  } catch (error) {
-    console.error('Coupon validation error:', error);
-    res.status(500).json({ 
-      error: 'Failed to validate coupon',
-      message: error.message 
-    });
-  }
-});
 
 // Community - Save message (legacy support)
 app.post('/api/community/send', authenticateToken, async (req, res) => {
