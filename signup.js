@@ -481,7 +481,8 @@ async function createPaidSubscription(formData) {
             ...formData,
             couponCode: appliedCoupon // Add this line
         })
-    
+  }); 
+        
     if (!subscriptionResponse.ok) {
         const errorData = await subscriptionResponse.json();
         throw new Error(errorData.error || 'Failed to create subscription');
