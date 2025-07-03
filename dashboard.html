@@ -427,7 +427,7 @@
             </div>
             <div class="meeting-details">
                 <div class="meeting-time">
-                    <strong>Time:</strong> <span id="meetingTime">5:30 PM CST</span>
+                    <strong>Time:</strong> <span id="meetingTime">6:00 PM CST</span>
                 </div>
                 <div class="meeting-date">
                     <strong>Date:</strong> <span id="meetingDate">--</span>
@@ -1808,7 +1808,7 @@ function formatDashboardTimeAgo(dateString) {
     let currentDate = new Date();
     let selectedMeetingDate = null;
 
-    const MEETING_START_DATE = new Date('2025-07-08T17:30:00-05:00'); // July 8th, 5:30 PM CST
+    const MEETING_START_DATE = new Date('2025-07-08T18:00:00-05:00'); // July 8th, 6:00 PM CST
     const MEETING_DURATION = 80; // 80 minutes
     const EARLY_ACCESS = 10; // 10 minutes early
     const ZOOM_LINK = 'https://us02web.zoom.us/j/8974193947';
@@ -1859,7 +1859,7 @@ function formatDashboardTimeAgo(dateString) {
                     month: 'long',
                     day: 'numeric'
                 });
-                countdownDate.textContent = dateString + ' at 5:30 PM CST';
+                countdownDate.textContent = dateString + ' at 6:00 PM CST';
             }
         } else {
             if (countdownContainer) countdownContainer.style.display = 'none';
@@ -1969,7 +1969,7 @@ function formatDashboardTimeAgo(dateString) {
 
     function showMeetingCard(date) {
         selectedMeetingDate = new Date(date);
-        selectedMeetingDate.setHours(17, 30, 0, 0); // 5:30 PM
+        selectedMeetingDate.setHours(18, 0, 0, 0); // 6:00 PM
         
         const dateString = selectedMeetingDate.toLocaleDateString('en-US', {
             weekday: 'long',
