@@ -44,7 +44,7 @@ if (process.env.OPENAI_API_KEY) {
 // Email configuration - FIXED VERSION
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  transporter = nodemailer.createTransporter({
+  transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: process.env.EMAIL_USER,
