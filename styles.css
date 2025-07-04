@@ -97,7 +97,9 @@ body {
 }
 
 .hero {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
+    background-size: 400% 400%;
+    animation: heroGradientShift 10s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -122,6 +124,14 @@ body {
 @keyframes float {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     50% { transform: translateY(-20px) rotate(1deg); }
+}
+
+@keyframes heroGradientShift {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
 }
 
 .hero-content {
