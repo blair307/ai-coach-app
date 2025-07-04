@@ -720,28 +720,55 @@ app.post('/api/auth/reset-password', async (req, res) => {
 
 // REPLACE the existing /api/payments/create-subscription endpoint in server.js with this:
 
+// REPLACE this section in server.js around line 670
+
 app.post('/api/payments/create-subscription', async (req, res) => {
   try {
-   
     const { email, plan, firstName, lastName, couponCode } = req.body;
     
     console.log('Creating subscription with coupon:', couponCode);
     
- // Check if the coupon is valid with Stripe first
-if (couponCode) {
-  try {
-    const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
-    if (!stripeCoupon.valid) {
-      return res.status(400).json({ 
-        error: 'This coupon has expired or reached its usage limit' 
-      });
+    // Only validate coupon if one is provided
+    if (couponCode) {
+      try {
+        // First check our local validation
+        const validCoupons = {
+          'EEHCLIENT': { type: 'forever_free' },
+          'FREEMONTH': { type: 'first_month_free' },
+          'EEHCLIENT6': { type: 'six_months_free' }
+        };
+
+        const localCoupon = validCoupons[couponCode.toUpperCase()];
+        if (!localCoupon) {
+          return res.status(400).json({ 
+            error: 'Invalid coupon code. Please check and try again.' 
+          });
+        }
+
+        // Then verify with Stripe (only if it exists in Stripe)
+        try {
+          const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+          if (!stripeCoupon.valid) {
+            return res.status(400).json({ 
+              error: 'This coupon has expired or reached its usage limit' 
+            });
+          }
+          console.log('✅ Stripe coupon validated:', stripeCoupon.id);
+        } catch (stripeCouponError) {
+          // If coupon doesn't exist in Stripe but exists locally, that might be okay for some coupons
+          console.log('⚠️ Coupon not found in Stripe, but exists locally:', couponCode);
+          // Comment out this return to allow local-only coupons
+          // return res.status(400).json({ 
+          //   error: 'Invalid coupon code. Please check and try again.' 
+          // });
+        }
+      } catch (validationError) {
+        console.error('Coupon validation error:', validationError);
+        return res.status(400).json({ 
+          error: 'Error validating coupon. Please try again.' 
+        });
+      }
     }
-  } catch (couponError) {
-    return res.status(400).json({ 
-      error: 'Invalid coupon code. Please check and try again.' 
-    });
-  }
-}
 
     // Create Stripe customer
     const customer = await stripe.customers.create({
@@ -754,7 +781,9 @@ if (couponCode) {
       }
     });
 
-    // Price IDs - Replace with your actual Stripe Price IDs
+    console.log('✅ Customer created:', customer.id);
+
+    // Price IDs - Make sure these match your actual Stripe Price IDs
     const priceIds = {
       monthly: 'price_1RgsxOIjRmg2uv1cSW9gehLB', 
       yearly: 'price_1RgsxsIjRmg2uv1cd1jLtKfU'   
@@ -765,8 +794,36 @@ if (couponCode) {
       return res.status(400).json({ error: 'Invalid plan selected' });
     }
 
-    // Handle different coupon types
-    let subscriptionConfig = {
+    console.log('💰 Using price ID:', priceId, 'for plan:', plan);
+
+    // Handle completely free coupons differently
+    if (couponCode === 'EEHCLIENT') {
+      console.log('🆓 Creating free subscription for EEHCLIENT coupon');
+      
+      // For completely free accounts, create a $0 subscription
+      const freeSubscription = await stripe.subscriptions.create({
+        customer: customer.id,
+        items: [{ price: priceId }],
+        coupon: 'EEHCLIENT', // Your 100% off coupon in Stripe
+        metadata: {
+          plan: plan,
+          userId: 'pending',
+          couponCode: couponCode,
+          accountType: 'free'
+        }
+      });
+
+      return res.json({
+        subscriptionId: freeSubscription.id,
+        clientSecret: null, // No payment needed
+        customerId: customer.id,
+        couponApplied: couponCode,
+        isFree: true
+      });
+    }
+
+    // For paid subscriptions (including discounted ones)
+    const subscriptionConfig = {
       customer: customer.id,
       items: [{ price: priceId }],
       payment_behavior: 'default_incomplete',
@@ -779,44 +836,42 @@ if (couponCode) {
       }
     };
 
-    // Apply coupon based on type
-    if (couponCode) {
-      switch (couponCode.toUpperCase()) {
-        case 'EEHCLIENT':
-          // 100% off forever - apply to subscription
-          subscriptionConfig.coupon = 'EEHCLIENT'; // Your Stripe coupon ID
-          break;
-          
-        case 'FREEMONTH':
-          // First month free - apply to subscription
-          subscriptionConfig.coupon = 'FREEMONTH'; // Your Stripe coupon ID
-          break;
-          
-        case 'EEHCLIENT6':
-          // 6 months free - apply to subscription
-          subscriptionConfig.coupon = 'EEHCLIENT6'; // Your Stripe coupon ID
-          break;
-          
-        default:
-          return res.status(400).json({ error: 'Invalid coupon code' });
-      }
+    // Apply coupon if provided
+    if (couponCode && couponCode !== 'EEHCLIENT') {
+      subscriptionConfig.coupon = couponCode.toUpperCase();
+      console.log('🎫 Applying coupon to subscription:', couponCode.toUpperCase());
     }
 
     // Create subscription
     const subscription = await stripe.subscriptions.create(subscriptionConfig);
+    
+    console.log('✅ Subscription created:', subscription.id);
 
     res.json({
       subscriptionId: subscription.id,
       clientSecret: subscription.latest_invoice.payment_intent.client_secret,
       customerId: customer.id,
-      couponApplied: couponCode || null
+      couponApplied: couponCode || null,
+      isFree: false
     });
 
   } catch (error) {
-    console.error('Subscription creation error:', error);
+    console.error('❌ Subscription creation error:', error);
+    
+    // Provide more detailed error information
+    let errorMessage = 'Failed to create subscription';
+    
+    if (error.type === 'StripeCardError') {
+      errorMessage = 'Card error: ' + error.message;
+    } else if (error.type === 'StripeInvalidRequestError') {
+      errorMessage = 'Invalid request: ' + error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
     res.status(500).json({ 
-      error: 'Failed to create subscription',
-      message: error.message 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
