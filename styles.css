@@ -119,12 +119,31 @@ body {
     50% { transform: translateY(-20px) rotate(1deg); }
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    25% { background-position: 100% 30%; }
-    50% { background-position: 70% 100%; }
-    75% { background-position: 30% 70%; }
-    100% { background-position: 0% 50%; }
+@keyframes flowingWaves {
+    0% { 
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
+    20% { 
+        background-position: 80% 20%;
+        filter: hue-rotate(10deg);
+    }
+    40% { 
+        background-position: 100% 90%;
+        filter: hue-rotate(-5deg);
+    }
+    60% { 
+        background-position: 20% 70%;
+        filter: hue-rotate(15deg);
+    }
+    80% { 
+        background-position: 60% 10%;
+        filter: hue-rotate(-10deg);
+    }
+    100% { 
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
 }
 
 .hero-content {
@@ -3544,7 +3563,7 @@ html, body {
 .hero {
 background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);    
     background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    animation: flowingWaves 15s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
