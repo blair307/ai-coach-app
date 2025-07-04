@@ -3150,6 +3150,14 @@ cron.schedule('0 5 * * *', async () => {
 
 console.log('⏰ Daily prompt scheduler started');
 
+// TEST - Add this first to see if routes work at all
+app.get('/api/admin/test', (req, res) => {
+  console.log('Admin test endpoint hit!');
+  res.json({ message: 'Admin routes are working!', timestamp: new Date() });
+});
+
+console.log('✅ Admin test route added');
+
 // SIMPLE ADMIN BACKEND ROUTES - Add these to your server.js
 
 // Simple admin authentication middleware
