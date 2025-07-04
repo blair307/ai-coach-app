@@ -488,11 +488,11 @@ async function createPaidSubscription(formData) {
         throw new Error(errorData.error || 'Failed to create subscription');
     }
     
-   const { subscriptionId, clientSecret, customerId, couponApplied } = await subscriptionResponse.json();
+  const { subscriptionId, clientSecret, customerId, couponApplied, isFree } = await subscriptionResponse.json();
     console.log('Subscription created:', subscriptionId);
 
 // For completely free coupons, skip payment confirmation
-if (appliedCoupon === 'EEHCLIENT') {
+if (isFree || appliedCoupon === 'EEHCLIENT') {
     console.log('Free account - skipping payment confirmation');
     
     // Create user account directly for free accounts
