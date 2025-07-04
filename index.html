@@ -25,22 +25,41 @@
     .logo-image {
         height: 48px;
         max-width: 300px;
+        width: auto !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        display: block !important;
     }
     
     /* Force center the navigation on mobile */
     .nav-container {
         justify-content: center !important;
         text-align: center;
+        flex-direction: column !important;
+        align-items: center !important;
     }
     
     .nav-brand {
         width: 100%;
         text-align: center;
         margin-bottom: 1rem;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     
     .nav-links {
         justify-content: center;
+        width: 100% !important;
+    }
+}
+
+/* EXTRA SMALL PHONES - PREVENT SQUISHING */
+@media (max-width: 480px) {
+    .logo-image {
+        height: 40px !important;
+        max-width: 250px !important;
+        min-width: 200px !important;
     }
 }
         
