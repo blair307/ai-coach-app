@@ -3153,6 +3153,155 @@ const authenticateAdmin = async (req, res, next) => {
   }
 };
 
+// ADD THESE ROUTES RIGHT AFTER THE authenticateAdmin FUNCTION
+
+// Test route (no auth needed)
+app.get('/api/admin/test', (req, res) => {
+  console.log('✅ Admin test route accessed');
+  res.json({ 
+    message: 'Admin routes are working!', 
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Admin login
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log('🔐 Admin login attempt for:', email);
+    
+    const adminEmail = 'admin@eeh.com';
+    const adminPassword = 'admin123';
+    
+    if (email === adminEmail && password === adminPassword) {
+      const token = jwt.sign(
+        { userId: 'admin', email: adminEmail, isAdmin: true },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+      
+      console.log('✅ Admin login successful');
+      res.json({
+        message: 'Admin login successful',
+        token,
+        user: { email: adminEmail, role: 'admin' }
+      });
+    } else {
+      console.log('❌ Invalid admin credentials');
+      res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+  } catch (error) {
+    console.error('❌ Admin login error:', error);
+    res.status(500).json({ message: 'Admin login failed' });
+  }
+});
+
+// Get stats
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const paidUsers = await User.countDocuments({
+      'subscription.plan': { $in: ['monthly', 'yearly'] },
+      'subscription.status': 'active'
+    });
+    const freeUsers = totalUsers - paidUsers;
+    
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const newUsers = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+
+    res.json({
+      totalUsers,
+      paidUsers,
+      freeUsers,
+      newUsersLast30Days: newUsers
+    });
+  } catch (error) {
+    console.error('❌ Admin stats error:', error);
+    res.status(500).json({ message: 'Failed to get stats' });
+  }
+});
+
+// Get users
+app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 25, search = '' } = req.query;
+
+    let query = {};
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const total = await User.countDocuments(query);
+    const users = await User.find(query)
+      .select('firstName lastName email subscription.plan subscription.status createdAt streakData.lastLoginDate')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const userData = users.map(user => ({
+      id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      plan: user.subscription?.plan || 'free',
+      status: user.subscription?.status || 'inactive',
+      memberSince: user.createdAt,
+      lastLogin: user.streakData?.lastLoginDate || user.createdAt,
+      daysSinceMember: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24))
+    }));
+
+    res.json({
+      users: userData,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('❌ Admin get users error:', error);
+    res.status(500).json({ message: 'Failed to get users' });
+  }
+});
+
+// Delete user
+app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      LifeGoal.deleteMany({ userId }),
+      Chat.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+      Message.deleteMany({ userId: userId.toString() }),
+      DailyPromptResponse.deleteMany({ userId }),
+      DailyProgress.deleteMany({ userId }),
+      Insight.deleteMany({ userId })
+    ]);
+
+    res.json({ 
+      message: 'User deleted successfully',
+      deletedUser: {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('❌ Admin delete user error:', error);
+    res.status(500).json({ message: 'Failed to delete user' });
+  }
+});
+
+console.log('✅ Admin routes loaded successfully');
 
 // Start server
 app.listen(PORT, () => {
