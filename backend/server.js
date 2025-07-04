@@ -3121,39 +3121,11 @@ app.get('/health', (req, res) => {
   });
 });
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error('Unhandled error:', error);
-  res.status(500).json({
-    message: 'Internal server error',
-    ...(process.env.NODE_ENV === 'development' && { error: error.message })
-  });
-});
+// ==========================================
+// ADMIN ROUTES - ADD THESE RIGHT AFTER THE HEALTH CHECK
+// ==========================================
 
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ message: 'Endpoint not found' });
-});
-
-// Initialize default rooms after MongoDB connection
-mongoose.connection.once('open', () => {
-  createDefaultRooms();
-});
-
-// Run daily prompt notifications at 8:00 AM every day
-cron.schedule('0 5 * * *', async () => {
-  console.log('🌅 Running daily prompt notifications...');
-  await createDailyPromptNotification();
-}, {
-  timezone: "America/Chicago"
-});
-
-console.log('⏰ Daily prompt scheduler started');
-
-
-// SIMPLE ADMIN BACKEND ROUTES - Add these to your server.js
-
-// REPLACE the authenticateAdmin function with this:
+// Admin authentication middleware
 const authenticateAdmin = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];
@@ -3164,17 +3136,15 @@ const authenticateAdmin = async (req, res, next) => {
       return res.status(401).json({ message: 'Admin access token required' });
     }
 
-    // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    console.log('🔍 Decoded token:', decoded);
+    console.log('🔍 Admin token decoded:', decoded.email);
     
-    // Check if it's the admin
     if (decoded.isAdmin === true) {
       req.user = decoded;
       console.log('✅ Admin authenticated successfully');
       next();
     } else {
-      console.log('❌ User is not admin:', decoded);
+      console.log('❌ User is not admin');
       return res.status(403).json({ message: 'Admin access required' });
     }
   } catch (error) {
@@ -3183,153 +3153,6 @@ const authenticateAdmin = async (req, res, next) => {
   }
 };
 
-// Simple admin login
-app.post('/api/admin/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    
-const adminEmail = 'admin@eeh.com';
-const adminPassword = 'admin123';
-    
-    if (email === adminEmail && password === adminPassword) {
-      const token = jwt.sign(
-        { userId: 'admin', email: adminEmail, isAdmin: true },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '24h' }
-      );
-      
-      res.json({
-        message: 'Admin login successful',
-        token,
-        user: { email: adminEmail, role: 'admin' }
-      });
-    } else {
-      res.status(401).json({ message: 'Invalid admin credentials' });
-    }
-  } catch (error) {
-    console.error('Admin login error:', error);
-    res.status(500).json({ message: 'Admin login failed' });
-  }
-});
-
-// Get all users (simple list)
-app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
-  try {
-    const { page = 1, limit = 50, search = '' } = req.query;
-
-    // Build search query
-    let query = {};
-    if (search) {
-      query.$or = [
-        { firstName: { $regex: search, $options: 'i' } },
-        { lastName: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
-    }
-
-    // Get total count
-    const total = await User.countDocuments(query);
-    
-    // Get users
-    const users = await User.find(query)
-      .select('firstName lastName email subscription.plan subscription.status createdAt streakData.lastLoginDate')
-      .sort({ createdAt: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
-
-    const userData = users.map(user => ({
-      id: user._id,
-      name: `${user.firstName} ${user.lastName}`,
-      email: user.email,
-      plan: user.subscription?.plan || 'free',
-      status: user.subscription?.status || 'inactive',
-      memberSince: user.createdAt,
-      lastLogin: user.streakData?.lastLoginDate || user.createdAt,
-      daysSinceMember: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24))
-    }));
-
-    res.json({
-      users: userData,
-      total,
-      page: parseInt(page),
-      pages: Math.ceil(total / parseInt(limit))
-    });
-  } catch (error) {
-    console.error('Admin get users error:', error);
-    res.status(500).json({ message: 'Failed to get users' });
-  }
-});
-
-// Get basic stats
-app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
-  try {
-    const totalUsers = await User.countDocuments();
-    const paidUsers = await User.countDocuments({
-      'subscription.plan': { $in: ['monthly', 'yearly'] },
-      'subscription.status': 'active'
-    });
-    const freeUsers = totalUsers - paidUsers;
-    
-    // Users from last 30 days
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const newUsers = await User.countDocuments({
-      createdAt: { $gte: thirtyDaysAgo }
-    });
-
-    res.json({
-      totalUsers,
-      paidUsers,
-      freeUsers,
-      newUsersLast30Days: newUsers
-    });
-  } catch (error) {
-    console.error('Admin stats error:', error);
-    res.status(500).json({ message: 'Failed to get stats' });
-  }
-});
-
-// Delete user
-app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
-  try {
-    const userId = req.params.id;
-    
-    // Get user first
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Delete user and their data
-    await Promise.all([
-      User.findByIdAndDelete(userId),
-      LifeGoal.deleteMany({ userId }),
-      Chat.deleteMany({ userId }),
-      Notification.deleteMany({ userId }),
-      Message.deleteMany({ userId: userId.toString() }),
-      DailyPromptResponse.deleteMany({ userId }),
-      DailyProgress.deleteMany({ userId }),
-      Insight.deleteMany({ userId })
-    ]);
-
-    res.json({ 
-      message: 'User deleted successfully',
-      deletedUser: {
-        name: `${user.firstName} ${user.lastName}`,
-        email: user.email
-      }
-    });
-  } catch (error) {
-    console.error('Admin delete user error:', error);
-    res.status(500).json({ message: 'Failed to delete user' });
-  }
-});
-
-console.log('✅ Simple Admin routes loaded');
-
-// Test endpoint to verify admin routes are working
-app.get('/api/admin/test', (req, res) => {
-  res.json({ message: 'Admin routes are working!' });
-});
 
 // Start server
 app.listen(PORT, () => {
