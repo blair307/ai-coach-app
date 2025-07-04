@@ -3170,8 +3170,13 @@ app.post('/api/admin/login', async (req, res) => {
     const { email, password } = req.body;
     console.log('🔐 Admin login attempt for:', email);
     
-    const adminEmail = 'admin@eeh.com';
-    const adminPassword = 'admin123';
+const adminEmail = process.env.ADMIN_EMAIL;
+const adminPassword = process.env.ADMIN_PASSWORD;
+
+if (!adminEmail || !adminPassword) {
+  console.error('❌ Admin credentials not configured in environment variables');
+  return res.status(500).json({ message: 'Admin login not configured' });
+}
     
     if (email === adminEmail && password === adminPassword) {
       const token = jwt.sign(
