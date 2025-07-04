@@ -908,13 +908,22 @@ function addProgressAlignmentFix() {
     console.log('✅ Progress alignment fix applied');
 }
 
-// Initialize activity tracker and apply fixes
 function initializeActivityTracker() {
     // Apply CSS fix for progress alignment
     addProgressAlignmentFix();
     
-    // Initialize activity tracker
-    //window.activityTracker = new ActivityTracker();
+    // CHECK: If this is a brand new account (no activity data), start fresh
+    const existingActivityData = localStorage.getItem('eeh_user_activity');
+    const existingActiveDays = localStorage.getItem('eeh_active_days');
+    
+    // If no existing data, this might be a new account
+    if (!existingActivityData && !existingActiveDays) {
+        console.log('🆕 New account detected - starting with clean slate');
+        localStorage.removeItem('eeh_active_days');
+    }
+    
+    // Initialize activity tracker (but don't let it add fake historical data)
+    window.activityTracker = new ActivityTracker();
     
     // Make tracking functions globally available
     window.trackCoachingSession = () => window.activityTracker.trackCoachingSession();
@@ -923,7 +932,7 @@ function initializeActivityTracker() {
     window.trackNotificationCheck = () => window.activityTracker.trackNotificationCheck();
     window.trackBillingView = () => window.activityTracker.trackBillingView();
     
-    console.log('✅ Activity tracker and progress fixes initialized');
+    console.log('✅ Activity tracker initialized with safeguards');
 }
 
 // Update the main initialization to include activity tracker
