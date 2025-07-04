@@ -3150,6 +3150,176 @@ cron.schedule('0 5 * * *', async () => {
 
 console.log('⏰ Daily prompt scheduler started');
 
+// SIMPLE ADMIN BACKEND ROUTES - Add these to your server.js
+
+// Simple admin authentication middleware
+const authenticateAdmin = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Admin access token required' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+    if (err) {
+      return res.status(403).json({ message: 'Invalid admin token' });
+    }
+    
+    // Check if user is admin
+    if (!user.isAdmin) {
+      return res.status(403).json({ message: 'Admin access required' });
+    }
+    
+    req.user = user;
+    next();
+  });
+};
+
+// Simple admin login
+app.post('/api/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Check against environment variables (you can change these)
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@yourapp.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    
+    if (email === adminEmail && password === adminPassword) {
+      const token = jwt.sign(
+        { userId: 'admin', email: adminEmail, isAdmin: true },
+        process.env.JWT_SECRET || 'your-secret-key',
+        { expiresIn: '24h' }
+      );
+      
+      res.json({
+        message: 'Admin login successful',
+        token,
+        user: { email: adminEmail, role: 'admin' }
+      });
+    } else {
+      res.status(401).json({ message: 'Invalid admin credentials' });
+    }
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ message: 'Admin login failed' });
+  }
+});
+
+// Get all users (simple list)
+app.get('/api/admin/users', authenticateAdmin, async (req, res) => {
+  try {
+    const { page = 1, limit = 50, search = '' } = req.query;
+
+    // Build search query
+    let query = {};
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Get total count
+    const total = await User.countDocuments(query);
+    
+    // Get users
+    const users = await User.find(query)
+      .select('firstName lastName email subscription.plan subscription.status createdAt streakData.lastLoginDate')
+      .sort({ createdAt: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    const userData = users.map(user => ({
+      id: user._id,
+      name: `${user.firstName} ${user.lastName}`,
+      email: user.email,
+      plan: user.subscription?.plan || 'free',
+      status: user.subscription?.status || 'inactive',
+      memberSince: user.createdAt,
+      lastLogin: user.streakData?.lastLoginDate || user.createdAt,
+      daysSinceMember: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24))
+    }));
+
+    res.json({
+      users: userData,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Admin get users error:', error);
+    res.status(500).json({ message: 'Failed to get users' });
+  }
+});
+
+// Get basic stats
+app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
+  try {
+    const totalUsers = await User.countDocuments();
+    const paidUsers = await User.countDocuments({
+      'subscription.plan': { $in: ['monthly', 'yearly'] },
+      'subscription.status': 'active'
+    });
+    const freeUsers = totalUsers - paidUsers;
+    
+    // Users from last 30 days
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const newUsers = await User.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+
+    res.json({
+      totalUsers,
+      paidUsers,
+      freeUsers,
+      newUsersLast30Days: newUsers
+    });
+  } catch (error) {
+    console.error('Admin stats error:', error);
+    res.status(500).json({ message: 'Failed to get stats' });
+  }
+});
+
+// Delete user
+app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    
+    // Get user first
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Delete user and their data
+    await Promise.all([
+      User.findByIdAndDelete(userId),
+      LifeGoal.deleteMany({ userId }),
+      Chat.deleteMany({ userId }),
+      Notification.deleteMany({ userId }),
+      Message.deleteMany({ userId: userId.toString() }),
+      DailyPromptResponse.deleteMany({ userId }),
+      DailyProgress.deleteMany({ userId }),
+      Insight.deleteMany({ userId })
+    ]);
+
+    res.json({ 
+      message: 'User deleted successfully',
+      deletedUser: {
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email
+      }
+    });
+  } catch (error) {
+    console.error('Admin delete user error:', error);
+    res.status(500).json({ message: 'Failed to delete user' });
+  }
+});
+
+console.log('✅ Simple Admin routes loaded');
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
