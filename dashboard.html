@@ -973,44 +973,46 @@ class SimpleProgressTracker {
         console.log('✅ Fixed Progress Tracker initialized');
     }
 
-    initializeData() {
-        try {
-            // Load existing progress data
-            const stored = localStorage.getItem(this.storageKey);
-            if (stored) {
-                this.data = JSON.parse(stored);
-            } else {
-                this.data = {
-                    coachingSessions: 0,
-                    communityPosts: 0,
-                    activeGoals: 0
-                };
-            }
-
-            // Load active days separately as an array of date strings
-            const storedDays = localStorage.getItem(this.activeDaysKey);
-            if (storedDays) {
-                this.activeDays = JSON.parse(storedDays);
-            } else {
-                this.activeDays = [];
-            }
-
-            // Mark today as active immediately
-            this.markActiveToday();
-            
-            console.log('📅 Loaded active days:', this.activeDays.length, 'days');
-            
-        } catch (error) {
-            console.error('Error loading progress data:', error);
+initializeData() {
+    try {
+        // Load existing progress data
+        const stored = localStorage.getItem(this.storageKey);
+        if (stored) {
+            this.data = JSON.parse(stored);
+        } else {
             this.data = {
                 coachingSessions: 0,
                 communityPosts: 0,
                 activeGoals: 0
             };
-            this.activeDays = [];
-            this.markActiveToday();
         }
+
+        // Load active days separately as an array of date strings
+        const storedDays = localStorage.getItem(this.activeDaysKey);
+        if (storedDays) {
+            this.activeDays = JSON.parse(storedDays);
+        } else {
+            // NEW ACCOUNT: Start with empty array
+            this.activeDays = [];
+        }
+
+        // ONLY mark today as active (don't add fake previous days)
+        this.markActiveToday();
+        
+        console.log('📅 Initialized with active days:', this.activeDays.length, 'days');
+        
+    } catch (error) {
+        console.error('Error loading progress data:', error);
+        this.data = {
+            coachingSessions: 0,
+            communityPosts: 0,
+            activeGoals: 0
+        };
+        // Fresh start for new accounts
+        this.activeDays = [];
+        this.markActiveToday();
     }
+}
 
     save() {
         try {
