@@ -97,14 +97,17 @@ body {
 }
 
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
-    background-size: 400% 400%;
-    animation: heroGradientShift 10s ease-in-out infinite;
+    background: linear-gradient(45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
+    background-size: 800% 800%;
+    animation: silkWave 12s ease-in-out infinite alternate;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
     position: relative;
     overflow: hidden;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .hero::before {
@@ -3426,12 +3429,27 @@ html, body {
     box-sizing: border-box;
 }
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    25% { background-position: 100% 50%; }
-    50% { background-position: 100% 100%; }
-    75% { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
+@keyframes silkWave {
+    0% { 
+        background-position: 0% 50%; 
+        transform: rotate(0deg) scale(1);
+    }
+    25% { 
+        background-position: 100% 30%; 
+        transform: rotate(2deg) scale(1.02);
+    }
+    50% { 
+        background-position: 80% 70%; 
+        transform: rotate(-1deg) scale(0.98);
+    }
+    75% { 
+        background-position: 20% 40%; 
+        transform: rotate(3deg) scale(1.01);
+    }
+    100% { 
+        background-position: 50% 80%; 
+        transform: rotate(-2deg) scale(1);
+    }
 }
 
 /* FIXED: Auth card sizing */
