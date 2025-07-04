@@ -119,30 +119,26 @@ body {
     50% { transform: translateY(-20px) rotate(1deg); }
 }
 
-@keyframes flowingWaves {
+@keyframes silkWave {
     0% { 
-        background-position: 0% 50%;
-        filter: hue-rotate(0deg);
+        background-position: 0% 50%; 
+        transform: rotate(0deg) scale(1);
     }
-    20% { 
-        background-position: 80% 20%;
-        filter: hue-rotate(10deg);
+    25% { 
+        background-position: 100% 30%; 
+        transform: rotate(2deg) scale(1.02);
     }
-    40% { 
-        background-position: 100% 90%;
-        filter: hue-rotate(-5deg);
+    50% { 
+        background-position: 80% 70%; 
+        transform: rotate(-1deg) scale(0.98);
     }
-    60% { 
-        background-position: 20% 70%;
-        filter: hue-rotate(15deg);
-    }
-    80% { 
-        background-position: 60% 10%;
-        filter: hue-rotate(-10deg);
+    75% { 
+        background-position: 20% 40%; 
+        transform: rotate(3deg) scale(1.01);
     }
     100% { 
-        background-position: 0% 50%;
-        filter: hue-rotate(0deg);
+        background-position: 50% 80%; 
+        transform: rotate(-2deg) scale(1);
     }
 }
 
@@ -3563,7 +3559,7 @@ html, body {
 .hero {
 background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);    
     background-size: 400% 400%;
-    animation: flowingWaves 15s ease-in-out infinite;
+    animation: silkWave 8s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -3575,7 +3571,7 @@ background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE,
 }
 
 .navbar {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 1.00);
     backdrop-filter: blur(20px) saturate(120%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     position: sticky;
