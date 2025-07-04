@@ -20,15 +20,24 @@
     margin: auto 0;    
 }
 
-/* Responsive logo sizing */
-@media (max-width: 768px) {
+/* NUCLEAR MOBILE LOGO FIX */
+@media screen and (max-width: 767px) {
+    .nav-brand .logo-image,
+    img.logo-image,
     .logo-image {
-        height: 48px;
-        max-width: 300px;
+        height: 48px !important;
         width: auto !important;
+        max-width: 300px !important;
+        min-width: 200px !important;
         object-fit: contain !important;
         object-position: center !important;
-        display: block !important;
+        transform: none !important;
+        writing-mode: initial !important;
+        text-orientation: initial !important;
+        image-orientation: from-image !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+        margin: 0 auto !important;
     }
     
     /* Force center the navigation on mobile */
@@ -40,12 +49,14 @@
     }
     
     .nav-brand {
-        width: 100%;
-        text-align: center;
-        margin-bottom: 1rem;
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
+        width: 100% !important;
+        height: auto !important;
+        overflow: visible !important;
+        text-align: center;
+        margin-bottom: 1rem;
     }
     
     .nav-links {
@@ -54,14 +65,6 @@
     }
 }
 
-/* EXTRA SMALL PHONES - PREVENT SQUISHING */
-@media (max-width: 480px) {
-    .logo-image {
-        height: 40px !important;
-        max-width: 250px !important;
-        min-width: 200px !important;
-    }
-}
         
         .nav-link.btn-primary:hover {
             color: white !important;
