@@ -6,6 +6,57 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%234f46e5'/></linearGradient></defs><rect width='32' height='32' fill='url(%23g)'/><text x='16' y='20' font-family='Arial' font-size='10' font-weight='bold' text-anchor='middle' fill='white'>EEH</text></svg>">
     <title>Sign Up - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+
+    <style>
+/* Password Show/Hide Styling */
+.password-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-wrapper input {
+    padding-right: 3rem !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #6b7280;
+    transition: color 0.2s ease;
+    z-index: 2;
+}
+
+.password-toggle:hover {
+    color: #374151;
+}
+
+.password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.password-toggle .show-icon {
+    display: block;
+}
+
+.password-toggle .hide-icon {
+    display: none;
+}
+
+.password-toggle.showing .show-icon {
+    display: none;
+}
+
+.password-toggle.showing .hide-icon {
+    display: block;
+}
+</style>
+
 </head>
 <body>
     <div class="auth-container">
@@ -33,11 +84,24 @@
                     <input type="email" id="email" name="email" required>
                 </div>
 
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                    <small>Must be at least 8 characters with uppercase, lowercase, and numbers</small>
-                </div>
+               <div class="form-group">
+    <label for="password">Password</label>
+    <div class="password-input-wrapper">
+        <input type="password" id="password" name="password" required>
+        <button type="button" class="password-toggle" onclick="togglePasswordVisibility()">
+            <!-- Eye icon (show password) -->
+            <svg class="show-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            <!-- Eye slash icon (hide password) -->
+            <svg class="hide-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L12 12m-3.878-3.878L7.05 7.05M12 12l3.878 3.878M12 12v.01M15.121 14.121l2.829 2.829"/>
+            </svg>
+        </button>
+    </div>
+    <small>Must be at least 8 characters with uppercase, lowercase, and numbers</small>
+</div>
 
                 <!-- Plan Selection -->
                 <div class="plan-selection">
