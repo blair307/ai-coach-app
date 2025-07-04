@@ -97,9 +97,9 @@ body {
 }
 
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
-    background-size: 400% 400%;
-    animation: gradientShift 6s ease infinite;
+    background: linear-gradient(45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
+    background-size: 800% 800%;
+    animation: silkWave 12s ease-in-out infinite alternate;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -119,27 +119,12 @@ body {
     50% { transform: translateY(-20px) rotate(1deg); }
 }
 
-@keyframes silkWave {
-    0% { 
-        background-position: 0% 50%; 
-        transform: rotate(0deg) scale(1);
-    }
-    25% { 
-        background-position: 100% 30%; 
-        transform: rotate(2deg) scale(1.02);
-    }
-    50% { 
-        background-position: 80% 70%; 
-        transform: rotate(-1deg) scale(0.98);
-    }
-    75% { 
-        background-position: 20% 40%; 
-        transform: rotate(3deg) scale(1.01);
-    }
-    100% { 
-        background-position: 50% 80%; 
-        transform: rotate(-2deg) scale(1);
-    }
+@keyframes heroGradientShift {
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
 }
 
 .hero-content {
@@ -3444,33 +3429,14 @@ html, body {
     box-sizing: border-box;
 }
 
-@keyframes flowingWaves {
-    0% { 
-        background-position: 0% 50%;
-        filter: hue-rotate(0deg);
-    }
-    20% { 
-        background-position: 80% 20%;
-        filter: hue-rotate(10deg);
-    }
-    40% { 
-        background-position: 100% 90%;
-        filter: hue-rotate(-5deg);
-    }
-    60% { 
-        background-position: 20% 70%;
-        filter: hue-rotate(15deg);
-    }
-    80% { 
-        background-position: 60% 10%;
-        filter: hue-rotate(-10deg);
-    }
-    100% { 
-        background-position: 0% 50%;
-        filter: hue-rotate(0deg);
-    }
+@keyframes silkWave {
+    0% { background-position: 0% 50%; }
+    20% { background-position: 80% 30%; }
+    40% { background-position: 100% 70%; }
+    60% { background-position: 40% 90%; }
+    80% { background-position: 20% 20%; }
+    100% { background-position: 0% 50%; }
 }
-
 /* FIXED: Auth card sizing */
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
@@ -3559,7 +3525,7 @@ html, body {
 .hero {
 background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);    
     background-size: 400% 400%;
-    animation: silkWave 8s ease-in-out infinite;
+    animation: gradientShift 15s ease infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -3571,7 +3537,7 @@ background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE,
 }
 
 .navbar {
-    background: rgba(255, 255, 255, 1.00);
+    background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px) saturate(120%);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     position: sticky;
