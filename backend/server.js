@@ -3150,38 +3150,37 @@ cron.schedule('0 5 * * *', async () => {
 
 console.log('⏰ Daily prompt scheduler started');
 
-// TEST - Add this first to see if routes work at all
-app.get('/api/admin/test', (req, res) => {
-  console.log('Admin test endpoint hit!');
-  res.json({ message: 'Admin routes are working!', timestamp: new Date() });
-});
-
-console.log('✅ Admin test route added');
 
 // SIMPLE ADMIN BACKEND ROUTES - Add these to your server.js
 
-// Simple admin authentication middleware
-const authenticateAdmin = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+// REPLACE the authenticateAdmin function with this:
+const authenticateAdmin = async (req, res, next) => {
+  try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
 
-  if (!token) {
-    return res.status(401).json({ message: 'Admin access token required' });
-  }
-
-  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Invalid admin token' });
+    if (!token) {
+      console.log('❌ No admin token provided');
+      return res.status(401).json({ message: 'Admin access token required' });
     }
+
+    // Verify JWT token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    console.log('🔍 Decoded token:', decoded);
     
-    // Check if user is admin
-    if (!user.isAdmin) {
+    // Check if it's the admin
+    if (decoded.isAdmin === true) {
+      req.user = decoded;
+      console.log('✅ Admin authenticated successfully');
+      next();
+    } else {
+      console.log('❌ User is not admin:', decoded);
       return res.status(403).json({ message: 'Admin access required' });
     }
-    
-    req.user = user;
-    next();
-  });
+  } catch (error) {
+    console.error('❌ Admin auth error:', error.message);
+    return res.status(403).json({ message: 'Invalid admin token' });
+  }
 };
 
 // Simple admin login
@@ -3189,9 +3188,8 @@ app.post('/api/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
-    // Check against environment variables (you can change these)
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@yourapp.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+const adminEmail = 'admin@eeh.com';
+const adminPassword = 'admin123';
     
     if (email === adminEmail && password === adminPassword) {
       const token = jwt.sign(
