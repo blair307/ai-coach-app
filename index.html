@@ -20,48 +20,12 @@
     margin: auto 0;    
 }
 
-/* NUCLEAR MOBILE LOGO FIX */
-@media screen and (max-width: 767px) {
-    .nav-brand .logo-image,
-    img.logo-image,
+/* EXTRA SMALL PHONES - PREVENT SQUISHING */
+@media (max-width: 480px) {
     .logo-image {
-        height: 48px !important;
-        width: auto !important;
-        max-width: 300px !important;
+        height: 40px !important;
+        max-width: 250px !important;
         min-width: 200px !important;
-        object-fit: contain !important;
-        object-position: center !important;
-        transform: none !important;
-        writing-mode: initial !important;
-        text-orientation: initial !important;
-        image-orientation: from-image !important;
-        display: inline-block !important;
-        vertical-align: middle !important;
-        margin: 0 auto !important;
-    }
-    
-    /* Force center the navigation on mobile */
-    .nav-container {
-        justify-content: center !important;
-        text-align: center;
-        flex-direction: column !important;
-        align-items: center !important;
-    }
-    
-    .nav-brand {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        width: 100% !important;
-        height: auto !important;
-        overflow: visible !important;
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    
-    .nav-links {
-        justify-content: center;
-        width: 100% !important;
     }
 }
 
