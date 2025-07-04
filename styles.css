@@ -98,8 +98,8 @@ body {
 
 .hero {
     background: linear-gradient(45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
-    background-size: 800% 800%;
-    animation: silkWave 12s ease-in-out infinite alternate;
+    background-size: 600% 600%;
+    animation: flowingWaves 12s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -3429,14 +3429,33 @@ html, body {
     box-sizing: border-box;
 }
 
-@keyframes silkWave {
-    0% { background-position: 0% 50%; }
-    20% { background-position: 80% 30%; }
-    40% { background-position: 100% 70%; }
-    60% { background-position: 40% 90%; }
-    80% { background-position: 20% 20%; }
-    100% { background-position: 0% 50%; }
+@keyframes flowingWaves {
+    0% { 
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
+    20% { 
+        background-position: 80% 20%;
+        filter: hue-rotate(10deg);
+    }
+    40% { 
+        background-position: 100% 90%;
+        filter: hue-rotate(-5deg);
+    }
+    60% { 
+        background-position: 20% 70%;
+        filter: hue-rotate(15deg);
+    }
+    80% { 
+        background-position: 60% 10%;
+        filter: hue-rotate(-10deg);
+    }
+    100% { 
+        background-position: 0% 50%;
+        filter: hue-rotate(0deg);
+    }
 }
+
 /* FIXED: Auth card sizing */
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
