@@ -3430,28 +3430,13 @@ html, body {
 }
 
 @keyframes silkWave {
-    0% { 
-        background-position: 0% 50%; 
-        transform: rotate(0deg) scale(1);
-    }
-    25% { 
-        background-position: 100% 30%; 
-        transform: rotate(2deg) scale(1.02);
-    }
-    50% { 
-        background-position: 80% 70%; 
-        transform: rotate(-1deg) scale(0.98);
-    }
-    75% { 
-        background-position: 20% 40%; 
-        transform: rotate(3deg) scale(1.01);
-    }
-    100% { 
-        background-position: 50% 80%; 
-        transform: rotate(-2deg) scale(1);
-    }
+    0% { background-position: 0% 50%; }
+    20% { background-position: 80% 30%; }
+    40% { background-position: 100% 70%; }
+    60% { background-position: 40% 90%; }
+    80% { background-position: 20% 20%; }
+    100% { background-position: 0% 50%; }
 }
-
 /* FIXED: Auth card sizing */
 .auth-card {
     background: rgba(255, 255, 255, 0.95);
