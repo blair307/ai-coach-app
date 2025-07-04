@@ -41,7 +41,7 @@ if (process.env.OPENAI_API_KEY) {
   console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
 }
 
-// Email configuration
+// Email configuration - FIXED VERSION
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   transporter = nodemailer.createTransporter({
@@ -53,7 +53,9 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
   });
   console.log("📧 Email service configured");
 } else {
-  console.log("⚠️ Email credentials not found - password reset will be disabled");
+  console.log("⚠️ Email credentials not found");
+  console.log("EMAIL_USER exists:", !!process.env.EMAIL_USER);
+  console.log("EMAIL_PASS exists:", !!process.env.EMAIL_PASS);
 }
 
 // Connect to MongoDB
@@ -618,34 +620,43 @@ app.get('/api/auth/verify', authenticateToken, (req, res) => {
   res.json({ message: 'Token is valid', user: req.user });
 });
 
-// Password Reset Request
 app.post('/api/auth/forgot-password', async (req, res) => {
+  console.log('🔍 Forgot password request received');
+  console.log('📧 Transporter exists:', !!transporter);
+  
   try {
     const { email } = req.body;
     
     if (!email) {
+      console.log('❌ No email provided');
       return res.status(400).json({ message: 'Email is required' });
     }
 
     if (!transporter) {
+      console.log('❌ Email service not configured');
       return res.status(500).json({ message: 'Email service not configured' });
     }
 
+    console.log('🔍 Looking for user with email:', email);
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
+      console.log('⚠️ User not found, but sending success message anyway');
       return res.status(200).json({ 
         message: 'If an account with that email exists, a password reset link has been sent.' 
       });
     }
 
+    console.log('✅ User found, generating reset token');
     const resetToken = crypto.randomBytes(32).toString('hex');
     
     user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
     user.resetPasswordExpires = Date.now() + 10 * 60 * 1000;
     
     await user.save();
+    console.log('✅ Reset token saved to database');
 
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password.html?token=${resetToken}`;
+    console.log('📧 Sending email to:', user.email);
 
     const mailOptions = {
       from: process.env.EMAIL_USER,
@@ -661,20 +672,19 @@ app.post('/api/auth/forgot-password', async (req, res) => {
           <p style="word-break: break-all; color: #667eea;">${resetUrl}</p>
           <p><strong>This link will expire in 10 minutes.</strong></p>
           <p>If you didn't request this, please ignore this email.</p>
-          <hr style="margin: 30px 0; border: none; border-top: 1px solid #eee;">
-          <p style="color: #666; font-size: 14px;">Entrepreneur Emotional Health Platform</p>
         </div>
       `
     };
 
     await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent successfully');
 
     res.status(200).json({ 
       message: 'If an account with that email exists, a password reset link has been sent.' 
     });
 
   } catch (error) {
-    console.error('Forgot password error:', error);
+    console.error('❌ Forgot password error:', error);
     res.status(500).json({ message: 'Error processing password reset request' });
   }
 });
