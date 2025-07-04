@@ -713,14 +713,15 @@ app.post('/api/auth/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    
+  const salt = await bcrypt.genSalt(10);
+user.password = await bcrypt.hash(newPassword, salt);
 
-    res.status(200).json({ message: 'Password reset successful' });
+user.resetPasswordToken = undefined;
+user.resetPasswordExpires = undefined;
+
+await user.save(); // <- THIS LINE WAS MISSING
+
+res.status(200).json({ message: 'Password reset successful' });
 
   } catch (error) {
     console.error('Reset password error:', error);
