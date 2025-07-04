@@ -847,13 +847,27 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     
     console.log('✅ Subscription created:', subscription.id);
 
-    res.json({
-      subscriptionId: subscription.id,
-      clientSecret: subscription.latest_invoice.payment_intent.client_secret,
-      customerId: customer.id,
-      couponApplied: couponCode || null,
-      isFree: false
-    });
+// Check if payment intent exists (it won't for $0 invoices)
+let clientSecret = null;
+let requiresPayment = true;
+
+if (subscription.latest_invoice && subscription.latest_invoice.payment_intent) {
+  clientSecret = subscription.latest_invoice.payment_intent.client_secret;
+  console.log('💳 Payment intent created, client secret available');
+} else {
+  // No payment intent means $0 invoice (due to 100% coupon)
+  requiresPayment = false;
+  console.log('🆓 No payment required (100% discount applied)');
+}
+
+res.json({
+  subscriptionId: subscription.id,
+  clientSecret: clientSecret,
+  customerId: customer.id,
+  couponApplied: couponCode || null,
+  requiresPayment: requiresPayment,
+  isFree: !requiresPayment
+});
 
   } catch (error) {
     console.error('❌ Subscription creation error:', error);
