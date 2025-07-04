@@ -662,3 +662,20 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Toggle password visibility
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.querySelector('.password-toggle');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleButton.classList.add('showing');
+    } else {
+        passwordInput.type = 'password';
+        toggleButton.classList.remove('showing');
+    }
+}
+
+// Make function globally available
+window.togglePasswordVisibility = togglePasswordVisibility;
