@@ -108,14 +108,7 @@ body {
 }
 
 .hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float 20s ease-in-out infinite;
+    display: none;
 }
 
 @keyframes float {
@@ -3433,17 +3426,12 @@ html, body {
     box-sizing: border-box;
 }
 
-/* Animated gradient keyframes */
 @keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
 }
 
 /* FIXED: Auth card sizing */
@@ -3532,9 +3520,9 @@ html, body {
 
 /* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
 .hero {
-    background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);    
     background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    animation: gradientShift 10s ease infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
