@@ -3320,6 +3320,11 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
 
 console.log('✅ Simple Admin routes loaded');
 
+// Test endpoint to verify admin routes are working
+app.get('/api/admin/test', (req, res) => {
+  res.json({ message: 'Admin routes are working!' });
+});
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
