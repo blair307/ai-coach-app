@@ -3522,7 +3522,7 @@ html, body {
 .hero {
 background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);    
     background-size: 400% 400%;
-    animation: gradientShift 10s ease infinite;
+    animation: gradientShift 15s ease infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
