@@ -1729,152 +1729,173 @@ function formatDashboardTimeAgo(dateString) {
     return `${Math.floor(diffInHours / 24)}d ago`;
 }
         
-    // Load real notifications for dashboard preview
-    async function loadDashboardNotifications() {
-        try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-            const notificationsPreview = document.querySelector('.notifications-preview');
-            
-            if (!token) {
-                if (notificationsPreview) {
-                    notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Please log in to view notifications</p>';
-                }
-                return;
-            }
-
+// Load real notifications for dashboard preview
+async function loadDashboardNotifications() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const notificationsPreview = document.querySelector('.notifications-preview');
+        
+        if (!token) {
             if (notificationsPreview) {
-                notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading notifications...</p>';
+                notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Please log in to view notifications</p>';
             }
+            return;
+        }
 
-            // Create the same notifications that appear on the notifications page
-            const notifications = [
-                {
-                    id: '1',
-                    type: 'coaching',
-                    title: 'New Coaching Insights Available',
-                    message: 'Your AI coach has generated new insights based on your recent conversations.',
-                    time: '2 hours ago',
-                    isRead: false
-                },
-                {
-                    id: '2', 
-                    type: 'community',
-                    title: 'New Messages in Business Growth',
-                    message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
-                    time: '4 hours ago',
-                    isRead: false
-                },
-                {
-                    id: '3',
-                    type: 'system',
-                    title: 'Weekly Progress Report Ready',
-                    message: 'Your weekly emotional health and business progress report is now available.',
-                    time: '1 day ago',
-                    isRead: false
-                },
-                {
-                    id: '4',
-                    type: 'coaching',
-                    title: 'Goal Achievement Milestone',
-                    message: 'Congratulations! You\'ve completed 75% of your quarterly emotional wellness goals.',
-                    time: '2 days ago',
-                    isRead: true
-                },
-                {
-                    id: '5',
-                    type: 'community',
-                    title: 'Someone Mentioned You',
-                    message: 'Mike Chen mentioned you in the Success Stories room.',
-                    time: '3 days ago',
-                    isRead: true
+        if (notificationsPreview) {
+            notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading notifications...</p>';
+        }
+
+        // TRY to load real notifications from backend
+        try {
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications?limit=3', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
-            ];
-
-            if (!notificationsPreview) return;
-
-            // Show only the 3 most recent notifications (mix of read/unread)
-            const recentNotifications = notifications.slice(0, 3);
-            
-            if (recentNotifications.length === 0) {
-                notificationsPreview.innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                        <p>No notifications yet</p>
-                    </div>
-                `;
-                return;
-            }
-
-            notificationsPreview.innerHTML = '';
-            
-            recentNotifications.forEach(notification => {
-                const notificationElement = document.createElement('div');
-                notificationElement.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
-                
-                // Get icon based on type
-                let iconText = 'SY';
-                let iconClass = 'system';
-                
-                switch(notification.type) {
-                    case 'coaching':
-                        iconText = 'AI';
-                        iconClass = 'coaching';
-                        break;
-                    case 'community':
-                        iconText = 'CM';
-                        iconClass = 'community';
-                        break;
-                    case 'billing':
-                        iconText = 'BI';
-                        iconClass = 'billing';
-                        break;
-                    default:
-                        iconText = 'SY';
-                        iconClass = 'system';
-                }
-                
-                notificationElement.innerHTML = `
-                    <div class="notification-icon ${iconClass}" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0; background: ${getIconColor(notification.type)};">
-                        ${iconText}
-                    </div>
-                    <div class="notification-content" style="flex: 1; min-width: 0;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                            <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); line-height: 1.3;">${notification.title}</h4>
-                            <span style="color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; margin-left: 0.5rem;">${notification.time}</span>
-                        </div>
-                        <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${notification.message}</p>
-                        ${!notification.isRead ? '<div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; margin-top: 0.5rem;"></div>' : ''}
-                    </div>
-                `;
-                
-                // Add click handler to navigate to full notifications
-                notificationElement.style.cursor = 'pointer';
-                notificationElement.addEventListener('click', () => {
-                    window.location.href = 'notifications.html';
-                });
-                
-                // Add hover effect
-                notificationElement.addEventListener('mouseenter', () => {
-                    notificationElement.style.background = 'var(--surface)';
-                    notificationElement.style.transform = 'translateY(-1px)';
-                });
-                
-                notificationElement.addEventListener('mouseleave', () => {
-                    notificationElement.style.background = '';
-                    notificationElement.style.transform = 'translateY(0)';
-                });
-                
-                notificationsPreview.appendChild(notificationElement);
             });
 
-        } catch (error) {
-            console.error('Error loading dashboard notifications:', error);
-            const notificationsPreview = document.querySelector('.notifications-preview');
-            if (notificationsPreview) {
-                notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--error); padding: 1rem;">Error loading notifications</p>';
+            if (response.ok) {
+                const backendNotifications = await response.json();
+                console.log('✅ Dashboard loaded real notifications:', backendNotifications.length);
+                
+                if (backendNotifications.length > 0) {
+                    displayRealNotifications(backendNotifications);
+                    return;
+                }
             }
+        } catch (error) {
+            console.log('Backend notifications not available for dashboard, using fallback');
+        }
+
+        // FALLBACK to hardcoded notifications if backend fails or is empty
+        const fallbackNotifications = [
+            {
+                id: '1',
+                type: 'coaching',
+                title: 'New Coaching Insights Available',
+                message: 'Your AI coach has generated new insights based on your recent conversations.',
+                time: '2 hours ago',
+                isRead: false
+            },
+            {
+                id: '2', 
+                type: 'community',
+                title: 'New Messages in Business Growth',
+                message: 'Sarah Johnson and 3 others have shared new insights in the Business Growth room.',
+                time: '4 hours ago',
+                isRead: false
+            },
+            {
+                id: '3',
+                type: 'system',
+                title: 'Weekly Progress Report Ready',
+                message: 'Your weekly emotional health and business progress report is now available.',
+                time: '1 day ago',
+                isRead: false
+            }
+        ];
+
+        displayRealNotifications(fallbackNotifications);
+
+    } catch (error) {
+        console.error('Error loading dashboard notifications:', error);
+        const notificationsPreview = document.querySelector('.notifications-preview');
+        if (notificationsPreview) {
+            notificationsPreview.innerHTML = '<p style="text-align: center; color: var(--error); padding: 1rem;">Error loading notifications</p>';
         }
     }
+}
 
+// NEW: Display real notifications (works for both backend and fallback)
+function displayRealNotifications(notifications) {
+    const notificationsPreview = document.querySelector('.notifications-preview');
+    if (!notificationsPreview) return;
+
+    if (notifications.length === 0) {
+        notificationsPreview.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                <p>No notifications yet</p>
+            </div>
+        `;
+        return;
+    }
+
+    notificationsPreview.innerHTML = '';
+    
+    notifications.slice(0, 3).forEach(notification => {
+        const notificationElement = document.createElement('div');
+        notificationElement.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
+        
+        // Get icon based on type
+        let iconText = 'SY';
+        let iconClass = 'system';
+        
+        switch(notification.type) {
+            case 'coaching':
+                iconText = 'AI';
+                iconClass = 'coaching';
+                break;
+            case 'community':
+                iconText = 'CM';
+                iconClass = 'community';
+                break;
+            case 'billing':
+                iconText = 'BI';
+                iconClass = 'billing';
+                break;
+            default:
+                iconText = 'SY';
+                iconClass = 'system';
+        }
+        
+        notificationElement.innerHTML = `
+            <div class="notification-icon ${iconClass}" style="width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0; background: ${getIconColor(notification.type)};">
+                ${iconText}
+            </div>
+            <div class="notification-content" style="flex: 1; min-width: 0;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); line-height: 1.3;">${escapeHtml(notification.title)}</h4>
+                    <span style="color: var(--text-muted); font-size: 0.8rem; white-space: nowrap; margin-left: 0.5rem;">${notification.time || formatNotificationTime(notification.createdAt)}</span>
+                </div>
+                <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${escapeHtml(notification.message || notification.content)}</p>
+                ${!notification.isRead ? '<div style="width: 8px; height: 8px; background: var(--primary); border-radius: 50%; margin-top: 0.5rem;"></div>' : ''}
+            </div>
+        `;
+        
+        // Add click handler to navigate to full notifications
+        notificationElement.style.cursor = 'pointer';
+        notificationElement.addEventListener('click', () => {
+            window.location.href = 'notifications.html';
+        });
+        
+        // Add hover effect
+        notificationElement.addEventListener('mouseenter', () => {
+            notificationElement.style.background = 'var(--surface)';
+            notificationElement.style.transform = 'translateY(-1px)';
+        });
+        
+        notificationElement.addEventListener('mouseleave', () => {
+            notificationElement.style.background = '';
+            notificationElement.style.transform = 'translateY(0)';
+        });
+        
+        notificationsPreview.appendChild(notificationElement);
+    });
+}
+
+// Helper function to format notification time
+function formatNotificationTime(timestamp) {
+    if (!timestamp) return 'Recently';
+    
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffHours = Math.floor((now - date) / (1000 * 60 * 60));
+    
+    if (diffHours < 1) return 'Just now';
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${Math.floor(diffHours / 24)}d ago`;
+}
     // Helper function to get icon colors
     function getIconColor(type) {
         const colors = {
