@@ -98,13 +98,14 @@ body {
 
 /* REPLACE your .hero class with this: */
 
+
 .hero {
     background: 
-        linear-gradient(45deg, rgba(138, 43, 226, 0.8) 0%, transparent 50%),
+            linear-gradient(45deg, rgba(138, 43, 226, 0.8) 0%, transparent 50%),
         linear-gradient(-45deg, rgba(255, 20, 147, 0.8) 0%, transparent 50%),
         linear-gradient(90deg, rgba(38, 238, 206, 0.8) 0%, transparent 50%),
         linear-gradient(0deg, rgba(50, 205, 50, 0.8) 0%, transparent 50%),
-        linear-gradient(135deg, #8A2BE2, #FF1493, #26EECE, #32CD32);
+        linear-gradient(135deg, #8A2BE2, #FF1493, #26EECE, #32CD32); 
     background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
     animation: oilSlick 15s linear infinite;
     color: white;
