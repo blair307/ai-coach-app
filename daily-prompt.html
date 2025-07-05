@@ -13,9 +13,9 @@
         }
 
         :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --primary-dark: #4f46e5;
+             --primary: #2696FE;
+    --primary-light: #7dc4fe;
+    --primary-dark: #1e7ed8;
             --surface: #ffffff;
             --background: #f8fafc;
             --surface-elevated: #fefefe;
@@ -836,9 +836,9 @@ function setupEmotionSelector() {
             } else {
                 // Select the new option
                 this.classList.add('selected');
-                this.style.background = '#6366f1';
+                this.style.background = '#2696FE';
                 this.style.color = 'white';
-                this.style.borderColor = '#6366f1';
+                this.style.borderColor = '#2696FE';
                 selectedEmotion = this.dataset.emotion;
                 console.log('✅ Selected emotion set to:', selectedEmotion);
             }
@@ -908,7 +908,7 @@ async function loadTodayPrompt() {
             const selectedOption = document.querySelector(`[data-emotion="${selectedEmotion}"]`);
             if (selectedOption) {
                 selectedOption.classList.add('selected');
-                selectedOption.style.background = '#6366f1';
+                selectedOption.style.background = '#2696FE';
                 selectedOption.style.color = 'white';
             }
             document.getElementById('submitBtn').textContent = 'Update Response';
