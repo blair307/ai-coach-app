@@ -4564,7 +4564,7 @@ function forceSingleColorIcons() {
 
 /* HEADER CENTERING FIX */
 .content-header {
-    background: var(--surface);
+    background: #ffffff;
     border-bottom: 1px solid var(--border);
     padding: 1rem 1.5rem;
     display: flex;
