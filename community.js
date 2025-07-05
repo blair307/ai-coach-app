@@ -775,6 +775,12 @@ async function sendCommunityMessage() {
             willBeThreaded: !!newMessage.replyTo
         });
 
+        // Track community activity for dashboard
+        localStorage.setItem('eeh_pending_community', JSON.stringify({
+            timestamp: new Date().toISOString(),
+            room: currentRoomName || 'General'
+        }));
+
         messageInput.value = '';
         cancelReply();
 
@@ -800,7 +806,6 @@ async function sendCommunityMessage() {
         }
     }
 }
-
 // Success toast for confirmation
 function showSuccessToast(message) {
     const toast = document.createElement('div');
