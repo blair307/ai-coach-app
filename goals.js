@@ -54,31 +54,38 @@ class GoalsManager {
         }
     }
     
-    // Create new goal - FIXED to use correct endpoint and data structure
-    async createGoal(area, bigGoal, dailyAction) {
-        try {
-            console.log('🎯 Creating goal:', { area, bigGoal, dailyAction });
-            const response = await fetch(`${this.baseURL}/life-goals`, {
-                method: 'POST',
-                headers: this.getHeaders(),
-                body: JSON.stringify({ area, bigGoal, dailyAction })
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const newGoal = await response.json();
-            console.log('✅ Goal created:', newGoal);
-            
-            this.goals.push(newGoal);
-            return newGoal;
-            
-        } catch (error) {
-            console.error('❌ Error creating goal:', error);
-            throw error;
+// Create new goal - FIXED to use correct endpoint and data structure
+async createGoal(area, bigGoal, dailyAction) {
+    try {
+        console.log('🎯 Creating goal:', { area, bigGoal, dailyAction });
+        const response = await fetch(`${this.baseURL}/life-goals`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ area, bigGoal, dailyAction })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
+        
+        const newGoal = await response.json();
+        console.log('✅ Goal created:', newGoal);
+        
+        // Track goal creation for dashboard
+        localStorage.setItem('eeh_pending_goals', JSON.stringify({
+            timestamp: new Date().toISOString(),
+            action: 'created',
+            area: area
+        }));
+        
+        this.goals.push(newGoal);
+        return newGoal;
+        
+    } catch (error) {
+        console.error('❌ Error creating goal:', error);
+        throw error;
     }
+}
     
     // Toggle goal completion - FIXED to use correct endpoint
     async toggleGoal(goalId, completed) {
@@ -263,24 +270,34 @@ class GoalsManager {
         }
     }
     
-    // Toggle goal completion
-    async toggleGoalCompletion(goalId) {
-        try {
-            const goal = this.goals.find(g => g._id === goalId);
-            if (!goal) return;
-            
-            const newCompletedState = !goal.completed;
-            await this.toggleGoal(goalId, newCompletedState);
-            this.renderGoals();
-            this.updateSummary();
-            
-            const message = newCompletedState ? 'Goal completed! 🎉' : 'Goal marked as incomplete';
-            window.showToast(message, 'success');
-        } catch (error) {
-            console.error('Toggle error:', error);
-            window.showToast('Error updating goal: ' + error.message, 'error');
+// Toggle goal completion
+async toggleGoalCompletion(goalId) {
+    try {
+        const goal = this.goals.find(g => g._id === goalId);
+        if (!goal) return;
+        
+        const newCompletedState = !goal.completed;
+        await this.toggleGoal(goalId, newCompletedState);
+        this.renderGoals();
+        this.updateSummary();
+        
+        // Track goal completion for dashboard
+        if (newCompletedState) {
+            localStorage.setItem('eeh_pending_goals', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                action: 'completed',
+                completedCount: 1,
+                area: goal.area
+            }));
         }
+        
+        const message = newCompletedState ? 'Goal completed! 🎉' : 'Goal marked as incomplete';
+        window.showToast(message, 'success');
+    } catch (error) {
+        console.error('Toggle error:', error);
+        window.showToast('Error updating goal: ' + error.message, 'error');
     }
+}
     
     // Update summary statistics
     updateSummary() {
