@@ -150,6 +150,12 @@ function sendMessageNow() {
         return;
     }
     
+    // Track coaching activity for dashboard
+    localStorage.setItem('eeh_pending_coaching', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        sessionLength: 'medium'
+    }));
+    
     // Clear input
     inputField.value = '';
     
