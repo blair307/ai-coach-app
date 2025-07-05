@@ -20,28 +20,81 @@
     margin: auto 0;    
 }
 
-/* Responsive logo sizing */
-@media (max-width: 768px) {
+/* EXTRA SMALL PHONES - PREVENT SQUISHING */
+@media (max-width: 480px) {
     .logo-image {
-        height: 48px;
-        max-width: 300px;
+        height: 40px !important;
+        max-width: 250px !important;
+        min-width: 200px !important;
     }
-    
-    /* Force center the navigation on mobile */
-    .nav-container {
-        justify-content: center !important;
-        text-align: center;
-    }
-    
-    .nav-brand {
-        width: 100%;
-        text-align: center;
-        margin-bottom: 1rem;
-    }
-    
-    .nav-links {
-        justify-content: center;
-    }
+}
+
+/* NAVBAR SOLID BACKGROUND FIX - Replace your existing navbar CSS */
+
+.navbar {
+    /* SOLID WHITE BACKGROUND - No transparency */
+    background: #ffffff !important;
+    backdrop-filter: none !important; /* Remove blur effect */
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+    /* Add solid shadow for better definition */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Alternative with very subtle transparency if you want glass effect but solid appearance */
+.navbar-glass-alternative {
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(20px) saturate(120%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure nav content is properly styled */
+.nav-container {
+    background: transparent; /* Let navbar background show through */
+    max-width: 1400px;
+    padding: 1.5rem 2rem;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Make sure nav links are visible against white background */
+.nav-link {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+}
+
+.nav-link:hover {
+    color: var(--text-primary);
+    background: rgba(0, 0, 0, 0.05); /* Subtle hover on white background */
+    transform: translateY(-1px);
+}
+
+/* Ensure Get Started button stays visible */
+.nav-link.btn-primary {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.nav-link.btn-primary:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    color: white !important;
 }
         
         .nav-link.btn-primary:hover {
@@ -91,138 +144,6 @@
         .cta-section .btn-primary {
             color: white !important;
         }
-
-   /* COMPLETE FIX - REPLACE ALL PREVIOUS CSS WITH THIS */
-
-/* NEW COLOR VARIABLES */
-:root {
-    --primary: #2696FE !important;        
-    --primary-dark: #1E7CE6 !important;   
-    --primary-light: #26C3FE !important;  
-    --accent: #FE6B26 !important;         
-    --secondary: #FFE9A2 !important;      
-}
-
-/* BLUE BUTTONS */
-.nav-link.btn-primary,
-.btn-primary,
-.pricing-card .btn,
-.cta-section .btn-primary {
-    background: linear-gradient(135deg, #2696FE 0%, #1E7CE6 100%) !important;
-    color: white !important;
-    border: none !important;
-}
-
-.nav-link.btn-primary:hover,
-.btn-primary:hover,
-.pricing-card .btn:hover {
-    background: linear-gradient(135deg, #1E7CE6 0%, #1A6BCC 100%) !important;
-    color: white !important;
-}
-
-/* WORKING ANIMATED HERO GRADIENT */
-.hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2696FE, #26C3FE, #FE6B26, #FFE9A2) !important;
-    background-size: 400% 400% !important;
-    animation: heroGradientShift 10s ease-in-out infinite !important;
-    color: white !important;
-    padding: 10rem 2rem 8rem !important;
-    text-align: center !important;
-    position: relative !important;
-    overflow: hidden !important;
-    margin: 0 !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-/* FORCE ANIMATION TO WORK */
-@keyframes heroGradientShift {
-    0% { background-position: 0% 50%; }
-    25% { background-position: 100% 50%; }
-    50% { background-position: 100% 100%; }
-    75% { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* FIX FEATURES SECTION STYLING */
-.features {
-    padding: 8rem 2rem !important;
-    background: var(--background) !important;
-    width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-}
-
-.features h2 {
-    text-align: center !important;
-    font-size: clamp(2rem, 4vw, 3rem) !important;
-    margin-bottom: 4rem !important;
-    color: var(--text-primary) !important;
-    font-weight: 800 !important;
-    letter-spacing: -0.02em !important;
-}
-
-.features-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
-    gap: 3rem !important;
-    max-width: 1200px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
-    box-sizing: border-box !important;
-}
-
-.feature {
-    text-align: center !important;
-    padding: 3rem 2rem !important;
-    border-radius: var(--radius-xl) !important;
-    background: var(--background) !important;
-    border: 1px solid var(--border) !important;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
-    position: relative !important;
-    box-shadow: var(--shadow-sm) !important;
-}
-
-.feature:hover {
-    transform: translateY(-8px) !important;
-    box-shadow: var(--shadow-lg) !important;
-    border-color: var(--primary-light) !important;
-}
-
-.feature h3 {
-    font-size: 1.5rem !important;
-    margin-bottom: 1rem !important;
-    color: var(--text-primary) !important;
-    font-weight: 600 !important;
-}
-
-.feature p {
-    color: var(--text-secondary) !important;
-    line-height: 1.6 !important;
-    margin: 0 !important;
-}
-
-/* PRICING CARD PRICE COLOR */
-.pricing-card .price {
-    color: #FE6B26 !important;
-}
-
-/* BEST VALUE BADGE */
-.badge {
-    background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
-    color: white !important;
-}
-
-/* ENSURE FOOTER STYLING */
-.footer {
-    background: var(--text-primary) !important;
-    color: white !important;
-    text-align: center !important;
-    padding: 3rem 2rem !important;
-    width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box !important;
-}
     </style>
 </head>
 <body>
