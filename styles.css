@@ -5032,6 +5032,8 @@ body {
     color: var(--text-primary);
 }
 
+/* 2. OIL SLICK CTA SECTION - SAME AS HERO */
+
 .cta-section {
     background: 
         linear-gradient(45deg, rgba(138, 43, 226, 0.8) 0%, transparent 50%),
