@@ -91,6 +91,46 @@
         .cta-section .btn-primary {
             color: white !important;
         }
+
+        /* ADD THIS TO YOUR <style> SECTION IN index.html */
+
+/* NEW COLOR VARIABLES */
+:root {
+    --primary: #FE6B26 !important;        /* Orange */
+    --primary-dark: #E55A1F !important;   /* Darker orange */
+    --primary-light: #FFE9A2 !important;  /* Light yellow */
+    --accent: #2696FE !important;         /* Blue */
+    --secondary: #26C3FE !important;      /* Light blue */
+}
+
+/* ORANGE BUTTONS */
+.nav-link.btn-primary,
+.btn-primary,
+.pricing-card .btn,
+.cta-section .btn-primary {
+    background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.nav-link.btn-primary:hover,
+.btn-primary:hover,
+.pricing-card .btn:hover {
+    background: linear-gradient(135deg, #E55A1F 0%, #D14A15 100%) !important;
+    color: white !important;
+}
+
+/* NEW HERO GRADIENT WITH YOUR 4 COLORS */
+.hero {
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2) !important;
+    background-size: 400% 400% !important;
+    animation: heroGradientShift 10s ease-in-out infinite !important;
+}
+
+/* BEST VALUE BADGE - Updated to match */
+.badge {
+    background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
+}
     </style>
 </head>
 <body>
