@@ -92,23 +92,23 @@
             color: white !important;
         }
 
-        /* ADD THIS TO YOUR <style> SECTION IN index.html */
+    /* REPLACE THE PREVIOUS CSS WITH THIS FIXED VERSION */
 
 /* NEW COLOR VARIABLES */
 :root {
-    --primary: #FE6B26 !important;        /* Orange */
-    --primary-dark: #E55A1F !important;   /* Darker orange */
-    --primary-light: #FFE9A2 !important;  /* Light yellow */
-    --accent: #2696FE !important;         /* Blue */
-    --secondary: #26C3FE !important;      /* Light blue */
+    --primary: #FE6B26 !important;        
+    --primary-dark: #E55A1F !important;   
+    --primary-light: #FFE9A2 !important;  
+    --accent: #2696FE !important;         
+    --secondary: #26C3FE !important;      
 }
 
-/* ORANGE BUTTONS */
+/* BLUE BUTTONS */
 .nav-link.btn-primary,
 .btn-primary,
 .pricing-card .btn,
 .cta-section .btn-primary {
-    background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
+    background: linear-gradient(135deg, #2696FE 0%, #1E7CE6 100%) !important;
     color: white !important;
     border: none !important;
 }
@@ -116,20 +116,50 @@
 .nav-link.btn-primary:hover,
 .btn-primary:hover,
 .pricing-card .btn:hover {
-    background: linear-gradient(135deg, #E55A1F 0%, #D14A15 100%) !important;
+    background: linear-gradient(135deg, #1E7CE6 0%, #1A6BCC 100%) !important;
     color: white !important;
 }
 
-/* NEW HERO GRADIENT WITH YOUR 4 COLORS */
+/* FIXED HERO GRADIENT - More colors for smooth animation */
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2) !important;
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2696FE, #26C3FE, #FE6B26, #FFE9A2) !important;
     background-size: 400% 400% !important;
-    animation: heroGradientShift 10s ease-in-out infinite !important;
+    animation: heroGradientShift 15s ease-in-out infinite !important;
+    color: white !important;
+    padding: 10rem 2rem 8rem !important;
+    text-align: center !important;
+    position: relative !important;
+    overflow: hidden !important;
 }
 
-/* BEST VALUE BADGE - Updated to match */
+/* ENSURE ANIMATION WORKS */
+@keyframes heroGradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    25% {
+        background-position: 100% 50%;
+    }
+    50% {
+        background-position: 100% 100%;
+    }
+    75% {
+        background-position: 50% 100%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+/* PRICING CARD PRICE COLOR */
+.pricing-card .price {
+    color: #FE6B26 !important;
+}
+
+/* BEST VALUE BADGE */
 .badge {
     background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
+    color: white !important;
 }
     </style>
 </head>
