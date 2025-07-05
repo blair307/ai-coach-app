@@ -3540,7 +3540,7 @@ html, body {
 }
 
 /* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
-.hero-oil {
+.hero {
     background: 
         linear-gradient(45deg, rgba(38, 150, 254, 0.8) 0%, transparent 50%),
         linear-gradient(-45deg, rgba(38, 195, 254, 0.8) 0%, transparent 50%),
@@ -3549,6 +3549,11 @@ html, body {
         linear-gradient(135deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
     background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
     animation: oilSlick 15s linear infinite;
+    color: white;
+    padding: 10rem 2rem 8rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .navbar {
