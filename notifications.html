@@ -287,221 +287,188 @@
     <script src="sidebar-toggle.js"></script>
     
     <script>
-    // Navigation functions for placeholder notifications
-    function goToCoach() {
-        window.location.href = 'ai-coach.html';
-    }
+        
+<script>
+// Enhanced notifications page that syncs with backend
+const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+let allNotifications = [];
+let currentFilter = 'all';
 
-    function goToCommunity() {
-        window.location.href = 'community.html';
-    }
+// Initialize page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔔 Notifications page loading...');
+    loadNotificationsFromBackend();
+    
+    // Track notification check for dashboard
+    localStorage.setItem('eeh_pending_notification', JSON.stringify({
+        timestamp: new Date().toISOString()
+    }));
+});
 
-    function goToDashboard() {
-        window.location.href = 'dashboard.html';
-    }
-
-    function goToBilling() {
-        window.location.href = 'billing.html';
-    }
-
-    // FIXED: Permanent clearAll function that deletes from backend
-    async function clearAll() {
-        if (!confirm('Are you sure you want to permanently clear all notifications? This action cannot be undone.')) {
+// Load notifications from backend API
+async function loadNotificationsFromBackend() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        if (!token) {
+            console.error('No auth token found');
+            showFallbackNotifications();
             return;
         }
 
-        try {
-            // Show loading state
-            const clearBtn = document.querySelector('button[onclick="clearAll()"]');
-            const originalText = clearBtn.textContent;
-            clearBtn.textContent = 'Clearing...';
-            clearBtn.disabled = true;
-
-            // Get all notification IDs currently visible
-            const notificationItems = document.querySelectorAll('.notification-item');
-            const notificationIds = Array.from(notificationItems).map(item => item.dataset.id);
-
-            // Delete each notification from the backend
-            const deletePromises = notificationIds.map(async (id) => {
-                try {
-                    const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/notifications/${id}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('eeh_token')}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`Failed to delete notification ${id}`);
-                    }
-                    
-                    return { id, success: true };
-                } catch (error) {
-                    console.error(`Error deleting notification ${id}:`, error);
-                    return { id, success: false, error };
-                }
-            });
-
-            // Wait for all deletions to complete
-            const results = await Promise.all(deletePromises);
-            
-            // Check if any deletions failed
-            const failed = results.filter(result => !result.success);
-            if (failed.length > 0) {
-                console.warn(`Failed to delete ${failed.length} notifications:`, failed);
-                alert(`Warning: ${failed.length} notifications could not be deleted. Please try again.`);
+        console.log('📡 Loading notifications from backend...');
+        const response = await fetch(`${API_BASE_URL}/api/notifications`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
+        });
 
-            // Clear the DOM - now it's permanent since backend is updated
-            document.getElementById('notificationsList').innerHTML = '';
-            document.getElementById('emptyState').style.display = 'block';
-
-            // Reset button state
-            clearBtn.textContent = originalText;
-            clearBtn.disabled = false;
-
-            // Show success message
-            if (failed.length === 0) {
-                const successMsg = document.createElement('div');
-                successMsg.style.cssText = `
-                    position: fixed;
-                    top: 20px;
-                    right: 20px;
-                    background: #10b981;
-                    color: white;
-                    padding: 1rem 1.5rem;
-                    border-radius: 8px;
-                    z-index: 10000;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                `;
-                successMsg.textContent = 'All notifications cleared successfully!';
-                document.body.appendChild(successMsg);
-                
-                setTimeout(() => {
-                    if (successMsg.parentNode) {
-                        successMsg.parentNode.removeChild(successMsg);
-                    }
-                }, 3000);
-            }
-
-        } catch (error) {
-            console.error('Error clearing all notifications:', error);
-            alert('An error occurred while clearing notifications. Please try again.');
-            
-            // Reset button state
-            const clearBtn = document.querySelector('button[onclick="clearAll()"]');
-            clearBtn.textContent = 'Clear All';
-            clearBtn.disabled = false;
+        if (response.ok) {
+            allNotifications = await response.json();
+            console.log('✅ Loaded notifications from backend:', allNotifications.length);
+            renderNotifications();
+        } else {
+            console.log('❌ Backend not available, showing fallback notifications');
+            showFallbackNotifications();
         }
+
+    } catch (error) {
+        console.error('❌ Error loading notifications:', error);
+        showFallbackNotifications();
+    }
+}
+
+// Show the existing hardcoded notifications as fallback
+function showFallbackNotifications() {
+    console.log('📋 Using fallback notifications');
+    // Keep the existing hardcoded notifications that are already in the HTML
+    updateFilterButtons();
+}
+
+// Render notifications from backend
+function renderNotifications() {
+    const notificationsList = document.getElementById('notificationsList');
+    const emptyState = document.getElementById('emptyState');
+    
+    if (!notificationsList) return;
+
+    // Filter notifications based on current filter
+    const filteredNotifications = getFilteredNotifications();
+
+    if (filteredNotifications.length === 0) {
+        notificationsList.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
     }
 
-    // Enhanced markAsRead function to work with backend
-    async function markAsRead(element) {
-        const notificationItem = element.closest('.notification-item');
-        const notificationId = notificationItem.dataset.id;
+    emptyState.style.display = 'none';
+    notificationsList.style.display = 'block';
 
-        try {
-            const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/notifications/${notificationId}/read`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('eeh_token')}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    // Render notifications
+    notificationsList.innerHTML = filteredNotifications.map(notification => {
+        const isUnread = !notification.isRead;
+        const timeAgo = formatTimeAgo(notification.createdAt);
+        const iconConfig = getNotificationIcon(notification.type);
 
-            if (response.ok) {
-                // Update DOM
-                notificationItem.classList.remove('unread');
-                notificationItem.classList.add('read');
-                element.remove(); // Remove the "Mark as Read" button
-            } else {
-                throw new Error('Failed to mark as read');
-            }
+        return `
+            <div class="notification-item ${isUnread ? 'unread' : 'read'}" data-type="${notification.type}" data-id="${notification._id}">
+                <div class="notification-icon ${notification.type}">
+                    <div class="icon-text">${iconConfig.text}</div>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-header">
+                        <h3>${escapeHtml(notification.title)}</h3>
+                        <span class="notification-time">${timeAgo}</span>
+                    </div>
+                    <p>${escapeHtml(notification.message || notification.content)}</p>
+                    <div class="notification-actions">
+                        ${getNotificationActions(notification)}
+                        ${isUnread ? `<button class="btn-link" onclick="markAsRead(this)">Mark as Read</button>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
 
-        } catch (error) {
-            console.error('Error marking notification as read:', error);
-            // Fallback to DOM-only update
-            notificationItem.classList.remove('unread');
-            notificationItem.classList.add('read');
-            element.remove();
-        }
+    updateFilterButtons();
+}
+
+// Get filtered notifications based on current filter
+function getFilteredNotifications() {
+    if (currentFilter === 'all') return allNotifications;
+    if (currentFilter === 'unread') return allNotifications.filter(n => !n.isRead);
+    return allNotifications.filter(n => n.type === currentFilter);
+}
+
+// Get notification icon configuration
+function getNotificationIcon(type) {
+    const icons = {
+        coaching: { text: 'AI' },
+        community: { text: 'CM' },
+        system: { text: 'SY' },
+        billing: { text: 'BI' },
+        goal: { text: 'GL' },
+        prompt: { text: 'DP' }
+    };
+    return icons[type] || { text: 'SY' };
+}
+
+// Get appropriate actions for notification type
+function getNotificationActions(notification) {
+    switch (notification.type) {
+        case 'coaching':
+            return '<button class="btn-link" onclick="goToCoach()">View Insights</button>';
+        case 'community':
+            return '<button class="btn-link" onclick="goToCommunity()">Join Conversation</button>';
+        case 'system':
+            return '<button class="btn-link" onclick="goToDashboard()">View Report</button>';
+        case 'billing':
+            return '<button class="btn-link" onclick="goToBilling()">View Details</button>';
+        case 'goal':
+            return '<button class="btn-link" onclick="goToGoals()">View Goals</button>';
+        case 'prompt':
+            return '<button class="btn-link" onclick="goToPrompt()">View Prompt</button>';
+        default:
+            return '<button class="btn-link" onclick="goToDashboard()">View</button>';
     }
+}
 
-    // Enhanced markAllRead function to work with backend
-    async function markAllRead() {
-        try {
-            const unreadNotifications = document.querySelectorAll('.notification-item.unread');
-            const markAllBtn = document.getElementById('markAllReadBtn');
-            
-            if (unreadNotifications.length === 0) {
-                return;
-            }
+// Format time ago
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
 
-            // Show loading state
-            const originalText = markAllBtn.textContent;
-            markAllBtn.textContent = 'Marking...';
-            markAllBtn.disabled = true;
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)}d ago`;
+    return date.toLocaleDateString();
+}
 
-            // Mark each unread notification as read in backend
-            const markPromises = Array.from(unreadNotifications).map(async (item) => {
-                const notificationId = item.dataset.id;
-                try {
-                    const response = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/notifications/${notificationId}/read`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('eeh_token')}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        // Update DOM
-                        item.classList.remove('unread');
-                        item.classList.add('read');
-                        const markAsReadBtn = item.querySelector('button[onclick*="markAsRead"]');
-                        if (markAsReadBtn) {
-                            markAsReadBtn.remove();
-                        }
-                    }
-                    
-                    return { id: notificationId, success: response.ok };
-                } catch (error) {
-                    console.error(`Error marking notification ${notificationId} as read:`, error);
-                    return { id: notificationId, success: false };
-                }
-            });
-
-            await Promise.all(markPromises);
-
-            // Reset button state
-            markAllBtn.textContent = originalText;
-            markAllBtn.disabled = false;
-
-        } catch (error) {
-            console.error('Error marking all as read:', error);
-            // Fallback to DOM-only updates
-            document.querySelectorAll('.notification-item.unread').forEach(item => {
-                item.classList.remove('unread');
-                item.classList.add('read');
-                const markAsReadBtn = item.querySelector('button[onclick*="markAsRead"]');
-                if (markAsReadBtn) {
-                    markAsReadBtn.remove();
-                }
-            });
-            
-            const markAllBtn = document.getElementById('markAllReadBtn');
-            markAllBtn.textContent = 'Mark All Read';
-            markAllBtn.disabled = false;
-        }
+// Update filter button states
+function updateFilterButtons() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    filterButtons.forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Find and activate current filter button
+    const activeButton = document.querySelector(`.filter-btn[onclick*="'${currentFilter}'"]`);
+    if (activeButton) {
+        activeButton.classList.add('active');
     }
+}
 
-    function filterNotifications(type) {
-        // Update active filter
-        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-        event.target.classList.add('active');
-
-        // Show/hide notifications based on type
+// Filter notifications
+function filterNotifications(type) {
+    currentFilter = type;
+    
+    if (allNotifications.length > 0) {
+        // Using backend notifications
+        renderNotifications();
+    } else {
+        // Using hardcoded notifications (fallback)
         const notifications = document.querySelectorAll('.notification-item');
         let visibleCount = 0;
 
@@ -523,34 +490,7 @@
             emptyState.style.display = 'block';
         } else {
             notificationsList.style.display = 'block';
-            emptyState.style.display = 'none';
-        }
-    }
-
-    function updateFilterCounts() {
-        // Do nothing - counts removed from UI
-    }
-
-    function closeSettingsModal() {
-        document.getElementById('settingsModal').style.display = 'none';
-    }
-
-    function saveSettings() {
-        alert('Settings saved!');
-        closeSettingsModal();
-    }
-
-    function logout() {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('eeh_token');
-        localStorage.removeItem('userData');
-        window.location.href = 'login.html';
-    }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        updateFilterCounts();
-    });
+            emptyState.style.d
     </script>
 </body>
 </html>
