@@ -4919,7 +4919,7 @@ body {
     text-decoration: none !important;
 }
 
-/* 2. EXCITING FEATURES SECTION WITH ANIMATIONS */
+/* 1. FIXED FEATURES - NO CONSTANT MOVEMENT OR ICONS */
 
 .features {
     padding: 8rem 2rem;
@@ -4973,6 +4973,9 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 }
 
+/* REMOVED: Constant floating animations */
+/* REMOVED: Icons (::after pseudo-elements) */
+
 .feature::before {
     content: '';
     position: absolute;
@@ -4992,39 +4995,6 @@ body {
     transform: translateY(-12px) scale(1.02);
     box-shadow: 0 20px 40px rgba(38, 150, 254, 0.15);
     border-color: rgba(38, 150, 254, 0.3);
-}
-
-.feature:nth-child(1) {
-    animation: floatUp 6s ease-in-out infinite;
-}
-
-.feature:nth-child(2) {
-    animation: floatUp 6s ease-in-out infinite 1s;
-}
-
-.feature:nth-child(3) {
-    animation: floatUp 6s ease-in-out infinite 2s;
-}
-
-.feature:nth-child(4) {
-    animation: floatUp 6s ease-in-out infinite 3s;
-}
-
-.feature:nth-child(5) {
-    animation: floatUp 6s ease-in-out infinite 4s;
-}
-
-.feature:nth-child(6) {
-    animation: floatUp 6s ease-in-out infinite 5s;
-}
-
-@keyframes floatUp {
-    0%, 100% { 
-        transform: translateY(0px); 
-    }
-    50% { 
-        transform: translateY(-8px); 
-    }
 }
 
 .feature h3 {
@@ -5062,104 +5032,41 @@ body {
     color: var(--text-primary);
 }
 
-/* 3. ADD FLOATING ICONS TO FEATURES */
-
-.feature::after {
-    content: '✨';
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 1.5rem;
-    opacity: 0;
-    transform: scale(0) rotate(180deg);
-    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.feature:hover::after {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-}
-
-/* Customize icons for each feature */
-.feature:nth-child(1)::after { content: '🤖'; }
-.feature:nth-child(2)::after { content: '👥'; }
-.feature:nth-child(3)::after { content: '📈'; }
-.feature:nth-child(4)::after { content: '🎯'; }
-.feature:nth-child(5)::after { content: '🧠'; }
-.feature:nth-child(6)::after { content: '💡'; }
-
-/* 4. PRICING CARDS IMPROVEMENTS */
-
-.pricing-card {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    color: var(--text-primary);
-    padding: 3rem 2rem;
-    border-radius: var(--radius-xl);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    position: relative;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-    box-sizing: border-box;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 400px;
-}
-
-.pricing-card:hover {
-    transform: translateY(-12px) scale(1.02);
-    box-shadow: 0 25px 50px rgba(38, 150, 254, 0.2);
-    border-color: rgba(38, 150, 254, 0.3);
-}
-
-.pricing-card.featured {
-    border: 2px solid #2696FE;
-    transform: scale(1.05);
-    box-shadow: 0 20px 40px rgba(38, 150, 254, 0.15);
-}
-
-.pricing-card.featured:hover {
-    transform: scale(1.05) translateY(-12px);
-}
-
-/* 5. CTA SECTION IMPROVEMENTS */
-
 .cta-section {
-    background: linear-gradient(135deg, #2696FE 0%, #26C3FE 100%) !important;
+    background: 
+        linear-gradient(45deg, rgba(138, 43, 226, 0.8) 0%, transparent 50%),
+        linear-gradient(-45deg, rgba(255, 20, 147, 0.8) 0%, transparent 50%),
+        linear-gradient(90deg, rgba(38, 238, 206, 0.8) 0%, transparent 50%),
+        linear-gradient(0deg, rgba(50, 205, 50, 0.8) 0%, transparent 50%),
+        linear-gradient(135deg, #8A2BE2, #FF1493, #26EECE, #32CD32) !important;
+    background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200% !important;
+    animation: oilSlick 15s linear infinite !important;
     padding: 8rem 2rem !important;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.cta-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
-    animation: ctaFloat 20s ease-in-out infinite;
-}
-
-@keyframes ctaFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    text-align: center !important;
+    position: relative !important;
+    overflow: hidden !important;
+    color: white !important;
 }
 
 .cta-section h2 {
     color: white !important;
-    position: relative;
-    z-index: 2;
+    position: relative !important;
+    z-index: 2 !important;
+    font-size: 2.5rem !important;
+    margin-bottom: 1.5rem !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
 }
 
 .cta-section p {
-    color: rgba(255, 255, 255, 0.9) !important;
-    position: relative;
-    z-index: 2;
+    color: rgba(255, 255, 255, 0.95) !important;
+    position: relative !important;
+    z-index: 2 !important;
+    font-size: 1.25rem !important;
+    margin-bottom: 3rem !important;
+    opacity: 0.95 !important;
+    font-weight: 400 !important;
+    line-height: 1.6 !important;
 }
 
 .cta-section .btn {
@@ -5167,12 +5074,50 @@ body {
     backdrop-filter: blur(20px) !important;
     border: 2px solid rgba(255, 255, 255, 0.3) !important;
     color: white !important;
-    position: relative;
-    z-index: 2;
+    position: relative !important;
+    z-index: 2 !important;
+    padding: 1.25rem 2.5rem !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius) !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
 .cta-section .btn:hover {
     background: rgba(255, 255, 255, 0.3) !important;
     transform: translateY(-3px) scale(1.05) !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+}
+
+/* ENSURE THE OIL SLICK ANIMATION WORKS FOR CTA */
+/* (The @keyframes oilSlick should already exist from your hero section) */
+
+/* 3. MOBILE RESPONSIVE FOR CTA */
+
+@media (max-width: 768px) {
+    .cta-section {
+        padding: 6rem 1rem 4rem !important;
+    }
+    
+    .cta-section h2 {
+        font-size: 2rem !important;
+    }
+    
+    .cta-section p {
+        font-size: 1.1rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    .cta-section .btn {
+        padding: 1rem 2rem !important;
+        font-size: 1rem !important;
+        width: 100% !important;
+        max-width: 300px !important;
+    }
 }
