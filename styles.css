@@ -97,7 +97,7 @@ body {
 }
 
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
     background-size: 400% 400%;
     animation: heroGradientShift 10s ease-in-out infinite;
     color: white;
@@ -3532,7 +3532,7 @@ html, body {
 
 /* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
 .hero {
-    background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
     background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
     color: white;
