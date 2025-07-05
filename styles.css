@@ -98,9 +98,10 @@ body {
 }
 
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2649FE, #26EECE, #FEE926, #2E3A4E);
+    .hero {
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
     background-size: 400% 400%;
-    animation: heroGradientShift 10s ease-in-out infinite;
+    animation: heroGradientShift 12s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
