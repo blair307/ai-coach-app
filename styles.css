@@ -96,10 +96,17 @@ body {
     transform: translateY(-1px);
 }
 
+/* REPLACE your .hero class with this: */
+
 .hero {
-    background: linear-gradient(45deg, #2696FE 0%, #26C3FE 25%, #FE6B26 50%, #FFE9A2 75%, #2696FE 100%);
-    background-size: 300% 300%;
-    animation: silkFlow 12s ease-in-out infinite;
+    background: 
+        linear-gradient(45deg, rgba(138, 43, 226, 0.8) 0%, transparent 50%),
+        linear-gradient(-45deg, rgba(255, 20, 147, 0.8) 0%, transparent 50%),
+        linear-gradient(90deg, rgba(38, 238, 206, 0.8) 0%, transparent 50%),
+        linear-gradient(0deg, rgba(50, 205, 50, 0.8) 0%, transparent 50%),
+        linear-gradient(135deg, #8A2BE2, #FF1493, #26EECE, #32CD32);
+    background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
+    animation: oilSlick 15s linear infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -119,26 +126,24 @@ body {
 }
 
 
-@keyframes silkFlow {
+@keyframes oilSlick {
     0% { 
-        background-position: 0% 0%;
-        transform: rotate(0deg);
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
     }
-    25% { 
-        background-position: 100% 50%;
-        transform: rotate(1deg);
+    20% { 
+        background-position: 50% 30%, 80% 70%, 100% 0%, 0% 100%, 25% 25%;
     }
-    50% { 
-        background-position: 50% 100%;
-        transform: rotate(0deg);
+    40% { 
+        background-position: 100% 70%, 40% 20%, 50% 100%, 100% 50%, 50% 50%;
     }
-    75% { 
-        background-position: 0% 50%;
-        transform: rotate(-1deg);
+    60% { 
+        background-position: 70% 100%, 10% 50%, 0% 50%, 50% 0%, 75% 75%;
+    }
+    80% { 
+        background-position: 20% 60%, 60% 90%, 100% 0%, 0% 100%, 100% 0%;
     }
     100% { 
-        background-position: 0% 0%;
-        transform: rotate(0deg);
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
     }
 }
 
