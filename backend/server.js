@@ -1223,7 +1223,7 @@ async function createDailyPromptNotification() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    console.log(`🌅 Creating daily prompt for ${today.toISOString().split('T')[0]}`);
+    console.log(`Creating daily prompt for ${today.toISOString().split('T')[0]}`);
 
     // STEP 1: ALWAYS create/update today's assignment with a fresh prompt
     // Delete any existing assignment for today first
@@ -1244,7 +1244,7 @@ async function createDailyPromptNotification() {
     });
     
     await assignment.save();
-    console.log(`✅ Created fresh daily prompt assignment: "${nextPrompt.prompt.substring(0, 50)}..."`);
+    console.log(`Created fresh daily prompt assignment: "${nextPrompt.prompt.substring(0, 50)}..."`);
 
     // Update prompt usage stats
     nextPrompt.usageCount += 1;
