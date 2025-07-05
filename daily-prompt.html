@@ -1063,6 +1063,24 @@ async function submitResponse() {
         const data = await response.json();
         console.log('✅ Response submitted successfully');
         
+        // TRACK THE ACTIVITY - Calculate word count
+        const wordCount = responseText.split(/\s+/).length;
+        
+        // Track this activity for the dashboard
+        if (window.trackDailyPrompt) {
+            window.trackDailyPrompt(wordCount, selectedEmotion);
+            console.log('📝 Activity tracked: Daily Prompt completed');
+        } else {
+            // Store for later tracking when dashboard loads
+            localStorage.setItem('eeh_pending_daily_prompt', JSON.stringify({
+                timestamp: new Date().toISOString(),
+                wordCount: wordCount,
+                mood: selectedEmotion,
+                action: data.isUpdate ? 'updated' : 'completed'
+            }));
+            console.log('📝 Activity stored for later tracking');
+        }
+        
         document.getElementById('successMessage').style.display = 'block';
         setTimeout(() => {
             document.getElementById('successMessage').style.display = 'none';
