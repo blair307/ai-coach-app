@@ -118,16 +118,6 @@ body {
     animation: float 20s ease-in-out infinite;
 }
 
-.hero-oil {
-    background: 
-        linear-gradient(45deg, rgba(38, 150, 254, 0.8) 0%, transparent 50%),
-        linear-gradient(-45deg, rgba(38, 195, 254, 0.8) 0%, transparent 50%),
-        linear-gradient(90deg, rgba(254, 107, 38, 0.8) 0%, transparent 50%),
-        linear-gradient(0deg, rgba(255, 233, 162, 0.8) 0%, transparent 50%),
-        linear-gradient(135deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
-    background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
-    animation: oilSlick 15s linear infinite;
-}
 
 @keyframes oilSlick {
     0% { 
@@ -3550,18 +3540,15 @@ html, body {
 }
 
 /* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
-.hero {
-    background: radial-gradient(circle at 20% 50%, #2696FE 20%, transparent 50%),
-                radial-gradient(circle at 80% 20%, #26C3FE 20%, transparent 50%),
-                radial-gradient(circle at 40% 80%, #FE6B26 20%, transparent 50%),
-                radial-gradient(circle at 70% 70%, #FFE9A2 20%, transparent 50%),
-                linear-gradient(135deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
-    animation: organicMorph 15s ease-in-out infinite;
-    color: white;
-    padding: 10rem 2rem 8rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
+.hero-oil {
+    background: 
+        linear-gradient(45deg, rgba(38, 150, 254, 0.8) 0%, transparent 50%),
+        linear-gradient(-45deg, rgba(38, 195, 254, 0.8) 0%, transparent 50%),
+        linear-gradient(90deg, rgba(254, 107, 38, 0.8) 0%, transparent 50%),
+        linear-gradient(0deg, rgba(255, 233, 162, 0.8) 0%, transparent 50%),
+        linear-gradient(135deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
+    background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
+    animation: oilSlick 15s linear infinite;
 }
 
 .navbar {
