@@ -453,14 +453,13 @@
     <script>
 
 
-// Activity tracking and display
 class ActivityTracker {
     constructor() {
         this.storageKey = 'eeh_user_activity';
-        this.maxActivities = 10; // Keep last 10 activities
+        this.maxActivities = 15; // Keep more activities for better display
         this.activities = this.loadActivities();
         this.startTracking();
-        console.log('✅ Activity Tracker initialized');
+        console.log('✅ Enhanced Activity Tracker initialized');
     }
 
     loadActivities() {
@@ -485,6 +484,11 @@ class ActivityTracker {
     }
 
     addActivity(type, description, details = {}) {
+        // SKIP dashboard visits - we don't want these cluttering the activity feed
+        if (type === 'dashboard') {
+            return;
+        }
+
         const activity = {
             id: Date.now() + Math.random().toString(36).substr(2, 9),
             type: type,
@@ -493,11 +497,20 @@ class ActivityTracker {
             details: details
         };
 
-        this.activities.push(activity);
-        this.saveActivities();
-        this.updateActivityDisplay();
-        
-        console.log('📝 Activity added:', activity);
+        // Avoid duplicate activities within 5 minutes
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+        const isDuplicate = this.activities.some(existing => 
+            existing.type === type && 
+            existing.description === description && 
+            existing.timestamp > fiveMinutesAgo
+        );
+
+        if (!isDuplicate) {
+            this.activities.push(activity);
+            this.saveActivities();
+            this.updateActivityDisplay();
+            console.log('📝 Activity added:', activity);
+        }
     }
 
     formatTimeAgo(timestamp) {
@@ -517,20 +530,42 @@ class ActivityTracker {
         if (!activityList) return;
 
         try {
-            // Get recent activities (last 5) plus some real-time data
-            const recentActivities = [...this.activities].reverse().slice(0, 4);
+            // Get recent activities (exclude dashboard visits)
+            const recentActivities = [...this.activities]
+                .filter(activity => activity.type !== 'dashboard')
+                .reverse()
+                .slice(0, 6);
             
-            // Add current session activity
-            const currentActivity = {
-                type: 'dashboard',
-                description: 'Visited dashboard',
-                timestamp: new Date().toISOString()
-            };
+            // Add some real-time data from API if available
+            await this.checkForRecentApiActivity();
 
-            // Combine activities
-            const displayActivities = [currentActivity, ...recentActivities];
+            // Re-filter after API check
+            const displayActivities = [...this.activities]
+                .filter(activity => activity.type !== 'dashboard')
+                .reverse()
+                .slice(0, 5);
 
             activityList.innerHTML = '';
+
+            if (displayActivities.length === 0) {
+                // Show getting started message instead of empty state
+                activityList.innerHTML = `
+                    <div class="activity-item" style="text-align: center; padding: 2rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface);">
+                        <div style="color: var(--text-muted); margin-bottom: 1rem;">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block; margin-bottom: 1rem;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary);">Start Your Journey!</p>
+                        <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.4;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
+                        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                            <a href="daily-prompt.html" class="btn btn-primary btn-small">Daily Prompt</a>
+                            <a href="ai-coach.html" class="btn btn-secondary btn-small">AI Coach</a>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
 
             for (const activity of displayActivities) {
                 const activityElement = document.createElement('div');
@@ -576,8 +611,8 @@ class ActivityTracker {
             activityList.innerHTML = `
                 <div class="activity-item">
                     <div class="activity-content">
-                        <p>Visited dashboard</p>
-                        <small>Just now</small>
+                        <p>Welcome to your dashboard!</p>
+                        <small>Get started by exploring the features</small>
                     </div>
                 </div>
             `;
@@ -589,20 +624,44 @@ class ActivityTracker {
             case 'coaching':
                 return {
                     icon: 'AI',
-                    description: 'Had coaching session',
+                    description: activity.details?.sessionLength ? 
+                        `Had ${activity.details.sessionLength} coaching session` : 
+                        'Had coaching session',
                     linkUrl: 'ai-coach.html'
                 };
             case 'community':
                 return {
                     icon: 'CM',
-                    description: activity.details?.room ? `Posted in ${activity.details.room}` : 'Posted in community',
+                    description: activity.details?.room ? 
+                        `Posted in ${activity.details.room}` : 
+                        'Posted in community',
                     linkUrl: 'community.html'
                 };
             case 'goals':
                 return {
                     icon: 'GL',
-                    description: activity.details?.action === 'created' ? 'Created new goal' : 'Updated goals',
+                    description: activity.details?.action === 'created' ? 
+                        'Created new goal' : 
+                        activity.details?.action === 'completed' ? 
+                        'Completed daily goals' : 
+                        'Updated goals',
                     linkUrl: 'goals.html'
+                };
+            case 'daily-prompt':
+                return {
+                    icon: 'DP',
+                    description: activity.details?.wordCount ? 
+                        `Completed daily prompt (${activity.details.wordCount} words)` :
+                        'Completed daily prompt',
+                    linkUrl: 'daily-prompt.html'
+                };
+            case 'daily-tracker':
+                return {
+                    icon: 'DT',
+                    description: activity.details?.completedTasks ? 
+                        `Completed ${activity.details.completedTasks} daily tasks` :
+                        'Updated daily tracker',
+                    linkUrl: 'daily-tracker.html'
                 };
             case 'notification':
                 return {
@@ -616,11 +675,16 @@ class ActivityTracker {
                     description: 'Viewed billing',
                     linkUrl: 'billing.html'
                 };
-            case 'dashboard':
+            case 'settings':
+                return {
+                    icon: 'ST',
+                    description: 'Updated profile settings',
+                    linkUrl: 'settings.html'
+                };
             default:
                 return {
-                    icon: 'DB',
-                    description: activity.description || 'Visited dashboard',
+                    icon: '?',
+                    description: activity.description || 'Unknown activity',
                     linkUrl: null
                 };
         }
@@ -631,16 +695,18 @@ class ActivityTracker {
             coaching: '#6366f1',
             community: '#10b981',
             goals: '#f59e0b',
+            'daily-prompt': '#8b5cf6',
+            'daily-tracker': '#06b6d4',
             notification: '#8b5cf6',
             billing: '#ef4444',
-            dashboard: '#64748b'
+            settings: '#64748b'
         };
-        return colors[type] || colors.dashboard;
+        return colors[type] || colors.settings;
     }
 
-    // Track specific activities
-    trackCoachingSession() {
-        this.addActivity('coaching', 'Had coaching session');
+    // Enhanced activity tracking methods
+    trackCoachingSession(sessionLength = 'short') {
+        this.addActivity('coaching', 'Had coaching session', { sessionLength });
     }
 
     trackCommunityPost(roomName = '') {
@@ -651,6 +717,21 @@ class ActivityTracker {
         this.addActivity('goals', 'Updated goals', { action });
     }
 
+    trackGoalCompletion(completedCount = 1) {
+        this.addActivity('goals', 'Completed daily goals', { action: 'completed', completedTasks: completedCount });
+    }
+
+    trackDailyPrompt(wordCount = null, mood = null) {
+        const details = {};
+        if (wordCount) details.wordCount = wordCount;
+        if (mood) details.mood = mood;
+        this.addActivity('daily-prompt', 'Completed daily prompt', details);
+    }
+
+    trackDailyTracker(completedTasks = 1) {
+        this.addActivity('daily-tracker', 'Updated daily tracker', { completedTasks });
+    }
+
     trackNotificationCheck() {
         this.addActivity('notification', 'Checked notifications');
     }
@@ -659,9 +740,87 @@ class ActivityTracker {
         this.addActivity('billing', 'Viewed billing');
     }
 
+    trackSettingsUpdate() {
+        this.addActivity('settings', 'Updated profile settings');
+    }
+
+    async checkForRecentApiActivity() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return;
+
+            const lastCheck = localStorage.getItem('eeh_last_activity_check');
+            const lastCheckTime = lastCheck ? new Date(lastCheck) : new Date(Date.now() - 24 * 60 * 60 * 1000);
+            
+            // Check for recent coaching activity
+            try {
+                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: AbortSignal.timeout(3000)
+                });
+                
+                if (response.ok) {
+                    const chatData = await response.json();
+                    const messages = chatData.messages || [];
+                    
+                    // Find recent user messages
+                    const recentUserMessages = messages.filter(msg => 
+                        msg.role === 'user' && 
+                        new Date(msg.timestamp || msg.createdAt) > lastCheckTime
+                    );
+                    
+                    if (recentUserMessages.length > 0) {
+                        const sessionLength = recentUserMessages.length > 5 ? 'long' : 
+                                            recentUserMessages.length > 2 ? 'medium' : 'short';
+                        this.addActivity('coaching', 'Had coaching session', { sessionLength });
+                    }
+                }
+            } catch (error) {
+                console.log('Could not check coaching activity:', error.message);
+            }
+
+            // Check for recent daily prompt responses
+            try {
+                const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/daily-prompt/history?limit=1', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    signal: AbortSignal.timeout(3000)
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const responses = data.responses || [];
+                    
+                    if (responses.length > 0) {
+                        const latestResponse = responses[0];
+                        const responseTime = new Date(latestResponse.createdAt || latestResponse.updatedAt);
+                        
+                        if (responseTime > lastCheckTime) {
+                            this.addActivity('daily-prompt', 'Completed daily prompt', {
+                                wordCount: latestResponse.wordCount,
+                                mood: latestResponse.mood
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('Could not check daily prompt activity:', error.message);
+            }
+
+            localStorage.setItem('eeh_last_activity_check', new Date().toISOString());
+
+        } catch (error) {
+            console.error('Error checking external activities:', error);
+        }
+    }
+
     startTracking() {
-        // Track page visits
-        this.addActivity('dashboard', 'Visited dashboard');
+        // DO NOT add dashboard visit activity here
         
         // Update display immediately
         setTimeout(() => this.updateActivityDisplay(), 1000);
@@ -671,124 +830,79 @@ class ActivityTracker {
     }
 
     async checkForExternalActivities() {
-        try {
-            // Check if user has been active in coaching
-            const lastCoachingCheck = localStorage.getItem('eeh_last_coaching_check');
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
-            
-            if (token) {
-                // Check for recent coaching activity
-                try {
-                    const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    
-                    if (response.ok) {
-                        const chatData = await response.json();
-                        const messages = chatData.messages || [];
-                        
-                        if (messages.length > 0) {
-                            const lastMessage = messages[messages.length - 1];
-                            const lastMessageTime = new Date(lastMessage.timestamp || lastMessage.createdAt);
-                            const lastCheck = lastCoachingCheck ? new Date(lastCoachingCheck) : new Date(0);
-                            
-                            // If there's a new message since last check, add coaching activity
-                            if (lastMessageTime > lastCheck && lastMessage.role === 'user') {
-                                this.addActivity('coaching', 'Had coaching session');
-                            }
-                        }
-                        
-                        localStorage.setItem('eeh_last_coaching_check', new Date().toISOString());
-                    }
-                } catch (error) {
-                    console.log('Could not check coaching activity:', error.message);
-                }
+        await this.checkForRecentApiActivity();
+        
+        // Check for pending activities from other pages
+        this.checkForPendingActivities();
+        
+        // Update display after checking
+        this.updateActivityDisplay();
+    }
 
-                // Check for community activity
+    checkForPendingActivities() {
+        console.log('🔍 Checking for pending activities from other pages...');
+        
+        const activityTypes = [
+            'eeh_pending_daily_prompt',
+            'eeh_pending_coaching', 
+            'eeh_pending_goals',
+            'eeh_pending_community',
+            'eeh_pending_daily_tracker',
+            'eeh_pending_notification',
+            'eeh_pending_settings',
+            'eeh_pending_billing'
+        ];
+        
+        activityTypes.forEach(activityKey => {
+            const pendingData = localStorage.getItem(activityKey);
+            if (pendingData) {
                 try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    const userId = payload.userId;
+                    const data = JSON.parse(pendingData);
+                    const activityTime = new Date(data.timestamp);
+                    const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
                     
-                    const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    
-                    if (roomsResponse.ok) {
-                        const rooms = await roomsResponse.json();
-                        const lastCommunityCheck = localStorage.getItem('eeh_last_community_check');
-                        const lastCheck = lastCommunityCheck ? new Date(lastCommunityCheck) : new Date(0);
-                        
-                        // Check first room for recent user messages
-                        if (rooms.length > 0) {
-                            const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${rooms[0]._id}/messages`, {
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                signal: AbortSignal.timeout(3000)
-                            });
-                            
-                            if (messagesResponse.ok) {
-                                const messages = await messagesResponse.json();
-                                const userMessages = messages.filter(msg => msg.userId === userId);
-                                
-                                if (userMessages.length > 0) {
-                                    const lastUserMessage = userMessages[userMessages.length - 1];
-                                    const messageTime = new Date(lastUserMessage.createdAt || lastUserMessage.timestamp);
-                                    
-                                    if (messageTime > lastCheck) {
-                                        this.addActivity('community', 'Posted in community', { room: rooms[0].name });
-                                    }
+                    // Only process if it's from the last hour
+                    if (activityTime > hourAgo) {
+                        switch(activityKey) {
+                            case 'eeh_pending_daily_prompt':
+                                this.trackDailyPrompt(data.wordCount, data.mood);
+                                break;
+                            case 'eeh_pending_coaching':
+                                this.trackCoachingSession(data.sessionLength || 'medium');
+                                break;
+                            case 'eeh_pending_goals':
+                                if (data.action === 'completed') {
+                                    this.trackGoalCompletion(data.completedCount || 1);
+                                } else {
+                                    this.trackGoalUpdate(data.action || 'updated');
                                 }
-                            }
+                                break;
+                            case 'eeh_pending_community':
+                                this.trackCommunityPost(data.room || '');
+                                break;
+                            case 'eeh_pending_daily_tracker':
+                                this.trackDailyTracker(data.completedTasks || 1);
+                                break;
+                            case 'eeh_pending_notification':
+                                this.trackNotificationCheck();
+                                break;
+                            case 'eeh_pending_settings':
+                                this.trackSettingsUpdate();
+                                break;
+                            case 'eeh_pending_billing':
+                                this.trackBillingView();
+                                break;
                         }
                         
-                        localStorage.setItem('eeh_last_community_check', new Date().toISOString());
+                        console.log(`✅ Processed pending activity: ${activityKey}`);
+                        localStorage.removeItem(activityKey);
                     }
                 } catch (error) {
-                    console.log('Could not check community activity:', error.message);
-                }
-
-                // Check for goal updates
-                try {
-                    const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        signal: AbortSignal.timeout(5000)
-                    });
-                    
-                    if (response.ok) {
-                        const goals = await response.json();
-                        const lastGoalsCheck = localStorage.getItem('eeh_last_goals_check');
-                        const storedGoalsCount = localStorage.getItem('eeh_goals_count');
-                        
-                        // If goal count changed, user updated goals
-                        if (storedGoalsCount && parseInt(storedGoalsCount) !== goals.length) {
-                            const action = goals.length > parseInt(storedGoalsCount) ? 'created' : 'updated';
-                            this.addActivity('goals', action === 'created' ? 'Created new goal' : 'Updated goals', { action });
-                        }
-                        
-                        localStorage.setItem('eeh_goals_count', goals.length.toString());
-                        localStorage.setItem('eeh_last_goals_check', new Date().toISOString());
-                    }
-                } catch (error) {
-                    console.log('Could not check goals activity:', error.message);
+                    console.error(`Error processing ${activityKey}:`, error);
+                    localStorage.removeItem(activityKey);
                 }
             }
-
-        } catch (error) {
-            console.error('Error checking external activities:', error);
-        }
+        });
     }
 }
 
