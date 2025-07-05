@@ -3423,7 +3423,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(-45deg, #667eea, #764ba2, #667eea, #764ba2);
+    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
     background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
     padding: 2rem;
