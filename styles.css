@@ -5090,3 +5090,60 @@ body {
         max-width: 300px !important;
     }
 }
+
+/* Target the exact button by its onclick function */
+button[onclick*="startCoachingSession"],
+.btn[onclick*="startCoachingSession"] {
+    background: linear-gradient(135deg, var(--hot-pink) 0%, var(--hot-pink-dark) 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 1rem 2rem !important;
+    border-radius: var(--radius) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    font-family: inherit !important;
+    font-size: 0.95rem !important;
+    letter-spacing: 0.01em !important;
+    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Hover effects for coaching button */
+button[onclick*="startCoachingSession"]:hover,
+.btn[onclick*="startCoachingSession"]:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 30px rgba(255, 20, 147, 0.4) !important;
+    background: linear-gradient(135deg, var(--hot-pink-dark) 0%, #C41E3A 100%) !important;
+    color: white !important;
+}
+
+/* Shimmer effect for coaching button */
+button[onclick*="startCoachingSession"]::before,
+.btn[onclick*="startCoachingSession"]::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: -100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent) !important;
+    transition: left 0.5s !important;
+}
+
+button[onclick*="startCoachingSession"]:hover::before,
+.btn[onclick*="startCoachingSession"]:hover::before {
+    left: 100% !important;
+}
+
+/* Active/pressed state */
+button[onclick*="startCoachingSession"]:active,
+.btn[onclick*="startCoachingSession"]:active {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.35) !important;
+}
