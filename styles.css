@@ -4846,3 +4846,333 @@ body {
     opacity: 1 !important;
     visibility: visible !important;
 }
+
+/* 1. UPDATE BUTTONS TO YOUR LOGO BLUE (#2696FE) */
+
+/* Find your button styles and replace with these: */
+
+.btn {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+    font-size: 0.95rem;
+    letter-spacing: 0.01em;
+    box-shadow: 0 4px 15px rgba(38, 150, 254, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.4);
+    background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+}
+
+.nav-link.btn-primary {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+}
+
+.nav-link.btn-primary:hover {
+    background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.4) !important;
+    text-decoration: none !important;
+}
+
+/* 2. EXCITING FEATURES SECTION WITH ANIMATIONS */
+
+.features {
+    padding: 8rem 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.features::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23cbd5e1" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+}
+
+.features h2 {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    margin-bottom: 4rem;
+    color: var(--text-primary);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 2;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 3rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 2;
+}
+
+.feature {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-radius: var(--radius-xl);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.feature::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(38, 150, 254, 0.1), transparent);
+    transition: left 0.6s ease;
+}
+
+.feature:hover::before {
+    left: 100%;
+}
+
+.feature:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(38, 150, 254, 0.15);
+    border-color: rgba(38, 150, 254, 0.3);
+}
+
+.feature:nth-child(1) {
+    animation: floatUp 6s ease-in-out infinite;
+}
+
+.feature:nth-child(2) {
+    animation: floatUp 6s ease-in-out infinite 1s;
+}
+
+.feature:nth-child(3) {
+    animation: floatUp 6s ease-in-out infinite 2s;
+}
+
+.feature:nth-child(4) {
+    animation: floatUp 6s ease-in-out infinite 3s;
+}
+
+.feature:nth-child(5) {
+    animation: floatUp 6s ease-in-out infinite 4s;
+}
+
+.feature:nth-child(6) {
+    animation: floatUp 6s ease-in-out infinite 5s;
+}
+
+@keyframes floatUp {
+    0%, 100% { 
+        transform: translateY(0px); 
+    }
+    50% { 
+        transform: translateY(-8px); 
+    }
+}
+
+.feature h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+    position: relative;
+}
+
+.feature h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2696FE, #26C3FE);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+.feature:hover h3::after {
+    width: 60px;
+}
+
+.feature p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    transition: color 0.3s ease;
+}
+
+.feature:hover p {
+    color: var(--text-primary);
+}
+
+/* 3. ADD FLOATING ICONS TO FEATURES */
+
+.feature::after {
+    content: '✨';
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 1.5rem;
+    opacity: 0;
+    transform: scale(0) rotate(180deg);
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.feature:hover::after {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+}
+
+/* Customize icons for each feature */
+.feature:nth-child(1)::after { content: '🤖'; }
+.feature:nth-child(2)::after { content: '👥'; }
+.feature:nth-child(3)::after { content: '📈'; }
+.feature:nth-child(4)::after { content: '🎯'; }
+.feature:nth-child(5)::after { content: '🧠'; }
+.feature:nth-child(6)::after { content: '💡'; }
+
+/* 4. PRICING CARDS IMPROVEMENTS */
+
+.pricing-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    color: var(--text-primary);
+    padding: 3rem 2rem;
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 400px;
+}
+
+.pricing-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(38, 150, 254, 0.2);
+    border-color: rgba(38, 150, 254, 0.3);
+}
+
+.pricing-card.featured {
+    border: 2px solid #2696FE;
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(38, 150, 254, 0.15);
+}
+
+.pricing-card.featured:hover {
+    transform: scale(1.05) translateY(-12px);
+}
+
+/* 5. CTA SECTION IMPROVEMENTS */
+
+.cta-section {
+    background: linear-gradient(135deg, #2696FE 0%, #26C3FE 100%) !important;
+    padding: 8rem 2rem !important;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23dots)"/></svg>');
+    animation: ctaFloat 20s ease-in-out infinite;
+}
+
+@keyframes ctaFloat {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.cta-section h2 {
+    color: white !important;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-section p {
+    color: rgba(255, 255, 255, 0.9) !important;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-section .btn {
+    background: rgba(255, 255, 255, 0.2) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    position: relative;
+    z-index: 2;
+}
+
+.cta-section .btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2) !important;
+}
