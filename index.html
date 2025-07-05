@@ -92,15 +92,15 @@
             color: white !important;
         }
 
-    /* REPLACE THE PREVIOUS CSS WITH THIS FIXED VERSION */
+   /* COMPLETE FIX - REPLACE ALL PREVIOUS CSS WITH THIS */
 
 /* NEW COLOR VARIABLES */
 :root {
-    --primary: #FE6B26 !important;        
-    --primary-dark: #E55A1F !important;   
-    --primary-light: #FFE9A2 !important;  
-    --accent: #2696FE !important;         
-    --secondary: #26C3FE !important;      
+    --primary: #2696FE !important;        
+    --primary-dark: #1E7CE6 !important;   
+    --primary-light: #26C3FE !important;  
+    --accent: #FE6B26 !important;         
+    --secondary: #FFE9A2 !important;      
 }
 
 /* BLUE BUTTONS */
@@ -120,35 +120,86 @@
     color: white !important;
 }
 
-/* FIXED HERO GRADIENT - More colors for smooth animation */
+/* WORKING ANIMATED HERO GRADIENT */
 .hero {
     background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2, #2696FE, #26C3FE, #FE6B26, #FFE9A2) !important;
     background-size: 400% 400% !important;
-    animation: heroGradientShift 15s ease-in-out infinite !important;
+    animation: heroGradientShift 10s ease-in-out infinite !important;
     color: white !important;
     padding: 10rem 2rem 8rem !important;
     text-align: center !important;
     position: relative !important;
     overflow: hidden !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
 }
 
-/* ENSURE ANIMATION WORKS */
+/* FORCE ANIMATION TO WORK */
 @keyframes heroGradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    25% {
-        background-position: 100% 50%;
-    }
-    50% {
-        background-position: 100% 100%;
-    }
-    75% {
-        background-position: 50% 100%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+    0% { background-position: 0% 50%; }
+    25% { background-position: 100% 50%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 50% 100%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* FIX FEATURES SECTION STYLING */
+.features {
+    padding: 8rem 2rem !important;
+    background: var(--background) !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+}
+
+.features h2 {
+    text-align: center !important;
+    font-size: clamp(2rem, 4vw, 3rem) !important;
+    margin-bottom: 4rem !important;
+    color: var(--text-primary) !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.features-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+    gap: 3rem !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+.feature {
+    text-align: center !important;
+    padding: 3rem 2rem !important;
+    border-radius: var(--radius-xl) !important;
+    background: var(--background) !important;
+    border: 1px solid var(--border) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.feature:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: var(--shadow-lg) !important;
+    border-color: var(--primary-light) !important;
+}
+
+.feature h3 {
+    font-size: 1.5rem !important;
+    margin-bottom: 1rem !important;
+    color: var(--text-primary) !important;
+    font-weight: 600 !important;
+}
+
+.feature p {
+    color: var(--text-secondary) !important;
+    line-height: 1.6 !important;
+    margin: 0 !important;
 }
 
 /* PRICING CARD PRICE COLOR */
@@ -160,6 +211,17 @@
 .badge {
     background: linear-gradient(135deg, #FE6B26 0%, #E55A1F 100%) !important;
     color: white !important;
+}
+
+/* ENSURE FOOTER STYLING */
+.footer {
+    background: var(--text-primary) !important;
+    color: white !important;
+    text-align: center !important;
+    padding: 3rem 2rem !important;
+    width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
 }
     </style>
 </head>
