@@ -7,9 +7,28 @@
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Fix sign up button white text */
-        .nav-link.btn-primary {
-            color: white !important;
-        }
+       /* Fix sign up button - make it blue to match logo */
+.nav-link.btn-primary {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
+    color: white !important;
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
+}
+
+.nav-link.btn-primary:hover {
+    background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.4) !important;
+    text-decoration: none !important;
+}
 
 /* LOGO STYLING */
 .logo-image {
@@ -121,19 +140,26 @@
 
 /* Ensure Get Started button stays visible */
 .nav-link.btn-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%) !important;
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
     color: white !important;
     border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.3s ease !important;
 }
 
 .nav-link.btn-primary:hover {
-    background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
+    background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
     color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.4) !important;
+    text-decoration: none !important;
 }
-        
-        .nav-link.btn-primary:hover {
-            color: white !important;
-        }
         
         /* Fix Best Value badge positioning */
         .pricing-card.featured {
