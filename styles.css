@@ -5032,7 +5032,7 @@ body {
     color: var(--text-primary);
 }
 
-/* 2. OIL SLICK CTA SECTION - SAME AS HERO */
+/* FORCE CTA SECTION TO MOVE - Higher Specificity */
 
 .cta-section {
     background: 
@@ -5042,12 +5042,33 @@ body {
         linear-gradient(0deg, rgba(50, 205, 50, 0.8) 0%, transparent 50%),
         linear-gradient(135deg, #8A2BE2, #FF1493, #26EECE, #32CD32) !important;
     background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200% !important;
-    animation: oilSlick 15s linear infinite !important;
+    animation: ctaOilSlick 15s linear infinite !important;
     padding: 8rem 2rem !important;
     text-align: center !important;
     position: relative !important;
     overflow: hidden !important;
     color: white !important;
+}
+
+@keyframes ctaOilSlick {
+    0% { 
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
+    }
+    20% { 
+        background-position: 50% 30%, 80% 70%, 100% 0%, 0% 100%, 25% 25%;
+    }
+    40% { 
+        background-position: 100% 70%, 40% 20%, 50% 100%, 100% 50%, 50% 50%;
+    }
+    60% { 
+        background-position: 70% 100%, 10% 50%, 0% 50%, 50% 0%, 75% 75%;
+    }
+    80% { 
+        background-position: 20% 60%, 60% 90%, 100% 0%, 0% 100%, 100% 0%;
+    }
+    100% { 
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
+    }
 }
 
 .cta-section h2 {
