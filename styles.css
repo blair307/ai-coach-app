@@ -124,11 +124,27 @@ body {
 }
 
 @keyframes heroGradientShift {
-    0% { background-position: 0% 50%; }
-    25% { background-position: 100% 50%; }
-    50% { background-position: 100% 100%; }
-    75% { background-position: 50% 100%; }
-    100% { background-position: 0% 50%; }
+    0% {
+        background: linear-gradient(-45deg, #2696FE 0%, #26C3FE 25%, #FE6B26 75%, #FFE9A2 100%);
+    }
+    16% {
+        background: linear-gradient(45deg, #26C3FE 0%, #FE6B26 30%, #FFE9A2 60%, #2696FE 100%);
+    }
+    33% {
+        background: linear-gradient(135deg, #FE6B26 0%, #FFE9A2 20%, #2696FE 70%, #26C3FE 100%);
+    }
+    50% {
+        background: linear-gradient(-135deg, #FFE9A2 0%, #2696FE 35%, #26C3FE 65%, #FE6B26 100%);
+    }
+    66% {
+        background: linear-gradient(90deg, #2696FE 0%, #FFE9A2 40%, #FE6B26 60%, #26C3FE 100%);
+    }
+    83% {
+        background: linear-gradient(-90deg, #26C3FE 0%, #2696FE 30%, #FFE9A2 80%, #FE6B26 100%);
+    }
+    100% {
+        background: linear-gradient(-45deg, #2696FE 0%, #26C3FE 25%, #FE6B26 75%, #FFE9A2 100%);
+    }
 }
 
 .hero-content {
@@ -3533,7 +3549,6 @@ html, body {
 /* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
 .hero {
 background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
-    background-size: 400% 400%;
     animation: gradientShift 15s ease infinite;
     color: white;
     padding: 10rem 2rem 8rem;
