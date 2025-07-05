@@ -322,14 +322,21 @@ async function loadNotificationsFromBackend() {
             }
         });
 
-        if (response.ok) {
-            allNotifications = await response.json();
-            console.log('✅ Loaded notifications from backend:', allNotifications.length);
-            renderNotifications();
-        } else {
-            console.log('❌ Backend not available, showing fallback notifications');
-            showFallbackNotifications();
-        }
+if (response.ok) {
+    allNotifications = await response.json();
+    console.log('✅ Loaded notifications from backend:', allNotifications.length);
+    
+    if (allNotifications.length > 0) {
+        console.log('🔄 Replacing hardcoded notifications with backend notifications');
+        renderNotifications();
+    } else {
+        console.log('📋 Backend returned empty - keeping hardcoded notifications');
+        showFallbackNotifications();
+    }
+} else {
+    console.log('❌ Backend not available, showing fallback notifications');
+    showFallbackNotifications();
+}
 
     } catch (error) {
         console.error('❌ Error loading notifications:', error);
@@ -341,6 +348,17 @@ async function loadNotificationsFromBackend() {
 function showFallbackNotifications() {
     console.log('📋 Using fallback notifications');
     // Keep the existing hardcoded notifications that are already in the HTML
+    const notificationsList = document.getElementById('notificationsList');
+    const emptyState = document.getElementById('emptyState');
+    
+    // Make sure hardcoded notifications are visible
+    if (notificationsList) {
+        notificationsList.style.display = 'block';
+    }
+    if (emptyState) {
+        emptyState.style.display = 'none';
+    }
+    
     updateFilterButtons();
 }
 
