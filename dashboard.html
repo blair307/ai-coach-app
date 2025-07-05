@@ -1833,7 +1833,7 @@ function displayRealNotifications(notifications) {
         notificationElement.className = `notification-item ${notification.isRead ? 'read' : 'unread'}`;
         
         // Get icon based on type
-        let iconText = 'SY';
+        let iconText = 'DP';
         let iconClass = 'system';
         
         switch(notification.type) {
@@ -1850,7 +1850,7 @@ function displayRealNotifications(notifications) {
                 iconClass = 'billing';
                 break;
             default:
-                iconText = 'SY';
+                iconText = 'DP';
                 iconClass = 'system';
         }
         
