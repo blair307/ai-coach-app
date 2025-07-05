@@ -762,6 +762,14 @@ if (newCompleted) {
     goal.streak = (goal.streak || 0) + 1;
     goal.lastCompletedDate = new Date().toISOString();
     showSuccessToast(`${goal.area} goal completed! 🎉`);
+    
+    // Track daily task completion for dashboard
+    const completedTasksCount = Object.values(dailyProgress[today]).filter(completed => completed === true).length;
+    localStorage.setItem('eeh_pending_daily_tracker', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        completedTasks: completedTasksCount,
+        area: goal.area
+    }));
 } else {
     goal.streak = Math.max(0, (goal.streak || 0) - 1);
     // Don't update lastCompletedDate when uncompleting - keep the actual last completion
@@ -780,7 +788,6 @@ if (newCompleted) {
 
     console.log(`📝 Task ${goalId} ${newCompleted ? 'completed' : 'uncompleted'}`);
 }
-
        // Save progress to server - NEW
 async function saveProgressToServer(goalId, completed, area, date) {
     try {
