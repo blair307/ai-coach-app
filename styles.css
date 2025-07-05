@@ -97,9 +97,9 @@ body {
 }
 
 .hero {
-    background: linear-gradient(-45deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
-    background-size: 400% 400%;
-    animation: heroGradientShift 10s ease-in-out infinite;
+    background: linear-gradient(45deg, #2696FE 0%, #26C3FE 25%, #FE6B26 50%, #FFE9A2 75%, #2696FE 100%);
+    background-size: 300% 300%;
+    animation: silkFlow 12s ease-in-out infinite;
     color: white;
     padding: 10rem 2rem 8rem;
     text-align: center;
@@ -118,53 +118,35 @@ body {
     animation: float 20s ease-in-out infinite;
 }
 
-@keyframes float {
-    0%, 100% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-20px) rotate(1deg); }
+.hero-oil {
+    background: 
+        linear-gradient(45deg, rgba(38, 150, 254, 0.8) 0%, transparent 50%),
+        linear-gradient(-45deg, rgba(38, 195, 254, 0.8) 0%, transparent 50%),
+        linear-gradient(90deg, rgba(254, 107, 38, 0.8) 0%, transparent 50%),
+        linear-gradient(0deg, rgba(255, 233, 162, 0.8) 0%, transparent 50%),
+        linear-gradient(135deg, #2696FE, #26C3FE, #FE6B26, #FFE9A2);
+    background-size: 400% 400%, 300% 300%, 500% 500%, 350% 350%, 200% 200%;
+    animation: oilSlick 15s linear infinite;
 }
 
-@keyframes organicMorph {
-    0% {
-        background: radial-gradient(circle at 20% 50%, #2696FE 25%, transparent 55%),
-                    radial-gradient(circle at 80% 20%, #26C3FE 25%, transparent 55%),
-                    radial-gradient(circle at 40% 80%, #FE6B26 25%, transparent 55%),
-                    radial-gradient(circle at 70% 70%, #FFE9A2 25%, transparent 55%),
-                    linear-gradient(135deg, #2696FE, #26C3FE);
+@keyframes oilSlick {
+    0% { 
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
     }
-    20% {
-        background: radial-gradient(circle at 60% 30%, #26C3FE 30%, transparent 60%),
-                    radial-gradient(circle at 30% 70%, #FE6B26 35%, transparent 65%),
-                    radial-gradient(circle at 90% 40%, #FFE9A2 20%, transparent 50%),
-                    radial-gradient(circle at 10% 10%, #2696FE 40%, transparent 70%),
-                    linear-gradient(45deg, #FE6B26, #FFE9A2);
+    20% { 
+        background-position: 50% 30%, 80% 70%, 100% 0%, 0% 100%, 25% 25%;
     }
-    40% {
-        background: radial-gradient(circle at 80% 80%, #FE6B26 35%, transparent 65%),
-                    radial-gradient(circle at 15% 60%, #FFE9A2 25%, transparent 55%),
-                    radial-gradient(circle at 70% 10%, #2696FE 30%, transparent 60%),
-                    radial-gradient(circle at 40% 40%, #26C3FE 45%, transparent 75%),
-                    linear-gradient(-45deg, #26C3FE, #FE6B26);
+    40% { 
+        background-position: 100% 70%, 40% 20%, 50% 100%, 100% 50%, 50% 50%;
     }
-    60% {
-        background: radial-gradient(circle at 25% 25%, #FFE9A2 40%, transparent 70%),
-                    radial-gradient(circle at 75% 60%, #2696FE 20%, transparent 50%),
-                    radial-gradient(circle at 50% 90%, #26C3FE 35%, transparent 65%),
-                    radial-gradient(circle at 90% 15%, #FE6B26 25%, transparent 55%),
-                    linear-gradient(90deg, #FFE9A2, #2696FE);
+    60% { 
+        background-position: 70% 100%, 10% 50%, 0% 50%, 50% 0%, 75% 75%;
     }
-    80% {
-        background: radial-gradient(circle at 70% 30%, #2696FE 30%, transparent 60%),
-                    radial-gradient(circle at 20% 80%, #26C3FE 40%, transparent 70%),
-                    radial-gradient(circle at 85% 75%, #FE6B26 20%, transparent 50%),
-                    radial-gradient(circle at 45% 15%, #FFE9A2 35%, transparent 65%),
-                    linear-gradient(-90deg, #2696FE, #FFE9A2);
+    80% { 
+        background-position: 20% 60%, 60% 90%, 100% 0%, 0% 100%, 100% 0%;
     }
-    100% {
-        background: radial-gradient(circle at 20% 50%, #2696FE 25%, transparent 55%),
-                    radial-gradient(circle at 80% 20%, #26C3FE 25%, transparent 55%),
-                    radial-gradient(circle at 40% 80%, #FE6B26 25%, transparent 55%),
-                    radial-gradient(circle at 70% 70%, #FFE9A2 25%, transparent 55%),
-                    linear-gradient(135deg, #2696FE, #26C3FE);
+    100% { 
+        background-position: 0% 0%, 100% 100%, 0% 50%, 50% 0%, 0% 0%;
     }
 }
 
