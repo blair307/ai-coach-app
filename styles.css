@@ -699,7 +699,7 @@ body {
     font-weight: 600;
     min-width: 20px;
     text-align: center;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .main-content {
@@ -794,7 +794,7 @@ body {
     background: var(--background);
     padding: 2rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -983,7 +983,7 @@ body {
     height: calc(100vh - 4rem);
     background: var(--background);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     overflow: hidden;
     margin-right: 2rem;
@@ -1101,7 +1101,7 @@ body {
     border-radius: var(--radius-lg);
     flex: 1;
     border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     line-height: 1.6;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -1185,7 +1185,7 @@ body {
     background: var(--background);
     padding: 1.5rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
 }
 
@@ -1238,7 +1238,7 @@ body {
     background: var(--background);
     border-color: var(--primary);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .insights-list {
@@ -1314,7 +1314,7 @@ body {
     height: calc(100vh - 6rem) !important;
     background: var(--background);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     overflow: hidden;
     margin-right: 0 !important;
@@ -1388,7 +1388,7 @@ body {
     background: var(--surface);
     border-color: var(--primary);
     transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .room-item.active {
@@ -1672,7 +1672,7 @@ body {
     font-size: 0.95rem;
     font-family: inherit;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .desktop-search-container input:focus {
@@ -1827,7 +1827,7 @@ body {
 .notifications-container {
     background: var(--background);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     overflow: hidden;
 }
@@ -1953,7 +1953,7 @@ body {
 .billing-card {
     background: var(--background);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     overflow: hidden;
 }
@@ -3886,7 +3886,7 @@ body {
     background: var(--background);
     padding: 2rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--border);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
@@ -4574,7 +4574,7 @@ function forceSingleColorIcons() {
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 .content-header h1 {
