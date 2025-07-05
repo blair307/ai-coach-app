@@ -115,16 +115,6 @@ body {
     overflow: hidden;
 }
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    animation: float 20s ease-in-out infinite;
-}
 
 
 @keyframes oilSlick {
@@ -3547,17 +3537,7 @@ html, body {
     box-sizing: border-box;
 }
 
-/* FIXED: Hero section - full edge-to-edge coverage with animated gradient */
-.hero {
-    background: linear-gradient(45deg, #2696FE 0%, #26C3FE 25%, #FE6B26 50%, #FFE9A2 75%, #2696FE 100%);
-    background-size: 300% 300%;
-    animation: silkFlow 12s ease-in-out infinite;
-    color: white;
-    padding: 10rem 2rem 8rem;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
+
 
 .navbar {
     background: rgba(255, 255, 255, 0.95);
