@@ -2704,5 +2704,80 @@ function getCardDescription(statId) {
 // Run after progress numbers load
 setTimeout(makeProgressCardsClickable, 1000);
 </script>
+    
+    <script>
+    // MOBILE ACTIVITY FIX - Force activity items to show on mobile
+    function fixMobileActivityDisplay() {
+        const activityList = document.querySelector('.activity-list');
+        if (!activityList) return;
+        
+        // Check if we're on mobile
+        const isMobile = window.innerWidth <= 480;
+        if (!isMobile) return;
+        
+        console.log('🔧 Fixing mobile activity display...');
+        
+        // Force all activity items to be visible
+        const activityItems = activityList.querySelectorAll('.activity-item, div[class*="activity"]');
+        
+        activityItems.forEach((item, index) => {
+            // Remove any hidden or display none styles
+            item.style.display = 'flex';
+            item.style.visibility = 'visible';
+            item.style.opacity = '1';
+            item.style.position = 'relative';
+            
+            // Ensure mobile-friendly layout
+            item.style.flexDirection = 'column';
+            item.style.gap = '0.75rem';
+            item.style.padding = '1rem';
+            item.style.marginBottom = '0.75rem';
+            item.style.width = '100%';
+            item.style.boxSizing = 'border-box';
+            
+            console.log(`📱 Fixed activity item ${index + 1}:`, item);
+        });
+        
+        // If no activity items found, check for the "getting started" message
+        if (activityItems.length === 0) {
+            console.log('⚠️ No activity items found - checking for getting started message');
+            const gettingStarted = activityList.querySelector('[style*="text-align: center"]');
+            if (gettingStarted) {
+                gettingStarted.style.display = 'flex';
+                gettingStarted.style.flexDirection = 'column';
+                console.log('📱 Fixed getting started message');
+            }
+        }
+        
+        // Force container to show content
+        activityList.style.display = 'flex';
+        activityList.style.flexDirection = 'column';
+        activityList.style.gap = '1rem';
+        
+        console.log(`✅ Mobile activity fix applied - ${activityItems.length} items processed`);
+    }
+
+    // Run the fix when page loads and when activity updates
+    document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(fixMobileActivityDisplay, 2000);
+    });
+
+    // Also run when window resizes to mobile size
+    window.addEventListener('resize', function() {
+        if (window.innerWidth <= 480) {
+            setTimeout(fixMobileActivityDisplay, 500);
+        }
+    });
+
+    // Hook into the activity tracker updates
+    if (window.activityTracker && window.activityTracker.updateActivityDisplay) {
+        const originalUpdate = window.activityTracker.updateActivityDisplay;
+        window.activityTracker.updateActivityDisplay = function() {
+            originalUpdate.call(this);
+            setTimeout(fixMobileActivityDisplay, 1000);
+        };
+    }
+    </script>
+    
 </body>
 </html>
