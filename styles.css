@@ -5179,3 +5179,32 @@ button[onclick*="startCoachingSession"]:hover,
     transform: translateY(-3px) !important;
     box-shadow: 0 12px 30px rgba(255, 46, 146, 0.4) !important;
 }
+
+/* 🔧 HOMEPAGE HEADER BUTTONS ONLY - ADD THIS TO BOTTOM OF styles.css */
+
+.navbar .btn,
+.navbar .btn-primary,
+.nav-link.btn-primary,
+.nav-links .btn,
+.nav-container .btn {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
+    background-color: #2696FE !important;
+    color: white !important;
+    border: none !important;
+    border-color: #2696FE !important;
+    box-shadow: 0 4px 15px rgba(38, 150, 254, 0.3) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+}
+
+.navbar .btn:hover,
+.navbar .btn-primary:hover,
+.nav-link.btn-primary:hover,
+.nav-links .btn:hover,
+.nav-container .btn:hover {
+    background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
+    color: white !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.4) !important;
+}
