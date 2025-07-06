@@ -393,15 +393,68 @@ async function reactivateSubscription() {
 
 // Update payment method
 function updatePayment() {
+    // Check if we have a real subscription first
+    if (!currentBillingData || !currentBillingData.subscription) {
+        alert('Payment method updates are only available for paid subscriptions. Please upgrade your account first.');
+        return;
+    }
+    
     const modal = createPaymentModal();
     document.body.appendChild(modal);
     
-    // Mount card element to the modal
+    // Wait longer for DOM to be ready and re-create card element
     setTimeout(() => {
-        if (cardElement) {
-            cardElement.mount('#modal-card-element');
+        try {
+            // Unmount any existing card element first
+            if (cardElement) {
+                try {
+                    cardElement.unmount();
+                } catch (e) {
+                    console.log('Card element was not mounted');
+                }
+            }
+            
+            // Re-create the card element fresh
+            cardElement = elements.create('card', {
+                style: {
+                    base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                        fontSmoothing: 'antialiased',
+                        '::placeholder': {
+                            color: '#aab7c4',
+                        },
+                    },
+                    invalid: {
+                        color: '#fa755a',
+                        iconColor: '#fa755a'
+                    }
+                },
+                hidePostalCode: true
+            });
+            
+            // Mount to the modal
+            const cardContainer = document.getElementById('modal-card-element');
+            if (cardContainer) {
+                cardElement.mount('#modal-card-element');
+                console.log('Card element mounted successfully');
+                
+                // Set up error handling
+                cardElement.on('change', ({error}) => {
+                    const displayError = document.getElementById('modal-card-errors');
+                    if (displayError) {
+                        displayError.textContent = error ? error.message : '';
+                    }
+                });
+            } else {
+                console.error('Card container not found');
+            }
+        } catch (error) {
+            console.error('Error mounting card element:', error);
+            alert('Error setting up payment form. Please try again.');
         }
-    }, 100);
+    }, 300);
 }
 
 // Create payment update modal
@@ -410,26 +463,29 @@ function createPaymentModal() {
     modal.className = 'modal';
     modal.id = 'updatePaymentModal';
     modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Update Payment Method</h3>
-                <button onclick="closePaymentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Card Information</label>
-                    <div id="modal-card-element" style="padding: 1rem; border: 2px solid var(--border); border-radius: var(--radius); background: var(--background);">
-                        <!-- Stripe Elements will create form elements here -->
-                    </div>
-                    <div id="modal-card-errors" role="alert" style="color: var(--error); margin-top: 0.5rem; font-size: 0.875rem;"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button onclick="closePaymentModal()" class="btn btn-secondary">Cancel</button>
-                <button onclick="savePaymentMethod()" class="btn btn-primary" id="savePaymentBtn">Update Payment Method</button>
-            </div>
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Update Payment Method</h3>
+            <button onclick="closePaymentModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">&times;</button>
         </div>
-    `;
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Card Information</label>
+                <div id="modal-card-element" style="padding: 1rem; border: 2px solid #e5e7eb; border-radius: 8px; background: white; min-height: 40px;">
+                    <!-- Stripe Elements will create form elements here -->
+                </div>
+                <div id="modal-card-errors" role="alert" style="color: #dc2626; margin-top: 0.5rem; font-size: 0.875rem;"></div>
+            </div>
+            <p style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">
+                Enter your new card details. This will replace your current payment method.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closePaymentModal()" class="btn btn-secondary">Cancel</button>
+            <button onclick="savePaymentMethod()" class="btn btn-primary" id="savePaymentBtn">Update Payment Method</button>
+        </div>
+    </div>
+`;
     
     // Handle card errors
     setTimeout(() => {
