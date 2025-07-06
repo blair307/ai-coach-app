@@ -5153,21 +5153,57 @@ button[onclick*="startCoachingSession"]:active,
 .content-header button,
 .content-header .btn,
 .btn-primary {
-    background: #D81B60 !important;
-    background-image: linear-gradient(135deg, #D81B60 0%, #C2185B 100%) !important;
-    background-color: #D81B60 !important;
+    background: #FF2E92 !important;  /* Perfect brightness match to your blue */
+    background-image: linear-gradient(135deg, #FF2E92 0%, #E91E82 100%) !important;
+    background-color: #FF2E92 !important;
     color: white !important;
     border: none !important;
-    border-color: #D81B60 !important;
-    box-shadow: 0 4px 15px rgba(216, 27, 96, 0.3) !important;
+    border-color: #FF2E92 !important;
+    box-shadow: 0 4px 15px rgba(255, 46, 146, 0.3) !important;
+    padding: 1rem 2rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
 .header-actions button:hover,
 .header-actions .btn:hover,
 .btn-primary:hover {
-    background: #C2185B !important;
-    background-image: linear-gradient(135deg, #C2185B 0%, #AD1457 100%) !important;
+    background: #E91E82 !important;
+    background-image: linear-gradient(135deg, #E91E82 0%, #D11872 100%) !important;
     color: white !important;
     transform: translateY(-3px) !important;
+    box-shadow: 0 12px 30px rgba(255, 46, 146, 0.4) !important;
 }
-*/
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .header-actions button,
+    .header-actions .btn,
+    .btn-primary {
+        padding: 0.875rem 1.5rem !important;
+        width: 100% !important;
+        max-width: 280px !important;
+    }
+}
+
+/* Ensure text stays white */
+.header-actions button,
+.header-actions .btn,
+.content-header button,
+.content-header .btn,
+.btn-primary {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.header-actions button:hover,
+.header-actions .btn:hover,
+.content-header button:hover,
+.content-header .btn:hover,
+.btn-primary:hover {
+    color: white !important;
+    text-decoration: none !important;
+}
+
