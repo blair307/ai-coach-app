@@ -2665,6 +2665,44 @@ function logout() {
     }
 }
 </script>
+    <script>
+// Make Your Progress cards clickable
+function makeProgressCardsClickable() {
+    const cardLinks = {
+        'coachingSessionsCount': 'ai-coach.html',
+        'activeDaysCount': 'daily-tracker.html', 
+        'communityPostsCount': 'community.html',
+        'activeGoalsCount': 'goals.html'
+    };
     
+    Object.keys(cardLinks).forEach(statId => {
+        const statElement = document.getElementById(statId);
+        if (statElement) {
+            const statCard = statElement.closest('.stat');
+            if (statCard) {
+                statCard.style.cursor = 'pointer';
+                statCard.title = getCardDescription(statId);
+                
+                statCard.addEventListener('click', function() {
+                    window.location.href = cardLinks[statId];
+                });
+            }
+        }
+    });
+}
+
+function getCardDescription(statId) {
+    const descriptions = {
+        'coachingSessionsCount': 'Click to start an AI coaching session',
+        'activeDaysCount': 'Click to view your daily tracker',
+        'communityPostsCount': 'Click to join the community',
+        'activeGoalsCount': 'Click to manage your life goals'
+    };
+    return descriptions[statId];
+}
+
+// Run after progress numbers load
+setTimeout(makeProgressCardsClickable, 1000);
+</script>
 </body>
 </html>
