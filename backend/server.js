@@ -2425,7 +2425,7 @@ app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
         const notification = new Notification({
           userId,
           type: 'system',
-          title: '✅ Daily Prompt Completed!',
+          title: 'Daily Prompt Completed!',
           content: `Great job reflecting today! You've completed your daily prompt with a ${newResponse.wordCount}-word response.`,
           priority: 'normal'
         });
