@@ -8,11 +8,7 @@ let elements;
 let cardElement;
 let currentBillingData = null;
 
-// Initialize Stripe early to avoid undefined errors
-window.Stripe = window.Stripe || function() { 
-    console.warn('Stripe not loaded yet'); 
-    return { elements: () => ({ create: () => ({}) }) }; 
-};
+
 
 // Check if user is logged in when page loads
 document.addEventListener('DOMContentLoaded', function() {
@@ -23,21 +19,22 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Initialize Stripe for payment method updates
 function initializeStripe() {
-    stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-    elements = stripe.elements();
-    
-    // Create card element for payment method updates
-    cardElement = elements.create('card', {
-        style: {
-            base: {
-                fontSize: '16px',
-                color: '#424770',
-                '::placeholder': {
-                    color: '#aab7c4',
-                },
-            },
-        },
-    });
+    try {
+        if (typeof Stripe === 'undefined') {
+            console.warn('Stripe library not loaded yet, will retry...');
+            setTimeout(initializeStripe, 1000);
+            return;
+        }
+        
+        stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        elements = stripe.elements();
+        
+        // Don't create cardElement here - we'll create it when needed
+        console.log('Stripe initialized successfully');
+    } catch (error) {
+        console.error('Error initializing Stripe:', error);
+        setTimeout(initializeStripe, 2000);
+    }
 }
 
 // Check authentication
