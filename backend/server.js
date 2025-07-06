@@ -3111,6 +3111,125 @@ app.get('/api/billing/invoices', authenticateToken, async (req, res) => {
   }
 });
 
+// Get invoices
+app.get('/api/billing/invoices', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    const invoices = await stripe.invoices.list({
+      customer: user.stripeCustomerId,
+      limit: 20,
+    });
+    
+    res.json(invoices.data);
+    
+  } catch (error) {
+    console.error('Get invoices error:', error);
+    res.status(500).json({ error: 'Failed to get invoices' });
+  }
+});
+
+// ADD THE NEW BILLING ROUTES HERE:
+
+// Reactivate subscription
+app.post('/api/billing/reactivate-subscription', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    
+    if (!user || !user.subscription?.stripeSubscriptionId) {
+      return res.status(404).json({ error: 'No subscription found' });
+    }
+    
+    // Remove the cancel_at_period_end flag
+    const subscription = await stripe.subscriptions.update(
+      user.subscription.stripeSubscriptionId,
+      { cancel_at_period_end: false }
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Subscription reactivated successfully'
+    });
+    
+  } catch (error) {
+    console.error('Reactivate subscription error:', error);
+    res.status(500).json({ error: 'Failed to reactivate subscription' });
+  }
+});
+
+// Update payment method
+app.post('/api/billing/update-payment-method', authenticateToken, async (req, res) => {
+  try {
+    const { paymentMethodId } = req.body;
+    const user = await User.findById(req.user.userId);
+    
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    // Attach payment method to customer
+    await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: user.stripeCustomerId,
+    });
+    
+    // Set as default payment method
+    await stripe.customers.update(user.stripeCustomerId, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
+    });
+    
+    // Update subscription's default payment method if exists
+    if (user.subscription?.stripeSubscriptionId) {
+      await stripe.subscriptions.update(user.subscription.stripeSubscriptionId, {
+        default_payment_method: paymentMethodId,
+      });
+    }
+    
+    res.json({ success: true, message: 'Payment method updated successfully' });
+    
+  } catch (error) {
+    console.error('Update payment method error:', error);
+    res.status(500).json({ error: 'Failed to update payment method' });
+  }
+});
+
+// Download invoice
+app.get('/api/billing/invoice/:invoiceId/download', authenticateToken, async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const user = await User.findById(req.user.userId);
+    
+    if (!user || !user.stripeCustomerId) {
+      return res.status(404).json({ error: 'Customer not found' });
+    }
+    
+    // Get invoice from Stripe
+    const invoice = await stripe.invoices.retrieve(invoiceId);
+    
+    // Verify this invoice belongs to this customer
+    if (invoice.customer !== user.stripeCustomerId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+    
+    res.json({ 
+      downloadUrl: invoice.hosted_invoice_url,
+      invoicePdf: invoice.invoice_pdf
+    });
+    
+  } catch (error) {
+    console.error('Download invoice error:', error);
+    res.status(500).json({ error: 'Failed to get invoice download link' });
+  }
+});
+
+// Enhanced health check
+app.get('/health', (req, res) => {
+
 // Enhanced health check
 app.get('/health', (req, res) => {
   res.json({
