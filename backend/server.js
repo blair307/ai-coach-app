@@ -3111,27 +3111,7 @@ app.get('/api/billing/invoices', authenticateToken, async (req, res) => {
   }
 });
 
-// Get invoices
-app.get('/api/billing/invoices', authenticateToken, async (req, res) => {
-  try {
-    const user = await User.findById(req.user.userId);
-    
-    if (!user || !user.stripeCustomerId) {
-      return res.status(404).json({ error: 'Customer not found' });
-    }
-    
-    const invoices = await stripe.invoices.list({
-      customer: user.stripeCustomerId,
-      limit: 20,
-    });
-    
-    res.json(invoices.data);
-    
-  } catch (error) {
-    console.error('Get invoices error:', error);
-    res.status(500).json({ error: 'Failed to get invoices' });
-  }
-});
+
 
 // ADD THE NEW BILLING ROUTES HERE:
 
@@ -3226,9 +3206,6 @@ app.get('/api/billing/invoice/:invoiceId/download', authenticateToken, async (re
     res.status(500).json({ error: 'Failed to get invoice download link' });
   }
 });
-
-// Enhanced health check
-app.get('/health', (req, res) => {
 
 // Enhanced health check
 app.get('/health', (req, res) => {
