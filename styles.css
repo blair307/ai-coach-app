@@ -5148,26 +5148,43 @@ button[onclick*="startCoachingSession"]:active,
     box-shadow: 0 6px 20px rgba(255, 20, 147, 0.35) !important;
 }
 
-/* 🚨 NUCLEAR PINK BUTTON FIX */
+/* OPTION A: Soft Rose Pink (Recommended) */
 .header-actions button,
 .header-actions .btn,
 .content-header button,
 .content-header .btn,
 .btn-primary {
-    background: #FF1493 !important;
-    background-image: linear-gradient(135deg, #FF1493 0%, #E6127A 100%) !important;
-    background-color: #FF1493 !important;
+    background: #E91E63 !important;  /* Softer rose pink */
+    background-image: linear-gradient(135deg, #E91E63 0%, #C2185B 100%) !important;
+    background-color: #E91E63 !important;
     color: white !important;
     border: none !important;
-    border-color: #FF1493 !important;
-    box-shadow: 0 4px 15px rgba(255, 20, 147, 0.3) !important;
+    border-color: #E91E63 !important;
+    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
+    padding: 1rem 2rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
 }
 
 .header-actions button:hover,
 .header-actions .btn:hover,
 .btn-primary:hover {
-    background: #E6127A !important;
-    background-image: linear-gradient(135deg, #E6127A 0%, #C41E3A 100%) !important;
+    background: #C2185B !important;
+    background-image: linear-gradient(135deg, #C2185B 0%, #AD1457 100%) !important;
     color: white !important;
     transform: translateY(-3px) !important;
+    box-shadow: 0 12px 30px rgba(233, 30, 99, 0.4) !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .header-actions button,
+    .header-actions .btn,
+    .btn-primary {
+        padding: 0.875rem 1.5rem !important;
+        width: 100% !important;
+        max-width: 280px !important;
+    }
 }
