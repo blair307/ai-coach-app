@@ -5148,43 +5148,26 @@ button[onclick*="startCoachingSession"]:active,
     box-shadow: 0 6px 20px rgba(255, 20, 147, 0.35) !important;
 }
 
-/* OPTION A: Soft Rose Pink (Recommended) */
 .header-actions button,
 .header-actions .btn,
 .content-header button,
 .content-header .btn,
 .btn-primary {
-    background: #E91E63 !important;  /* Softer rose pink */
-    background-image: linear-gradient(135deg, #E91E63 0%, #C2185B 100%) !important;
-    background-color: #E91E63 !important;
+    background: #C2185B !important;
+    background-image: linear-gradient(135deg, #C2185B 0%, #AD1457 100%) !important;
+    background-color: #C2185B !important;
     color: white !important;
     border: none !important;
-    border-color: #E91E63 !important;
-    box-shadow: 0 4px 15px rgba(233, 30, 99, 0.3) !important;
-    padding: 1rem 2rem !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    transition: all 0.3s ease !important;
+    border-color: #C2185B !important;
+    box-shadow: 0 4px 15px rgba(194, 24, 91, 0.3) !important;
 }
 
 .header-actions button:hover,
 .header-actions .btn:hover,
 .btn-primary:hover {
-    background: #C2185B !important;
-    background-image: linear-gradient(135deg, #C2185B 0%, #AD1457 100%) !important;
+    background: #AD1457 !important;
+    background-image: linear-gradient(135deg, #AD1457 0%, #880E4F 100%) !important;
     color: white !important;
     transform: translateY(-3px) !important;
-    box-shadow: 0 12px 30px rgba(233, 30, 99, 0.4) !important;
 }
-
-/* Mobile responsive */
-@media (max-width: 768px) {
-    .header-actions button,
-    .header-actions .btn,
-    .btn-primary {
-        padding: 0.875rem 1.5rem !important;
-        width: 100% !important;
-        max-width: 280px !important;
-    }
-}
+*/
