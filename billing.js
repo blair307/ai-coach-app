@@ -158,15 +158,24 @@ function updateSubscriptionInfo(stripeSubscription, localSubscription) {
         planNameElement.textContent = planName;
     }
     
-    if (statusElement) {
-        statusElement.textContent = stripeSubscription.status === 'active' ? 'Active' : 
-                                   stripeSubscription.status === 'past_due' ? 'Past Due' :
-                                   stripeSubscription.status === 'canceled' ? 'Canceled' : 
-                                   stripeSubscription.status.charAt(0).toUpperCase() + stripeSubscription.status.slice(1);
-        
-        // Update status styling
-        statusElement.className = `plan-status ${stripeSubscription.status}`;
+   if (statusElement) {
+    let statusText = 'Active';
+    let statusClass = 'active';
+    
+    if (stripeSubscription.cancel_at_period_end) {
+        statusText = 'Cancelling';
+        statusClass = 'cancelling';
+    } else if (stripeSubscription.status === 'canceled') {
+        statusText = 'Canceled';
+        statusClass = 'canceled';
+    } else if (stripeSubscription.status === 'past_due') {
+        statusText = 'Past Due';
+        statusClass = 'past_due';
     }
+    
+    statusElement.textContent = statusText;
+    statusElement.className = `plan-status ${statusClass}`;
+}
     
     if (priceElement) {
         const amount = stripeSubscription.items.data[0].price.unit_amount / 100;
