@@ -584,18 +584,9 @@ function initializeActivityTracker() {
         localStorage.removeItem('eeh_active_days');
     }
     
-    // Initialize activity tracker (but don't let it add fake historical data)
-    window.activityTracker = new ActivityTracker();
+   // Skip activity tracker for now - just update display manually
+console.log('✅ Activity tracker initialization skipped');
     
-    // Make tracking functions globally available
-    window.trackCoachingSession = () => window.activityTracker.trackCoachingSession();
-    window.trackCommunityPost = (room) => window.activityTracker.trackCommunityPost(room);
-    window.trackGoalUpdate = (action) => window.activityTracker.trackGoalUpdate(action);
-    window.trackNotificationCheck = () => window.activityTracker.trackNotificationCheck();
-    window.trackBillingView = () => window.activityTracker.trackBillingView();
-    
-    console.log('✅ Activity tracker initialized with safeguards');
-}
 
 // Update the main initialization to include activity tracker
 document.addEventListener('DOMContentLoaded', function() {
