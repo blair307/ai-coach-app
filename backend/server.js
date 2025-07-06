@@ -1277,7 +1277,7 @@ async function createDailyPromptNotification() {
     const notifications = activeUsers.map(user => ({
       userId: user._id,
       type: 'system',
-      title: '🌅 Daily Prompt Available!',
+      title: 'Daily Prompt Available!',
       content: `Today's reflection: "${nextPrompt.prompt.substring(0, 100)}${nextPrompt.prompt.length > 100 ? '...' : ''}"`,
       priority: 'normal',
       createdAt: new Date()
@@ -1285,7 +1285,7 @@ async function createDailyPromptNotification() {
 
     if (notifications.length > 0) {
       await Notification.insertMany(notifications);
-      console.log(`✅ Created ${notifications.length} daily prompt notifications`);
+      console.log(`Created ${notifications.length} daily prompt notifications`);
     }
 
   } catch (error) {
