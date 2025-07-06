@@ -5180,13 +5180,16 @@ button[onclick*="startCoachingSession"]:hover,
     box-shadow: 0 12px 30px rgba(255, 46, 146, 0.4) !important;
 }
 
-/* 🔧 HOMEPAGE HEADER BUTTONS ONLY - ADD THIS TO BOTTOM OF styles.css */
+/* 🎯 HOMEPAGE BUTTON FIX - ADD TO BOTTOM OF styles.css */
 
-.navbar .btn,
-.navbar .btn-primary,
+/* Target the exact buttons from your index.html */
 .nav-link.btn-primary,
-.nav-links .btn,
-.nav-container .btn {
+.pricing-card .btn,
+.pricing-card .btn-primary,
+.hero .btn,
+.hero .btn-primary,
+.cta-section .btn,
+.cta-section .btn-primary {
     background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
     background-color: #2696FE !important;
     color: white !important;
@@ -5196,15 +5199,29 @@ button[onclick*="startCoachingSession"]:hover,
     opacity: 1 !important;
     visibility: visible !important;
     display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
 }
 
-.navbar .btn:hover,
-.navbar .btn-primary:hover,
 .nav-link.btn-primary:hover,
-.nav-links .btn:hover,
-.nav-container .btn:hover {
+.pricing-card .btn:hover,
+.pricing-card .btn-primary:hover,
+.hero .btn:hover,
+.hero .btn-primary:hover,
+.cta-section .btn:hover,
+.cta-section .btn-primary:hover {
     background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
     color: white !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.4) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.4) !important;
+    text-decoration: none !important;
+}
+
+/* Specific targeting for your buttons */
+a[href="signup.html?plan=monthly"],
+a[href="signup.html?plan=yearly"],
+a[href*="signup.html"] {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
+    color: white !important;
 }
