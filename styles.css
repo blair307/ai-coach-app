@@ -5356,3 +5356,232 @@ a[href*="signup.html"] {
             animation-delay: 0.4s !important;
         }
 
+
+/* MOBILE ACTIVITY SECTION FIX - Add this to the bottom of your styles.css */
+
+/* Fix for Recent Activity on very small screens (480px and below) */
+@media (max-width: 480px) {
+    
+    /* Recent Activity Container */
+    .activity-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Activity Items - Stack vertically and prevent overflow */
+    .activity-item {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.75rem !important;
+        padding: 1rem !important;
+        background: var(--surface) !important;
+        border-radius: var(--radius-lg) !important;
+        border: 1px solid var(--border) !important;
+        transition: all 0.3s ease !important;
+        text-decoration: none !important;
+        color: inherit !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: auto !important;
+        overflow: hidden !important;
+    }
+    
+    /* Activity Icon - Smaller on mobile */
+    .activity-icon {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        color: white !important;
+        font-weight: 600 !important;
+        font-size: 0.7rem !important;
+        flex-shrink: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Activity Content - Full width */
+    .activity-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    /* Activity text - Better wrapping */
+    .activity-content p {
+        margin: 0 0 0.25rem 0 !important;
+        font-weight: 500 !important;
+        color: var(--text-primary) !important;
+        font-size: 0.9rem !important;
+        line-height: 1.3 !important;
+        word-wrap: break-word !important;
+        overflow-wrap: break-word !important;
+        hyphens: auto !important;
+    }
+    
+    .activity-content small {
+        color: var(--text-secondary) !important;
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+    
+    /* Getting Started Message - Better mobile layout */
+    .activity-item[style*="text-align: center"] {
+        text-align: center !important;
+        padding: 1.5rem 1rem !important;
+        border: 2px dashed var(--border) !important;
+        border-radius: var(--radius-lg) !important;
+        background: var(--surface) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 1rem !important;
+    }
+    
+    /* Getting started SVG icon */
+    .activity-item svg {
+        width: 40px !important;
+        height: 40px !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Getting started text */
+    .activity-item p {
+        font-size: 0.9rem !important;
+        line-height: 1.4 !important;
+        text-align: center !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    /* Getting started buttons */
+    .activity-item div[style*="display: flex"] {
+        display: flex !important;
+        gap: 0.5rem !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+    }
+    
+    .activity-item .btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 1rem !important;
+        min-height: 36px !important;
+        flex: 1 !important;
+        min-width: 100px !important;
+        max-width: 120px !important;
+    }
+    
+    /* Dashboard card containing activity - ensure it has space */
+    .dashboard-card {
+        padding: 1.25rem !important;
+        margin-bottom: 1rem !important;
+        overflow: visible !important;
+    }
+    
+    .dashboard-card h3 {
+        margin-bottom: 1rem !important;
+        font-size: 1.1rem !important;
+    }
+    
+    /* View all link */
+    .view-all-link {
+        color: var(--primary) !important;
+        text-decoration: none !important;
+        font-weight: 600 !important;
+        font-size: 0.85rem !important;
+        text-align: center !important;
+        padding: 0.75rem !important;
+        display: block !important;
+        margin-top: 1rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: var(--surface) !important;
+        border-radius: var(--radius) !important;
+    }
+    
+    .view-all-link:hover {
+        text-decoration: underline !important;
+        background: var(--background) !important;
+    }
+}
+
+/* Extra small screens (360px and below) - iPhone SE, etc. */
+@media (max-width: 360px) {
+    
+    .activity-item {
+        padding: 0.875rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .activity-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 0.65rem !important;
+    }
+    
+    .activity-content p {
+        font-size: 0.85rem !important;
+    }
+    
+    .activity-content small {
+        font-size: 0.75rem !important;
+    }
+    
+    .dashboard-card {
+        padding: 1rem !important;
+    }
+    
+    .dashboard-card h3 {
+        font-size: 1rem !important;
+    }
+    
+    /* Getting started buttons - stack vertically on very small screens */
+    .activity-item .btn {
+        flex: 1 !important;
+        min-width: 80px !important;
+        max-width: none !important;
+        font-size: 0.75rem !important;
+        padding: 0.5rem 0.75rem !important;
+    }
+}
+
+/* Fix any container overflow issues */
+@media (max-width: 480px) {
+    .dashboard-grid {
+        padding: 0 0.5rem !important;
+        gap: 1rem !important;
+    }
+    
+    .main-content {
+        padding: 1rem 0.5rem !important;
+    }
+    
+    /* Ensure dashboard cards don't overflow */
+    .dashboard-card {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        word-wrap: break-word !important;
+    }
+    
+    /* Prevent any horizontal scrolling */
+    body, .app-container {
+        overflow-x: hidden !important;
+    }
+}
+
+/* DEBUG: Add this temporarily to see what's happening (remove after testing) */
+@media (max-width: 480px) {
+    .activity-list {
+        border: 2px solid red !important; /* TEMP: Remove this after testing */
+    }
+    
+    .activity-item {
+        border: 1px solid blue !important; /* TEMP: Remove this after testing */
+    }
+}
