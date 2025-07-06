@@ -2720,20 +2720,50 @@ setTimeout(makeProgressCardsClickable, 1000);
         // Force all activity items to be visible
         const activityItems = activityList.querySelectorAll('.activity-item, div[class*="activity"]');
         
-        activityItems.forEach((item, index) => {
-            // Remove any hidden or display none styles
-            item.style.display = 'flex';
-            item.style.visibility = 'visible';
-            item.style.opacity = '1';
-            item.style.position = 'relative';
-            
-            // Ensure mobile-friendly layout
-            item.style.flexDirection = 'column';
-            item.style.gap = '0.75rem';
-            item.style.padding = '1rem';
-            item.style.marginBottom = '0.75rem';
-            item.style.width = '100%';
-            item.style.boxSizing = 'border-box';
+activityItems.forEach((item, index) => {
+    // Remove any hidden or display none styles
+    item.style.display = 'flex';
+    item.style.visibility = 'visible';
+    item.style.opacity = '1';
+    item.style.position = 'relative';
+    
+    // FIXED: Use horizontal layout to keep circles round
+    item.style.flexDirection = 'row';
+    item.style.alignItems = 'center';
+    item.style.gap = '1rem';
+    item.style.padding = '1rem';
+    item.style.marginBottom = '0.75rem';
+    item.style.width = '100%';
+    item.style.boxSizing = 'border-box';
+    item.style.minHeight = '60px';
+    
+    // FIXED: Find and fix the activity icon specifically
+    const activityIcon = item.querySelector('.activity-icon');
+    if (activityIcon) {
+        activityIcon.style.width = '32px';
+        activityIcon.style.height = '32px';
+        activityIcon.style.minWidth = '32px';
+        activityIcon.style.minHeight = '32px';
+        activityIcon.style.maxWidth = '32px';
+        activityIcon.style.maxHeight = '32px';
+        activityIcon.style.borderRadius = '50%';
+        activityIcon.style.flexShrink = '0';
+        activityIcon.style.flexGrow = '0';
+        activityIcon.style.display = 'flex';
+        activityIcon.style.alignItems = 'center';
+        activityIcon.style.justifyContent = 'center';
+        activityIcon.style.aspectRatio = '1 / 1';
+    }
+    
+    // FIXED: Ensure activity content takes remaining space
+    const activityContent = item.querySelector('.activity-content');
+    if (activityContent) {
+        activityContent.style.flex = '1';
+        activityContent.style.minWidth = '0';
+        activityContent.style.display = 'flex';
+        activityContent.style.flexDirection = 'column';
+        activityContent.style.justifyContent = 'center';
+    }
             
             console.log(`📱 Fixed activity item ${index + 1}:`, item);
         });
