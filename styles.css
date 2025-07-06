@@ -202,38 +202,25 @@ button[onclick*="startCoachingSession"]:hover,
 }
 
 /* =================================
-   PROGRESS STATS COLORS
+   PROGRESS STATS - BACK TO BLUE ONLY
    ================================= */
 
-#coachingSessionsCount {
+/* Remove the colored gradients and make all numbers blue */
+#coachingSessionsCount,
+#activeDaysCount,
+#communityPostsCount,
+#activeGoalsCount {
     background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
     background-clip: text !important;
 }
 
-#activeDaysCount {
-    background: linear-gradient(135deg, #FF2E92 0%, #E91E82 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-}
-
-#communityPostsCount {
-    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-}
-
-#activeGoalsCount {
-    background: linear-gradient(135deg, #ff8c00 0%, #f97316 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-}
-
-.stat:hover #coachingSessionsCount {
+/* Remove the different hover colors and make them all blue */
+.stat:hover #coachingSessionsCount,
+.stat:hover #activeDaysCount,
+.stat:hover #communityPostsCount,
+.stat:hover #activeGoalsCount {
     background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
     -webkit-background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
@@ -241,46 +228,13 @@ button[onclick*="startCoachingSession"]:hover,
     transform: scale(1.05) !important;
 }
 
-.stat:hover #activeDaysCount {
-    background: linear-gradient(135deg, #E91E82 0%, #D11872 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    transform: scale(1.05) !important;
-}
-
-.stat:hover #communityPostsCount {
-    background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    transform: scale(1.05) !important;
-}
-
-.stat:hover #activeGoalsCount {
-    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
-    -webkit-background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    background-clip: text !important;
-    transform: scale(1.05) !important;
-}
-
-.stat:nth-child(1) {
+/* Change all border tops to blue */
+.stat:nth-child(1),
+.stat:nth-child(2),
+.stat:nth-child(3),
+.stat:nth-child(4) {
     border-top: 3px solid #2696FE !important;
 }
-
-.stat:nth-child(2) {
-    border-top: 3px solid #FF2E92 !important;
-}
-
-.stat:nth-child(3) {
-    border-top: 3px solid #22c55e !important;
-}
-
-.stat:nth-child(4) {
-    border-top: 3px solid #ff8c00 !important;
-}
-
 @keyframes colorReveal {
     0% {
         opacity: 0;
