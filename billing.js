@@ -8,6 +8,12 @@ let elements;
 let cardElement;
 let currentBillingData = null;
 
+// Initialize Stripe early to avoid undefined errors
+window.Stripe = window.Stripe || function() { 
+    console.warn('Stripe not loaded yet'); 
+    return { elements: () => ({ create: () => ({}) }) }; 
+};
+
 // Check if user is logged in when page loads
 document.addEventListener('DOMContentLoaded', function() {
     checkAuth();
@@ -58,15 +64,65 @@ async function loadBillingData() {
             currentBillingData = billingData;
             updateBillingDisplay(billingData);
             await loadInvoices();
-        } else {
-            console.error('Failed to load billing data');
-            showError('Unable to load billing information');
-        }
+       } else if (response.status === 404) {
+    // Handle free account - no Stripe data
+    console.log('Free account detected - no Stripe billing data');
+    handleFreeAccount();
+} else {
+    console.error('Failed to load billing data');
+    showError('Unable to load billing information');
+}
     } catch (error) {
         console.error('Error loading billing data:', error);
         showError('Failed to connect to billing service');
     } finally {
         showLoading(false);
+    }
+}
+
+// Handle free accounts that don't have Stripe data
+function handleFreeAccount() {
+    console.log('Handling free account - showing placeholder data');
+    
+    // Update subscription info for free account
+    const planNameElement = document.querySelector('.billing-card h3');
+    const statusElement = document.querySelector('.plan-status');
+    const priceElement = document.querySelector('.plan-price');
+    
+    if (planNameElement) planNameElement.textContent = 'Free Account';
+    if (statusElement) {
+        statusElement.textContent = 'Active';
+        statusElement.className = 'plan-status active';
+    }
+    if (priceElement) priceElement.innerHTML = '$0<span>/forever</span>';
+    
+    // Hide payment-related sections for free accounts
+    const paymentMethodCard = document.querySelectorAll('.billing-card')[1];
+    const billingHistoryCard = document.querySelectorAll('.billing-card')[2];
+    
+    if (paymentMethodCard) {
+        paymentMethodCard.style.display = 'none';
+    }
+    if (billingHistoryCard) {
+        billingHistoryCard.style.display = 'none';
+    }
+    
+    // Update action buttons for free account
+    const cancelBtn = document.querySelector('button[onclick="cancelSubscription()"]');
+    const changePlanBtn = document.querySelector('button[onclick="changePlan()"]');
+    const updatePaymentBtn = document.querySelector('button[onclick="updatePayment()"]');
+    
+    if (cancelBtn) {
+        cancelBtn.textContent = 'Upgrade Account';
+        cancelBtn.onclick = () => window.location.href = 'signup.html';
+        cancelBtn.className = 'btn btn-primary';
+    }
+    if (changePlanBtn) {
+        changePlanBtn.textContent = 'Upgrade to Paid';
+        changePlanBtn.onclick = () => window.location.href = 'signup.html';
+    }
+    if (updatePaymentBtn) {
+        updatePaymentBtn.style.display = 'none';
     }
 }
 
