@@ -5168,6 +5168,7 @@ button[onclick*="startCoachingSession"]:active,
     font-weight: 600 !important;
     cursor: pointer !important;
     transition: all 0.3s ease !important;
+    /* NO shimmer effects */
 }
 
 .header-actions button:hover,
@@ -5176,8 +5177,8 @@ button[onclick*="startCoachingSession"]:active,
     background: #E91E82 !important;
     background-image: linear-gradient(135deg, #E91E82 0%, #D11872 100%) !important;
     color: white !important;
-    transform: translateY(-3px) !important;
-    box-shadow: 0 12px 30px rgba(255, 46, 146, 0.4) !important;
+    transform: translateY(-3px) !important;  /* LIFT: Moves button up 3px */
+    box-shadow: 0 12px 30px rgba(255, 46, 146, 0.4) !important;  /* DEEPER SHADOW */
 }
 
 /* Mobile responsive */
