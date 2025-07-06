@@ -5575,13 +5575,33 @@ a[href*="signup.html"] {
     }
 }
 
-/* DEBUG: Add this temporarily to see what's happening (remove after testing) */
+/* Force activity items to display properly on mobile */
 @media (max-width: 480px) {
-    .activity-list {
-        border: 2px solid red !important; /* TEMP: Remove this after testing */
+    
+    /* Ensure JavaScript-generated activity items are visible */
+    .activity-list .activity-item {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        position: relative !important;
+        flex-direction: column !important;
     }
     
-    .activity-item {
-        border: 1px solid blue !important; /* TEMP: Remove this after testing */
+    /* Fix for dynamically created activity items with inline styles */
+    .activity-item[style] {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Override any JavaScript-set display properties */
+    .activity-list > div {
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    /* Ensure activity content is visible */
+    .activity-content[style] {
+        display: block !important;
+        flex: 1 !important;
     }
 }
