@@ -453,15 +453,13 @@
     <script>
 
 
-// FIXED RECENT ACTIVITY TRACKER - Replace the existing ActivityTracker class in dashboard.html
-
 class ActivityTracker {
     constructor() {
         this.storageKey = 'eeh_user_activity';
-        this.maxActivities = 15;
+        this.maxActivities = 15; // Keep more activities for better display
         this.activities = this.loadActivities();
         this.startTracking();
-        console.log('✅ Fixed Activity Tracker initialized');
+        console.log('✅ Enhanced Activity Tracker initialized');
     }
 
     loadActivities() {
@@ -476,17 +474,17 @@ class ActivityTracker {
 
     saveActivities() {
         try {
+            // Keep only the most recent activities
             const recentActivities = this.activities.slice(-this.maxActivities);
             localStorage.setItem(this.storageKey, JSON.stringify(recentActivities));
             this.activities = recentActivities;
-            console.log('💾 Activities saved:', this.activities.length);
         } catch (error) {
             console.error('Error saving activities:', error);
         }
     }
 
     addActivity(type, description, details = {}) {
-        // Skip dashboard visits to avoid clutter
+        // SKIP dashboard visits - we don't want these cluttering the activity feed
         if (type === 'dashboard') {
             return;
         }
@@ -529,29 +527,28 @@ class ActivityTracker {
 
     async updateActivityDisplay() {
         const activityList = document.querySelector('.activity-list');
-        if (!activityList) {
-            console.log('⚠️ Activity list element not found');
-            return;
-        }
+        if (!activityList) return;
 
         try {
-            console.log('🔄 Updating activity display...', this.activities.length, 'activities');
+            // Get recent activities (exclude dashboard visits)
+            const recentActivities = [...this.activities]
+                .filter(activity => activity.type !== 'dashboard')
+                .reverse()
+                .slice(0, 6);
             
-            // Check for recent API activity first
+            // Add some real-time data from API if available
             await this.checkForRecentApiActivity();
 
-            // Get recent activities (exclude dashboard visits)
+            // Re-filter after API check
             const displayActivities = [...this.activities]
                 .filter(activity => activity.type !== 'dashboard')
                 .reverse()
                 .slice(0, 5);
 
-            console.log('📊 Display activities:', displayActivities.length);
-
             activityList.innerHTML = '';
 
             if (displayActivities.length === 0) {
-                // Show getting started message
+                // Show getting started message instead of empty state
                 activityList.innerHTML = `
                     <div class="activity-item" style="text-align: center; padding: 2rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface);">
                         <div style="color: var(--text-muted); margin-bottom: 1rem;">
@@ -570,11 +567,11 @@ class ActivityTracker {
                 return;
             }
 
-            // Display each activity
             for (const activity of displayActivities) {
                 const activityElement = document.createElement('div');
                 activityElement.className = 'activity-item';
                 
+                // Get activity icon and details
                 const { icon, description, linkUrl } = this.getActivityDetails(activity);
                 
                 activityElement.innerHTML = `
@@ -608,11 +605,9 @@ class ActivityTracker {
                 activityList.appendChild(activityElement);
             }
 
-            console.log('✅ Activity display updated successfully');
-
         } catch (error) {
-            console.error('❌ Error updating activity display:', error);
-            // Fallback display
+            console.error('Error updating activity display:', error);
+            // Fallback to simple display
             activityList.innerHTML = `
                 <div class="activity-item">
                     <div class="activity-content">
@@ -757,8 +752,6 @@ class ActivityTracker {
             const lastCheck = localStorage.getItem('eeh_last_activity_check');
             const lastCheckTime = lastCheck ? new Date(lastCheck) : new Date(Date.now() - 24 * 60 * 60 * 1000);
             
-            console.log('🔍 Checking for recent API activity since:', lastCheckTime);
-            
             // Check for recent coaching activity
             try {
                 const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
@@ -766,13 +759,14 @@ class ActivityTracker {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    signal: AbortSignal.timeout(5000)
+                    signal: AbortSignal.timeout(3000)
                 });
                 
                 if (response.ok) {
                     const chatData = await response.json();
                     const messages = chatData.messages || [];
                     
+                    // Find recent user messages
                     const recentUserMessages = messages.filter(msg => 
                         msg.role === 'user' && 
                         new Date(msg.timestamp || msg.createdAt) > lastCheckTime
@@ -782,7 +776,6 @@ class ActivityTracker {
                         const sessionLength = recentUserMessages.length > 5 ? 'long' : 
                                             recentUserMessages.length > 2 ? 'medium' : 'short';
                         this.addActivity('coaching', 'Had coaching session', { sessionLength });
-                        console.log('✅ Found recent coaching activity');
                     }
                 }
             } catch (error) {
@@ -796,7 +789,7 @@ class ActivityTracker {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    signal: AbortSignal.timeout(5000)
+                    signal: AbortSignal.timeout(3000)
                 });
                 
                 if (response.ok) {
@@ -812,7 +805,6 @@ class ActivityTracker {
                                 wordCount: latestResponse.wordCount,
                                 mood: latestResponse.mood
                             });
-                            console.log('✅ Found recent daily prompt activity');
                         }
                     }
                 }
@@ -828,6 +820,8 @@ class ActivityTracker {
     }
 
     startTracking() {
+        // DO NOT add dashboard visit activity here
+        
         // Update display immediately
         setTimeout(() => this.updateActivityDisplay(), 1000);
         
@@ -837,7 +831,11 @@ class ActivityTracker {
 
     async checkForExternalActivities() {
         await this.checkForRecentApiActivity();
+        
+        // Check for pending activities from other pages
         this.checkForPendingActivities();
+        
+        // Update display after checking
         this.updateActivityDisplay();
     }
 
@@ -863,6 +861,7 @@ class ActivityTracker {
                     const activityTime = new Date(data.timestamp);
                     const hourAgo = new Date(Date.now() - 60 * 60 * 1000);
                     
+                    // Only process if it's from the last hour
                     if (activityTime > hourAgo) {
                         switch(activityKey) {
                             case 'eeh_pending_daily_prompt':
@@ -905,54 +904,501 @@ class ActivityTracker {
             }
         });
     }
+}
 
-    // Manual methods for testing
-    addTestActivity() {
-        this.addActivity('coaching', 'Had test coaching session', { sessionLength: 'short' });
-        this.addActivity('daily-prompt', 'Completed test daily prompt', { wordCount: 150 });
-        this.addActivity('goals', 'Updated test goals', { action: 'updated' });
-        console.log('✅ Test activities added');
+// CSS fix for Your Progress section alignment
+const progressAlignmentFix = `
+/* Fix for Your Progress section number alignment */
+.stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+    gap: 1.5rem !important;
+}
+
+.stat {
+    text-align: center !important;
+    padding: 1.5rem 1rem !important;
+    background: var(--surface) !important;
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid var(--border) !important;
+    transition: all 0.3s ease !important;
+    min-height: 120px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+.stat:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: var(--shadow) !important;
+}
+
+.stat-number {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: -0.02em !important;
+    line-height: 1 !important;
+    display: block !important;
+    min-height: 2.5rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.stat-label {
+    color: var(--text-secondary) !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+    word-wrap: break-word !important;
+    text-align: center !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Desktop improvements */
+@media (min-width: 769px) {
+    .stat-number {
+        font-size: 3.5rem !important;
+        min-height: 3.5rem !important;
     }
-
-    clearAllActivities() {
-        this.activities = [];
-        this.saveActivities();
-        this.updateActivityDisplay();
-        console.log('🗑️ All activities cleared');
+    
+    .stat {
+        min-height: 140px !important;
+        padding: 2rem 1rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.95rem !important;
     }
 }
 
-// Debug functions for console testing
-function testActivity() {
-    if (window.activityTracker) {
-        window.activityTracker.addTestActivity();
-    } else {
-        console.log('❌ Activity tracker not found');
+@media (min-width: 1200px) {
+    .stat-number {
+        font-size: 4rem !important;
+        min-height: 4rem !important;
+    }
+    
+    .stat {
+        min-height: 160px !important;
+        padding: 2.5rem 1rem !important;
     }
 }
 
-function clearActivities() {
-    if (window.activityTracker) {
-        window.activityTracker.clearAllActivities();
-    } else {
-        console.log('❌ Activity tracker not found');
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+    }
+    
+    .stat {
+        min-height: 100px !important;
+        padding: 1rem 0.5rem !important;
+    }
+    
+    .stat-number {
+        font-size: 2rem !important;
+        min-height: 2rem !important;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem !important;
+    }
+}
+`;
+
+// Add the CSS fix to the page
+function addProgressAlignmentFix() {
+    const styleElement = document.createElement('style');
+    styleElement.textContent = progressAlignmentFix;
+    document.head.appendChild(styleElement);
+    console.log('✅ Progress alignment fix applied');
+}
+
+function initializeActivityTracker() {
+    // Apply CSS fix for progress alignment
+    addProgressAlignmentFix();
+    
+    // CHECK: If this is a brand new account (no activity data), start fresh
+    const existingActivityData = localStorage.getItem('eeh_user_activity');
+    const existingActiveDays = localStorage.getItem('eeh_active_days');
+    
+    // If no existing data, this might be a new account
+    if (!existingActivityData && !existingActiveDays) {
+        console.log('🆕 New account detected - starting with clean slate');
+        localStorage.removeItem('eeh_active_days');
+    }
+    
+    // Initialize activity tracker (but don't let it add fake historical data)
+    window.activityTracker = new ActivityTracker();
+    
+    // Make tracking functions globally available
+    window.trackCoachingSession = () => window.activityTracker.trackCoachingSession();
+    window.trackCommunityPost = (room) => window.activityTracker.trackCommunityPost(room);
+    window.trackGoalUpdate = (action) => window.activityTracker.trackGoalUpdate(action);
+    window.trackNotificationCheck = () => window.activityTracker.trackNotificationCheck();
+    window.trackBillingView = () => window.activityTracker.trackBillingView();
+    
+    console.log('✅ Activity tracker initialized with safeguards');
+}
+
+// Update the main initialization to include activity tracker
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Dashboard loading...');
+    
+    try {
+
+         initializeProfileDropdown();
+        
+        // Initialize progress tracker
+        window.progressTracker = new SimpleProgressTracker();
+        
+        // Initialize activity tracker and fixes
+        setTimeout(initializeActivityTracker, 500);
+        
+        // Make functions globally available
+        window.updateProgress = () => window.progressTracker.forceUpdate();
+        window.getProgressSummary = () => window.progressTracker.getSummary();
+        window.simulateActivity = simulateActivity;
+        
+        // Initialize timer and calendar
+        setTimeout(initializeTimerAndCalendar, 800);
+        
+        // Load notifications and other components
+        updateNotificationCount();
+        setInterval(updateNotificationCount, 30000);
+        
+        // Load dashboard goals and notifications
+        setTimeout(loadDashboardGoals, 1500);
+        setTimeout(loadDashboardNotifications, 2000);
+        
+        console.log('✅ Dashboard initialized successfully');
+        
+    } catch (error) {
+        console.error('❌ Error initializing dashboard:', error);
+    }
+});
+// FIXED DAYS ACTIVE TRACKER - Replace the existing SimpleProgressTracker class
+
+class SimpleProgressTracker {
+    constructor() {
+        this.storageKey = 'eeh_simple_progress';
+        this.activeDaysKey = 'eeh_active_days'; // Separate key for active days
+        this.initializeData();
+        this.startTracking();
+        console.log('✅ Fixed Progress Tracker initialized');
+    }
+
+initializeData() {
+    try {
+        // Load existing progress data
+        const stored = localStorage.getItem(this.storageKey);
+        if (stored) {
+            this.data = JSON.parse(stored);
+        } else {
+            this.data = {
+                coachingSessions: 0,
+                communityPosts: 0,
+                activeGoals: 0
+            };
+        }
+
+        // Load active days separately as an array of date strings
+        const storedDays = localStorage.getItem(this.activeDaysKey);
+        if (storedDays) {
+            this.activeDays = JSON.parse(storedDays);
+        } else {
+            // NEW ACCOUNT: Start with empty array
+            this.activeDays = [];
+        }
+
+        // ONLY mark today as active (don't add fake previous days)
+        this.markActiveToday();
+        
+        console.log('📅 Initialized with active days:', this.activeDays.length, 'days');
+        
+    } catch (error) {
+        console.error('Error loading progress data:', error);
+        this.data = {
+            coachingSessions: 0,
+            communityPosts: 0,
+            activeGoals: 0
+        };
+        // Fresh start for new accounts
+        this.activeDays = [];
+        this.markActiveToday();
     }
 }
 
-function debugActivity() {
-    if (window.activityTracker) {
-        console.log('📊 Current activities:', window.activityTracker.activities);
-        console.log('🔄 Forcing display update...');
-        window.activityTracker.updateActivityDisplay();
-    } else {
-        console.log('❌ Activity tracker not found');
+    save() {
+        try {
+            localStorage.setItem(this.storageKey, JSON.stringify(this.data));
+            localStorage.setItem(this.activeDaysKey, JSON.stringify(this.activeDays));
+            console.log('💾 Progress data saved');
+        } catch (error) {
+            console.error('Error saving progress data:', error);
+        }
     }
-}
 
-// Make debug functions globally available
-window.testActivity = testActivity;
-window.clearActivities = clearActivities;
-window.debugActivity = debugActivity;
+    markActiveToday() {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        if (!this.activeDays.includes(today)) {
+            this.activeDays.push(today);
+            console.log('📅 Marked today as active:', today);
+            
+            // Keep only last 365 days to prevent unlimited growth
+            if (this.activeDays.length > 365) {
+                this.activeDays = this.activeDays.slice(-365);
+            }
+            
+            this.save();
+            return true; // New day added
+        }
+        return false; // Day already tracked
+    }
+
+    // Get coaching sessions from API
+    async getCoachingSessions() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (response.ok) {
+                const chatData = await response.json();
+                const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
+                const sessions = Math.ceil(userMessages.length / 2);
+                console.log('🎯 Coaching sessions from API:', sessions);
+                return sessions;
+            } else {
+                console.log('API not available for coaching sessions');
+                return 0;
+            }
+        } catch (error) {
+            console.log('Error getting coaching sessions:', error.message);
+            return 0;
+        }
+    }
+
+    // Get community posts from API
+    async getCommunityPosts() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            // Get user info
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.userId;
+
+            // Get rooms first
+            const roomsResponse = await fetch('https://ai-coach-backend-pbse.onrender.com/api/rooms', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (!roomsResponse.ok) return 0;
+            
+            const rooms = await roomsResponse.json();
+            let totalPosts = 0;
+            
+            // Check first 3 rooms for user messages
+            for (const room of rooms.slice(0, 3)) {
+                try {
+                    const messagesResponse = await fetch(`https://ai-coach-backend-pbse.onrender.com/api/rooms/${room._id}/messages`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        signal: AbortSignal.timeout(3000)
+                    });
+                    
+                    if (messagesResponse.ok) {
+                        const messages = await messagesResponse.json();
+                        const userMessages = messages.filter(msg => msg.userId === userId).length;
+                        totalPosts += userMessages;
+                    }
+                } catch (roomError) {
+                    // Skip this room
+                }
+            }
+            
+            console.log('💬 Community posts from API:', totalPosts);
+            return totalPosts;
+        } catch (error) {
+            console.log('Error getting community posts:', error.message);
+            return 0;
+        }
+    }
+
+    // Get active goals from API
+    async getActiveGoals() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            if (!token) return 0;
+
+            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(8000)
+            });
+            
+            if (response.ok) {
+                const goals = await response.json();
+                const totalGoals = goals.length;
+                console.log('🎯 Total goals from API:', totalGoals);
+                return totalGoals;
+            } else {
+                console.log('Goals API returned error:', response.status);
+                return 0;
+            }
+        } catch (error) {
+            console.log('Error getting goals:', error.message);
+            return 0;
+        }
+    }
+
+    // Get days active - THIS IS THE KEY FIX
+    getDaysActive() {
+        // Clean up old dates (optional - remove dates older than 1 year)
+        const oneYearAgo = new Date();
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+        const oneYearAgoString = oneYearAgo.toISOString().split('T')[0];
+        
+        // Filter out very old dates
+        this.activeDays = this.activeDays.filter(date => date >= oneYearAgoString);
+        
+        const count = this.activeDays.length;
+        console.log('📅 Current active days count:', count);
+        return count;
+    }
+
+    // Update display with better error handling
+    async updateDisplay() {
+        try {
+            console.log('🔄 Updating progress display...');
+            
+            // Always mark today as active when updating
+            const newDay = this.markActiveToday();
+            if (newDay) {
+                console.log('🎉 New active day recorded!');
+            }
+            
+            const coachingSessions = await this.getCoachingSessions();
+            const daysActive = this.getDaysActive();
+            const communityPosts = await this.getCommunityPosts();
+            const activeGoals = await this.getActiveGoals();
+
+            console.log('📊 Progress numbers:', {
+                coachingSessions,
+                daysActive, 
+                communityPosts,
+                activeGoals
+            });
+
+            // Update DOM with animation
+            const elements = {
+                coachingSessionsCount: coachingSessions,
+                activeDaysCount: daysActive,
+                communityPostsCount: communityPosts,
+                activeGoalsCount: activeGoals
+            };
+
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Only animate if the value changed
+                    const currentValue = parseInt(element.textContent) || 0;
+                    if (currentValue !== value) {
+                        element.style.transform = 'scale(1.1)';
+                        element.style.transition = 'all 0.3s ease';
+                        
+                        setTimeout(() => {
+                            element.textContent = value;
+                            element.style.transform = 'scale(1)';
+                        }, 150);
+                    } else {
+                        element.textContent = value;
+                    }
+                }
+            }
+
+            // Update stored values
+            this.data.coachingSessions = coachingSessions;
+            this.data.communityPosts = communityPosts;
+            this.data.activeGoals = activeGoals;
+            this.save();
+
+            console.log('✅ Progress display updated - Days Active:', daysActive);
+            
+        } catch (error) {
+            console.error('❌ Error updating display:', error);
+        }
+    }
+
+    startTracking() {
+        // Update immediately
+        setTimeout(() => this.updateDisplay(), 1000);
+        
+        // Update every 30 seconds
+        setInterval(() => this.updateDisplay(), 30000);
+
+        // Update when page becomes visible (user switches back to tab)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                console.log('👀 Page became visible - checking for new day');
+                this.markActiveToday();
+                setTimeout(() => this.updateDisplay(), 1000);
+            }
+        });
+
+        // Update when user performs actions
+        this.setupActivityListeners();
+    }
+
+    // NEW: Track user activity to mark days as active
+    setupActivityListeners() {
+        // Track clicks anywhere on the page
+        document.addEventListener('click', () => {
+            this.markActiveToday();
+        });
+
+        // Track form submissions
+        document.addEventListener('submit', () => {
+            this.markActiveToday();
+        });
+
+        // Track navigation
+        window.addEventListener('popstate', () => {
+            this.markActiveToday();
+        });
+
+        // Track when user types in inputs
+        document.addEventListener('input', () => {
+            this.markActiveToday();
+        });
+
+        console.log('👂 Activity listeners set up');
+    }
 
     // Manual refresh
     async forceUpdate() {
