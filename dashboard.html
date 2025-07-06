@@ -525,99 +525,101 @@ class ActivityTracker {
         return activityTime.toLocaleDateString();
     }
 
-    async updateActivityDisplay() {
-        const activityList = document.querySelector('.activity-list');
-        if (!activityList) return;
+async updateActivityDisplay() {
+    const activityList = document.querySelector('.activity-list');
+    if (!activityList) {
+        console.log('⚠️ Activity list element not found');
+        return;
+    }
 
-        try {
-            // Get recent activities (exclude dashboard visits)
-            const recentActivities = [...this.activities]
-                .filter(activity => activity.type !== 'dashboard')
-                .reverse()
-                .slice(0, 6);
-            
-            // Add some real-time data from API if available
-            await this.checkForRecentApiActivity();
+    try {
+        console.log('🔄 Updating activity display...', this.activities.length, 'activities');
+        
+        // Get recent activities (exclude dashboard visits)
+        const displayActivities = [...this.activities]
+            .filter(activity => activity.type !== 'dashboard')
+            .reverse()
+            .slice(0, 5);
 
-            // Re-filter after API check
-            const displayActivities = [...this.activities]
-                .filter(activity => activity.type !== 'dashboard')
-                .reverse()
-                .slice(0, 5);
+        console.log('📊 Display activities:', displayActivities.length);
 
-            activityList.innerHTML = '';
+        activityList.innerHTML = '';
 
-            if (displayActivities.length === 0) {
-                // Show getting started message instead of empty state
-                activityList.innerHTML = `
-                    <div class="activity-item" style="text-align: center; padding: 2rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface);">
-                        <div style="color: var(--text-muted); margin-bottom: 1rem;">
-                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block; margin-bottom: 1rem;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                            </svg>
-                        </div>
-                        <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary);">Start Your Journey!</p>
-                        <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.4;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
-                        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-                            <a href="daily-prompt.html" class="btn btn-primary btn-small">Daily Prompt</a>
-                            <a href="ai-coach.html" class="btn btn-secondary btn-small">AI Coach</a>
-                        </div>
-                    </div>
-                `;
-                return;
-            }
-
-            for (const activity of displayActivities) {
-                const activityElement = document.createElement('div');
-                activityElement.className = 'activity-item';
-                
-                // Get activity icon and details
-                const { icon, description, linkUrl } = this.getActivityDetails(activity);
-                
-                activityElement.innerHTML = `
-                    <div class="activity-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${this.getActivityColor(activity.type)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">
-                        ${icon}
-                    </div>
-                    <div class="activity-content" style="flex: 1;">
-                        <p style="margin: 0 0 0.25rem 0; font-weight: 500; color: var(--text-primary);">${description}</p>
-                        <small style="color: var(--text-secondary); font-size: 0.8rem;">${this.formatTimeAgo(activity.timestamp)}</small>
-                    </div>
-                `;
-
-                // Add click handler if there's a link
-                if (linkUrl) {
-                    activityElement.style.cursor = 'pointer';
-                    activityElement.addEventListener('click', () => {
-                        window.location.href = linkUrl;
-                    });
-                    
-                    activityElement.addEventListener('mouseenter', () => {
-                        activityElement.style.background = 'var(--surface)';
-                        activityElement.style.transform = 'translateY(-1px)';
-                    });
-                    
-                    activityElement.addEventListener('mouseleave', () => {
-                        activityElement.style.background = '';
-                        activityElement.style.transform = 'translateY(0)';
-                    });
-                }
-
-                activityList.appendChild(activityElement);
-            }
-
-        } catch (error) {
-            console.error('Error updating activity display:', error);
-            // Fallback to simple display
+        if (displayActivities.length === 0) {
+            // Show getting started message
             activityList.innerHTML = `
-                <div class="activity-item">
-                    <div class="activity-content">
-                        <p>Welcome to your dashboard!</p>
-                        <small>Get started by exploring the features</small>
+                <div class="activity-item" style="text-align: center; padding: 2rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface);">
+                    <div style="color: var(--text-muted); margin-bottom: 1rem;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block; margin-bottom: 1rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary);">Start Your Journey!</p>
+                    <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.4;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="daily-prompt.html" class="btn btn-primary btn-small">Daily Prompt</a>
+                        <a href="ai-coach.html" class="btn btn-secondary btn-small">AI Coach</a>
                     </div>
                 </div>
             `;
+            return;
         }
+
+        // Display each activity
+        for (const activity of displayActivities) {
+            const activityElement = document.createElement('div');
+            activityElement.className = 'activity-item';
+            
+            const { icon, description, linkUrl } = this.getActivityDetails(activity);
+            
+            activityElement.innerHTML = `
+                <div class="activity-icon" style="width: 40px; height: 40px; border-radius: 50%; background: ${this.getActivityColor(activity.type)}; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 0.8rem; margin-right: 1rem; flex-shrink: 0;">
+                    ${icon}
+                </div>
+                <div class="activity-content" style="flex: 1;">
+                    <p style="margin: 0 0 0.25rem 0; font-weight: 500; color: var(--text-primary);">${description}</p>
+                    <small style="color: var(--text-secondary); font-size: 0.8rem;">${this.formatTimeAgo(activity.timestamp)}</small>
+                </div>
+            `;
+
+            // Add click handler if there's a link
+            if (linkUrl) {
+                activityElement.style.cursor = 'pointer';
+                activityElement.addEventListener('click', () => {
+                    window.location.href = linkUrl;
+                });
+                
+                activityElement.addEventListener('mouseenter', () => {
+                    activityElement.style.background = 'var(--surface)';
+                    activityElement.style.transform = 'translateY(-1px)';
+                });
+                
+                activityElement.addEventListener('mouseleave', () => {
+                    activityElement.style.background = '';
+                    activityElement.style.transform = 'translateY(0)';
+                });
+            }
+
+            activityList.appendChild(activityElement);
+        }
+
+        console.log('✅ Activity display updated successfully');
+
+    } catch (error) {
+        console.error('❌ Error updating activity display:', error);
+        // Fallback display
+        activityList.innerHTML = `
+            <div class="activity-item">
+                <div class="activity-content">
+                    <p>Welcome to your dashboard!</p>
+                    <small>Get started by exploring the features</small>
+                </div>
+            </div>
+        `;
     }
+}
+    
+
 
     getActivityDetails(activity) {
         switch (activity.type) {
@@ -704,6 +706,91 @@ class ActivityTracker {
         return colors[type] || colors.settings;
     }
 
+getActivityDetails(activity) {
+    switch (activity.type) {
+        case 'coaching':
+            return {
+                icon: 'AI',
+                description: activity.details?.sessionLength ? 
+                    `Had ${activity.details.sessionLength} coaching session` : 
+                    'Had coaching session',
+                linkUrl: 'ai-coach.html'
+            };
+        case 'community':
+            return {
+                icon: 'CM',
+                description: activity.details?.room ? 
+                    `Posted in ${activity.details.room}` : 
+                    'Posted in community',
+                linkUrl: 'community.html'
+            };
+        case 'goals':
+            return {
+                icon: 'GL',
+                description: activity.details?.action === 'created' ? 
+                    'Created new goal' : 
+                    activity.details?.action === 'completed' ? 
+                    'Completed daily goals' : 
+                    'Updated goals',
+                linkUrl: 'goals.html'
+            };
+        case 'daily-prompt':
+            return {
+                icon: 'DP',
+                description: activity.details?.wordCount ? 
+                    `Completed daily prompt (${activity.details.wordCount} words)` :
+                    'Completed daily prompt',
+                linkUrl: 'daily-prompt.html'
+            };
+        case 'daily-tracker':
+            return {
+                icon: 'DT',
+                description: activity.details?.completedTasks ? 
+                    `Completed ${activity.details.completedTasks} daily tasks` :
+                    'Updated daily tracker',
+                linkUrl: 'daily-tracker.html'
+            };
+        case 'notification':
+            return {
+                icon: 'NT',
+                description: 'Checked notifications',
+                linkUrl: 'notifications.html'
+            };
+        case 'billing':
+            return {
+                icon: 'BI',
+                description: 'Viewed billing',
+                linkUrl: 'billing.html'
+            };
+        case 'settings':
+            return {
+                icon: 'ST',
+                description: 'Updated profile settings',
+                linkUrl: 'settings.html'
+            };
+        default:
+            return {
+                icon: '?',
+                description: activity.description || 'Unknown activity',
+                linkUrl: null
+            };
+    }
+}
+
+getActivityColor(type) {
+    const colors = {
+        coaching: '#6366f1',
+        community: '#10b981',
+        goals: '#f59e0b',
+        'daily-prompt': '#8b5cf6',
+        'daily-tracker': '#06b6d4',
+        notification: '#8b5cf6',
+        billing: '#ef4444',
+        settings: '#64748b'
+    };
+    return colors[type] || colors.settings;
+}
+    
     // Enhanced activity tracking methods
     trackCoachingSession(sessionLength = 'short') {
         this.addActivity('coaching', 'Had coaching session', { sessionLength });
