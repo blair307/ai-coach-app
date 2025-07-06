@@ -435,8 +435,8 @@ async function createDefaultRooms() {
   }
 }
 
-// JWT Middleware
-const authenticateToken = (req, res, next) => {
+// JWT Middleware with subscription check
+const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
@@ -444,12 +444,39 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ message: 'Access token required' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', (err, user) => {
+  jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key', async (err, user) => {
     if (err) {
       return res.status(403).json({ message: 'Invalid token' });
     }
-    req.user = user;
-    next();
+    
+    // Check subscription status
+    try {
+      const userRecord = await User.findById(user.userId);
+      if (!userRecord) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      // Allow access for free accounts or active subscriptions
+      const subscription = userRecord.subscription;
+      const now = new Date();
+      
+      if (subscription.plan === 'free' || 
+          subscription.status === 'active' ||
+          (subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now)) {
+        req.user = user;
+        next();
+      } else {
+        return res.status(402).json({ 
+          message: 'Subscription expired. Please renew to continue.',
+          subscriptionStatus: subscription.status,
+          expired: true
+        });
+      }
+    } catch (error) {
+      console.error('Subscription check error:', error);
+      req.user = user; // Allow access on error
+      next();
+    }
   });
 };
 
