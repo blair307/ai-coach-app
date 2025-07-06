@@ -5225,3 +5225,134 @@ a[href*="signup.html"] {
     background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
     color: white !important;
 }
+
+<style>
+        /* Add this CSS to your styles.css file to make Your Progress numbers four different colors */
+        
+        /* FOUR-COLOR PROGRESS NUMBERS - Each stat gets its own color */
+        
+        /* Coaching Sessions - Logo Blue (#2696FE) */
+        #coachingSessionsCount {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+        
+        /* Days Active - Pink (#FF2E92) */
+        #activeDaysCount {
+            background: linear-gradient(135deg, #FF2E92 0%, #E91E82 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+        
+        /* Community Posts - Brighter Green (#22c55e) */
+        #communityPostsCount {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+        
+        /* Total Goals - Brighter Orange (#ff8c00) */
+        #activeGoalsCount {
+            background: linear-gradient(135deg, #ff8c00 0%, #f97316 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+        }
+        
+        /* Enhanced hover effects for each colored number */
+        .stat:hover #coachingSessionsCount {
+            background: linear-gradient(135deg, #1e7ed8 0%, #1565c0 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .stat:hover #activeDaysCount {
+            background: linear-gradient(135deg, #E91E82 0%, #D11872 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .stat:hover #communityPostsCount {
+            background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            transform: scale(1.05) !important;
+        }
+        
+        .stat:hover #activeGoalsCount {
+            background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            transform: scale(1.05) !important;
+        }
+        
+        /* Make sure all stat numbers have the transition effect */
+        .stat-number {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        
+        /* Optional: Add subtle colored borders to match the numbers */
+        .stat:nth-child(1) {
+            border-top: 3px solid #2696FE !important;
+        }
+        
+        .stat:nth-child(2) {
+            border-top: 3px solid #FF2E92 !important;
+        }
+        
+        .stat:nth-child(3) {
+            border-top: 3px solid #22c55e !important;
+        }
+        
+        .stat:nth-child(4) {
+            border-top: 3px solid #ff8c00 !important;
+        }
+        
+        /* Ensure labels remain readable */
+        .stat-label {
+            color: var(--text-secondary) !important;
+        }
+        
+        /* Animation on load - each number appears with its color */
+        @keyframes colorReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .stat-number {
+            animation: colorReveal 0.6s ease-out !important;
+        }
+        
+        /* Stagger the animations */
+        .stat:nth-child(1) .stat-number {
+            animation-delay: 0.1s !important;
+        }
+        
+        .stat:nth-child(2) .stat-number {
+            animation-delay: 0.2s !important;
+        }
+        
+        .stat:nth-child(3) .stat-number {
+            animation-delay: 0.3s !important;
+        }
+        
+        .stat:nth-child(4) .stat-number {
+            animation-delay: 0.4s !important;
+        }
+    </style>
