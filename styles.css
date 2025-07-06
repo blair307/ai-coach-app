@@ -5226,7 +5226,7 @@ a[href*="signup.html"] {
     color: white !important;
 }
 
-<style>
+
         /* Add this CSS to your styles.css file to make Your Progress numbers four different colors */
         
         /* FOUR-COLOR PROGRESS NUMBERS - Each stat gets its own color */
@@ -5355,4 +5355,4 @@ a[href*="signup.html"] {
         .stat:nth-child(4) .stat-number {
             animation-delay: 0.4s !important;
         }
-    </style>
+
