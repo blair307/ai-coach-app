@@ -1660,6 +1660,8 @@
                     messageInput.placeholder = `Message ${room.name}...`;
                 }
                 if (sendButton) sendButton.disabled = false;
+                const emojiButton = document.getElementById('emojiBtn');
+if (emojiButton) emojiButton.disabled = false;
 
                 await loadMessages(roomId);
 
@@ -1709,6 +1711,7 @@ function createMessageElement(message, isReply = false) {
     const likes = message.likes || [];
     const likeCount = likes.length || Math.floor(Math.random() * 3);
     const isLikedByUser = likes.includes(currentUser?.id);
+    const hasLikes = likeCount > 0; // ADD THIS LINE
 
     let actionButtons = `
         <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
@@ -1734,25 +1737,28 @@ function createMessageElement(message, isReply = false) {
     }
 
     messageDiv.innerHTML = `
-    <div class="message-header">
-        ${avatarHTML}
-        <span class="username ${isOwnMessage ? 'own-message-username' : ''}">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
-        <span class="message-timestamp">${timestamp}</span>
-    </div>
-    <div class="message-content ${isOwnMessage ? 'own-message-content' : ''}">
-        <p>${escapeHtml(content)}</p>
-        <div class="message-actions">
-            ${actionButtons}
+        <div class="message-header">
+            ${avatarHTML}
+            <span class="username ${isOwnMessage ? 'own-message-username' : ''}">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
+            <span class="message-timestamp">${timestamp}</span>
         </div>
-    </div>
-    <div class="message-footer">
-        <div class="like-count ${hasLikes ? 'has-likes' : ''}" 
-             data-count="${likeCount}" 
-             style="display: ${hasLikes ? 'flex' : 'none'}; color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
-            ${hasLikes ? `♥ ${likeCount}` : ''}
+        <div class="message-content ${isOwnMessage ? 'own-message-content' : ''}">
+            <p>${escapeHtml(content)}</p>
+            <div class="message-actions">
+                ${actionButtons}
+            </div>
         </div>
-    </div>
-`;
+        <div class="message-footer">
+            <div class="like-count ${hasLikes ? 'has-likes' : ''}" 
+                 data-count="${likeCount}" 
+                 style="display: ${hasLikes ? 'flex' : 'none'}; color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);">
+                ${hasLikes ? `♥ ${likeCount}` : ''}
+            </div>
+        </div>
+    `;
+
+    return messageDiv; // ADD THIS LINE
+} // ADD THIS CLOSING BRACE
         
           
 
@@ -2588,6 +2594,42 @@ function showLikeToast(message) {
         window.logout = logout;
 
         console.log('✅ Modern Community Chat loaded with permanent message deletion!');
+
+        // EMOJI FUNCTIONALITY
+function toggleEmoji() {
+    const emojiModal = document.getElementById('emojiModal');
+    if (!emojiModal) return;
+    
+    const isCurrentlyVisible = emojiModal.style.display === 'block' && emojiModal.style.visibility !== 'hidden';
+    
+    if (isCurrentlyVisible) {
+        emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
+    } else {
+        emojiModal.style.display = 'block';
+        emojiModal.style.visibility = 'visible';
+    }
+}
+
+function insertEmoji(emoji) {
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const cursorPos = messageInput.selectionStart || messageInput.value.length;
+        const textBefore = messageInput.value.substring(0, cursorPos);
+        const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
+        messageInput.value = textBefore + emoji + textAfter;
+        
+        const newPos = cursorPos + emoji.length;
+        messageInput.setSelectionRange(newPos, newPos);
+        messageInput.focus();
+    }
+    
+    const emojiModal = document.getElementById('emojiModal');
+    if (emojiModal) {
+        emojiModal.style.display = 'none';
+        emojiModal.style.visibility = 'hidden';
+    }
+}
     </script>
 </body>
 </html>
