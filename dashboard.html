@@ -251,6 +251,78 @@
         padding: 0.65rem 0.8rem !important;
     }
 }
+        /* MOBILE ACTIVITY FIXES - AGGRESSIVE */
+@media (max-width: 768px) {
+    .dashboard-card .activity-list {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .activity-getting-started {
+        min-height: 200px !important;
+        padding: 1.25rem 0.75rem !important;
+        margin: 0 !important;
+    }
+    
+    .activity-getting-started svg {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .activity-getting-started p:first-of-type {
+        font-size: 0.9rem !important;
+    }
+    
+    .activity-getting-started p:last-of-type {
+        font-size: 0.75rem !important;
+        max-width: 180px !important;
+    }
+    
+    .activity-getting-started div:last-child {
+        max-width: 180px !important;
+        gap: 0.4rem !important;
+    }
+    
+    .activity-getting-started a {
+        font-size: 0.7rem !important;
+        padding: 0.5rem 0.5rem !important;
+        min-width: 75px !important;
+        max-width: 85px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .activity-getting-started {
+        min-height: 180px !important;
+        padding: 1rem 0.5rem !important;
+    }
+    
+    .activity-getting-started svg {
+        width: 32px !important;
+        height: 32px !important;
+    }
+    
+    .activity-getting-started p:last-of-type {
+        max-width: 160px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    .activity-getting-started div:last-child {
+        max-width: 160px !important;
+    }
+    
+    .activity-getting-started a {
+        font-size: 0.65rem !important;
+        padding: 0.45rem 0.4rem !important;
+        min-width: 70px !important;
+        max-width: 75px !important;
+    }
+}
+
+/* Hide view all activity link */
+.view-all-link {
+    display: none !important;
+}
     </style>
 </head>
 <body>
@@ -433,7 +505,7 @@
                  <div class="activity-list">
     <!-- Activity items will be populated by JavaScript -->
 </div>
-                    <a href="#" class="view-all-link">View All Activity</a>
+<!-- View All Activity link removed -->
                 </div>
 
                 <!-- 5. Recent Notifications - UPDATED -->
@@ -591,18 +663,21 @@ class ActivityTracker {
 
             if (displayActivities.length === 0) {
           // Show getting started message instead of empty state
+// Show getting started message instead of empty state - MOBILE OPTIMIZED
 activityList.innerHTML = `
-    <div class="activity-item activity-getting-started" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1.5rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface); width: 100%; box-sizing: border-box; min-height: 280px;">
-        <div style="color: var(--text-muted); margin-bottom: 1.5rem;">
-            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block;">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-            </svg>
+    <div class="activity-item activity-getting-started" style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; text-align: center; padding: 1.5rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface); width: 100%; box-sizing: border-box; min-height: 240px; max-width: 100%; overflow: hidden;">
+        <div style="flex-shrink: 0;">
+            <div style="color: var(--text-muted); margin-bottom: 1rem;">
+                <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <p style="margin: 0 0 0.75rem 0; font-weight: 600; color: var(--text-primary); font-size: 1rem; line-height: 1.2;">Start Your Journey!</p>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; max-width: 220px; margin: 0 auto;">Complete a daily prompt or chat with your AI coach to see your activity here.</p>
         </div>
-        <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary); font-size: 1.1rem; line-height: 1.3;">Start Your Journey!</p>
-        <p style="margin: 0 0 2rem 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; max-width: 280px;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
-        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; width: 100%; margin-top: auto;">
-            <a href="daily-prompt.html" class="btn btn-primary btn-small" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; border-radius: 8px; text-decoration: none; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; min-width: 110px; text-align: center; white-space: nowrap;">Daily Prompt</a>
-            <a href="ai-coach.html" class="btn btn-secondary btn-small" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; border-radius: 8px; text-decoration: none; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); min-width: 110px; text-align: center; white-space: nowrap;">AI Coach</a>
+        <div style="display: flex; gap: 0.5rem; justify-content: center; width: 100%; max-width: 200px; margin-top: 1rem; flex-shrink: 0;">
+            <a href="daily-prompt.html" style="flex: 1; padding: 0.6rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: 6px; text-decoration: none; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; text-align: center; white-space: nowrap; min-width: 80px; max-width: 95px;">Daily Prompt</a>
+            <a href="ai-coach.html" style="flex: 1; padding: 0.6rem 0.75rem; font-size: 0.75rem; font-weight: 600; border-radius: 6px; text-decoration: none; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); text-align: center; white-space: nowrap; min-width: 80px; max-width: 95px;">AI Coach</a>
         </div>
     </div>
 `;
