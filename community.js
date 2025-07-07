@@ -1013,55 +1013,6 @@ function showErrorMessage(message) {
     }, 4000);
 }
 
-// Like functionality
-function toggleLike(messageId) {
-    try {
-        console.log('❤️ Toggling like for message:', messageId);
-        
-        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-        if (!messageElement) return;
-        
-        const likeBtn = messageElement.querySelector('.like-btn');
-        const likeCount = messageElement.querySelector('.like-count');
-        
-        if (!likeBtn || !likeCount) return;
-        
-        const isCurrentlyLiked = likeBtn.classList.contains('liked');
-        const currentCount = parseInt(likeCount.dataset.count || '0');
-        
-        if (isCurrentlyLiked) {
-            likeBtn.classList.remove('liked');
-            likeBtn.innerHTML = '♡';
-            const newCount = Math.max(0, currentCount - 1);
-            updateLikeDisplay(likeCount, newCount);
-        } else {
-            likeBtn.classList.add('liked');
-            likeBtn.innerHTML = '♥';
-            const newCount = currentCount + 1;
-            updateLikeDisplay(likeCount, newCount);
-            
-            if (navigator.vibrate && window.innerWidth <= 1024) {
-                navigator.vibrate(30);
-            }
-        }
-    } catch (error) {
-        console.error('❌ Error toggling like:', error);
-    }
-}
-
-function updateLikeDisplay(likeElement, count) {
-    likeElement.dataset.count = count;
-    
-    if (count > 0) {
-        likeElement.innerHTML = `♥ ${count}`;
-        likeElement.classList.add('has-likes');
-        likeElement.style.display = 'flex';
-    } else {
-        likeElement.innerHTML = '';
-        likeElement.classList.remove('has-likes');
-        likeElement.style.display = 'none';
-    }
-}
 
 // Room management
 async function createRoom() {
