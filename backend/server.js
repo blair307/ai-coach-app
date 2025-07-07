@@ -59,9 +59,24 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 }
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/aicoach')
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch(err => console.error('❌ MongoDB connection error:', err));
+console.log('🔍 Connecting to MongoDB...');
+console.log('📍 MongoDB URI configured:', !!process.env.MONGODB_URI);
+
+if (!process.env.MONGODB_URI) {
+  console.error('❌ MONGODB_URI environment variable is not set');
+  process.exit(1);
+}
+
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB Atlas successfully');
+    console.log('📊 Database connection state:', mongoose.connection.readyState);
+  })
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    console.error('🔍 Check your MONGODB_URI in Render environment variables');
+    process.exit(1);
+  });
 
 // Updated User Schema with Streak Tracking + Password Reset
 const userSchema = new mongoose.Schema({
