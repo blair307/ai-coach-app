@@ -320,10 +320,6 @@
 }
 
 /* Hide view all activity link */
-.view-all-link {
-    display: none !important;
-}
-               /* Hide view all activity link */
         .view-all-link {
             display: none !important;
         }
@@ -341,16 +337,68 @@
             flex-shrink: 0 !important;
         }
 
+        /* STRONGER HEADER FIX - Override all styles.css rules */
+        .content-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 1rem 1.5rem !important;
+        }
+
+        .content-header .header-actions {
+            position: static !important;
+            transform: none !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.25rem !important;
+            margin-left: auto !important;
+        }
+
+        .notification-icon-container,
+        .profile-dropdown-container {
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
         /* Mobile: hide coaching button and adjust spacing */
         @media (max-width: 768px) {
-            .header-actions {
+            .content-header {
+                position: relative !important;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                padding: 1rem !important;
+            }
+            
+            .content-header h1 {
+                font-size: 1.5rem !important;
+                margin: 0 !important;
+                text-align: left !important;
+            }
+            
+            .content-header .header-actions {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                transform: none !important;
+                display: flex !important;
                 gap: 1rem !important;
+                margin-left: auto !important;
             }
             
             .header-actions .btn {
                 display: none !important;
             }
+
+            .notification-icon-container,
+            .profile-dropdown-container {
+                position: relative !important;
+                display: flex !important;
+            }
         }
+    </style>
+        
     </style>
 </head>
 <body>
