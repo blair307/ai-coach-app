@@ -71,6 +71,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log('📊 Database connection state:', mongoose.connection.readyState);
+    createDefaultRooms();
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
