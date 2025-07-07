@@ -545,7 +545,7 @@ async function loadGoalsAndProgress() {
 // Load progress data from server - ENHANCED
 async function loadProgressFromServer() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             console.log('No auth token, using localStorage fallback');
             loadDailyProgress();
@@ -596,7 +596,7 @@ async function loadProgressFromServer() {
       // Load goals from backend API - UPDATED to use life-goals endpoint
 async function loadGoalsFromBackend() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         
         if (!token) {
             console.log('No auth token found, using localStorage fallback');
@@ -791,7 +791,7 @@ if (newCompleted) {
        // Save progress to server - NEW
 async function saveProgressToServer(goalId, completed, area, date) {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             console.log('No auth token, saving locally only');
             return;
@@ -1054,7 +1054,7 @@ async function updateSummaryStats() {
 
     // Try to get enhanced stats from server
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (token) {
             const response = await fetch(`${API_BASE_URL}/api/daily-progress/summary`, {
                 headers: {
@@ -1087,7 +1087,7 @@ async function updateSummaryStats() {
         // Save goal to backend
         async function saveGoalToBackend(goal) {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
                 if (!token) return;
 
                 const goalId = goal._id || goal.id;
@@ -1225,7 +1225,7 @@ async function updateSummaryStats() {
 
         async function loadUserProfile() {
             try {
-                const token = localStorage.getItem('eeh_token') || localStorage.getItem('authToken');
+                const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
                 if (!token) return;
 
                 const response = await fetch(`${API_BASE_URL}/api/user/profile`, {
@@ -1290,7 +1290,7 @@ async function updateSummaryStats() {
         // Notification functions
         async function updateNotificationCount() {
             try {
-                const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+                const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
                 if (!token) return;
                 
                 const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
