@@ -216,7 +216,7 @@ function setLayoutForScreenSize() {
 // Get current user info from token or localStorage
 function getCurrentUser() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             console.log('❌ No auth token found');
             return null;
@@ -241,7 +241,7 @@ function getCurrentUser() {
 // Load all rooms from backend - WITH TIMEOUT
 async function loadRooms() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -419,7 +419,7 @@ async function switchRoom(roomId) {
 // Load messages for a specific room - WITH TIMEOUT AND ENHANCED FEATURES
 async function loadMessages(roomId) {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -564,7 +564,7 @@ function createMessageElement(message) {
 // NEW: Toggle like functionality with backend integration
 async function toggleLike(messageId) {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -751,7 +751,7 @@ async function sendCommunityMessage() {
             navigator.vibrate(30);
         }
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -854,7 +854,7 @@ async function createRoom() {
         const roomDescription = prompt('Enter room description:');
         if (!roomDescription || !roomDescription.trim()) return;
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -904,7 +904,7 @@ async function deleteRoom(roomId) {
     }
 
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -1072,7 +1072,7 @@ async function executeSearch(query) {
             return;
         }
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
