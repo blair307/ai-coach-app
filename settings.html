@@ -773,13 +773,13 @@
             setInterval(updateNotificationCount, 30000);
         });
 
-        // LONG-TERM STORAGE: Always use 'eeh_token' for permanent storage
+        // LONG-TERM STORAGE: Always use 'authToken' for permanent storage
         function getAuthToken() {
-            return localStorage.getItem('eeh_token');
+            return localStorage.getItem('authToken');
         }
 
         function setAuthToken(token) {
-            localStorage.setItem('eeh_token', token);
+            localStorage.setItem('authToken', token);
         }
 
         function clearAllStorage() {
