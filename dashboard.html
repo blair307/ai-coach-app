@@ -323,6 +323,34 @@
 .view-all-link {
     display: none !important;
 }
+               /* Hide view all activity link */
+        .view-all-link {
+            display: none !important;
+        }
+
+        /* HEADER SPACING FIX - SIMPLE */
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.25rem !important;
+        }
+
+        .notification-icon-container,
+        .profile-dropdown-container,
+        .profile-avatar {
+            flex-shrink: 0 !important;
+        }
+
+        /* Mobile: hide coaching button and adjust spacing */
+        @media (max-width: 768px) {
+            .header-actions {
+                gap: 1rem !important;
+            }
+            
+            .header-actions .btn {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
