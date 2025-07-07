@@ -849,7 +849,7 @@ function setupEmotionSelector() {
 }
 async function initializePage() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             window.location.href = 'index.html';
             return;
@@ -879,7 +879,7 @@ async function initializePage() {
 
 async function loadTodayPrompt() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/daily-prompt/today`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -932,7 +932,7 @@ async function loadTodayPrompt() {
 
 async function loadUserStats() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/daily-prompt/stats`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -957,7 +957,7 @@ async function loadUserStats() {
 
 async function loadHistory() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const response = await fetch(`${API_BASE_URL}/api/daily-prompt/history?limit=5`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1037,7 +1037,7 @@ async function submitResponse() {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Saving...';
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const timeToComplete = responseStartTime ? Math.floor((Date.now() - responseStartTime) / 1000) : null;
 
         const requestData = {
