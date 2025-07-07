@@ -4132,3 +4132,139 @@ body {
     font-size: 1.1rem;
     font-weight: 600;
     color
+
+    /* HEADER SPACING FIX - Add this to your styles.css */
+
+/* Fix uneven spacing in header actions */
+.header-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.5rem !important; /* Even spacing between all elements */
+}
+
+/* Notification icon container */
+.notification-icon-container {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.notification-icon-container:hover {
+    background: var(--primary) !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Profile dropdown container */
+.profile-dropdown-container {
+    display: flex !important;
+    align-items: center !important;
+    position: relative !important;
+}
+
+/* Profile avatar consistent sizing */
+.profile-avatar {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: var(--primary) !important;
+    color: white !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    border: 2px solid transparent !important;
+}
+
+.profile-avatar:hover {
+    border-color: var(--primary-light) !important;
+    transform: translateY(-1px) !important;
+}
+
+/* Start Coaching Session button */
+.btn.btn-primary {
+    white-space: nowrap !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    transition: all 0.2s ease !important;
+}
+
+.btn.btn-primary:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3) !important;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+    .header-actions {
+        gap: 1rem !important; /* Slightly smaller gap on mobile */
+    }
+    
+    /* Hide coaching button on mobile */
+    .btn.btn-primary {
+        display: none !important;
+    }
+    
+    /* Adjust profile avatar on mobile */
+    .profile-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    /* Adjust notification icon on mobile */
+    .notification-icon-container {
+        width: 36px !important;
+        height: 36px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-actions {
+        gap: 0.75rem !important; /* Even smaller gap on very small screens */
+    }
+}
+
+/* Fix notification bell icon size */
+.bell-icon {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Notification count badge positioning */
+.notification-count {
+    position: absolute !important;
+    top: -6px !important;
+    right: -6px !important;
+    background: var(--error) !important;
+    color: white !important;
+    border-radius: 50% !important;
+    width: 18px !important;
+    height: 18px !important;
+    font-size: 0.7rem !important;
+    font-weight: 600 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 2px solid white !important;
+}
+
+/* Ensure notification bell stays centered */
+.notification-bell {
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
