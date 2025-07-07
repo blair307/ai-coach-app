@@ -337,7 +337,7 @@
             flex-shrink: 0 !important;
         }
 
-        /* STRONGER HEADER FIX - Override all styles.css rules */
+        /* COMPLETE HEADER SPACING FIX - All 3 elements evenly spaced */
         .content-header {
             display: flex !important;
             justify-content: space-between !important;
@@ -350,18 +350,38 @@
             transform: none !important;
             display: flex !important;
             align-items: center !important;
-            gap: 1.25rem !important;
+            gap: 1.5rem !important; /* Even spacing between ALL 3 elements */
             margin-left: auto !important;
         }
 
-        .notification-icon-container,
+        /* Ensure all elements are same size for visual balance */
+        .notification-icon-container {
+            width: 44px !important;
+            height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
         .profile-dropdown-container {
-            position: relative !important;
             display: flex !important;
             align-items: center !important;
         }
 
-        /* Mobile: hide coaching button and adjust spacing */
+        .profile-avatar {
+            width: 44px !important;
+            height: 44px !important;
+        }
+
+        .header-actions .btn.btn-primary {
+            height: 44px !important;
+            padding: 0 1.5rem !important;
+            display: flex !important;
+            align-items: center !important;
+            white-space: nowrap !important;
+        }
+
+        /* Mobile: hide coaching button but keep notification and profile evenly spaced */
         @media (max-width: 768px) {
             .content-header {
                 position: relative !important;
@@ -383,10 +403,11 @@
                 right: auto !important;
                 transform: none !important;
                 display: flex !important;
-                gap: 1rem !important;
+                gap: 1.25rem !important; /* Smaller gap for mobile with 2 elements */
                 margin-left: auto !important;
             }
             
+            /* Hide coaching button on mobile */
             .header-actions .btn {
                 display: none !important;
             }
@@ -397,7 +418,7 @@
                 display: flex !important;
             }
         }
-    </style>
+
         
     </style>
 </head>
