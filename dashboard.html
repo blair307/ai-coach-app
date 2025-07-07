@@ -186,6 +186,71 @@
                 font-size: 1.75rem !important;
             }
         }
+
+        /* RECENT ACTIVITY LAYOUT FIXES */
+.activity-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    min-height: 200px !important;
+    width: 100% !important;
+}
+
+.activity-getting-started {
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.activity-getting-started a.btn-small {
+    transition: all 0.2s ease !important;
+    cursor: pointer !important;
+}
+
+.activity-getting-started a.btn-small:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+}
+
+/* Mobile fixes for activity section */
+@media (max-width: 768px) {
+    .activity-getting-started {
+        padding: 1.5rem 1rem !important;
+        min-height: 240px !important;
+    }
+    
+    .activity-getting-started p:nth-of-type(2) {
+        font-size: 0.85rem !important;
+        max-width: 240px !important;
+    }
+    
+    .activity-getting-started div:last-child {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+    }
+    
+    .activity-getting-started a.btn-small {
+        width: 140px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .activity-getting-started {
+        padding: 1.25rem 0.75rem !important;
+        min-height: 220px !important;
+    }
+    
+    .activity-getting-started svg {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .activity-getting-started a.btn-small {
+        width: 120px !important;
+        font-size: 0.8rem !important;
+        padding: 0.65rem 0.8rem !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -525,19 +590,19 @@ class ActivityTracker {
             activityList.innerHTML = '';
 
             if (displayActivities.length === 0) {
-                // Show getting started message instead of empty state
-   activityList.innerHTML = `
-    <div class="activity-item" style="text-align: center; padding: 2rem 1rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface);">
-        <div style="color: var(--text-muted); margin-bottom: 1rem;">
-            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block; margin-bottom: 1rem;">
+          // Show getting started message instead of empty state
+activityList.innerHTML = `
+    <div class="activity-item activity-getting-started" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem 1.5rem; border: 2px dashed var(--border); border-radius: var(--radius-lg); background: var(--surface); width: 100%; box-sizing: border-box; min-height: 280px;">
+        <div style="color: var(--text-muted); margin-bottom: 1.5rem;">
+            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto; display: block;">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
             </svg>
         </div>
-        <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary);">Start Your Journey!</p>
-        <p style="margin: 0 0 1rem 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.4;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
-        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
-            <a href="daily-prompt.html" class="btn btn-primary btn-small">Daily Prompt</a>
-            <a href="ai-coach.html" class="btn btn-secondary btn-small">AI Coach</a>
+        <p style="margin: 0 0 1rem 0; font-weight: 600; color: var(--text-primary); font-size: 1.1rem; line-height: 1.3;">Start Your Journey!</p>
+        <p style="margin: 0 0 2rem 0; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; max-width: 280px;">Complete a daily prompt, chat with your AI coach, or set some life goals to see your activity here.</p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; width: 100%; margin-top: auto;">
+            <a href="daily-prompt.html" class="btn btn-primary btn-small" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; border-radius: 8px; text-decoration: none; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color: white; min-width: 110px; text-align: center; white-space: nowrap;">Daily Prompt</a>
+            <a href="ai-coach.html" class="btn btn-secondary btn-small" style="padding: 0.75rem 1.25rem; font-size: 0.875rem; font-weight: 600; border-radius: 8px; text-decoration: none; background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); min-width: 110px; text-align: center; white-space: nowrap;">AI Coach</a>
         </div>
     </div>
 `;
