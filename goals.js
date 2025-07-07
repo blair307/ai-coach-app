@@ -7,7 +7,7 @@ class GoalsManager {
     constructor() {
         this.goals = [];
         this.baseURL = 'https://ai-coach-backend-pbse.onrender.com/api';
-        this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        this.token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         
         if (!this.token) {
             console.error('No auth token found');
