@@ -114,7 +114,7 @@ function findSendButton() {
 function getAuthToken() {
     // Try different token storage methods
     const possibleTokens = [
-        localStorage.getItem('eeh_token'),
+        localStorage.getItem('authToken'),
         localStorage.getItem('authToken'), 
         localStorage.getItem('auth_token'),
         localStorage.getItem('token')
@@ -288,7 +288,7 @@ async function callAI(message) {
             console.log('❌ Auth error details:', errorData);
             
             // Clear all tokens and redirect to login
-            localStorage.removeItem('eeh_token');
+            localStorage.removeItem('authToken');
             localStorage.removeItem('authToken');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('token');
@@ -745,7 +745,7 @@ function logout() {
         // Clear all stored data
         localStorage.removeItem('authToken');
         localStorage.removeItem('userData');
-        localStorage.removeItem('eeh_token');
+        localStorage.removeItem('authToken');
         
         // Redirect to login
         window.location.href = 'login.html';
