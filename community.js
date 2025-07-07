@@ -1013,151 +1013,54 @@ function showErrorMessage(message) {
     }, 4000);
 }
 
-// Replace your toggleLike function in community.html <script> section with this:
-
+// Like functionality
 function toggleLike(messageId) {
     try {
         console.log('❤️ Toggling like for message:', messageId);
         
         const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-        if (!messageElement) {
-            console.error('❌ Message element not found:', messageId);
-            return;
-        }
+        if (!messageElement) return;
         
         const likeBtn = messageElement.querySelector('.like-btn');
-        const likeCountElement = messageElement.querySelector('.like-count');
+        const likeCount = messageElement.querySelector('.like-count');
         
-        if (!likeBtn) {
-            console.error('❌ Like button not found in message:', messageId);
-            return;
-        }
-
-        if (!likeCountElement) {
-            console.error('❌ Like count element not found in message:', messageId);
-            return;
-        }
+        if (!likeBtn || !likeCount) return;
         
         const isCurrentlyLiked = likeBtn.classList.contains('liked');
-        const currentCount = parseInt(likeCountElement.dataset.count || '0');
-        
-        console.log('💫 Current like state:', { isCurrentlyLiked, currentCount });
+        const currentCount = parseInt(likeCount.dataset.count || '0');
         
         if (isCurrentlyLiked) {
-            // Unlike the message
             likeBtn.classList.remove('liked');
             likeBtn.innerHTML = '♡';
-            likeBtn.style.color = '';
-            likeBtn.style.background = '';
-            likeBtn.style.borderColor = '';
-            
             const newCount = Math.max(0, currentCount - 1);
-            updateLikeDisplay(likeCountElement, newCount);
-            
-            console.log('💔 Message unliked, new count:', newCount);
-            
+            updateLikeDisplay(likeCount, newCount);
         } else {
-            // Like the message
             likeBtn.classList.add('liked');
             likeBtn.innerHTML = '♥';
-            likeBtn.style.color = '#ef4444';
-            likeBtn.style.background = 'rgba(239, 68, 68, 0.15)';
-            likeBtn.style.borderColor = '#ef4444';
-            
             const newCount = currentCount + 1;
-            updateLikeDisplay(likeCountElement, newCount);
+            updateLikeDisplay(likeCount, newCount);
             
-            console.log('❤️ Message liked, new count:', newCount);
-            
-            // Add visual feedback
-            likeBtn.style.transform = 'scale(1.3)';
-            setTimeout(() => {
-                likeBtn.style.transform = 'scale(1)';
-            }, 200);
-            
-            // Vibrate on mobile
             if (navigator.vibrate && window.innerWidth <= 1024) {
                 navigator.vibrate(30);
             }
-            
-            // Show a brief success message
-            showLikeToast('❤️ Liked!');
         }
-        
     } catch (error) {
         console.error('❌ Error toggling like:', error);
-        showErrorMessage('Failed to toggle like. Please try again.');
     }
 }
 
-// ENHANCED UPDATE LIKE DISPLAY FUNCTION
 function updateLikeDisplay(likeElement, count) {
-    if (!likeElement) {
-        console.error('❌ Like element not provided to updateLikeDisplay');
-        return;
-    }
-    
     likeElement.dataset.count = count;
-    
-    console.log('📊 Updating like display:', { count, element: likeElement });
     
     if (count > 0) {
         likeElement.innerHTML = `♥ ${count}`;
         likeElement.classList.add('has-likes');
         likeElement.style.display = 'flex';
-        likeElement.style.color = '#ef4444';
-        likeElement.style.background = 'rgba(239, 68, 68, 0.1)';
-        likeElement.style.border = '1px solid rgba(239, 68, 68, 0.2)';
-        
-        console.log('✅ Like count displayed:', count);
     } else {
         likeElement.innerHTML = '';
         likeElement.classList.remove('has-likes');
         likeElement.style.display = 'none';
-        
-        console.log('🚫 Like count hidden (zero likes)');
     }
-}
-
-// NEW: LIKE TOAST NOTIFICATION
-function showLikeToast(message) {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 120px; left: 50%; transform: translateX(-50%);' : 'bottom: 120px; right: 20px;'}
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        color: white;
-        padding: 0.75rem 1.25rem;
-        border-radius: 25px;
-        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.4);
-        z-index: 10000;
-        font-weight: 600;
-        font-size: 0.9rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        transform: ${isMobile ? 'translateX(-50%) translateY(100%)' : 'translateY(100%)'};
-        transition: transform 0.3s ease;
-        pointer-events: none;
-    `;
-    toast.innerHTML = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.transform = isMobile ? 'translateX(-50%) translateY(0)' : 'translateY(0)';
-    }, 100);
-    
-    setTimeout(() => {
-        toast.style.transform = isMobile ? 'translateX(-50%) translateY(100%)' : 'translateY(100%)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 1500);
 }
 
 // Room management
