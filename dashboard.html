@@ -319,6 +319,78 @@
     }
 }
 
+        /* Hide view all activity link */
+        .view-all-link {
+            display: none !important;
+        }
+
+        /* HEADER SPACING FIX - SIMPLE */
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.25rem !important;
+        }
+
+        .notification-icon-container,
+        .profile-dropdown-container,
+        .profile-avatar {
+            flex-shrink: 0 !important;
+        }
+
+        /* FORCE ELEMENTS INTO HEADER-ACTIONS - Debug approach */
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+            margin-left: auto !important;
+            position: static !important;
+            transform: none !important;
+            right: auto !important;
+            top: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* Make sure ALL child elements are flex items */
+        .header-actions > * {
+            display: flex !important;
+            align-items: center !important;
+            position: relative !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* Specific targeting for each element */
+        .notification-icon-container {
+            order: 1 !important;
+        }
+
+        .profile-dropdown-container {
+            order: 2 !important;
+        }
+
+        .header-actions .btn {
+            order: 3 !important;
+        }
+
+        /* Mobile: hide coaching button */
+        @media (max-width: 768px) {
+            .header-actions {
+                gap: 1.25rem !important;
+            }
+            
+            .header-actions .btn {
+                display: none !important;
+            }
+        }
+
+        /* Debug: Add temporary background to see what's happening */
+        .header-actions {
+            background: rgba(255, 0, 0, 0.1) !important; /* Temporary red tint */
+            border: 1px solid red !important; /* Temporary red border */
+            padding: 0.5rem !important;
+        }
+    </style>
 
         
     </style>
