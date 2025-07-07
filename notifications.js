@@ -7,7 +7,7 @@ class NotificationManager {
     constructor() {
         this.notifications = [];
         this.baseURL = 'https://ai-coach-backend-pbse.onrender.com/api';
-        this.token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        this.token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         
         if (!this.token) {
             console.error('No auth token found');
@@ -336,7 +336,7 @@ window.updateNotificationCount = async function() {
     if (!notificationManager) {
         // Create a simple version for pages without full notification manager
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return;
             
             const response = await fetch('https://ai-coach-backend-mytn.onrender.com/api/notifications/unread-count', {
