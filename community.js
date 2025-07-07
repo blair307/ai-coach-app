@@ -159,7 +159,7 @@ function setLayoutForScreenSize() {
 // Get current user info
 function getCurrentUser() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             console.log('❌ No auth token found');
             return null;
@@ -183,7 +183,7 @@ function getCurrentUser() {
 // Load rooms from backend
 async function loadRooms() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -450,7 +450,7 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
 // Load messages for a room
 async function loadMessages(roomId) {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -722,7 +722,7 @@ async function sendCommunityMessage() {
             navigator.vibrate(30);
         }
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -1072,7 +1072,7 @@ async function createRoom() {
         const roomDescription = prompt('Enter room description:');
         if (!roomDescription || !roomDescription.trim()) return;
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -1117,7 +1117,7 @@ async function deleteRoom(roomId) {
     }
 
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -1224,7 +1224,7 @@ async function executeSearch(query) {
             return;
         }
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
@@ -1444,7 +1444,7 @@ function initializeEventListeners() {
 // Notification count functionality
 async function updateNotificationCount() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) return;
         
         const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
@@ -1656,7 +1656,7 @@ async function deleteMessage(messageId) {
 
         console.log('🗑️ Starting deletion for message:', messageId);
 
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
         }
