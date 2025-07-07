@@ -863,7 +863,7 @@ activityList.innerHTML = `
 
     async checkForRecentApiActivity() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return;
 
             const lastCheck = localStorage.getItem('eeh_last_activity_check');
@@ -1285,7 +1285,7 @@ initializeData() {
     // Get coaching sessions from API
     async getCoachingSessions() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return 0;
 
             const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/chat/history', {
@@ -1315,7 +1315,7 @@ initializeData() {
     // Get community posts from API
     async getCommunityPosts() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return 0;
 
             // Get user info
@@ -1368,7 +1368,7 @@ initializeData() {
     // Get active goals from API
     async getActiveGoals() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return 0;
 
             const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/life-goals', {
@@ -1592,7 +1592,7 @@ window.loadDashboardInsights = loadDashboardInsights;
     // Dashboard Goals Loading
     async function loadDashboardGoals() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             const goalsCardContent = document.getElementById('goalsCardContent');
             
             if (!token) {
@@ -1713,7 +1713,7 @@ window.loadDashboardInsights = loadDashboardInsights;
 // Load recent insights for dashboard
 async function loadDashboardInsights() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const insightsList = document.getElementById('insightsList');
         
         if (!token) {
@@ -1854,7 +1854,7 @@ function formatDashboardTimeAgo(dateString) {
 // Load real notifications for dashboard preview
 async function loadDashboardNotifications() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const notificationsPreview = document.querySelector('.notifications-preview');
         
         if (!token) {
@@ -2032,7 +2032,7 @@ function formatNotificationTime(timestamp) {
     // Notification counter
     async function updateNotificationCount() {
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return;
             
             const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
@@ -2067,7 +2067,7 @@ function formatNotificationTime(timestamp) {
 // FIXED: Load real notifications for dashboard preview
 async function loadDashboardNotifications() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         const notificationsPreview = document.querySelector('.notifications-preview');
         
         if (!token) {
@@ -2259,7 +2259,7 @@ function getIconColor(type) {
 // FIXED: Notification counter with timeout
 async function updateNotificationCount() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('eeh_token');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) return;
         
         const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
@@ -2705,7 +2705,7 @@ function closeProfileDropdown() {
 
 async function loadUserProfile() {
     try {
-        const token = localStorage.getItem('eeh_token') || localStorage.getItem('authToken');
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             console.log('No auth token found');
             return;
