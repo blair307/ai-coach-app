@@ -125,8 +125,7 @@ const Goal = mongoose.model('Goal', goalSchema);
 // Notifications Schema - ENHANCED FOR REPLIES
 const notificationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  type: { type: String, enum: ['coaching', 'community', 'system', 'billing'], required: true },
-  title: { type: String, required: true },
+type: { type: String, enum: ['coaching', 'community', 'system', 'billing', 'goals'], required: true },  title: { type: String, required: true },
   content: { type: String, required: true },
   read: { type: Boolean, default: false },
   isReply: { type: Boolean, default: false }, // NEW: Mark reply notifications
