@@ -703,7 +703,44 @@
 
                 const result = await response.json();
                 console.log('Goal saved successfully:', result);
+                
+ // CREATE NOTIFICATION for new goal
+                await createGoalNotification(result);
+                
                 return result;
+
+ // ADD THIS FUNCTION HERE - Goal notification creation
+        async function createGoalNotification(goalData) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+                if (!token) return;
+                
+                console.log('📢 Creating goal notification...');
+                
+                const notification = {
+                    type: 'goals',
+                    title: '🎯 New Goal Created!',
+                    content: `You've successfully created a new goal for ${goalData.area}: "${goalData.dailyAction}". Start building your streak today!`,
+                    read: false
+                };
+                
+                await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(notification)
+                });
+                
+                console.log('✅ Goal notification created');
+                
+            } catch (error) {
+                console.error('Error creating notification:', error);
+            }
+        }
+                
+            } catch (error) {
                 
             } catch (error) {
                 console.error('Backend save failed, using localStorage fallback:', error);
