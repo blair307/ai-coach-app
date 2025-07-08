@@ -761,26 +761,51 @@
     </style>
 
 <script>
-// Content-based notification routing
+// Content-based notification routing and icon fixing
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         const notifications = document.querySelectorAll('.notification-item');
         
         notifications.forEach((notification, index) => {
+            const title = notification.querySelector('h3').textContent.toLowerCase();
+            const content = notification.querySelector('p').textContent.toLowerCase();
+            const iconElement = notification.querySelector('.notification-icon');
+            const iconText = notification.querySelector('.icon-text');
+            
+            // Fix icons and types based on content
+            if (title.includes('prompt') || content.includes('prompt')) {
+                notification.dataset.type = 'daily-prompt';
+                iconElement.className = 'notification-icon daily-prompt';
+                iconText.textContent = 'DP';
+            } else if (title.includes('goal') || content.includes('goal')) {
+                notification.dataset.type = 'goals';
+                iconElement.className = 'notification-icon goals';
+                iconText.textContent = 'GO';
+            } else if (title.includes('coach') || content.includes('coach')) {
+                notification.dataset.type = 'coaching';
+                iconElement.className = 'notification-icon coaching';
+                iconText.textContent = 'AI';
+            } else if (title.includes('community') || content.includes('room')) {
+                notification.dataset.type = 'community';
+                iconElement.className = 'notification-icon community';
+                iconText.textContent = 'CM';
+            } else if (title.includes('billing') || title.includes('payment')) {
+                notification.dataset.type = 'billing';
+                iconElement.className = 'notification-icon billing';
+                iconText.textContent = 'BI';
+            }
+            
+            // Add click handler for routing
             notification.onclick = function(e) {
-                // Don't navigate if clicking on action buttons
                 if (e.target.closest('.notification-actions')) {
                     return;
                 }
-                
-                const title = this.querySelector('h3').textContent.toLowerCase();
-                const content = this.querySelector('p').textContent.toLowerCase();
                 
                 console.log('🔗 Routing notification:', title);
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Route based on content, not just type
+                // Route based on content
                 if (title.includes('prompt') || content.includes('prompt')) {
                     window.location.href = 'daily-prompt.html';
                 } else if (title.includes('goal') || content.includes('goal')) {
@@ -799,7 +824,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000);
 });
 </script>
-</body>
-</html>
+
 </body>
 </html>
