@@ -1709,8 +1709,8 @@ function createMessageElement(message, isReply = false) {
     }
 
     const likes = message.likes || [];
-    const likeCount = likes.length || Math.floor(Math.random() * 3);
-    const isLikedByUser = likes.includes(currentUser?.id);
+const likeCount = message.likeCount || likes.length || 0; // Start at 0
+const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
     const hasLikes = likeCount > 0; // ADD THIS LINE
 
     let actionButtons = `
