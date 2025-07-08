@@ -552,5 +552,273 @@
         updateFilterCounts();
     });
     </script>
+
+    <!-- Add this script to the bottom of your notifications.html, before the closing </body> tag -->
+
+<script>
+// Enhanced navigation functions that handle different notification types
+function handleNotificationNavigation(element, defaultDestination) {
+    const notificationItem = element.closest('.notification-item');
+    const title = notificationItem.querySelector('h3').textContent.toLowerCase();
+    const content = notificationItem.querySelector('p').textContent.toLowerCase();
+    
+    // Smart navigation based on content
+    let destination = defaultDestination;
+    
+    // Override destination based on specific keywords
+    if (title.includes('goal') || content.includes('goal')) {
+        destination = 'goals.html';
+    } else if (title.includes('prompt') || content.includes('daily prompt')) {
+        destination = 'daily-prompt.html';
+    } else if (title.includes('tracker') || content.includes('daily tracker')) {
+        destination = 'daily-tracker.html';
+    } else if (title.includes('insight') && content.includes('coach')) {
+        destination = 'ai-coach.html';
+    } else if (title.includes('community') || content.includes('room')) {
+        destination = 'community.html';
+    } else if (title.includes('billing') || title.includes('payment')) {
+        destination = 'billing.html';
+    }
+    
+    // Mark as read if unread
+    if (notificationItem.classList.contains('unread')) {
+        const markReadBtn = notificationItem.querySelector('button[onclick*="markAsRead"]');
+        if (markReadBtn) {
+            markAsRead(markReadBtn);
+        }
+    }
+    
+    // Navigate
+    console.log(`🔗 Navigating to: ${destination}`);
+    window.location.href = destination;
+}
+
+// Enhanced navigation functions for each notification type
+function goToCoach(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'ai-coach.html');
+    } else {
+        window.location.href = 'ai-coach.html';
+    }
+}
+
+function goToCommunity(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'community.html');
+    } else {
+        window.location.href = 'community.html';
+    }
+}
+
+function goToDashboard(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'dashboard.html');
+    } else {
+        window.location.href = 'dashboard.html';
+    }
+}
+
+function goToBilling(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'billing.html');
+    } else {
+        window.location.href = 'billing.html';
+    }
+}
+
+function goToGoals(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'goals.html');
+    } else {
+        window.location.href = 'goals.html';
+    }
+}
+
+function goToPrompt(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'daily-prompt.html');
+    } else {
+        window.location.href = 'daily-prompt.html';
+    }
+}
+
+function goToTracker(element = null) {
+    if (element) {
+        handleNotificationNavigation(element, 'daily-tracker.html');
+    } else {
+        window.location.href = 'daily-tracker.html';
+    }
+}
+
+// Make notifications clickable
+function makeNotificationsClickable() {
+    const notifications = document.querySelectorAll('.notification-item');
+    
+    notifications.forEach(notification => {
+        // Add cursor pointer style
+        notification.style.cursor = 'pointer';
+        notification.style.transition = 'all 0.2s ease';
+        
+        // Add hover effect
+        notification.addEventListener('mouseenter', function() {
+            this.style.background = 'rgba(99, 102, 241, 0.05)';
+            this.style.transform = 'translateX(4px)';
+            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        });
+        
+        notification.addEventListener('mouseleave', function() {
+            this.style.background = '';
+            this.style.transform = 'translateX(0)';
+            this.style.boxShadow = '';
+        });
+        
+        // Add click handler
+        notification.addEventListener('click', function(event) {
+            // Don't navigate if clicking on action buttons
+            if (event.target.closest('.notification-actions')) {
+                return;
+            }
+            
+            const type = this.dataset.type;
+            const title = this.querySelector('h3').textContent.toLowerCase();
+            const content = this.querySelector('p').textContent.toLowerCase();
+            
+            // Mark as read if unread
+            if (this.classList.contains('unread')) {
+                const markReadBtn = this.querySelector('button[onclick*="markAsRead"]');
+                if (markReadBtn) {
+                    markAsRead(markReadBtn);
+                }
+            }
+            
+            // Navigate based on type and content
+            let destination = 'dashboard.html';
+            
+            switch (type) {
+                case 'coaching':
+                    if (title.includes('goal') || content.includes('goal')) {
+                        destination = 'goals.html';
+                    } else {
+                        destination = 'ai-coach.html';
+                    }
+                    break;
+                case 'community':
+                    destination = 'community.html';
+                    break;
+                case 'system':
+                    if (title.includes('report') || content.includes('progress')) {
+                        destination = 'dashboard.html';
+                    } else {
+                        destination = 'dashboard.html';
+                    }
+                    break;
+                case 'billing':
+                    destination = 'billing.html';
+                    break;
+                default:
+                    if (content.includes('goal') || title.includes('goal')) {
+                        destination = 'goals.html';
+                    } else if (content.includes('prompt')) {
+                        destination = 'daily-prompt.html';
+                    } else if (content.includes('tracker')) {
+                        destination = 'daily-tracker.html';
+                    } else if (content.includes('community')) {
+                        destination = 'community.html';
+                    } else if (content.includes('coach')) {
+                        destination = 'ai-coach.html';
+                    }
+                    break;
+            }
+            
+            console.log(`🔗 Navigating from ${type} notification to: ${destination}`);
+            window.location.href = destination;
+        });
+        
+        // Add visual indicator for clickable notifications
+        const arrow = document.createElement('span');
+        arrow.innerHTML = '→';
+        arrow.style.cssText = `
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 1.2rem;
+            pointer-events: none;
+        `;
+        
+        notification.style.position = 'relative';
+        notification.appendChild(arrow);
+        
+        notification.addEventListener('mouseenter', function() {
+            arrow.style.opacity = '1';
+        });
+        
+        notification.addEventListener('mouseleave', function() {
+            arrow.style.opacity = '0';
+        });
+    });
+    
+    console.log('✅ Made notifications clickable:', notifications.length);
+}
+
+// Initialize clickable notifications when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait for notifications to be rendered
+    setTimeout(makeNotificationsClickable, 1000);
+});
+
+// Also call when filtering notifications
+const originalFilterNotifications = window.filterNotifications;
+window.filterNotifications = function(type) {
+    if (originalFilterNotifications) {
+        originalFilterNotifications(type);
+    }
+    
+    // Re-apply clickable functionality after filtering
+    setTimeout(makeNotificationsClickable, 100);
+};
+</script>
+
+<!-- Add this CSS for better visual feedback -->
+<style>
+.notification-item {
+    position: relative !important;
+    transition: all 0.2s ease !important;
+}
+
+.notification-item:hover {
+    background: rgba(99, 102, 241, 0.05) !important;
+    transform: translateX(4px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer !important;
+}
+
+.notification-item.unread:hover {
+    background: rgba(99, 102, 241, 0.08) !important;
+}
+
+/* Ensure action buttons don't trigger navigation */
+.notification-actions {
+    position: relative !important;
+    z-index: 2 !important;
+}
+
+.notification-actions button {
+    pointer-events: auto !important;
+}
+
+/* Mobile touch optimization */
+@media (max-width: 768px) {
+    .notification-item {
+        min-height: 80px !important;
+        touch-action: manipulation !important;
+        -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2) !important;
+    }
+}
+</style>
 </body>
 </html>
