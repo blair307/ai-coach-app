@@ -319,7 +319,7 @@
     }
 }
 
-        /* Hide view all activity link */
+     /* Hide view all activity link */
         .view-all-link {
             display: none !important;
         }
@@ -337,46 +337,28 @@
             flex-shrink: 0 !important;
         }
 
-        /* FORCE ELEMENTS INTO HEADER-ACTIONS - Debug approach */
+        /* FIXED HEADER SPACING - Final working version */
         .header-actions {
             display: flex !important;
             align-items: center !important;
-            gap: 1.5rem !important;
+            gap: 24px !important; /* Even spacing on desktop */
             margin-left: auto !important;
             position: static !important;
             transform: none !important;
-            right: auto !important;
-            top: auto !important;
-            visibility: visible !important;
-            opacity: 1 !important;
+            background: none !important;
+            border: none !important;
+            padding: 0 !important;
         }
 
-        /* Make sure ALL child elements are flex items */
-        .header-actions > * {
-            display: flex !important;
-            align-items: center !important;
-            position: relative !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-
-        /* Specific targeting for each element */
+        /* Remove notification margin that was causing uneven spacing */
         .notification-icon-container {
-            order: 1 !important;
+            margin: 0 !important;
         }
 
-        .profile-dropdown-container {
-            order: 2 !important;
-        }
-
-        .header-actions .btn {
-            order: 3 !important;
-        }
-
-        /* Mobile: hide coaching button */
+        /* Mobile: smaller gap so it doesn't cover Dashboard title */
         @media (max-width: 768px) {
             .header-actions {
-                gap: 1.25rem !important;
+                gap: 16px !important; /* Smaller gap for mobile */
             }
             
             .header-actions .btn {
@@ -384,13 +366,12 @@
             }
         }
 
-        /* Debug: Add temporary background to see what's happening */
-        .header-actions {
-            background: rgba(255, 0, 0, 0.1) !important; /* Temporary red tint */
-            border: 1px solid red !important; /* Temporary red border */
-            padding: 0.5rem !important;
+        /* Extra small screens: even smaller gap */
+        @media (max-width: 480px) {
+            .header-actions {
+                gap: 12px !important;
+            }
         }
-    </style>
 
         
     </style>
