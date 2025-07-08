@@ -514,7 +514,7 @@
         // FIXED: Create goal notification function moved to proper location
         async function createGoalNotification(goalData) {
             try {
-localStorage.getItem('authToken')
+const token = localStorage.getItem('authToken');
                 if (!token) return;
                 
                 console.log('📢 Creating goal notification...');
@@ -704,7 +704,7 @@ localStorage.getItem('authToken')
         // FIXED: Backend Functions with proper syntax
         async function saveGoalToBackend(goalData) {
             try {
-localStorage.getItem('authToken')
+const token = localStorage.getItem('authToken');
                 if (!token) {
                     throw new Error('No authentication token found');
                 }
@@ -747,7 +747,7 @@ localStorage.getItem('authToken')
 
         async function deleteGoalFromBackend(goalId) {
             try {
-localStorage.getItem('authToken')
+const token = localStorage.getItem('authToken');
                 if (!token) {
                     throw new Error('No authentication token found');
                 }
@@ -780,7 +780,7 @@ localStorage.getItem('authToken')
 
         async function loadGoalsOverview() {
             try {
-localStorage.getItem('authToken')
+const token = localStorage.getItem('authToken');
                 let goals = {};
 
                 if (token) {
@@ -973,7 +973,7 @@ localStorage.getItem('authToken')
         // Notification Functions
         async function updateNotificationCount() {
             try {
-localStorage.getItem('authToken')
+const token = localStorage.getItem('authToken');
                 if (!token) return;
                 
                 const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
