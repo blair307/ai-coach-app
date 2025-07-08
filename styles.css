@@ -4151,11 +4151,10 @@ body {
             flex-shrink: 0 !important;
         }
 
-        /* FINAL HEADER SPACING FIX - Remove debug, apply proper spacing */
+        /* REMOVE RED BOX AND FIX SPACING WITH MANUAL MARGINS */
         .header-actions {
             display: flex !important;
             align-items: center !important;
-            gap: 1.5rem !important;
             margin-left: auto !important;
             position: static !important;
             transform: none !important;
@@ -4163,41 +4162,45 @@ body {
             top: auto !important;
             visibility: visible !important;
             opacity: 1 !important;
+            background: none !important; /* Remove red background */
+            border: none !important; /* Remove red border */
+            padding: 0 !important; /* Remove debug padding */
+            gap: 0 !important; /* Remove gap, use manual margins instead */
         }
 
-        /* Remove any margins/padding that might be causing uneven spacing */
-        .header-actions > * {
-            margin: 0 !important;
-            padding: 0 !important;
-            position: relative !important;
-            display: flex !important;
-            align-items: center !important;
+        /* Manual spacing with margins instead of gap */
+        .notification-icon-container {
+            margin-right: 1.5rem !important;
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
 
-        /* Ensure notification and profile elements have consistent sizing */
-        .notification-icon-container,
         .profile-dropdown-container {
-            width: auto !important;
-            height: auto !important;
-            flex-shrink: 0 !important;
+            margin-right: 1.5rem !important;
+            margin-left: 0 !important;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
 
-        /* Make coaching button consistent height */
         .header-actions .btn {
-            height: 44px !important;
-            flex-shrink: 0 !important;
             margin: 0 !important;
             padding: 0 1.5rem !important;
+            height: 44px !important;
         }
 
-        /* Mobile: hide coaching button and adjust gap */
+        /* Mobile: hide coaching button and adjust margins */
         @media (max-width: 768px) {
-            .header-actions {
-                gap: 1.5rem !important; /* Keep same gap even on mobile */
+            .notification-icon-container {
+                margin-right: 1.5rem !important;
+            }
+            
+            .profile-dropdown-container {
+                margin-right: 0 !important; /* No margin since button is hidden */
             }
             
             .header-actions .btn {
                 display: none !important;
             }
         }
-    </style>
+ 
