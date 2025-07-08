@@ -650,16 +650,17 @@ function goToTracker(element = null) {
     }
 }
 
-// Make notifications clickable
+// FIXED: Make notifications clickable with proper routing
 function makeNotificationsClickable() {
     const notifications = document.querySelectorAll('.notification-item');
     
     notifications.forEach(notification => {
-        // Add cursor pointer style
+        // Add styling
         notification.style.cursor = 'pointer';
         notification.style.transition = 'all 0.2s ease';
+        notification.style.position = 'relative';
         
-        // Add hover effect
+        // Add hover effects
         notification.addEventListener('mouseenter', function() {
             this.style.background = 'rgba(99, 102, 241, 0.05)';
             this.style.transform = 'translateX(4px)';
@@ -672,7 +673,7 @@ function makeNotificationsClickable() {
             this.style.boxShadow = '';
         });
         
-        // Add click handler
+        // FIXED: Better click handler with proper routing
         notification.addEventListener('click', function(event) {
             // Don't navigate if clicking on action buttons
             if (event.target.closest('.notification-actions')) {
@@ -683,6 +684,8 @@ function makeNotificationsClickable() {
             const title = this.querySelector('h3').textContent.toLowerCase();
             const content = this.querySelector('p').textContent.toLowerCase();
             
+            console.log('🔍 Notification clicked:', { type, title, content });
+            
             // Mark as read if unread
             if (this.classList.contains('unread')) {
                 const markReadBtn = this.querySelector('button[onclick*="markAsRead"]');
@@ -691,50 +694,55 @@ function makeNotificationsClickable() {
                 }
             }
             
-            // Navigate based on type and content
-            let destination = 'dashboard.html';
+            // FIXED: More specific routing logic
+            let destination = 'dashboard.html'; // Default fallback
             
+            // Primary routing by notification type
             switch (type) {
                 case 'coaching':
-                    if (title.includes('goal') || content.includes('goal')) {
-                        destination = 'goals.html';
-                    } else {
-                        destination = 'ai-coach.html';
-                    }
+                    destination = 'ai-coach.html';
                     break;
-                case 'community':
+                case 'community': 
                     destination = 'community.html';
-                    break;
-                case 'system':
-                    if (title.includes('report') || content.includes('progress')) {
-                        destination = 'dashboard.html';
-                    } else {
-                        destination = 'dashboard.html';
-                    }
                     break;
                 case 'billing':
                     destination = 'billing.html';
                     break;
+                case 'goals':
+                    destination = 'goals.html';
+                    break;
+                case 'daily-prompt':
+                    destination = 'daily-prompt.html';
+                    break;
+                case 'daily-tracker':
+                    destination = 'daily-tracker.html';
+                    break;
+                case 'system':
                 default:
-                    if (content.includes('goal') || title.includes('goal')) {
+                    // For system notifications, check content
+                    if (title.includes('goal') || content.includes('goal') || content.includes('milestone')) {
                         destination = 'goals.html';
-                    } else if (content.includes('prompt')) {
+                    } else if (title.includes('prompt') || content.includes('prompt')) {
                         destination = 'daily-prompt.html';
-                    } else if (content.includes('tracker')) {
+                    } else if (title.includes('tracker') || content.includes('tracker') || content.includes('task')) {
                         destination = 'daily-tracker.html';
-                    } else if (content.includes('community')) {
+                    } else if (title.includes('community') || content.includes('room') || content.includes('message')) {
                         destination = 'community.html';
-                    } else if (content.includes('coach')) {
+                    } else if (title.includes('coaching') || content.includes('coaching') || content.includes('insight')) {
                         destination = 'ai-coach.html';
+                    } else if (title.includes('report') || content.includes('progress')) {
+                        destination = 'dashboard.html';
+                    } else {
+                        destination = 'dashboard.html';
                     }
                     break;
             }
             
-            console.log(`🔗 Navigating from ${type} notification to: ${destination}`);
+            console.log(`✅ Navigating from ${type} notification to: ${destination}`);
             window.location.href = destination;
         });
         
-        // Add visual indicator for clickable notifications
+        // Add visual arrow indicator
         const arrow = document.createElement('span');
         arrow.innerHTML = '→';
         arrow.style.cssText = `
@@ -750,7 +758,6 @@ function makeNotificationsClickable() {
             pointer-events: none;
         `;
         
-        notification.style.position = 'relative';
         notification.appendChild(arrow);
         
         notification.addEventListener('mouseenter', function() {
