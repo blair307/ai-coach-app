@@ -761,51 +761,45 @@
     </style>
 
 <script>
-// Remove existing handlers and force new routing
+// Content-based notification routing
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(() => {
         const notifications = document.querySelectorAll('.notification-item');
         
-        notifications.forEach(notification => {
-            // Remove all existing click handlers
-            notification.replaceWith(notification.cloneNode(true));
-        });
-        
-        // Re-select the new elements and add our handler
-        document.querySelectorAll('.notification-item').forEach(notification => {
-            notification.style.cursor = 'pointer';
-            
+        notifications.forEach((notification, index) => {
             notification.onclick = function(e) {
                 // Don't navigate if clicking on action buttons
                 if (e.target.closest('.notification-actions')) {
                     return;
                 }
                 
-                const type = this.dataset.type;
                 const title = this.querySelector('h3').textContent.toLowerCase();
+                const content = this.querySelector('p').textContent.toLowerCase();
                 
-                console.log('🔗 Routing notification:', type, title);
+                console.log('🔗 Routing notification:', title);
+                e.preventDefault();
+                e.stopPropagation();
                 
-                // Force navigation
-                if (type === 'coaching') {
-                    location.href = 'ai-coach.html';
-                } else if (type === 'community') {
-                    location.href = 'community.html';
-                } else if (type === 'billing') {
-                    location.href = 'billing.html';
-                } else if (type === 'goals' || title.includes('goal')) {
-                    location.href = 'goals.html';
-                } else if (title.includes('prompt')) {
-                    location.href = 'daily-prompt.html';
-                } else if (title.includes('tracker')) {
-                    location.href = 'daily-tracker.html';
+                // Route based on content, not just type
+                if (title.includes('prompt') || content.includes('prompt')) {
+                    window.location.href = 'daily-prompt.html';
+                } else if (title.includes('goal') || content.includes('goal')) {
+                    window.location.href = 'goals.html';
+                } else if (title.includes('coach') || content.includes('coach')) {
+                    window.location.href = 'ai-coach.html';
+                } else if (title.includes('community') || content.includes('room')) {
+                    window.location.href = 'community.html';
+                } else if (title.includes('billing') || title.includes('payment')) {
+                    window.location.href = 'billing.html';
                 } else {
-                    location.href = 'dashboard.html';
+                    window.location.href = 'dashboard.html';
                 }
             };
         });
-    }, 2000);
+    }, 1000);
 });
 </script>
+</body>
+</html>
 </body>
 </html>
