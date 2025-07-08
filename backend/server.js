@@ -1544,6 +1544,33 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
   }
 });
 
+// Create new notification
+app.post('/api/notifications', authenticateToken, async (req, res) => {
+  try {
+    const { type, title, content, priority = 'normal' } = req.body;
+    
+    if (!type || !title || !content) {
+      return res.status(400).json({ error: 'Type, title, and content are required' });
+    }
+    
+    const notification = new Notification({
+      userId: req.user.userId,
+      type,
+      title,
+      content,
+      priority,
+      read: false
+    });
+    
+    await notification.save();
+    res.status(201).json(notification);
+    
+  } catch (error) {
+    console.error('Create notification error:', error);
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
+
 app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
   try {
     const totalCount = await Notification.countDocuments({ 
