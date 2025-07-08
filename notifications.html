@@ -714,6 +714,28 @@
         // Re-apply clickable functionality after filtering
         setTimeout(makeNotificationsClickable, 100);
     };
+
+        // Enhanced notification polling for replies
+let notificationPollingInterval;
+
+function startNotificationPolling() {
+  if (notificationPollingInterval) {
+    clearInterval(notificationPollingInterval);
+  }
+  
+  notificationPollingInterval = setInterval(async () => {
+    try {
+      await updateNotificationCount();
+    } catch (error) {
+      console.log('⚠️ Notification polling failed, will retry');
+    }
+  }, 15000); // Every 15 seconds
+  
+  console.log('🔔 Started notification polling for replies');
+}
+
+// Start polling when community initializes
+setTimeout(startNotificationPolling, 5000);
     </script>
 
     <!-- Add this CSS for better visual feedback -->
