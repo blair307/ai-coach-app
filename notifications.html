@@ -27,23 +27,15 @@
                 </button>
             </div>
             <ul class="sidebar-menu">
-                <li><a href="dashboard.html" class="menu-item">
-                    Dashboard
-                </a></li>
-                <li><a href="ai-coach.html" class="menu-item">
-                    AI Coach
-                </a></li>
-                <li><a href="community.html" class="menu-item">
-                    Community
-                </a></li>
+                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
+                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
+                <li><a href="community.html" class="menu-item">Community</a></li>
                 <li><a href="goals.html" class="menu-item">Goals</a></li>
                 <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
                 <li><a href="daily-prompt.html" class="menu-item">Daily Prompt</a></li>
                 <li><a href="billing.html" class="menu-item">Billing</a></li>
                 <li><a href="settings.html" class="menu-item">Settings</a></li>
-                <li><a href="#" class="menu-item" onclick="logout()">
-                    Logout
-                </a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
             </ul>
         </nav>
 
@@ -88,6 +80,9 @@
                     </button>
                     <button class="filter-btn" onclick="filterNotifications('billing')">
                         Billing
+                    </button>
+                    <button class="filter-btn" onclick="filterNotifications('goals')">
+                        Goals
                     </button>
                 </div>
 
@@ -231,6 +226,23 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Example Goals Notification -->
+                    <div class="notification-item read" data-type="goals" data-id="9">
+                        <div class="notification-icon goals">
+                            <div class="icon-text">GO</div>
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h3>🎯 New Goal Created!</h3>
+                                <span class="notification-time">2 days ago</span>
+                            </div>
+                            <p>You've successfully created a new goal for mind: "Read for 30 minutes every morning". Start building your streak today!</p>
+                            <div class="notification-actions">
+                                <button class="btn-link" onclick="goToGoals()">View Goals</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Empty State (Hidden by default) -->
@@ -287,21 +299,40 @@
     <script src="sidebar-toggle.js"></script>
     
     <script>
-    // Navigation functions for placeholder notifications
+    // FIXED: Clear navigation functions with better routing logic
     function goToCoach() {
+        console.log('🔗 Navigating to AI Coach');
         window.location.href = 'ai-coach.html';
     }
 
     function goToCommunity() {
+        console.log('🔗 Navigating to Community');
         window.location.href = 'community.html';
     }
 
     function goToDashboard() {
+        console.log('🔗 Navigating to Dashboard');
         window.location.href = 'dashboard.html';
     }
 
     function goToBilling() {
+        console.log('🔗 Navigating to Billing');
         window.location.href = 'billing.html';
+    }
+
+    function goToGoals() {
+        console.log('🔗 Navigating to Goals');
+        window.location.href = 'goals.html';
+    }
+
+    function goToTracker() {
+        console.log('🔗 Navigating to Daily Tracker');
+        window.location.href = 'daily-tracker.html';
+    }
+
+    function goToPrompt() {
+        console.log('🔗 Navigating to Daily Prompt');
+        window.location.href = 'daily-prompt.html';
     }
 
     // FIXED: Permanent clearAll function that deletes from backend
@@ -527,10 +558,6 @@
         }
     }
 
-    function updateFilterCounts() {
-        // Do nothing - counts removed from UI
-    }
-
     function closeSettingsModal() {
         document.getElementById('settingsModal').style.display = 'none';
     }
@@ -547,285 +574,190 @@
         window.location.href = 'login.html';
     }
 
-    // Initialize on page load
+    // FIXED: Improved notification routing with specific destination mapping
+    function getNotificationDestination(notificationElement) {
+        const type = notificationElement.dataset.type;
+        const title = notificationElement.querySelector('h3').textContent.toLowerCase();
+        const content = notificationElement.querySelector('p').textContent.toLowerCase();
+        
+        console.log('🔍 Determining destination for:', { type, title, content });
+        
+        // Primary routing by notification type
+        const typeRouting = {
+            'coaching': 'ai-coach.html',
+            'community': 'community.html',
+            'billing': 'billing.html',
+            'goals': 'goals.html',
+            'system': 'dashboard.html'
+        };
+        
+        // If we have a direct type match, use it
+        if (typeRouting[type]) {
+            console.log('✅ Using type-based routing:', typeRouting[type]);
+            return typeRouting[type];
+        }
+        
+        // Content-based routing for system notifications or edge cases
+        const contentRouting = [
+            { keywords: ['goal', 'milestone', 'achievement'], destination: 'goals.html' },
+            { keywords: ['prompt', 'daily prompt'], destination: 'daily-prompt.html' },
+            { keywords: ['tracker', 'daily tracker', 'task'], destination: 'daily-tracker.html' },
+            { keywords: ['community', 'room', 'message', 'mentioned'], destination: 'community.html' },
+            { keywords: ['coaching', 'insight', 'coach'], destination: 'ai-coach.html' },
+            { keywords: ['payment', 'billing', 'subscription'], destination: 'billing.html' },
+            { keywords: ['report', 'progress', 'weekly'], destination: 'dashboard.html' }
+        ];
+        
+        for (const route of contentRouting) {
+            if (route.keywords.some(keyword => title.includes(keyword) || content.includes(keyword))) {
+                console.log('✅ Using content-based routing:', route.destination);
+                return route.destination;
+            }
+        }
+        
+        // Default fallback
+        console.log('⚠️ Using default routing: dashboard.html');
+        return 'dashboard.html';
+    }
+
+    // FIXED: Make notifications clickable with improved routing
+    function makeNotificationsClickable() {
+        const notifications = document.querySelectorAll('.notification-item');
+        
+        notifications.forEach(notification => {
+            // Add styling
+            notification.style.cursor = 'pointer';
+            notification.style.transition = 'all 0.2s ease';
+            notification.style.position = 'relative';
+            
+            // Add hover effects
+            notification.addEventListener('mouseenter', function() {
+                this.style.background = 'rgba(99, 102, 241, 0.05)';
+                this.style.transform = 'translateX(4px)';
+                this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            });
+            
+            notification.addEventListener('mouseleave', function() {
+                this.style.background = '';
+                this.style.transform = 'translateX(0)';
+                this.style.boxShadow = '';
+            });
+            
+            // FIXED: Improved click handler with better routing
+            notification.addEventListener('click', function(event) {
+                // Don't navigate if clicking on action buttons
+                if (event.target.closest('.notification-actions')) {
+                    return;
+                }
+                
+                console.log('📱 Notification clicked');
+                
+                // Mark as read if unread
+                if (this.classList.contains('unread')) {
+                    const markReadBtn = this.querySelector('button[onclick*="markAsRead"]');
+                    if (markReadBtn) {
+                        markAsRead(markReadBtn);
+                    }
+                }
+                
+                // Get destination and navigate
+                const destination = getNotificationDestination(this);
+                console.log(`🚀 Navigating to: ${destination}`);
+                window.location.href = destination;
+            });
+            
+            // Add visual arrow indicator
+            const arrow = document.createElement('span');
+            arrow.innerHTML = '→';
+            arrow.style.cssText = `
+                position: absolute;
+                right: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                color: var(--primary);
+                font-weight: bold;
+                font-size: 1.2rem;
+                pointer-events: none;
+            `;
+            
+            notification.appendChild(arrow);
+            
+            notification.addEventListener('mouseenter', function() {
+                arrow.style.opacity = '1';
+            });
+            
+            notification.addEventListener('mouseleave', function() {
+                arrow.style.opacity = '0';
+            });
+        });
+        
+        console.log('✅ Made notifications clickable:', notifications.length);
+    }
+
+    // Initialize clickable notifications when page loads
     document.addEventListener('DOMContentLoaded', function() {
-        updateFilterCounts();
+        console.log('🚀 Notifications page loading...');
+        // Wait for notifications to be rendered
+        setTimeout(makeNotificationsClickable, 1000);
+        console.log('✅ Notifications page initialized');
     });
+
+    // Also call when filtering notifications
+    const originalFilterNotifications = window.filterNotifications;
+    window.filterNotifications = function(type) {
+        if (originalFilterNotifications) {
+            originalFilterNotifications(type);
+        }
+        
+        // Re-apply clickable functionality after filtering
+        setTimeout(makeNotificationsClickable, 100);
+    };
     </script>
 
-    <!-- Add this script to the bottom of your notifications.html, before the closing </body> tag -->
-
-<script>
-// Enhanced navigation functions that handle different notification types
-function handleNotificationNavigation(element, defaultDestination) {
-    const notificationItem = element.closest('.notification-item');
-    const title = notificationItem.querySelector('h3').textContent.toLowerCase();
-    const content = notificationItem.querySelector('p').textContent.toLowerCase();
-    
-    // Smart navigation based on content
-    let destination = defaultDestination;
-    
-    // Override destination based on specific keywords
-    if (title.includes('goal') || content.includes('goal')) {
-        destination = 'goals.html';
-    } else if (title.includes('prompt') || content.includes('daily prompt')) {
-        destination = 'daily-prompt.html';
-    } else if (title.includes('tracker') || content.includes('daily tracker')) {
-        destination = 'daily-tracker.html';
-    } else if (title.includes('insight') && content.includes('coach')) {
-        destination = 'ai-coach.html';
-    } else if (title.includes('community') || content.includes('room')) {
-        destination = 'community.html';
-    } else if (title.includes('billing') || title.includes('payment')) {
-        destination = 'billing.html';
+    <!-- Add this CSS for better visual feedback -->
+    <style>
+    .notification-item {
+        position: relative !important;
+        transition: all 0.2s ease !important;
     }
-    
-    // Mark as read if unread
-    if (notificationItem.classList.contains('unread')) {
-        const markReadBtn = notificationItem.querySelector('button[onclick*="markAsRead"]');
-        if (markReadBtn) {
-            markAsRead(markReadBtn);
+
+    .notification-item:hover {
+        background: rgba(99, 102, 241, 0.05) !important;
+        transform: translateX(4px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+        cursor: pointer !important;
+    }
+
+    .notification-item.unread:hover {
+        background: rgba(99, 102, 241, 0.08) !important;
+    }
+
+    /* Ensure action buttons don't trigger navigation */
+    .notification-actions {
+        position: relative !important;
+        z-index: 2 !important;
+    }
+
+    .notification-actions button {
+        pointer-events: auto !important;
+    }
+
+    /* Goals notification styling */
+    .notification-icon.goals {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    /* Mobile touch optimization */
+    @media (max-width: 768px) {
+        .notification-item {
+            min-height: 80px !important;
+            touch-action: manipulation !important;
+            -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2) !important;
         }
     }
-    
-    // Navigate
-    console.log(`🔗 Navigating to: ${destination}`);
-    window.location.href = destination;
-}
-
-// Enhanced navigation functions for each notification type
-function goToCoach(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'ai-coach.html');
-    } else {
-        window.location.href = 'ai-coach.html';
-    }
-}
-
-function goToCommunity(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'community.html');
-    } else {
-        window.location.href = 'community.html';
-    }
-}
-
-function goToDashboard(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'dashboard.html');
-    } else {
-        window.location.href = 'dashboard.html';
-    }
-}
-
-function goToBilling(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'billing.html');
-    } else {
-        window.location.href = 'billing.html';
-    }
-}
-
-function goToGoals(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'goals.html');
-    } else {
-        window.location.href = 'goals.html';
-    }
-}
-
-function goToPrompt(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'daily-prompt.html');
-    } else {
-        window.location.href = 'daily-prompt.html';
-    }
-}
-
-function goToTracker(element = null) {
-    if (element) {
-        handleNotificationNavigation(element, 'daily-tracker.html');
-    } else {
-        window.location.href = 'daily-tracker.html';
-    }
-}
-
-// FIXED: Make notifications clickable with proper routing
-function makeNotificationsClickable() {
-    const notifications = document.querySelectorAll('.notification-item');
-    
-    notifications.forEach(notification => {
-        // Add styling
-        notification.style.cursor = 'pointer';
-        notification.style.transition = 'all 0.2s ease';
-        notification.style.position = 'relative';
-        
-        // Add hover effects
-        notification.addEventListener('mouseenter', function() {
-            this.style.background = 'rgba(99, 102, 241, 0.05)';
-            this.style.transform = 'translateX(4px)';
-            this.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-        });
-        
-        notification.addEventListener('mouseleave', function() {
-            this.style.background = '';
-            this.style.transform = 'translateX(0)';
-            this.style.boxShadow = '';
-        });
-        
-        // FIXED: Better click handler with proper routing
-        notification.addEventListener('click', function(event) {
-            // Don't navigate if clicking on action buttons
-            if (event.target.closest('.notification-actions')) {
-                return;
-            }
-            
-            const type = this.dataset.type;
-            const title = this.querySelector('h3').textContent.toLowerCase();
-            const content = this.querySelector('p').textContent.toLowerCase();
-            
-            console.log('🔍 Notification clicked:', { type, title, content });
-            
-            // Mark as read if unread
-            if (this.classList.contains('unread')) {
-                const markReadBtn = this.querySelector('button[onclick*="markAsRead"]');
-                if (markReadBtn) {
-                    markAsRead(markReadBtn);
-                }
-            }
-            
-            // FIXED: More specific routing logic
-            let destination = 'dashboard.html'; // Default fallback
-            
-            // Primary routing by notification type
-            switch (type) {
-                case 'coaching':
-                    destination = 'ai-coach.html';
-                    break;
-                case 'community': 
-                    destination = 'community.html';
-                    break;
-                case 'billing':
-                    destination = 'billing.html';
-                    break;
-                case 'goals':
-                    destination = 'goals.html';
-                    break;
-                case 'daily-prompt':
-                    destination = 'daily-prompt.html';
-                    break;
-                case 'daily-tracker':
-                    destination = 'daily-tracker.html';
-                    break;
-                case 'system':
-                default:
-                    // For system notifications, check content
-                    if (title.includes('goal') || content.includes('goal') || content.includes('milestone')) {
-                        destination = 'goals.html';
-                    } else if (title.includes('prompt') || content.includes('prompt')) {
-                        destination = 'daily-prompt.html';
-                    } else if (title.includes('tracker') || content.includes('tracker') || content.includes('task')) {
-                        destination = 'daily-tracker.html';
-                    } else if (title.includes('community') || content.includes('room') || content.includes('message')) {
-                        destination = 'community.html';
-                    } else if (title.includes('coaching') || content.includes('coaching') || content.includes('insight')) {
-                        destination = 'ai-coach.html';
-                    } else if (title.includes('report') || content.includes('progress')) {
-                        destination = 'dashboard.html';
-                    } else {
-                        destination = 'dashboard.html';
-                    }
-                    break;
-            }
-            
-            console.log(`✅ Navigating from ${type} notification to: ${destination}`);
-            window.location.href = destination;
-        });
-        
-        // Add visual arrow indicator
-        const arrow = document.createElement('span');
-        arrow.innerHTML = '→';
-        arrow.style.cssText = `
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 1.2rem;
-            pointer-events: none;
-        `;
-        
-        notification.appendChild(arrow);
-        
-        notification.addEventListener('mouseenter', function() {
-            arrow.style.opacity = '1';
-        });
-        
-        notification.addEventListener('mouseleave', function() {
-            arrow.style.opacity = '0';
-        });
-    });
-    
-    console.log('✅ Made notifications clickable:', notifications.length);
-}
-
-// Initialize clickable notifications when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for notifications to be rendered
-    setTimeout(makeNotificationsClickable, 1000);
-});
-
-// Also call when filtering notifications
-const originalFilterNotifications = window.filterNotifications;
-window.filterNotifications = function(type) {
-    if (originalFilterNotifications) {
-        originalFilterNotifications(type);
-    }
-    
-    // Re-apply clickable functionality after filtering
-    setTimeout(makeNotificationsClickable, 100);
-};
-</script>
-
-<!-- Add this CSS for better visual feedback -->
-<style>
-.notification-item {
-    position: relative !important;
-    transition: all 0.2s ease !important;
-}
-
-.notification-item:hover {
-    background: rgba(99, 102, 241, 0.05) !important;
-    transform: translateX(4px) !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-    cursor: pointer !important;
-}
-
-.notification-item.unread:hover {
-    background: rgba(99, 102, 241, 0.08) !important;
-}
-
-/* Ensure action buttons don't trigger navigation */
-.notification-actions {
-    position: relative !important;
-    z-index: 2 !important;
-}
-
-.notification-actions button {
-    pointer-events: auto !important;
-}
-
-/* Mobile touch optimization */
-@media (max-width: 768px) {
-    .notification-item {
-        min-height: 80px !important;
-        touch-action: manipulation !important;
-        -webkit-tap-highlight-color: rgba(99, 102, 241, 0.2) !important;
-    }
-}
-</style>
+    </style>
 </body>
 </html>
