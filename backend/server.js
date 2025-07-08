@@ -160,7 +160,6 @@ const chatSchema = new mongoose.Schema({
 
 const Chat = mongoose.model('Chat', chatSchema);
 
-// ENHANCED Community Message Schema - WITH REPLY SUPPORT
 const messageSchema = new mongoose.Schema({
   // Legacy fields (keep for backward compatibility)
   room: String,
@@ -184,6 +183,13 @@ const messageSchema = new mongoose.Schema({
   // NEW: Deletion fields
   deleted: { type: Boolean, default: false },
   deletedAt: { type: Date },
+  // ADD THESE TWO LINES HERE:
+  likes: [{
+    userId: String,
+    username: String,
+    timestamp: { type: Date, default: Date.now }
+  }],
+  likeCount: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -1938,6 +1944,53 @@ app.delete('/api/insights/:id', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Delete insight error:', error);
     res.status(500).json({ error: 'Failed to delete insight' });
+  }
+});
+
+app.post('/api/messages/:id/like', authenticateToken, async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const userId = req.user.userId;
+    
+    const user = await User.findById(userId);
+    const username = user ? `${user.firstName} ${user.lastName}` : 'User';
+    
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ success: false, message: 'Message not found' });
+    }
+    
+    const existingLikeIndex = message.likes.findIndex(like => like.userId === userId);
+    
+    let action;
+    if (existingLikeIndex > -1) {
+      message.likes.splice(existingLikeIndex, 1);
+      action = 'unliked';
+    } else {
+      message.likes.push({
+        userId: userId,
+        username: username,
+        timestamp: new Date()
+      });
+      action = 'liked';
+    }
+    
+    message.likeCount = message.likes.length;
+    await message.save();
+    
+    console.log(`👍 Message ${action} by ${username}. New count: ${message.likeCount}`);
+    
+    res.json({
+      success: true,
+      action: action,
+      likeCount: message.likeCount,
+      isLiked: action === 'liked',
+      messageId: messageId
+    });
+    
+  } catch (error) {
+    console.error('❌ Error toggling like:', error);
+    res.status(500).json({ success: false, message: 'Failed to toggle like' });
   }
 });
 
