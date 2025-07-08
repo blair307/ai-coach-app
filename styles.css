@@ -4133,3 +4133,71 @@ body {
     font-weight: 600;
     color
 
+/* Hide view all activity link */
+        .view-all-link {
+            display: none !important;
+        }
+
+        /* HEADER SPACING FIX - SIMPLE */
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.25rem !important;
+        }
+
+        .notification-icon-container,
+        .profile-dropdown-container,
+        .profile-avatar {
+            flex-shrink: 0 !important;
+        }
+
+        /* FINAL HEADER SPACING FIX - Remove debug, apply proper spacing */
+        .header-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.5rem !important;
+            margin-left: auto !important;
+            position: static !important;
+            transform: none !important;
+            right: auto !important;
+            top: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* Remove any margins/padding that might be causing uneven spacing */
+        .header-actions > * {
+            margin: 0 !important;
+            padding: 0 !important;
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+
+        /* Ensure notification and profile elements have consistent sizing */
+        .notification-icon-container,
+        .profile-dropdown-container {
+            width: auto !important;
+            height: auto !important;
+            flex-shrink: 0 !important;
+        }
+
+        /* Make coaching button consistent height */
+        .header-actions .btn {
+            height: 44px !important;
+            flex-shrink: 0 !important;
+            margin: 0 !important;
+            padding: 0 1.5rem !important;
+        }
+
+        /* Mobile: hide coaching button and adjust gap */
+        @media (max-width: 768px) {
+            .header-actions {
+                gap: 1.5rem !important; /* Keep same gap even on mobile */
+            }
+            
+            .header-actions .btn {
+                display: none !important;
+            }
+        }
+    </style>
