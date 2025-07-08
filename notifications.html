@@ -759,5 +759,46 @@
         }
     }
     </style>
+
+    <script>
+// Simple notification routing - add this to notifications.html
+document.addEventListener('DOMContentLoaded', function() {
+    // Wait a bit for notifications to load, then add click handlers
+    setTimeout(() => {
+        const notifications = document.querySelectorAll('.notification-item');
+        
+        notifications.forEach(notification => {
+            notification.addEventListener('click', function(e) {
+                // Don't navigate if clicking on action buttons
+                if (e.target.closest('.notification-actions')) {
+                    return;
+                }
+                
+                const type = this.dataset.type;
+                const title = this.querySelector('h3').textContent.toLowerCase();
+                
+                console.log('Notification clicked:', type, title);
+                
+                // Simple routing
+                if (type === 'coaching') {
+                    window.location.href = 'ai-coach.html';
+                } else if (type === 'community') {
+                    window.location.href = 'community.html';
+                } else if (type === 'billing') {
+                    window.location.href = 'billing.html';
+                } else if (type === 'goals' || title.includes('goal')) {
+                    window.location.href = 'goals.html';
+                } else if (title.includes('prompt')) {
+                    window.location.href = 'daily-prompt.html';
+                } else if (title.includes('tracker')) {
+                    window.location.href = 'daily-tracker.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            });
+        });
+    }, 1000);
+});
+</script>
 </body>
 </html>
