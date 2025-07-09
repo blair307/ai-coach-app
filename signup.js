@@ -148,25 +148,30 @@ async function applyCoupon() {
         const coupon = result.coupon;
         appliedCoupon = coupon.code;
         
-        switch (coupon.type) {
-            case 'forever_free':
-                applyFreeCoupon();
-                showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
-                break;
-                
-            case 'first_month_free':
-                applyOneMonthFree();
-                showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
-                break;
-                
-            case 'six_months_free':
-                applySixMonthsFree();
-                showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
-                break;
-                
-            default:
-                throw new Error('Unknown coupon type');
-        }
+switch (coupon.type) {
+    case 'forever_free':
+        applyFreeCoupon();
+        showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
+        break;
+        
+    case 'first_month_free':
+        applyOneMonthFree();
+        showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
+        break;
+        
+    case 'six_months_free':
+        applySixMonthsFree();
+        showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
+        break;
+        
+    case 'test_discount':
+        applyTestDiscount();
+        showCouponMessage('🎉 Test discount applied! Payment reduced to $1 for testing!', 'success');
+        break;
+        
+    default:
+        throw new Error('Unknown coupon type');
+}
         
     } catch (error) {
         console.error('Coupon validation error:', error);
