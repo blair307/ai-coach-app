@@ -3582,3 +3582,32 @@ app.listen(PORT, () => {
   console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
   console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
 });
+
+
+// Temporary database cleanup endpoint for testing
+app.post('/api/admin/reset-test-db', async (req, res) => {
+  try {
+    console.log('🧹 RESETTING TEST DATABASE...');
+    
+    // Delete all data
+    await User.deleteMany({});
+    await LifeGoal.deleteMany({});
+    await Chat.deleteMany({});
+    await Notification.deleteMany({});
+    await Message.deleteMany({});
+    await DailyPromptResponse.deleteMany({});
+    await DailyProgress.deleteMany({});
+    await Insight.deleteMany({});
+    
+    console.log('✅ All test data deleted');
+    
+    res.json({ 
+      message: 'Test database reset successfully',
+      warning: 'All test data has been deleted'
+    });
+    
+  } catch (error) {
+    console.error('❌ Reset error:', error);
+    res.status(500).json({ error: 'Failed to reset database' });
+  }
+});
