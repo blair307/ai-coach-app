@@ -1,6 +1,6 @@
 // Enhanced Community.js - With Like & Reply Features + Full Backend Integration
 
-const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+const API_BASE_URL = 'https://api.eehcommunity.com';
 let currentRoomId = null;
 let currentRoomName = 'General Discussion';
 let currentUser = null;
