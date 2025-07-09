@@ -3,7 +3,7 @@
 console.log('🚀 Starting EEH AI Coach...');
 
 // Your Render backend URL
-const BACKEND_URL = 'https://ai-coach-backend-pbse.onrender.com';
+const BACKEND_URL = 'https://api.eehcommunity.com';
 
 // Settings object
 let coachSettings = {
