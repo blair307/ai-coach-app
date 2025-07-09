@@ -99,7 +99,19 @@ async function handleSubscriptionCreated(subscription) {
         currentPeriodStart: new Date(subscription.current_period_start * 1000),
         currentPeriodEnd: new Date(subscription.current_period_end * 1000)
       };
-      
+
+ // RIGHT BEFORE await user.save(); add these lines:
+console.log('🔍 About to save user with this data:');
+console.log('User object keys:', Object.keys(user.toObject()));
+console.log('User _id before save:', user._id);
+console.log('User email:', user.email);
+
+// Check if _id is somehow null
+if (user._id === null || user._id === undefined) {
+  console.log('🚨 WARNING: User _id is null/undefined!');
+  delete user._id; // Remove it so MongoDB can auto-generate
+}
+        
       await user.save();
       
       // Create welcome notification
