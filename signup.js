@@ -471,16 +471,17 @@ async function createFreeAccount(formData) {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            ...formData,
-            stripeCustomerId: null,
-            paymentIntentId: 'free_account_' + Date.now(),
-            couponCode: appliedCoupon,
-            subscription: {
-                plan: 'free',
-                status: 'active'
-            }
-        })
+       body: JSON.stringify({
+  ...formData,
+  stripeCustomerId: null,
+  subscriptionId: null,
+  paymentIntentId: 'free_account_' + Date.now(),
+  couponCode: appliedCoupon || null,
+  subscription: {
+    plan: 'free',
+    status: 'active'
+  }
+})
     });
     
     const data = await response.json();
@@ -533,18 +534,18 @@ if (isFree || appliedCoupon === 'EEHCLIENT') {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            ...formData,
-            stripeCustomerId: customerId,
-            subscriptionId: subscriptionId,
-            paymentIntentId: 'free_with_coupon_' + Date.now(),
-            couponCode: appliedCoupon,
-            subscription: {
-                plan: 'free',
-                status: 'active',
-                stripeSubscriptionId: subscriptionId
-            }
-        })
+       body: JSON.stringify({
+  ...formData,
+  stripeCustomerId: customerId || null,
+  subscriptionId: subscriptionId || null,
+  paymentIntentId: 'free_with_coupon_' + Date.now(),
+  couponCode: appliedCoupon || null,
+  subscription: {
+    plan: 'free',
+    status: 'active',
+    stripeSubscriptionId: subscriptionId || null
+  }
+})
     });
     
     const accountData = await accountResponse.json();
@@ -601,18 +602,18 @@ if (isFree || appliedCoupon === 'EEHCLIENT') {
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            ...formData,
-            stripeCustomerId: customerId,
-            subscriptionId: subscriptionId,
-            paymentIntentId: paymentIntent.id,
-            couponCode: appliedCoupon, // Add this line
-            subscription: {
-                plan: formData.plan,
-                status: 'active',
-                stripeSubscriptionId: subscriptionId
-            }
-        })
+      body: JSON.stringify({
+  ...formData,
+  stripeCustomerId: customerId || null,
+  subscriptionId: subscriptionId || null,
+  paymentIntentId: paymentIntent.id || 'paid_account_' + Date.now(),
+  couponCode: appliedCoupon || null,
+  subscription: {
+    plan: formData.plan,
+    status: 'active',
+    stripeSubscriptionId: subscriptionId || null
+  }
+})
     });
     
     const accountData = await accountResponse.json();
