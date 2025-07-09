@@ -26,6 +26,208 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors()); // Allow all origins for testing
 
+// ==========================================
+// STRIPE WEBHOOKS - MUST BE BEFORE express.json()
+// ==========================================
+
+// Stripe webhook endpoint
+app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  let event;
+
+  try {
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    console.error('Webhook signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  console.log('Received webhook event:', event.type);
+
+  try {
+    switch (event.type) {
+      case 'customer.subscription.created':
+        await handleSubscriptionCreated(event.data.object);
+        break;
+        
+      case 'customer.subscription.updated':
+        await handleSubscriptionUpdated(event.data.object);
+        break;
+        
+      case 'customer.subscription.deleted':
+        await handleSubscriptionCanceled(event.data.object);
+        break;
+        
+      case 'invoice.payment_succeeded':
+        await handlePaymentSucceeded(event.data.object);
+        break;
+        
+      case 'invoice.payment_failed':
+        await handlePaymentFailed(event.data.object);
+        break;
+        
+      default:
+        console.log(`Unhandled event type ${event.type}`);
+    }
+
+    res.json({received: true});
+  } catch (error) {
+    console.error('Webhook handler error:', error);
+    res.status(500).json({error: 'Webhook handler failed'});
+  }
+});
+
+// ==========================================
+// WEBHOOK HANDLER FUNCTIONS
+// ==========================================
+
+async function handleSubscriptionCreated(subscription) {
+  console.log('Subscription created:', subscription.id);
+  
+  try {
+    // Find user by Stripe customer ID
+    const user = await User.findOne({ stripeCustomerId: subscription.customer });
+    
+    if (user) {
+      // Update user subscription status
+      user.subscription = {
+        plan: subscription.metadata.plan || 'yearly',
+        status: subscription.status,
+        stripeSubscriptionId: subscription.id,
+        currentPeriodStart: new Date(subscription.current_period_start * 1000),
+        currentPeriodEnd: new Date(subscription.current_period_end * 1000)
+      };
+      
+      await user.save();
+      
+      // Create welcome notification
+      const notification = new Notification({
+        userId: user._id,
+        type: 'billing',
+        title: '🎉 Welcome to EEH!',
+        content: 'Your subscription is now active. Start your emotional health journey today!',
+        priority: 'high'
+      });
+      
+      await notification.save();
+      console.log('User subscription updated and welcome notification sent');
+    }
+  } catch (error) {
+    console.error('Error handling subscription created:', error);
+  }
+}
+
+async function handleSubscriptionUpdated(subscription) {
+  console.log('Subscription updated:', subscription.id);
+  
+  try {
+    const user = await User.findOne({ 'subscription.stripeSubscriptionId': subscription.id });
+    
+    if (user) {
+      user.subscription.status = subscription.status;
+      user.subscription.currentPeriodStart = new Date(subscription.current_period_start * 1000);
+      user.subscription.currentPeriodEnd = new Date(subscription.current_period_end * 1000);
+      
+      await user.save();
+      
+      // Notify user of status changes
+      if (subscription.status === 'past_due') {
+        const notification = new Notification({
+          userId: user._id,
+          type: 'billing',
+          title: '⚠️ Payment Issue',
+          content: 'Your payment failed. Please update your payment method to continue service.',
+          priority: 'high'
+        });
+        await notification.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error handling subscription updated:', error);
+  }
+}
+
+async function handleSubscriptionCanceled(subscription) {
+  console.log('Subscription canceled:', subscription.id);
+  
+  try {
+    const user = await User.findOne({ 'subscription.stripeSubscriptionId': subscription.id });
+    
+    if (user) {
+      user.subscription.status = 'canceled';
+      await user.save();
+      
+      // Send cancellation notification
+      const notification = new Notification({
+        userId: user._id,
+        type: 'billing',
+        title: '❌ Subscription Canceled',
+        content: 'Your subscription has been canceled. You can reactivate anytime.',
+        priority: 'normal'
+      });
+      await notification.save();
+    }
+  } catch (error) {
+    console.error('Error handling subscription canceled:', error);
+  }
+}
+
+async function handlePaymentSucceeded(invoice) {
+  console.log('Payment succeeded for invoice:', invoice.id);
+  
+  try {
+    if (invoice.subscription) {
+      const user = await User.findOne({ stripeCustomerId: invoice.customer });
+      
+      if (user) {
+        // Ensure user has active access
+        user.subscription.status = 'active';
+        await user.save();
+        
+        // Send payment confirmation (only for renewals, not first payment)
+        if (invoice.billing_reason === 'subscription_cycle') {
+          const notification = new Notification({
+            userId: user._id,
+            type: 'billing',
+            title: '✅ Payment Successful',
+            content: `Your subscription has been renewed. Amount: $${(invoice.amount_paid / 100).toFixed(2)}`,
+            priority: 'normal'
+          });
+          await notification.save();
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error handling payment succeeded:', error);
+  }
+}
+
+async function handlePaymentFailed(invoice) {
+  console.log('Payment failed for invoice:', invoice.id);
+  
+  try {
+    if (invoice.subscription) {
+      const user = await User.findOne({ stripeCustomerId: invoice.customer });
+      
+      if (user) {
+        // Send payment failure notification
+        const notification = new Notification({
+          userId: user._id,
+          type: 'billing',
+          title: '❌ Payment Failed',
+          content: 'Your payment failed. Please update your payment method to avoid service interruption.',
+          priority: 'high'
+        });
+        await notification.save();
+      }
+    }
+  } catch (error) {
+    console.error('Error handling payment failed:', error);
+  }
+}
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
@@ -2949,206 +3151,6 @@ app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==========================================
-// STRIPE WEBHOOKS - ADD THIS BEFORE THE HEALTH CHECK
-// ==========================================
-
-// Stripe webhook endpoint
-app.post('/api/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
-  const sig = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  
-  let event;
-
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
-  }
-
-  console.log('Received webhook event:', event.type);
-
-  try {
-    switch (event.type) {
-      case 'customer.subscription.created':
-        await handleSubscriptionCreated(event.data.object);
-        break;
-        
-      case 'customer.subscription.updated':
-        await handleSubscriptionUpdated(event.data.object);
-        break;
-        
-      case 'customer.subscription.deleted':
-        await handleSubscriptionCanceled(event.data.object);
-        break;
-        
-      case 'invoice.payment_succeeded':
-        await handlePaymentSucceeded(event.data.object);
-        break;
-        
-      case 'invoice.payment_failed':
-        await handlePaymentFailed(event.data.object);
-        break;
-        
-      default:
-        console.log(`Unhandled event type ${event.type}`);
-    }
-
-    res.json({received: true});
-  } catch (error) {
-    console.error('Webhook handler error:', error);
-    res.status(500).json({error: 'Webhook handler failed'});
-  }
-});
-
-// ==========================================
-// WEBHOOK HANDLER FUNCTIONS
-// ==========================================
-
-async function handleSubscriptionCreated(subscription) {
-  console.log('Subscription created:', subscription.id);
-  
-  try {
-    // Find user by Stripe customer ID
-    const user = await User.findOne({ stripeCustomerId: subscription.customer });
-    
-    if (user) {
-      // Update user subscription status
-      user.subscription = {
-        plan: subscription.metadata.plan || 'yearly',
-        status: subscription.status,
-        stripeSubscriptionId: subscription.id,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000)
-      };
-      
-      await user.save();
-      
-      // Create welcome notification
-      const notification = new Notification({
-        userId: user._id,
-        type: 'billing',
-        title: '🎉 Welcome to EEH!',
-        content: 'Your subscription is now active. Start your emotional health journey today!',
-        priority: 'high'
-      });
-      
-      await notification.save();
-      console.log('User subscription updated and welcome notification sent');
-    }
-  } catch (error) {
-    console.error('Error handling subscription created:', error);
-  }
-}
-
-async function handleSubscriptionUpdated(subscription) {
-  console.log('Subscription updated:', subscription.id);
-  
-  try {
-    const user = await User.findOne({ 'subscription.stripeSubscriptionId': subscription.id });
-    
-    if (user) {
-      user.subscription.status = subscription.status;
-      user.subscription.currentPeriodStart = new Date(subscription.current_period_start * 1000);
-      user.subscription.currentPeriodEnd = new Date(subscription.current_period_end * 1000);
-      
-      
-      // Notify user of status changes
-      if (subscription.status === 'past_due') {
-        const notification = new Notification({
-          userId: user._id,
-          type: 'billing',
-          title: '⚠️ Payment Issue',
-          content: 'Your payment failed. Please update your payment method to continue service.',
-          priority: 'high'
-        });
-        await notification.save();
-      }
-    }
-  } catch (error) {
-    console.error('Error handling subscription updated:', error);
-  }
-}
-
-async function handleSubscriptionCanceled(subscription) {
-  console.log('Subscription canceled:', subscription.id);
-  
-  try {
-    const user = await User.findOne({ 'subscription.stripeSubscriptionId': subscription.id });
-    
-    if (user) {
-      user.subscription.status = 'canceled';
-      await user.save();
-      
-      // Send cancellation notification
-      const notification = new Notification({
-        userId: user._id,
-        type: 'billing',
-        title: '❌ Subscription Canceled',
-        content: 'Your subscription has been canceled. You can reactivate anytime.',
-        priority: 'normal'
-      });
-      await notification.save();
-    }
-  } catch (error) {
-    console.error('Error handling subscription canceled:', error);
-  }
-}
-
-async function handlePaymentSucceeded(invoice) {
-  console.log('Payment succeeded for invoice:', invoice.id);
-  
-  try {
-    if (invoice.subscription) {
-      const user = await User.findOne({ stripeCustomerId: invoice.customer });
-      
-      if (user) {
-        // Ensure user has active access
-        user.subscription.status = 'active';
-        await user.save();
-        
-        // Send payment confirmation (only for renewals, not first payment)
-        if (invoice.billing_reason === 'subscription_cycle') {
-          const notification = new Notification({
-            userId: user._id,
-            type: 'billing',
-            title: '✅ Payment Successful',
-            content: `Your subscription has been renewed. Amount: $${(invoice.amount_paid / 100).toFixed(2)}`,
-            priority: 'normal'
-          });
-          await notification.save();
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error handling payment succeeded:', error);
-  }
-}
-
-async function handlePaymentFailed(invoice) {
-  console.log('Payment failed for invoice:', invoice.id);
-  
-  try {
-    if (invoice.subscription) {
-      const user = await User.findOne({ stripeCustomerId: invoice.customer });
-      
-      if (user) {
-        // Send payment failure notification
-        const notification = new Notification({
-          userId: user._id,
-          type: 'billing',
-          title: '❌ Payment Failed',
-          content: 'Your payment failed. Please update your payment method to avoid service interruption.',
-          priority: 'high'
-        });
-        await notification.save();
-      }
-    }
-  } catch (error) {
-    console.error('Error handling payment failed:', error);
-  }
-}
 
 // ==========================================
 // BILLING MANAGEMENT ENDPOINTS
