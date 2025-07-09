@@ -728,8 +728,7 @@ app.get('/test', (req, res) => {
 
 app.post('/api/auth/register', async (req, res) => {
   try {
-app.post('/api/auth/register', async (req, res) => {
-  try {
+
     console.log('🚀 REGISTRATION ENDPOINT CALLED');
     console.log('📦 Request body received:', req.body);
     console.log('📧 Email from request:', req.body.email);
