@@ -294,7 +294,7 @@
         let allGoals = [];
 
         // API Base URL
-        const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
+        const API_BASE_URL = 'https://api.eehcommunity.com';
 
         // Area configurations
         const areaConfig = {
@@ -526,7 +526,7 @@ const token = localStorage.getItem('authToken');
                     read: false
                 };
                 
-                await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications', {
+                await fetch('https://api.eehcommunity.com/api/notifications', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
