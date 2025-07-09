@@ -293,7 +293,6 @@ mongoose.connect(process.env.MONGODB_URI)
     process.exit(1);
   });
 
-// Updated User Schema with Streak Tracking + Password Reset
 const userSchema = new mongoose.Schema({
   firstName: String,
   lastName: String,
@@ -319,6 +318,8 @@ const userSchema = new mongoose.Schema({
   timezone: { type: String, default: 'America/Chicago' }, // NEW: Store timezone
 profilePhoto: { type: String },
   createdAt: { type: Date, default: Date.now }
+}, {
+  id: false  // ADD THIS LINE - disables the virtual id field
 });
 
 const User = mongoose.model('User', userSchema);
