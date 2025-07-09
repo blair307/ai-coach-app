@@ -794,7 +794,9 @@ app.post('/api/payments/create-subscription', async (req, res) => {
         const validCoupons = {
           'EEHCLIENT': { type: 'forever_free' },
           'FREEMONTH': { type: 'first_month_free' },
-          'EEHCLIENT6': { type: 'six_months_free' }
+          'EEHCLIENT6': { type: 'six_months_free' },
+              'CRAZYDISCOUNT': { type: 'test_discount' }
+
         };
 
         const localCoupon = validCoupons[couponCode.toUpperCase()];
@@ -974,7 +976,12 @@ app.post('/api/payments/validate-coupon', async (req, res) => {
         type: 'six_months_free',
         description: 'Six months free',
         discount: '100% off for 6 months'
-      }
+      },
+        'CRAZYDISCOUNT': {
+    type: 'test_discount',
+    description: 'Test discount - $1 payment',
+    discount: 'Reduces to $1 for testing'
+  }
     };
 
     const coupon = validCoupons[couponCode.toUpperCase()];
