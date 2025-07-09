@@ -265,6 +265,33 @@ function showDiscountNotice(noticeId, title, description) {
     notice.style.display = 'block';
 }
 
+// Function to apply test discount (reduces to $1)
+function applyTestDiscount() {
+    // Update pricing display to show $1
+    const originalPrices = document.querySelectorAll('.original-price');
+    const discountedPrices = document.querySelectorAll('.discounted-price');
+    
+    // Show discount on pricing
+    originalPrices.forEach(price => {
+        price.style.textDecoration = 'line-through';
+        price.style.opacity = '0.7';
+    });
+    
+    discountedPrices.forEach(price => {
+        price.style.display = 'inline';
+        price.style.color = '#10b981';
+        price.style.fontWeight = 'bold';
+        price.textContent = '$1';
+    });
+    
+    // Update submit button text
+    document.getElementById('submitButtonText').textContent = 'Pay $1 (Test)';
+    
+    // Show test discount notice
+    showDiscountNotice('testDiscountNotice', '🧪 Test Discount Applied!', 'Your payment has been reduced to $1 for testing purposes.');
+}
+
+
 // REPLACE THE removeCoupon() FUNCTION WITH THIS:
 
 function removeCoupon() {
