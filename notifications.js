@@ -6,7 +6,7 @@
 class NotificationManager {
     constructor() {
         this.notifications = [];
-        this.baseURL = 'https://ai-coach-backend-pbse.onrender.com/api';
+        this.baseURL = 'https://api.eehcommunity.com/api';
         this.token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         
         if (!this.token) {
@@ -339,7 +339,7 @@ window.updateNotificationCount = async function() {
             const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
             if (!token) return;
             
-            const response = await fetch('https://ai-coach-backend-pbse.onrender.com/api/notifications/unread-count', {
+            const response = await fetch('https://api.eehcommunity.com/api/notifications/unread-count', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
