@@ -990,17 +990,25 @@ button[onclick*="startCoachingSession"]:hover,
         margin: 0 !important;
     }
     
-    .activity-item[style*="text-align: center"] {
-        text-align: center !important;
-        padding: 1.5rem 1rem !important;
-        border: 2px dashed var(--border) !important;
-        border-radius: var(--radius-lg) !important;
-        background: var(--surface) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 1rem !important;
-    }
+.activity-item[style*="text-align: center"] {
+    text-align: center !important;
+    padding: 1.5rem 1rem !important;
+    border: 2px dashed var(--border) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--surface) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 1rem !important;
+}
+
+.activity-item[style*="text-align: center"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    width: 100% !important;
+}
     
     .activity-item svg {
         width: 40px !important;
@@ -1015,13 +1023,12 @@ button[onclick*="startCoachingSession"]:hover,
         margin: 0.5rem 0 !important;
     }
     
-   .activity-item div[style*="display: flex"] {
+.activity-item div[style*="display: flex"] {
     display: flex !important;
     flex-direction: column !important;
     gap: 1rem !important;
     align-items: center !important;
     width: 100% !important;
-    text-align: center !important;
 }
 
 .activity-item .btn-container {
