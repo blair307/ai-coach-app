@@ -69,30 +69,25 @@
 
 .coupon-input-group {
     flex: 1;
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
 }
 
 /* Stack coupon input and button on mobile */
 @media (max-width: 480px) {
     .coupon-input-container {
-        flex-direction: column;
-        gap: 0.75rem;
-        align-items: stretch;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        align-items: stretch !important;
     }
     
     .coupon-input-group {
-        margin-bottom: 0.75rem;
+        flex: none !important;
+        margin-bottom: 0.75rem !important;
     }
     
     #applyCouponBtn {
-        width: 100%;
-        align-self: stretch;
-    }
-}
-
-    #applyCouponBtn {
-        width: 100%;
-        align-self: stretch;
+        width: 100% !important;
+        align-self: stretch !important;
     }
 }
 
@@ -118,7 +113,25 @@
         order: 2;
     }
 }
-        
+
+        /* Additional button text fix */
+@media (max-width: 480px) {
+    #submitButton, #submitButtonText {
+        font-size: 14px !important;
+        padding: 0.875rem 1rem !important;
+        min-height: 44px !important;
+        line-height: 1.2 !important;
+    }
+    
+    .btn {
+        font-size: 14px !important;
+        padding: 0.875rem 1rem !important;
+        min-height: 44px !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
 </style>
 
 </head>
