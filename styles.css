@@ -1015,22 +1015,52 @@ button[onclick*="startCoachingSession"]:hover,
         margin: 0.5rem 0 !important;
     }
     
+   .activity-item div[style*="display: flex"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    width: 100% !important;
+    text-align: center !important;
+}
+
+.activity-item .btn-container {
+    display: flex !important;
+    gap: 0.75rem !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    margin-top: 0.5rem !important;
+}
+    
+.activity-item .btn {
+    font-size: 0.85rem !important;
+    padding: 0.75rem 1.25rem !important;
+    min-height: 40px !important;
+    flex: 0 0 auto !important;
+    min-width: 120px !important;
+    max-width: 160px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
+
+/* Stack buttons vertically on very small screens */
+@media (max-width: 480px) {
     .activity-item div[style*="display: flex"] {
-        display: flex !important;
-        gap: 0.5rem !important;
-        justify-content: center !important;
-        flex-wrap: wrap !important;
-        width: 100% !important;
+        gap: 0.75rem !important;
+    }
+    
+    .activity-item .btn-container {
+        flex-direction: column !important;
+        align-items: stretch !important;
     }
     
     .activity-item .btn {
-        font-size: 0.8rem !important;
-        padding: 0.5rem 1rem !important;
-        min-height: 36px !important;
-        flex: 1 !important;
-        min-width: 100px !important;
-        max-width: 120px !important;
+        width: 100% !important;
+        max-width: none !important;
+        min-width: auto !important;
     }
+}
     
     .view-all-link {
         color: var(--primary) !important;
@@ -1193,13 +1223,15 @@ button[onclick*="startCoachingSession"]:hover,
         min-height: 54px !important;
     }
     
-    .activity-item .btn {
-        flex: 1 !important;
-        min-width: 80px !important;
-        max-width: none !important;
-        font-size: 0.75rem !important;
-        padding: 0.5rem 0.75rem !important;
-    }
+.activity-item .btn {
+    flex: 0 0 auto !important;
+    min-width: 120px !important;
+    max-width: 160px !important;
+    font-size: 0.8rem !important;
+    padding: 0.65rem 1rem !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+}
 }
 
 @media (max-width: 360px) {
