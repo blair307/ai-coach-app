@@ -6,15 +6,26 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%234f46e5'/></linearGradient></defs><rect width='32' height='32' fill='url(%23g)'/><text x='16' y='20' font-family='Arial' font-size='10' font-weight='bold' text-anchor='middle' fill='white'>EEH</text></svg>">
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
+  
     <style>
-        /* Override problematic card styles directly */
-        .feature::before,
-        .pricing-card::before {
-            display: none !important;
-        }
-        
+/* Override problematic card styles directly */
+.feature::before,
+.pricing-card::before {
+    display: none !important;
+}
+
+/* Hide notification bell on mobile for AI Coach page */
+@media (max-width: 768px) {
+    .notification-icon-container {
+        display: none !important;
+    }
     
-    </style>
+    .header-actions {
+        gap: 0.75rem !important;
+    }
+}
+</style>
+    
 </head>
 <body>
     <div class="app-container">
