@@ -4237,3 +4237,59 @@ body {
             }
         }
  
+/* FORCE ACTIVITY BUTTONS TO STACK VERTICALLY - OVERRIDE ALL EXISTING STYLES */
+.activity-item[style*="text-align: center"] {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    padding: 2rem 1rem !important;
+    gap: 1rem !important;
+}
+
+.activity-item[style*="text-align: center"] p {
+    margin-bottom: 1rem !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+
+.activity-item[style*="text-align: center"] > div {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    width: 100% !important;
+    align-items: center !important;
+}
+
+.activity-item[style*="text-align: center"] .btn {
+    width: 80% !important;
+    max-width: 200px !important;
+    min-width: 140px !important;
+    margin: 0 !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.9rem !important;
+    text-align: center !important;
+    flex: none !important;
+    display: block !important;
+}
+
+/* Force column layout on tablets and mobile */
+@media (max-width: 1024px) {
+    .activity-item[style*="text-align: center"] > div {
+        flex-direction: column !important;
+        gap: 1rem !important;
+    }
+    
+    .activity-item[style*="text-align: center"] .btn {
+        width: 90% !important;
+        max-width: 250px !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .activity-item[style*="text-align: center"] .btn {
+        width: 100% !important;
+        max-width: none !important;
+        min-width: auto !important;
+    }
+}
