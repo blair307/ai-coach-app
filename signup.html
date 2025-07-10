@@ -55,6 +55,41 @@
 .password-toggle.showing .hide-icon {
     display: block;
 }
+
+.password-toggle.showing .hide-icon {
+    display: block;
+}
+
+/* Coupon section responsive styling */
+.coupon-input-container {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+}
+
+.coupon-input-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+/* Stack coupon input and button on mobile */
+@media (max-width: 480px) {
+    .coupon-input-container {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    
+    .coupon-input-group {
+        margin-bottom: 0.75rem;
+    }
+    
+    #applyCouponBtn {
+        width: 100%;
+        align-self: stretch;
+    }
+}
+        
 </style>
 
 </head>
@@ -141,19 +176,19 @@
                     </div>
                 </div>
 
-                <!-- Coupon Section -->
-                <div class="coupon-section" style="margin-bottom: 2rem;">
-                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Coupon Code</h3>
-                    <div style="display: flex; gap: 1rem; align-items: flex-end;">
-                        <div class="form-group" style="flex: 1; margin-bottom: 0;">
-                            <input type="text" id="couponCode" name="couponCode" placeholder="Enter coupon code" style="text-transform: uppercase;">
-                        </div>
-                        <button type="button" class="btn btn-outline" onclick="applyCoupon()" id="applyCouponBtn">
-                            Apply
-                        </button>
-                    </div>
-                    <div id="couponMessage" style="margin-top: 0.5rem; font-size: 0.875rem; display: none;"></div>
-                </div>
+<!-- Coupon Section -->
+<div class="coupon-section" style="margin-bottom: 2rem;">
+    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Coupon Code</h3>
+    <div class="coupon-input-container">
+        <div class="form-group coupon-input-group">
+            <input type="text" id="couponCode" name="couponCode" placeholder="Enter coupon code" style="text-transform: uppercase;">
+        </div>
+        <button type="button" class="btn btn-outline" onclick="applyCoupon()" id="applyCouponBtn">
+            Apply
+        </button>
+    </div>
+    <div id="couponMessage" style="margin-top: 0.5rem; font-size: 0.875rem; display: none;"></div>
+</div>
 
                 <!-- Payment Information (Hidden if free) -->
                 <div class="payment-section" id="paymentSection">
