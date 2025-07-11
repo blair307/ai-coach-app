@@ -37,14 +37,34 @@
             margin-bottom: 3rem;
         }
 
-        .personality-card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease;
-        }
+.personality-card {
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.personality-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+}
+
+.personality-card:nth-child(2)::before {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+}
+
+.personality-card:nth-child(3)::before {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
 
         .personality-card:hover {
             transform: translateY(-4px);
@@ -83,20 +103,34 @@
             margin-bottom: 1.5rem;
         }
 
-        .quadrant-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
+.quadrant-badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    margin-bottom: 1rem;
+}
 
-        .connector { background: #10b981; color: white; }
-        .visionary { background: #8b5cf6; color: white; }
-        .leader { background: #f59e0b; color: white; }
-        .producer { background: #06b6d4; color: white; }
+.connector { 
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+    color: white; 
+}
+.visionary { 
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
+    color: white; 
+}
+.leader { 
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
+    color: white; 
+}
+.producer { 
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); 
+    color: white; 
+}
 
 .charts-container {
     display: grid;
@@ -270,6 +304,60 @@
     margin-right: 0.5rem;
     color: var(--primary);
     font-weight: bold;
+}
+
+        /* Add colorful accents to detailed analysis cards */
+.detailed-analysis:nth-child(2) {
+    border-left: 4px solid var(--primary);
+}
+
+.detailed-analysis:nth-child(3) {
+    border-left: 4px solid #10b981;
+}
+
+.detailed-analysis:nth-child(4) {
+    border-left: 4px solid #f59e0b;
+}
+
+.analysis-title {
+    position: relative;
+}
+
+.analysis-title::before {
+    content: '';
+    position: absolute;
+    left: -1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 20px;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
+/* Colorful stat numbers */
+.stat-number {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Add subtle background patterns */
+.results-summary {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+    position: relative;
+}
+
+.results-summary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
 }
     </style>
 </head>
@@ -1253,11 +1341,25 @@ const personalityTypes = {
                 
                 const quadrantClass = typeData.quadrant.toLowerCase().replace(' ', '');
                 
-              const card = document.createElement('div');
+const card = document.createElement('div');
 card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
 card.style.cursor = 'pointer';
 card.onclick = () => {
-    const targetElement = document.querySelector(`#detailedAnalysis h3:nth-of-type(${index + 1})`);
+    // Find the specific detailed analysis section for this personality type
+    const detailedSections = document.querySelectorAll('#detailedAnalysis .detailed-analysis');
+    const targetSection = detailedSections[index];
+    
+    if (targetSection) {
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Add a subtle highlight effect
+        targetSection.style.background = 'rgba(99, 102, 241, 0.1)';
+        targetSection.style.transition = 'background 0.5s ease';
+        setTimeout(() => {
+            targetSection.style.background = '';
+        }, 2000);
+    }
+};
+                
     if (targetElement) {
         targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
         // Add a subtle highlight effect
@@ -1507,7 +1609,7 @@ function downloadPDF() {
         return 30; // Starting Y position for new pages
     }
     
-    // Title Page
+    // ===== TITLE PAGE =====
     doc.setFillColor(99, 102, 241);
     doc.rect(0, 0, 210, 40, 'F');
     
@@ -1542,7 +1644,12 @@ function downloadPDF() {
     
     let yPos = 130;
     
-    // Process each personality type
+    // ===== SUMMARY OF TOP 3 TYPES (Brief overview) =====
+    doc.setFontSize(18);
+    doc.setTextColor(99, 102, 241);
+    doc.text('Your Top 3 Personality Types', 105, yPos, { align: 'center' });
+    yPos += 20;
+    
     resultsData.topThree.forEach((type, index) => {
         const [typeName, score] = type;
         const percentage = Math.round((score / resultsData.totalQuestions) * 100);
@@ -1550,150 +1657,34 @@ function downloadPDF() {
         
         if (!typeData) return;
         
-        // Check if we need a new page (leave room for at least header + some content)
-        if (yPos > 220) {
+        // Check if we need a new page
+        if (yPos > 230) {
             yPos = addNewPage();
         }
         
-        // Type Header with colored background
+        // Brief type overview
         const headerColor = index === 0 ? [99, 102, 241] : index === 1 ? [16, 185, 129] : [245, 158, 11];
         doc.setFillColor(...headerColor);
-        doc.rect(20, yPos - 5, 170, 20, 'F');
+        doc.rect(20, yPos - 5, 170, 15, 'F');
         
-        doc.setFontSize(18);
+        doc.setFontSize(14);
         doc.setTextColor(255, 255, 255);
-        doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 25, yPos + 7);
+        doc.text(`${index + 1}. ${typeName} (${percentage}%) - ${typeData.quadrant} Quadrant`, 25, yPos + 5);
+        yPos += 20;
         
-        // Quadrant badge
+        // Brief description
+        doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
-        doc.text(`${typeData.quadrant} Quadrant`, 160, yPos + 7);
-        yPos += 25;
-        
-        // Description
-        doc.setFontSize(12);
-        doc.setTextColor(...headerColor);
-        doc.text('Description:', 25, yPos);
-        yPos += 8;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.description, 25, yPos, 160, 10, 1.5);
-        yPos += 8;
-        
-        // Check for page break
-        if (yPos > 240) {
-            yPos = addNewPage();
-        }
-        
-        // Authentic Self
-        doc.setTextColor(...headerColor);
-        doc.text('Authentic Self:', 25, yPos);
-        yPos += 8;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.authenticSelf, 25, yPos, 160, 10, 1.5);
-        yPos += 8;
-        
-        // Protection Pattern
-        doc.setTextColor(...headerColor);
-        doc.text('Common Protection Pattern:', 25, yPos);
-        yPos += 8;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.protection, 25, yPos, 160, 10, 1.5);
-        yPos += 10;
-        
-        // Check for page break
-        if (yPos > 200) {
-            yPos = addNewPage();
-        }
-        
-        // Two-column layout for lists
-        const leftColX = 25;
-        const rightColX = 110;
-        const colWidth = 75;
-        
-        // Quick Steps (Left Column)
-        doc.setTextColor(...headerColor);
-        doc.text('Quick Steps:', leftColX, yPos);
-        let leftY = yPos + 8;
-        
-        typeData.quickSteps.slice(0, 3).forEach(step => {
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(9);
-            leftY = addWrappedText(`• ${step}`, leftColX, leftY, colWidth, 9, 1.3);
-            leftY += 3;
-        });
-        
-        // Motivators (Right Column)
-        doc.setTextColor(...headerColor);
-        doc.setFontSize(12);
-        doc.text('What Motivates You:', rightColX, yPos);
-        let rightY = yPos + 8;
-        
-        typeData.motivators.forEach(motivator => {
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(9);
-            rightY = addWrappedText(`• ${motivator}`, rightColX, rightY, colWidth, 9, 1.3);
-            rightY += 3;
-        });
-        
-        yPos = Math.max(leftY, rightY) + 10;
-        
-        // Check for page break
-        if (yPos > 210) {
-            yPos = addNewPage();
-        }
-        
-        // Strengths and Growth Areas (Two columns)
-        doc.setTextColor(...headerColor);
-        doc.setFontSize(12);
-        doc.text('Key Strengths:', leftColX, yPos);
-        doc.text('Growth Areas:', rightColX, yPos);
-        
-        leftY = yPos + 8;
-        rightY = yPos + 8;
-        
-        // Strengths (Left)
-        typeData.strengths.slice(0, 3).forEach(strength => {
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(9);
-            leftY = addWrappedText(`• ${strength}`, leftColX, leftY, colWidth, 9, 1.3);
-            leftY += 3;
-        });
-        
-        // Growth Areas (Right)
-        typeData.weaknesses.slice(0, 3).forEach(weakness => {
-            doc.setTextColor(0, 0, 0);
-            doc.setFontSize(9);
-            rightY = addWrappedText(`• ${weakness}`, rightColX, rightY, colWidth, 9, 1.3);
-            rightY += 3;
-        });
-        
-        yPos = Math.max(leftY, rightY) + 10;
-        
-        // Career Fits
-        if (yPos > 240) {
-            yPos = addNewPage();
-        }
-        
-        doc.setTextColor(...headerColor);
-        doc.setFontSize(12);
-        doc.text('Career Fits:', 25, yPos);
-        yPos += 8;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.professions.slice(0, 6).join(', '), 25, yPos, 160, 10, 1.5);
-        yPos += 15;
-        
-        // Add decorative line
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(20, yPos, 190, yPos);
+        yPos = addWrappedText(typeData.description, 25, yPos, 160, 10, 1.4);
         yPos += 15;
     });
     
-    // Charts Page
+    // ===== CHARTS PAGE =====
     yPos = addNewPage();
     doc.setFontSize(22);
     doc.setTextColor(99, 102, 241);
     doc.text('Personality Charts & Analysis', 105, yPos, { align: 'center' });
-    yPos += 20;
+    yPos += 25;
     
     try {
         // Add charts side by side with proper sizing
@@ -1720,32 +1711,129 @@ function downloadPDF() {
         doc.text('Charts could not be generated', 105, yPos + 50, { align: 'center' });
     }
     
-    // Growth Stories Section
+    // ===== DETAILED BREAKDOWN OF TOP 3 TYPES =====
     resultsData.topThree.forEach((type, index) => {
-        const [typeName] = type;
+        const [typeName, score] = type;
+        const percentage = Math.round((score / resultsData.totalQuestions) * 100);
         const typeData = personalityTypes[typeName];
         
-        if (!typeData || !typeData.growthStory) return;
+        if (!typeData) return;
         
+        // Start new page for each detailed breakdown
         yPos = addNewPage();
         
-        // Growth Story Header
+        // Type Header with colored background
         const headerColor = index === 0 ? [99, 102, 241] : index === 1 ? [16, 185, 129] : [245, 158, 11];
         doc.setFillColor(...headerColor);
-        doc.rect(20, yPos - 5, 170, 15, 'F');
+        doc.rect(20, yPos - 5, 170, 20, 'F');
         
-        doc.setFontSize(16);
+        doc.setFontSize(18);
         doc.setTextColor(255, 255, 255);
-        doc.text(`Growth Story: ${typeName}`, 25, yPos + 5);
-        yPos += 25;
+        doc.text(`${index + 1}. ${typeName} (${percentage}%) - Detailed Analysis`, 25, yPos + 7);
+        yPos += 30;
         
-        // Story content with better formatting
+        // Authentic Self
+        doc.setFontSize(12);
+        doc.setTextColor(...headerColor);
+        doc.text('Authentic Self:', 25, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.authenticSelf, 25, yPos, 160, 10, 1.5);
+        yPos += 10;
+        
+        // Protection Pattern
+        doc.setTextColor(...headerColor);
+        doc.text('Common Protection Pattern:', 25, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.protection, 25, yPos, 160, 10, 1.5);
+        yPos += 12;
+        
+        // Two-column layout for lists
+        const leftColX = 25;
+        const rightColX = 110;
+        const colWidth = 75;
+        
+        // Quick Steps (Left Column)
+        doc.setTextColor(...headerColor);
+        doc.text('Quick Steps:', leftColX, yPos);
+        let leftY = yPos + 8;
+        
+        typeData.quickSteps.slice(0, 3).forEach(step => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            leftY = addWrappedText(`• ${step}`, leftColX, leftY, colWidth, 9, 1.3);
+            leftY += 4;
+        });
+        
+        // Motivators (Right Column)
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('What Motivates You:', rightColX, yPos);
+        let rightY = yPos + 8;
+        
+        typeData.motivators.forEach(motivator => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            rightY = addWrappedText(`• ${motivator}`, rightColX, rightY, colWidth, 9, 1.3);
+            rightY += 4;
+        });
+        
+        yPos = Math.max(leftY, rightY) + 12;
+        
+        // Strengths and Growth Areas (Two columns)
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('Key Strengths:', leftColX, yPos);
+        doc.text('Growth Areas:', rightColX, yPos);
+        
+        leftY = yPos + 8;
+        rightY = yPos + 8;
+        
+        // Strengths (Left)
+        typeData.strengths.slice(0, 3).forEach(strength => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            leftY = addWrappedText(`• ${strength}`, leftColX, leftY, colWidth, 9, 1.3);
+            leftY += 4;
+        });
+        
+        // Growth Areas (Right)
+        typeData.weaknesses.slice(0, 3).forEach(weakness => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            rightY = addWrappedText(`• ${weakness}`, rightColX, rightY, colWidth, 9, 1.3);
+            rightY += 4;
+        });
+        
+        yPos = Math.max(leftY, rightY) + 12;
+        
+        // Career Fits
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('Career Fits:', 25, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.professions.slice(0, 6).join(', '), 25, yPos, 160, 10, 1.5);
+        yPos += 15;
+        
+        // Growth Story on same page if space, otherwise new page
+        if (yPos > 180) {
+            yPos = addNewPage();
+        }
+        
+        // Growth Story
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(14);
+        doc.text(`Growth Story: ${typeName}`, 25, yPos);
+        yPos += 12;
+        
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(10);
         yPos = addWrappedText(typeData.growthStory, 25, yPos, 160, 10, 1.6);
     });
     
-    // Footer on last page
+    // Footer on all pages
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
