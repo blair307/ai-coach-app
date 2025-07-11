@@ -238,10 +238,12 @@
             border-bottom: none;
         }
 
-        .tips-list li:before {
-            content: "💡";
-            margin-right: 0.5rem;
-        }
+.tips-list li:before {
+    content: "•";
+    margin-right: 0.5rem;
+    color: var(--primary);
+    font-weight: bold;
+}
     </style>
 </head>
 <body>
@@ -650,45 +652,61 @@
                 return Math.round(average);
             });
             
-            radarChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Connector', 'Visionary', 'Leader', 'Producer'],
-                    datasets: [{
-                        label: 'Your Profile',
-                        data: quadrantScores,
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        borderWidth: 3,
-                        pointBackgroundColor: '#6366f1',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+      pieChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: labels,
+        datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderWidth: 2,
+            borderColor: '#fff'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    padding: 15,
+                    usePointStyle: true,
+                    font: {
+                        size: 11
                     },
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: Math.max(...quadrantScores) + 2,
-                            ticks: {
-                                stepSize: 1
-                            },
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
-                            }
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        if (data.labels.length && data.datasets.length) {
+                            return data.labels.map((label, i) => {
+                                const value = data.datasets[0].data[i];
+                                const percentage = Math.round((value / resultsData.totalQuestions) * 100);
+                                return {
+                                    text: `${label}: ${percentage}%`,
+                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                    strokeStyle: data.datasets[0].borderColor,
+                                    lineWidth: data.datasets[0].borderWidth,
+                                    pointStyle: 'circle',
+                                    hidden: isNaN(data.datasets[0].data[i]) || data.datasets[0].data[i] === 0,
+                                    index: i
+                                };
+                            });
                         }
+                        return [];
                     }
                 }
-            });
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
+                        return `${context.label}: ${context.parsed} (${percentage}%)`;
+                    }
+                }
+            }
         }
+    }
+});
 
         function displayDetailedAnalysis() {
             const container = document.getElementById('detailedAnalysis');
@@ -743,57 +761,102 @@
             });
         }
 
-        function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            
-            // Add title
-            doc.setFontSize(20);
-            doc.setTextColor(99, 102, 241);
-            doc.text('Personality Assessment Results', 20, 30);
-            
-            // Add completion date
-            doc.setFontSize(12);
-            doc.setTextColor(100, 100, 100);
-            const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
-            doc.text(`Completed: ${completionDate}`, 20, 40);
-            
-            // Add top three results
+       function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Add header with gradient-like styling
+    doc.setFontSize(24);
+    doc.setTextColor(99, 102, 241);
+    doc.text('Personality Assessment Results', 105, 30, { align: 'center' });
+    
+    // Add line under title
+    doc.setDrawColor(99, 102, 241);
+    doc.setLineWidth(2);
+    doc.line(20, 35, 190, 35);
+    
+    // Add completion date
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
+    doc.text(`Completed: ${completionDate}`, 105, 45, { align: 'center' });
+    
+    // Add top three results section
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Your Top 3 Personality Types', 20, 65);
+    
+    let yPosition = 80;
+    resultsData.topThree.forEach((type, index) => {
+        const [typeName, score] = type;
+        const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+        const typeData = personalityTypes[typeName];
+        
+        if (typeData) {
+            // Type name and percentage
             doc.setFontSize(16);
+            doc.setTextColor(99, 102, 241);
+            doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPosition);
+            
+            // Quadrant badge
+            doc.setFontSize(10);
+            doc.setTextColor(150, 150, 150);
+            doc.text(`${typeData.quadrant} Quadrant`, 20, yPosition + 8);
+            
+            // Description
+            doc.setFontSize(11);
             doc.setTextColor(0, 0, 0);
-            doc.text('Your Top 3 Personality Types:', 20, 60);
+            const descriptionLines = doc.splitTextToSize(typeData.description, 170);
+            doc.text(descriptionLines, 20, yPosition + 18);
             
-            let yPosition = 80;
-            resultsData.topThree.forEach((type, index) => {
-                const [typeName, score] = type;
-                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
-                
-                doc.setFontSize(14);
-                doc.setTextColor(99, 102, 241);
-                doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPosition);
-                
-                const typeData = personalityTypes[typeName];
-                if (typeData) {
-                    doc.setFontSize(10);
-                    doc.setTextColor(0, 0, 0);
-                    
-                    // Split long text into multiple lines
-                    const splitText = doc.splitTextToSize(typeData.description, 170);
-                    doc.text(splitText, 25, yPosition + 10);
-                    
-                    yPosition += 10 + (splitText.length * 5) + 15;
-                }
-                
-                // Add new page if needed
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            });
+            // Authentic Self
+            doc.setFontSize(12);
+            doc.setTextColor(99, 102, 241);
+            doc.text('Authentic Self:', 20, yPosition + 35);
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            const authenticLines = doc.splitTextToSize(typeData.authenticSelf, 170);
+            doc.text(authenticLines, 20, yPosition + 43);
             
-            // Save the PDF
-            doc.save('personality-assessment-results.pdf');
+            yPosition += 60 + (descriptionLines.length * 4) + (authenticLines.length * 4);
+            
+            // Add new page if needed
+            if (yPosition > 240) {
+                doc.addPage();
+                yPosition = 30;
+            }
         }
+    });
+    
+    // Add charts page
+    doc.addPage();
+    doc.setFontSize(20);
+    doc.setTextColor(99, 102, 241);
+    doc.text('Personality Charts & Analysis', 105, 30, { align: 'center' });
+    
+    // Add pie chart as image
+    try {
+        const pieCanvas = document.getElementById('pieChart');
+        const pieImgData = pieCanvas.toDataURL('image/png');
+        doc.addImage(pieImgData, 'PNG', 20, 50, 80, 80);
+        
+        // Add radar chart as image
+        const radarCanvas = document.getElementById('radarChart');
+        const radarImgData = radarCanvas.toDataURL('image/png');
+        doc.addImage(radarImgData, 'PNG', 110, 50, 80, 80);
+        
+        // Add chart labels
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text('All 16 Types Distribution', 60, 140, { align: 'center' });
+        doc.text('Quadrant Profile', 150, 140, { align: 'center' });
+    } catch (error) {
+        console.error('Error adding charts to PDF:', error);
+    }
+    
+    // Save the PDF
+    doc.save('personality-assessment-results.pdf');
+}
 
         function retakeAssessment() {
             if (confirm('Are you sure you want to retake the assessment? This will replace your current results.')) {
