@@ -98,12 +98,39 @@
         .leader { background: #f59e0b; color: white; }
         .producer { background: #06b6d4; color: white; }
 
-        .charts-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-            margin-bottom: 3rem;
-        }
+.charts-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    margin-bottom: 3rem;
+}
+
+@media (max-width: 1024px) {
+    .charts-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .chart-container {
+        height: 350px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+        max-width: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container {
+        height: 250px;
+        max-width: 350px;
+    }
+}
 
         .chart-card {
             background: var(--surface);
@@ -1226,8 +1253,24 @@ const personalityTypes = {
                 
                 const quadrantClass = typeData.quadrant.toLowerCase().replace(' ', '');
                 
-                const card = document.createElement('div');
-                card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
+              const card = document.createElement('div');
+card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
+card.style.cursor = 'pointer';
+card.onclick = () => {
+    const targetElement = document.querySelector(`#detailedAnalysis h3:nth-of-type(${index + 1})`);
+    if (targetElement) {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Add a subtle highlight effect
+        const analysisCard = targetElement.closest('.detailed-analysis');
+        if (analysisCard) {
+            analysisCard.style.background = 'rgba(99, 102, 241, 0.1)';
+            analysisCard.style.transition = 'background 0.5s ease';
+            setTimeout(() => {
+                analysisCard.style.background = '';
+            }, 2000);
+        }
+    }
+};
                 card.innerHTML = `
                     <div class="personality-header">
                         <div class="personality-name">${typeName}</div>
