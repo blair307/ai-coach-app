@@ -1370,130 +1370,251 @@ function createRadarChart() {
                 
                 const analysisCard = document.createElement('div');
                 analysisCard.className = 'detailed-analysis';
-                analysisCard.innerHTML = `
-                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">${index + 1}. ${typeName} (${percentage}%)</h3>
-                    
-                    <div class="analysis-section">
-                        <div class="analysis-title">Authentic Self</div>
-                        <div class="analysis-content">${typeData.authenticSelf}</div>
-                    </div>
-                    
-                    <div class="analysis-section">
-                        <div class="analysis-title">Common Self Protection Method</div>
-                        <div class="analysis-content">${typeData.protection}</div>
-                    </div>
-                    
-                    <div class="analysis-section">
-                        <div class="analysis-title">Key Strengths</div>
-                        <ul class="tips-list">
-                            ${typeData.strengths.map(strength => `<li>${strength}</li>`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="analysis-section">
-                        <div class="analysis-title">Growth Areas</div>
-                        <ul class="tips-list">
-                            ${typeData.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
-                        </ul>
-                    </div>
-                    
-                    <div class="analysis-section">
-                        <div class="analysis-title">Tips for Thriving</div>
-                        <ul class="tips-list">
-                            ${typeData.tips.map(tip => `<li>${tip}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
+            
+analysisCard.innerHTML = `
+    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">${index + 1}. ${typeName} (${percentage}%)</h3>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Description</div>
+        <div class="analysis-content">${typeData.description}</div>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Authentic Self</div>
+        <div class="analysis-content">${typeData.authenticSelf}</div>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Common Self Protection Method</div>
+        <div class="analysis-content">${typeData.protection}</div>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Quick Steps to Get Back on Track</div>
+        <ul class="tips-list">
+            ${typeData.quickSteps.map(step => `<li>${step}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">What Motivates You</div>
+        <ul class="tips-list">
+            ${typeData.motivators.map(motivator => `<li>${motivator}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Key Strengths</div>
+        <ul class="tips-list">
+            ${typeData.strengths.map(strength => `<li>${strength}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Growth Areas</div>
+        <ul class="tips-list">
+            ${typeData.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Career Fits</div>
+        <div class="analysis-content">${typeData.professions.join(', ')}</div>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Tips for Thriving</div>
+        <ul class="tips-list">
+            ${typeData.tips.map(tip => `<li>${tip}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">How Others Can Relate to You</div>
+        <ul class="tips-list">
+            ${typeData.relating.map(tip => `<li>${tip}</li>`).join('')}
+        </ul>
+    </div>
+    
+    <div class="analysis-section">
+        <div class="analysis-title">Growth Story</div>
+        <div class="analysis-content" style="font-style: italic; line-height: 1.8;">${typeData.growthStory}</div>
+    </div>
+`;
                 
                 container.appendChild(analysisCard);
             });
         }
 
-       function downloadPDF() {
+function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    // Add header with gradient-like styling
+    function addWrappedText(text, x, y, maxWidth, fontSize = 10) {
+        doc.setFontSize(fontSize);
+        const lines = doc.splitTextToSize(text, maxWidth);
+        doc.text(lines, x, y);
+        return y + (lines.length * (fontSize * 0.4));
+    }
+    
     doc.setFontSize(24);
     doc.setTextColor(99, 102, 241);
     doc.text('Personality Assessment Results', 105, 30, { align: 'center' });
     
-    // Add line under title
     doc.setDrawColor(99, 102, 241);
     doc.setLineWidth(2);
     doc.line(20, 35, 190, 35);
     
-    // Add completion date
     doc.setFontSize(12);
     doc.setTextColor(100, 100, 100);
     const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
     doc.text(`Completed: ${completionDate}`, 105, 45, { align: 'center' });
     
-    // Add top three results section
-    doc.setFontSize(18);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Your Top 3 Personality Types', 20, 65);
+    let yPos = 65;
     
-    let yPosition = 80;
+    doc.setFontSize(16);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Your Top 3 Personality Types', 20, yPos);
+    yPos += 15;
+    
     resultsData.topThree.forEach((type, index) => {
         const [typeName, score] = type;
         const percentage = Math.round((score / resultsData.totalQuestions) * 100);
         const typeData = personalityTypes[typeName];
         
-        if (typeData) {
-            // Type name and percentage
-            doc.setFontSize(16);
-            doc.setTextColor(99, 102, 241);
-            doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPosition);
-            
-            // Quadrant badge
-            doc.setFontSize(10);
-            doc.setTextColor(150, 150, 150);
-            doc.text(`${typeData.quadrant} Quadrant`, 20, yPosition + 8);
-            
-            // Description
-            doc.setFontSize(11);
-            doc.setTextColor(0, 0, 0);
-            const descriptionLines = doc.splitTextToSize(typeData.description, 170);
-            doc.text(descriptionLines, 20, yPosition + 18);
-            
-            // Authentic Self
-            doc.setFontSize(12);
-            doc.setTextColor(99, 102, 241);
-            doc.text('Authentic Self:', 20, yPosition + 35);
-            doc.setFontSize(10);
-            doc.setTextColor(0, 0, 0);
-            const authenticLines = doc.splitTextToSize(typeData.authenticSelf, 170);
-            doc.text(authenticLines, 20, yPosition + 43);
-            
-            yPosition += 60 + (descriptionLines.length * 4) + (authenticLines.length * 4);
-            
-            // Add new page if needed
-            if (yPosition > 240) {
-                doc.addPage();
-                yPosition = 30;
-            }
+        if (!typeData) return;
+        
+        if (yPos > 250) {
+            doc.addPage();
+            yPos = 30;
         }
+        
+        doc.setFontSize(18);
+        doc.setTextColor(99, 102, 241);
+        doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPos);
+        yPos += 10;
+        
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`${typeData.quadrant} Quadrant`, 20, yPos);
+        yPos += 15;
+        
+        doc.setFontSize(12);
+        doc.setTextColor(99, 102, 241);
+        doc.text('Description:', 20, yPos);
+        yPos += 5;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.description, 20, yPos, 170, 10);
+        yPos += 10;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Authentic Self:', 20, yPos);
+        yPos += 5;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.authenticSelf, 20, yPos, 170, 10);
+        yPos += 10;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Protection Pattern:', 20, yPos);
+        yPos += 5;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.protection, 20, yPos, 170, 10);
+        yPos += 10;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Quick Steps:', 20, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        typeData.quickSteps.forEach(step => {
+            yPos = addWrappedText(`• ${step}`, 25, yPos, 165, 9);
+            yPos += 3;
+        });
+        yPos += 5;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('What Motivates You:', 20, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        typeData.motivators.forEach(motivator => {
+            yPos = addWrappedText(`• ${motivator}`, 25, yPos, 165, 9);
+            yPos += 3;
+        });
+        yPos += 5;
+        
+        if (yPos > 240) {
+            doc.addPage();
+            yPos = 30;
+        }
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Strengths:', 20, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        typeData.strengths.forEach(strength => {
+            yPos = addWrappedText(`• ${strength}`, 25, yPos, 165, 9);
+            yPos += 3;
+        });
+        yPos += 5;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Growth Areas:', 20, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        typeData.weaknesses.forEach(weakness => {
+            yPos = addWrappedText(`• ${weakness}`, 25, yPos, 165, 9);
+            yPos += 3;
+        });
+        yPos += 5;
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Career Fits:', 20, yPos);
+        yPos += 5;
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.professions.join(', '), 20, yPos, 170, 10);
+        yPos += 10;
+        
+        if (yPos > 200) {
+            doc.addPage();
+            yPos = 30;
+        }
+        
+        doc.setTextColor(99, 102, 241);
+        doc.text('Tips for Thriving (Top 3):', 20, yPos);
+        yPos += 8;
+        doc.setTextColor(0, 0, 0);
+        typeData.tips.slice(0, 3).forEach(tip => {
+            yPos = addWrappedText(`• ${tip}`, 25, yPos, 165, 9);
+            yPos += 3;
+        });
+        yPos += 10;
+        
+        doc.addPage();
+        yPos = 30;
+        
+        doc.setFontSize(16);
+        doc.setTextColor(99, 102, 241);
+        doc.text(`Growth Story: ${typeName}`, 20, yPos);
+        yPos += 15;
+        
+        doc.setTextColor(0, 0, 0);
+        yPos = addWrappedText(typeData.growthStory, 20, yPos, 170, 10);
+        yPos += 20;
     });
     
-    // Add charts page
     doc.addPage();
     doc.setFontSize(20);
     doc.setTextColor(99, 102, 241);
-    doc.text('Personality Charts & Analysis', 105, 30, { align: 'center' });
+    doc.text('Personality Charts', 105, 30, { align: 'center' });
     
-    // Add pie chart as image
     try {
         const pieCanvas = document.getElementById('pieChart');
         const pieImgData = pieCanvas.toDataURL('image/png');
         doc.addImage(pieImgData, 'PNG', 20, 50, 80, 80);
         
-        // Add radar chart as image
         const radarCanvas = document.getElementById('radarChart');
         const radarImgData = radarCanvas.toDataURL('image/png');
         doc.addImage(radarImgData, 'PNG', 110, 50, 80, 80);
         
-        // Add chart labels
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
         doc.text('All 16 Types Distribution', 60, 140, { align: 'center' });
@@ -1502,8 +1623,7 @@ function createRadarChart() {
         console.error('Error adding charts to PDF:', error);
     }
     
-    // Save the PDF
-    doc.save('personality-assessment-results.pdf');
+    doc.save('comprehensive-personality-results.pdf');
 }
 
         function retakeAssessment() {
