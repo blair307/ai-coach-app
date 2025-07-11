@@ -1633,8 +1633,8 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             alignment: 'center',
             margin: [0, 40, 0, 30]
         },
-        {
-            text: 'Personality Assessment Results',
+ {
+            text: 'Alivist Personality Test Results',
             style: 'title',
             alignment: 'center',
             margin: [0, 0, 0, 20]
@@ -1888,11 +1888,17 @@ function createPDFDefinition(resultsData, chartImages = {}) {
 
     return {
         content: content,
-        styles: {
+      styles: {
+            companyName: {
+                fontSize: 18,
+                bold: true,
+                color: '#2696FE',
+                letterSpacing: 3
+            },
             title: {
                 fontSize: 24,
                 bold: true,
-                color: '#6366f1'
+                color: '#2696FE'
             },
             subtitle: {
                 fontSize: 14,
