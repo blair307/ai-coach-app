@@ -1177,9 +1177,61 @@ async function saveTestResultsToServer(answers, results) {
     }
 }
 
-        function logout() {
+function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
+        }
+
+        // NEW: Check if user already has results when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            checkForExistingResults();
+        });
+
+        // NEW: Check if user already has results
+        async function checkForExistingResults() {
+            try {
+                // Check if this is a retake (user clicked "Retake Assessment")
+                const allowRetake = localStorage.getItem('allowRetake');
+                if (allowRetake === 'true') {
+                    localStorage.removeItem('allowRetake'); // Clear the flag
+                    console.log('Retake allowed, user can take test');
+                    return;
+                }
+                
+                // Check localStorage first
+                const localResults = localStorage.getItem('personalityTestResults');
+                
+                if (localResults) {
+                    console.log('Found existing results, redirecting...');
+                    window.location.href = 'personality-results.html';
+                    return;
+                }
+                
+                // Also check server if user is logged in
+                const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+                if (token) {
+                    const response = await fetch('/api/personality-test/results', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Found results on server, redirecting...');
+                        window.location.href = 'personality-results.html';
+                        return;
+                    }
+                }
+                
+                // No existing results found, user can take the test
+                console.log('No existing results found, user can take test');
+                
+            } catch (error) {
+                console.error('Error checking for existing results:', error);
+                // If there's an error, let them take the test
+            }
         }
     </script>
 </body>
