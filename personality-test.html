@@ -943,37 +943,81 @@ function startAssessment() {
             }, 2000);
         }
 
-        function calculateAndSaveResults() {
-            // Calculate personality type scores
-            const typeScores = {};
-            
-            userAnswers.forEach(answer => {
-                if (typeScores[answer.type]) {
-                    typeScores[answer.type]++;
-                } else {
-                    typeScores[answer.type] = 1;
-                }
-            });
-            
-            // Sort by highest scores
-            const sortedTypes = Object.entries(typeScores)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 3);
-            
-            // Save results to localStorage
-            const results = {
-                completedAt: new Date().toISOString(),
-                allScores: typeScores,
-                topThree: sortedTypes,
-                totalQuestions: loadedQuestions.length,
-                answers: userAnswers
-            };
-            
-            localStorage.setItem('personalityTestResults', JSON.stringify(results));
-            
-            // Redirect to results page
-            window.location.href = 'personality-results.html';
+       async function calculateAndSaveResults() {
+    // Calculate personality type scores
+    const typeScores = {};
+    
+    userAnswers.forEach(answer => {
+        if (typeScores[answer.type]) {
+            typeScores[answer.type]++;
+        } else {
+            typeScores[answer.type] = 1;
         }
+    });
+    
+    // Sort by highest scores
+    const sortedTypes = Object.entries(typeScores)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 3);
+    
+    // Prepare results object
+    const results = {
+        completedAt: new Date().toISOString(),
+        allScores: typeScores,
+        topThree: sortedTypes,
+        totalQuestions: loadedQuestions.length
+    };
+    
+    // Always save to localStorage as backup
+    localStorage.setItem('personalityTestResults', JSON.stringify(results));
+    
+    // Try to save to server
+    try {
+        await saveTestResultsToServer(userAnswers, results);
+    } catch (error) {
+        console.error('Error saving to server:', error);
+        // Continue anyway - localStorage backup exists
+    }
+    
+    // Redirect to results page
+    window.location.href = 'personality-results.html';
+}
+
+// ADD this new function right after calculateAndSaveResults():
+async function saveTestResultsToServer(answers, results) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        if (!token) {
+            console.log('ℹ️ No auth token, saved to localStorage only');
+            return { success: false, message: 'Saved locally only' };
+        }
+
+        const response = await fetch('/api/personality-test/results', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                answers: answers,
+                results: results
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Results saved to server:', data.message);
+            return { success: true, message: 'Results saved successfully' };
+        } else {
+            console.error('❌ Failed to save to server:', response.status);
+            return { success: false, message: 'Saved locally only' };
+        }
+    } catch (error) {
+        console.error('❌ Error saving results:', error);
+        return { success: false, message: 'Saved locally only' };
+    }
+}
 
         function logout() {
             localStorage.clear();
