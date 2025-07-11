@@ -548,7 +548,6 @@ async function saveResultsToServer(resultsData) {
     }
 }
 
-// UPDATE your retakeAssessment function:
 async function retakeAssessment() {
     if (confirm('Are you sure you want to retake the assessment? This will replace your current results.')) {
         try {
@@ -569,8 +568,11 @@ async function retakeAssessment() {
             console.error('Error deleting from server:', error);
         }
         
-        // Also clear localStorage
+        // IMPORTANT: Clear localStorage so user can retake
         localStorage.removeItem('personalityTestResults');
+        
+        // Add a flag to bypass the redirect check temporarily
+        localStorage.setItem('allowRetake', 'true');
         
         // Redirect to test
         window.location.href = 'personality-test.html';
