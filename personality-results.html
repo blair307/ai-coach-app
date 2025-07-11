@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'><stop offset='0%25' stop-color='%236366f1'/><stop offset='100%25' stop-color='%234f46e5'/></linearGradient></defs><rect width='32' height='32' fill='url(%23g)'/><text x='16' y='20' font-family='Arial' font-size='10' font-weight='bold' text-anchor='middle' fill='white'>EEH</text></svg>">
+    <title>Your Personality Results - Entrepreneur Emotional Health</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .results-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .results-summary {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+            padding: 2rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            margin-bottom: 3rem;
+        }
+
+        .top-three-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .personality-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .personality-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .personality-card.primary {
+            border: 2px solid var(--primary);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(14, 165, 233, 0.03) 100%);
+        }
+
+        .personality-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .personality-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .personality-score {
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .personality-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .quadrant-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .connector { background: #10b981; color: white; }
+        .visionary { background: #8b5cf6; color: white; }
+        .leader { background: #f59e0b; color: white; }
+        .producer { background: #06b6d4; color: white; }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .chart-card {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 1rem;
+        }
+
+        .actions-container {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .btn-action {
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-action {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-secondary-action {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            .results-container {
+                padding: 1rem;
+            }
+
+            .charts-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-action {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+
+        .detailed-analysis {
+            background: var(--surface);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            margin-bottom: 2rem;
+        }
+
+        .analysis-section {
+            margin-bottom: 2rem;
+        }
+
+        .analysis-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .analysis-content {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tips-list li:last-child {
+            border-bottom: none;
+        }
+
+        .tips-list li:before {
+            content: "💡";
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Universal Hamburger Menu -->
+        <button class="universal-hamburger" onclick="toggleSidebar()" aria-label="Toggle navigation menu">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h2>EEH</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="dashboard.html" class="menu-item">Dashboard</a></li>
+                <li><a href="ai-coach.html" class="menu-item">AI Coach</a></li>
+                <li><a href="community.html" class="menu-item">Community</a></li>
+                <li><a href="goals.html" class="menu-item">Goals</a></li>
+                <li><a href="daily-tracker.html" class="menu-item">Daily Tracker</a></li>
+                <li><a href="daily-prompt.html" class="menu-item">Daily Prompt</a></li>
+                <li><a href="personality-test.html" class="menu-item active">Personality Test</a></li>
+                <li><a href="billing.html" class="menu-item">Billing</a></li>
+                <li><a href="settings.html" class="menu-item">Settings</a></li>
+                <li><a href="#" class="menu-item" onclick="logout()">Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="results-container">
+                <div id="noResults" class="no-results">
+                    <h2>No Assessment Results Found</h2>
+                    <p>You haven't completed the personality assessment yet.</p>
+                    <a href="personality-test.html" class="btn btn-primary" style="margin-top: 1rem;">
+                        Take Assessment
+                    </a>
+                </div>
+
+                <div id="resultsContent" style="display: none;">
+                    <div class="results-header">
+                        <h1>Your Personality Assessment Results</h1>
+                        <p style="color: var(--text-secondary); font-size: 1.1rem; margin-top: 1rem;">
+                            Completed on <span id="completionDate"></span>
+                        </p>
+                    </div>
+
+                    <div class="results-summary">
+                        <h2 style="margin-bottom: 1rem; color: var(--primary);">Your Top 3 Personality Types</h2>
+                        <p style="margin: 0; color: var(--text-secondary); font-size: 1.1rem;">
+                            Based on your responses to 64 questions, here are your dominant personality characteristics:
+                        </p>
+                    </div>
+
+                    <!-- Top Three Personality Types -->
+                    <div class="top-three-container" id="topThreeContainer">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div class="charts-container">
+                        <div class="chart-card">
+                            <div class="chart-title">All 16 Types - Pie Chart</div>
+                            <div class="chart-container">
+                                <canvas id="pieChart"></canvas>
+                            </div>
+                        </div>
+                        
+                        <div class="chart-card">
+                            <div class="chart-title">Personality Profile - Radar Chart</div>
+                            <div class="chart-container">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Analysis for Top 3 -->
+                    <div id="detailedAnalysis">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="actions-container">
+                        <div class="action-buttons">
+                            <button class="btn-action btn-primary-action" onclick="downloadPDF()">
+                                📄 Download PDF Report
+                            </button>
+                            <button class="btn-action btn-secondary-action" onclick="retakeAssessment()">
+                                🔄 Retake Assessment
+                            </button>
+                            <a href="dashboard.html" class="btn-action btn-secondary-action">
+                                🏠 Back to Dashboard
+                            </a>
+                        </div>
+                        
+                        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 1rem;">
+                            Share your results with your AI coach for personalized guidance and insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="sidebar-toggle.js"></script>
+    <script>
+        // Personality type definitions with detailed descriptions
+        const personalityTypes = {
+            'Entertainer': {
+                quadrant: 'Connector',
+                description: 'Brings life, laughter, and amusement to situations while being present and emotionally connected.',
+                authenticSelf: 'Brings life, laughter, and amusement to situations while being present and emotionally connected.',
+                protection: 'Perform Instead of Being Known - Entertainers commonly find their role in their abilities.',
+                strengths: ['Can lighten most environments', 'Naturally makes others feel better', 'Creative, witty, and humorous'],
+                weaknesses: ['Avoiding pain through humor', 'Avoidance of subtle forms of intimacy', 'Feeling threatened when confronted'],
+                tips: ['You don\'t have to be "on" all the time', 'Learn to enjoy being fully present', 'Accept your performing self as part of your true nature']
+            },
+            'Healer': {
+                quadrant: 'Connector',
+                description: 'Offers compassion and wisdom for hurting people without taking on emotions or false responsibility.',
+                authenticSelf: 'Offers compassion and wisdom for hurting people without taking on emotions or false responsibility.',
+                protection: 'False Responsibility - Healers often assume responsibility for painful circumstances.',
+                strengths: ['Uncommon patience and avid listening', 'Kindness and creating relational rapport', 'Emotional intelligence'],
+                weaknesses: ['Over-responsibility for others\' lives', 'Being emotionally affected by others', 'Low-key savior complex'],
+                tips: ['Be aware of atmospheres', 'Don\'t take on other peoples\' burdens', 'Maintain clear boundaries']
+            },
+            'Peacemaker': {
+                quadrant: 'Connector',
+                description: 'Brings honesty, clarity, and peace to situations without minimizing their own strength and personality.',
+                authenticSelf: 'Brings honesty, clarity, and peace to situations without minimizing their own strength and personality.',
+                protection: 'Playing Small - Peacemakers "play small" to maintain connection with others.',
+                strengths: ['Faithfulness and kindness', 'Excellent communication skills', 'Patience and ability to carry peace'],
+                weaknesses: ['Hiding strengths to make others comfortable', 'Feeling shame if too good at something', 'High stress if lack of harmony'],
+                tips: ['You don\'t have to take care of everyone', 'Be aware of self-sabotaging tendencies', 'Be a modeler instead of a manager']
+            },
+            'Relater': {
+                quadrant: 'Connector',
+                description: 'Fosters healthy relationships with reciprocal interest and care.',
+                authenticSelf: 'Fosters healthy relationships with reciprocal interest and care.',
+                protection: 'Neglectful of Being Known in Return - Keep attention on the other person.',
+                strengths: ['Attentive and present with others', 'Making others feel loved and valued', 'Sincere curiosity about people'],
+                weaknesses: ['Losing track of time when connecting', 'Being tired from deep relating', 'Compromising boundaries'],
+                tips: ['Be aware of major energy drains', 'Prioritize self-care', 'Work in a relational profession']
+            },
+            'Believer': {
+                quadrant: 'Visionary',
+                description: 'Offers faith, confidence, and hope without disconnecting from reality, emotions, or objective evidence.',
+                authenticSelf: 'Offers faith, confidence, and hope without disconnecting from reality, emotions, or objective evidence.',
+                protection: 'Magical Thinking - Believers can hide in their optimistic faith instead of being grounded.',
+                strengths: ['Consistently optimistic and hopeful', 'Feels grounded by confidence in God and others', 'Generous and caring'],
+                weaknesses: ['Overlooks pain and reality', 'Disillusioned when paradigm is threatened', 'Getting lost in faith thinking'],
+                tips: ['Your strength is also your weakness', 'Partner with grounded friends', 'Your faith must remain fluid']
+            },
+            'Creator': {
+                quadrant: 'Visionary',
+                description: 'Introduces beauty, depth, and novelty to life without being dependent on "passion" to stay engaged.',
+                authenticSelf: 'Introduces beauty, depth, and novelty to life without being dependent on "passion" to stay engaged.',
+                protection: 'Apathetic When Uninspired - Creators can become detached if not highly engaged.',
+                strengths: ['Extremely passionate when motivated', 'Produce beautiful creations', 'Enrich people\'s worlds through aesthetic'],
+                weaknesses: ['Not completing detailed tasks', 'Excitement about one thing after another', 'Requiring passion to be productive'],
+                tips: ['Connect with a pragmatist', 'Learn your particular state of flow', 'Follow your pleasure to find your path']
+            },
+            'Dreamer': {
+                quadrant: 'Visionary',
+                description: 'Robust dream-life while remaining rooted in reality and current circumstances.',
+                authenticSelf: 'Robust dream-life while remaining rooted in reality and current circumstances.',
+                protection: 'Disconnected from Reality - Dreamers can be lost in their own worlds.',
+                strengths: ['Imaginative problem solving', 'Thinking beyond current boundaries', 'Introducing others to creative ideas'],
+                weaknesses: ['Overestimating positives of ideas', 'Not completing projects when interest wanes', 'Neglecting practical issues'],
+                tips: ['Give yourself time to dream', 'Do something with your dreams', 'Connect with other Dreamers']
+            },
+            'Promoter': {
+                quadrant: 'Visionary',
+                description: 'Raises the value in a person, project, or organization without exaggerating or playing on emotions.',
+                authenticSelf: 'Raises the value in a person, project, or organization without exaggerating or playing on emotions.',
+                protection: 'Too Much Hype - Promoters can hide in enthusiasm and over-hype when insecure.',
+                strengths: ['Persuasive towards products and people', 'Naturally passionate about what they enjoy', 'Help people believe in strengths'],
+                weaknesses: ['Tricking self into thinking something is better', 'Potential for manipulation', 'Exaggerating claims unintentionally'],
+                tips: ['Use your superpower carefully', 'Hype is unnecessary for you', 'Give yourself permission to benefit']
+            },
+            'Director': {
+                quadrant: 'Leader',
+                description: 'Seamlessly directs teams, delegates work, and utilizes individuals\' strengths without dehumanizing people.',
+                authenticSelf: 'Seamlessly directs teams, delegates work, and utilizes individuals\' strengths without dehumanizing people.',
+                protection: 'Overlook Individuals for The Bigger Picture - Focus on process instead of people when stressed.',
+                strengths: ['Handling complex circumstances', 'Excellent at managing teams', 'Understanding how to utilize strengths'],
+                weaknesses: ['Overlooking individuals when stressed', 'Frustration if lack of stimulation', 'Difficulty without big picture understanding'],
+                tips: ['Load management is key', 'Try not to micromanage', 'Be clear with boundaries']
+            },
+            'Executor': {
+                quadrant: 'Leader',
+                description: 'Finishes projects consistently without neglecting family, friends, co-workers, or themselves.',
+                authenticSelf: 'Finishes projects consistently without neglecting family, friends, co-workers, or themselves.',
+                protection: 'Compromise Self or Others for Outcomes - Achievement becomes smokescreen for being seen.',
+                strengths: ['Dependable outcomes with work', 'Productive, consistent, and strategic', 'Launching or finishing stalled projects'],
+                weaknesses: ['Anxiety if answers not forthcoming', 'Disconnecting emotionally to finish', 'Impatience with complexity'],
+                tips: ['Enjoy the process and completion', 'The ends do not justify the means', 'Quality is important']
+            },
+            'Motivator': {
+                quadrant: 'Leader',
+                description: 'Excite and inspire people without compromising truth or ignoring potential pitfalls.',
+                authenticSelf: 'Excite and inspire people without compromising truth or ignoring potential pitfalls.',
+                protection: 'Fantastical Optimism - Believing their own hype and getting lost in enthusiasm.',
+                strengths: ['Highly influential', 'Capacity to help people overcome obstacles', 'Inspiring passion for what they advance'],
+                weaknesses: ['Tendency for manipulation', 'Communicating without considering consequences', 'Disconnecting from emotions'],
+                tips: ['Turn off your Motivator-mode', 'Be judicious about what you hype', 'Be excited and wise']
+            },
+            'Protector': {
+                quadrant: 'Leader',
+                description: 'Healthily confrontive, protective, and bold without steamrolling others\' emotions or opinions.',
+                authenticSelf: 'Healthily confrontive, protective, and bold without steamrolling others\' emotions or opinions.',
+                protection: 'Overly Aggressive - Tendency to hide in anger, boldness, or confrontive nature.',
+                strengths: ['Highly loyal to friends and family', 'Creating environments of honesty', 'Giving healthy feedback'],
+                weaknesses: ['Being aggressive instead of diplomatic', 'Confronting when not necessary', 'Being selfish towards family'],
+                tips: ['Pause and give others benefit of doubt', 'You\'re not the villain', 'Allow others to fight their battles']
+            },
+            'Actualizer': {
+                quadrant: 'Producer',
+                description: 'Recognizes potential in people and organizations and helps them achieve it without compromising individuality.',
+                authenticSelf: 'Recognizes potential in people and organizations and helps them achieve it without compromising individuality.',
+                protection: 'People Become Projects - Disconnected when others aren\'t growing or listening to advice.',
+                strengths: ['Collaborating with others', 'Recognizing potential and creating path to fulfill it', 'Hope and energy towards process'],
+                weaknesses: ['Unwilling to start if can\'t become excellent', 'Losing interest without influence', 'Frustration if growth stalled'],
+                tips: ['Turn off your gift when not valued', 'Allow personal reprieves from self-improvement', 'Accept people as they are']
+            },
+            'Implementer': {
+                quadrant: 'Producer',
+                description: 'Takes big ideas and turns them into realities without compromising mental health or self-care.',
+                authenticSelf: 'Takes big ideas and turns them into realities without compromising mental health or self-care.',
+                protection: 'Frustration - When blocked or stymied, become frustrated with work, relationships, or life.',
+                strengths: ['Creativity in getting things done', 'Trustworthy and willing to sacrifice', 'Taking ethereal concepts and producing steps'],
+                weaknesses: ['Used as a workhorse', 'Feeling taken for granted', 'Frustration due to others\' endless ideas'],
+                tips: ['Don\'t overwork', 'Only take on what you can comfortably handle', 'Engage with finished product']
+            },
+            'Problem-Solver': {
+                quadrant: 'Producer',
+                description: 'Removes hindrances, blocks, or weaknesses in tandem with recognizing strengths and opportunities.',
+                authenticSelf: 'Removes hindrances, blocks, or weaknesses in tandem with recognizing strengths and opportunities.',
+                protection: 'Sees Issues Everywhere - Overfocusing on what is wrong or needs to be fixed.',
+                strengths: ['Recognizing issues and ways to resolve them', 'Consistent desire for health and wholeness', 'Outside-the-box thinking'],
+                weaknesses: ['Focusing on problems instead of solutions', 'Overwhelmed by many issues', 'Apathy when lack of influence'],
+                tips: ['Practice being grateful regularly', 'Sometimes having answer doesn\'t mean sharing it', 'Recognize the positives first']
+            },
+            'Thinker': {
+                quadrant: 'Producer',
+                description: 'Deeply considers personal, relational, or organizational dynamics without disconnecting from emotions.',
+                authenticSelf: 'Deeply considers personal, relational, or organizational dynamics without disconnecting from emotions.',
+                protection: 'Disconnects from Emotions by Overthinking - Use intellect to avoid emotions when stressed.',
+                strengths: ['Taking large amounts of information and simplifying', 'Analytical about past, present, and future', 'Creating strategic plans'],
+                weaknesses: ['Disconnecting from others', 'Obsessing over fixing emotions', 'Anxious when overthinking'],
+                tips: ['Balance emotions and intellect', 'Broken record thinking indicates wrong arena', 'Iron sharpens iron']
+            }
+        };
+
+        let resultsData = null;
+        let pieChart = null;
+        let radarChart = null;
+
+        // Load and display results when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadResults();
+        });
+
+        function loadResults() {
+            const savedResults = localStorage.getItem('personalityTestResults');
+            
+            if (!savedResults) {
+                document.getElementById('noResults').style.display = 'block';
+                return;
+            }
+            
+            resultsData = JSON.parse(savedResults);
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('resultsContent').style.display = 'block';
+            
+            displayResults();
+        }
+
+        function displayResults() {
+            // Set completion date
+            const completionDate = new Date(resultsData.completedAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('completionDate').textContent = completionDate;
+            
+            // Display top three types
+            displayTopThree();
+            
+            // Create charts
+            createPieChart();
+            createRadarChart();
+            
+            // Display detailed analysis
+            displayDetailedAnalysis();
+        }
+
+        function displayTopThree() {
+            const container = document.getElementById('topThreeContainer');
+            container.innerHTML = '';
+            
+            resultsData.topThree.forEach((type, index) => {
+                const [typeName, score] = type;
+                const typeData = personalityTypes[typeName];
+                
+                if (!typeData) return;
+                
+                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+                const isPrimary = index === 0;
+                
+                const quadrantClass = typeData.quadrant.toLowerCase().replace(' ', '');
+                
+                const card = document.createElement('div');
+                card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
+                card.innerHTML = `
+                    <div class="personality-header">
+                        <div class="personality-name">${typeName}</div>
+                        <div class="personality-score">${percentage}%</div>
+                    </div>
+                    <div class="quadrant-badge ${quadrantClass}">${typeData.quadrant}</div>
+                    <div class="personality-description">${typeData.description}</div>
+                    ${isPrimary ? '<div style="background: var(--primary); color: white; padding: 0.5rem; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 1rem;">Your Primary Type</div>' : ''}
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        function createPieChart() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            // Get all 16 types with their scores (0 if not present)
+            const allTypes = Object.keys(personalityTypes);
+            const data = allTypes.map(type => resultsData.allScores[type] || 0);
+            const labels = allTypes;
+            
+            // Generate colors for each type
+            const colors = [
+                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40',
+                '#FF6384', '#C9CBCF', '#4BC0C0', '#36A2EB', '#FFCE56', '#9966FF',
+                '#FF9F40', '#FF6384', '#36A2EB', '#4BC0C0'
+            ];
+            
+            pieChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
+                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Group types by quadrant
+            const quadrants = {
+                'Connector': [],
+                'Visionary': [],
+                'Leader': [],
+                'Producer': []
+            };
+            
+            Object.entries(personalityTypes).forEach(([typeName, typeData]) => {
+                const score = resultsData.allScores[typeName] || 0;
+                quadrants[typeData.quadrant].push(score);
+            });
+            
+            // Calculate average score for each quadrant
+            const quadrantScores = Object.entries(quadrants).map(([quadrant, scores]) => {
+                const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+                return Math.round(average);
+            });
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Connector', 'Visionary', 'Leader', 'Producer'],
+                    datasets: [{
+                        label: 'Your Profile',
+                        data: quadrantScores,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#6366f1',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: Math.max(...quadrantScores) + 2,
+                            ticks: {
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function displayDetailedAnalysis() {
+            const container = document.getElementById('detailedAnalysis');
+            container.innerHTML = '<h2 style="text-align: center; margin-bottom: 2rem; color: var(--primary);">Detailed Analysis of Your Top 3 Types</h2>';
+            
+            resultsData.topThree.forEach((type, index) => {
+                const [typeName, score] = type;
+                const typeData = personalityTypes[typeName];
+                
+                if (!typeData) return;
+                
+                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+                
+                const analysisCard = document.createElement('div');
+                analysisCard.className = 'detailed-analysis';
+                analysisCard.innerHTML = `
+                    <h3 style="color: var(--primary); margin-bottom: 1.5rem;">${index + 1}. ${typeName} (${percentage}%)</h3>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-title">Authentic Self</div>
+                        <div class="analysis-content">${typeData.authenticSelf}</div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-title">Common Self Protection Method</div>
+                        <div class="analysis-content">${typeData.protection}</div>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-title">Key Strengths</div>
+                        <ul class="tips-list">
+                            ${typeData.strengths.map(strength => `<li>${strength}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-title">Growth Areas</div>
+                        <ul class="tips-list">
+                            ${typeData.weaknesses.map(weakness => `<li>${weakness}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-section">
+                        <div class="analysis-title">Tips for Thriving</div>
+                        <ul class="tips-list">
+                            ${typeData.tips.map(tip => `<li>${tip}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                
+                container.appendChild(analysisCard);
+            });
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Add title
+            doc.setFontSize(20);
+            doc.setTextColor(99, 102, 241);
+            doc.text('Personality Assessment Results', 20, 30);
+            
+            // Add completion date
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
+            doc.text(`Completed: ${completionDate}`, 20, 40);
+            
+            // Add top three results
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Your Top 3 Personality Types:', 20, 60);
+            
+            let yPosition = 80;
+            resultsData.topThree.forEach((type, index) => {
+                const [typeName, score] = type;
+                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+                
+                doc.setFontSize(14);
+                doc.setTextColor(99, 102, 241);
+                doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPosition);
+                
+                const typeData = personalityTypes[typeName];
+                if (typeData) {
+                    doc.setFontSize(10);
+                    doc.setTextColor(0, 0, 0);
+                    
+                    // Split long text into multiple lines
+                    const splitText = doc.splitTextToSize(typeData.description, 170);
+                    doc.text(splitText, 25, yPosition + 10);
+                    
+                    yPosition += 10 + (splitText.length * 5) + 15;
+                }
+                
+                // Add new page if needed
+                if (yPosition > 250) {
+                    doc.addPage();
+                    yPosition = 30;
+                }
+            });
+            
+            // Save the PDF
+            doc.save('personality-assessment-results.pdf');
+        }
+
+        function retakeAssessment() {
+            if (confirm('Are you sure you want to retake the assessment? This will replace your current results.')) {
+                localStorage.removeItem('personalityTestResults');
+                window.location.href = 'personality-test.html';
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
