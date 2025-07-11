@@ -7,27 +7,29 @@
     <title>Personality Assessment - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
 
-<style>.assessment-container {
+<style>
+   <style>
+.assessment-container {
     max-width: 900px;
     margin: 0 auto;
     padding: 2rem;
+    background: var(--surface);
+    min-height: 100vh;
 }
 
 .assessment-header {
     text-align: center;
     margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 2px solid var(--border);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(14, 165, 233, 0.03) 100%);
     padding: 3rem 2rem 2rem;
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
     border-radius: var(--radius-lg);
-    margin-bottom: 3rem;
+    border: 1px solid rgba(38, 150, 254, 0.1);
 }
 
 .assessment-header h1 {
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -35,19 +37,19 @@
 }
 
 .assessment-intro {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+    background: var(--background);
     padding: 2.5rem;
     border-radius: var(--radius-lg);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--border);
     margin-bottom: 3rem;
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
 .assessment-intro h3 {
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    color: var(--primary);
+    color: #2696FE;
 }
 
 .assessment-intro ul li {
@@ -56,27 +58,28 @@
     align-items: flex-start;
     font-size: 1.05rem;
     line-height: 1.6;
+    color: var(--text-primary);
 }
 
 .assessment-intro ul li span {
-    color: var(--primary);
+    color: #2696FE;
     margin-right: 1rem;
     font-size: 1.2rem;
     margin-top: 0.1rem;
 }
 
 .question-container {
-    background: var(--surface);
+    background: var(--background);
     border-radius: var(--radius-lg);
     padding: 2.5rem;
     margin-bottom: 2rem;
     border: 1px solid var(--border);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
 }
 
 .question-container:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 
 .question-header {
@@ -87,7 +90,7 @@
 }
 
 .question-number {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     color: white;
     width: 50px;
     height: 50px;
@@ -97,7 +100,7 @@
     justify-content: center;
     font-weight: 800;
     font-size: 1.2rem;
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 12px rgba(38, 150, 254, 0.3);
 }
 
 .progress-bar {
@@ -107,16 +110,15 @@
     border-radius: 8px;
     margin: 0 1.5rem;
     overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
     height: 100%;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     border-radius: 8px;
     transition: width 0.6s ease;
     width: 0%;
-    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 2px 8px rgba(38, 150, 254, 0.3);
 }
 
 .progress-text {
@@ -125,7 +127,7 @@
     font-weight: 700;
     min-width: 80px;
     text-align: right;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -152,11 +154,12 @@
     border-radius: var(--radius-lg);
     cursor: pointer;
     transition: all 0.3s ease;
-    background: var(--surface);
+    background: var(--background);
     font-size: 1.1rem;
     line-height: 1.5;
     position: relative;
     overflow: hidden;
+    color: var(--text-primary);
 }
 
 .option::before {
@@ -166,14 +169,14 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
     transition: left 0.3s ease;
 }
 
 .option:hover {
-    border-color: var(--primary);
+    border-color: #2696FE;
     transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+    box-shadow: 0 8px 32px rgba(38, 150, 254, 0.2);
 }
 
 .option:hover::before {
@@ -181,12 +184,12 @@
 }
 
 .option.selected {
-    border-color: var(--primary);
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%);
-    color: var(--primary);
+    border-color: #2696FE;
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%);
+    color: #2696FE;
     font-weight: 700;
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 32px rgba(38, 150, 254, 0.3);
 }
 
 .navigation-buttons {
@@ -208,26 +211,26 @@
 }
 
 .btn-prev {
-    background: var(--surface);
+    background: var(--background);
     color: var(--text-primary);
     border: 2px solid var(--border);
 }
 
 .btn-prev:hover {
-    border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.05);
+    border-color: #2696FE;
+    background: rgba(38, 150, 254, 0.05);
     transform: translateY(-2px);
 }
 
 .btn-next {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     color: white;
-    box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 16px rgba(38, 150, 254, 0.3);
 }
 
 .btn-next:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 8px 24px rgba(38, 150, 254, 0.4);
 }
 
 .btn-next:disabled {
@@ -240,20 +243,21 @@
 .assessment-complete {
     text-align: center;
     padding: 4rem 2rem;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
     border-radius: var(--radius-lg);
+    border: 1px solid rgba(38, 150, 254, 0.1);
 }
 
 .assessment-complete h2 {
     font-size: 2rem;
     font-weight: 700;
-    color: var(--primary);
+    color: #2696FE;
     margin-bottom: 1rem;
 }
 
 .loading-spinner {
     border: 4px solid var(--border);
-    border-top: 4px solid var(--primary);
+    border-top: 4px solid #2696FE;
     border-radius: 50%;
     width: 60px;
     height: 60px;
@@ -267,7 +271,7 @@
 }
 
 .start-button {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     color: white;
     padding: 1.25rem 3.5rem;
     font-size: 1.2rem;
@@ -276,14 +280,14 @@
     border-radius: var(--radius-lg);
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 8px 24px rgba(38, 150, 254, 0.3);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .start-button:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+    box-shadow: 0 12px 32px rgba(38, 150, 254, 0.4);
 }
 
 @media (max-width: 768px) {
@@ -317,11 +321,20 @@
     .progress-text {
         font-size: 0.9rem;
     }
+
+    .assessment-header {
+        padding: 2rem 1rem;
+    }
+
+    .assessment-intro {
+        padding: 2rem 1.5rem;
+    }
 }
 
 .hidden {
     display: none !important;
 }
+</style>
 </style>
 
  
