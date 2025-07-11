@@ -1326,67 +1326,55 @@ const personalityTypes = {
             displayDetailedAnalysis();
         }
 
-        function displayTopThree() {
-            const container = document.getElementById('topThreeContainer');
-            container.innerHTML = '';
-            
-            resultsData.topThree.forEach((type, index) => {
-                const [typeName, score] = type;
-                const typeData = personalityTypes[typeName];
-                
-                if (!typeData) return;
-                
-                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
-                const isPrimary = index === 0;
-                
-                const quadrantClass = typeData.quadrant.toLowerCase().replace(' ', '');
-                
-const card = document.createElement('div');
-card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
-card.style.cursor = 'pointer';
-card.onclick = () => {
-    // Find the specific detailed analysis section for this personality type
-    const detailedSections = document.querySelectorAll('#detailedAnalysis .detailed-analysis');
-    const targetSection = detailedSections[index];
+function displayTopThree() {
+    const container = document.getElementById('topThreeContainer');
+    container.innerHTML = '';
     
-    if (targetSection) {
-        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Add a subtle highlight effect
-        targetSection.style.background = 'rgba(99, 102, 241, 0.1)';
-        targetSection.style.transition = 'background 0.5s ease';
-        setTimeout(() => {
-            targetSection.style.background = '';
-        }, 2000);
-    }
-};
-                
-    if (targetElement) {
-        targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        // Add a subtle highlight effect
-        const analysisCard = targetElement.closest('.detailed-analysis');
-        if (analysisCard) {
-            analysisCard.style.background = 'rgba(99, 102, 241, 0.1)';
-            analysisCard.style.transition = 'background 0.5s ease';
-            setTimeout(() => {
-                analysisCard.style.background = '';
-            }, 2000);
-        }
-    }
-};
-                card.innerHTML = `
-                    <div class="personality-header">
-                        <div class="personality-name">${typeName}</div>
-                        <div class="personality-score">${percentage}%</div>
-                    </div>
-                    <div class="quadrant-badge ${quadrantClass}">${typeData.quadrant}</div>
-                    <div class="personality-description">${typeData.description}</div>
-                    ${isPrimary ? '<div style="background: var(--primary); color: white; padding: 0.5rem; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 1rem;">Your Primary Type</div>' : ''}
-                `;
-                
-                container.appendChild(card);
-            });
-        }
-
+    resultsData.topThree.forEach((type, index) => {
+        const [typeName, score] = type;
+        const typeData = personalityTypes[typeName];
+        
+        if (!typeData) return;
+        
+        const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+        const isPrimary = index === 0;
+        
+        const quadrantClass = typeData.quadrant.toLowerCase().replace(' ', '');
+        
+        const card = document.createElement('div');
+        card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
+        card.style.cursor = 'pointer';
+        
+        // FIXED: Clean click handler with proper syntax
+        card.onclick = () => {
+            // Find the specific detailed analysis section for this personality type
+            const detailedSections = document.querySelectorAll('#detailedAnalysis .detailed-analysis');
+            const targetSection = detailedSections[index];
+            
+            if (targetSection) {
+                targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add a subtle highlight effect
+                targetSection.style.background = 'rgba(99, 102, 241, 0.1)';
+                targetSection.style.transition = 'background 0.5s ease';
+                setTimeout(() => {
+                    targetSection.style.background = '';
+                }, 2000);
+            }
+        };
+        
+        card.innerHTML = `
+            <div class="personality-header">
+                <div class="personality-name">${typeName}</div>
+                <div class="personality-score">${percentage}%</div>
+            </div>
+            <div class="quadrant-badge ${quadrantClass}">${typeData.quadrant}</div>
+            <div class="personality-description">${typeData.description}</div>
+            ${isPrimary ? '<div style="background: var(--primary); color: white; padding: 0.5rem; border-radius: 6px; text-align: center; font-weight: 600; margin-top: 1rem;">Your Primary Type</div>' : ''}
+        `;
+        
+        container.appendChild(card);
+    });
+}
         function createPieChart() {
             const ctx = document.getElementById('pieChart').getContext('2d');
             
