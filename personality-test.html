@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="styles.css">
 
 <style>
-   <style>
 .assessment-container {
     max-width: 900px;
     margin: 0 auto;
@@ -17,23 +16,50 @@
     min-height: 100vh;
 }
 
-.assessment-header {
+/* Add the scrolling banner styles */
+.assessment-banner {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    padding: 3rem 2rem;
     text-align: center;
-    margin-bottom: 3rem;
-    padding: 3rem 2rem 2rem;
-    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(38, 150, 254, 0.1);
+    margin: -2rem -2rem 3rem -2rem;
+    border-radius: 0 0 16px 16px;
+    position: relative;
+    overflow: hidden;
 }
 
-.assessment-header h1 {
+.assessment-banner::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.assessment-banner h1 {
     font-size: 2.5rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
     margin-bottom: 1rem;
+    font-weight: 800;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.assessment-banner p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.assessment-header {
+    display: none; /* Hide the old header since we have the banner */
 }
 
 .assessment-intro {
@@ -43,6 +69,30 @@
     border: 1px solid var(--border);
     margin-bottom: 3rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.assessment-intro::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(38, 150, 254, 0.05), transparent);
+    transition: left 0.6s ease;
+}
+
+.assessment-intro:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(38, 150, 254, 0.15);
+    border-color: rgba(38, 150, 254, 0.3);
+}
+
+.assessment-intro:hover::before {
+    left: 100%;
 }
 
 .assessment-intro h3 {
@@ -50,6 +100,23 @@
     font-weight: 700;
     margin-bottom: 1.5rem;
     color: #2696FE;
+    position: relative;
+}
+
+.assessment-intro h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #2696FE, #26C3FE);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+}
+
+.assessment-intro:hover h3::after {
+    width: 60px;
 }
 
 .assessment-intro ul li {
@@ -59,6 +126,14 @@
     font-size: 1.05rem;
     line-height: 1.6;
     color: var(--text-primary);
+    transition: all 0.3s ease;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.assessment-intro ul li:hover {
+    background: rgba(38, 150, 254, 0.05);
+    transform: translateX(8px);
 }
 
 .assessment-intro ul li span {
@@ -66,6 +141,11 @@
     margin-right: 1rem;
     font-size: 1.2rem;
     margin-top: 0.1rem;
+    transition: all 0.3s ease;
+}
+
+.assessment-intro ul li:hover span {
+    transform: scale(1.2) rotate(10deg);
 }
 
 .question-container {
@@ -75,11 +155,32 @@
     margin-bottom: 2rem;
     border: 1px solid var(--border);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.question-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981, #f59e0b, #ec4899, #f97316);
+    background-size: 400% 100%;
+    animation: gradientShift 3s ease infinite;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .question-container:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    transform: translateY(-8px) scale(1.01);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+    border-color: rgba(38, 150, 254, 0.3);
 }
 
 .question-header {
@@ -101,24 +202,67 @@
     font-weight: 800;
     font-size: 1.2rem;
     box-shadow: 0 4px 12px rgba(38, 150, 254, 0.3);
+    transition: all 0.3s ease;
+}
+
+.question-number:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.4);
 }
 
 .progress-bar {
     flex: 1;
-    height: 10px;
+    height: 12px;
     background: var(--border);
-    border-radius: 8px;
+    border-radius: 10px;
     margin: 0 1.5rem;
     overflow: hidden;
+    position: relative;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, #8b5cf6, #06b6d4, #10b981, #f59e0b, #ec4899, #f97316);
+    background-size: 400% 100%;
+    animation: progressRainbow 2s ease infinite;
+    opacity: 0.1;
+}
+
+@keyframes progressRainbow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
-    border-radius: 8px;
-    transition: width 0.6s ease;
+    border-radius: 10px;
+    transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
     width: 0%;
     box-shadow: 0 2px 8px rgba(38, 150, 254, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: progressShimmer 1.5s infinite;
+}
+
+@keyframes progressShimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
 }
 
 .progress-text {
@@ -140,6 +284,22 @@
     margin-bottom: 2.5rem;
     line-height: 1.5;
     text-align: center;
+    position: relative;
+}
+
+.question-text::before {
+    content: '🤔';
+    position: absolute;
+    left: -3rem;
+    top: 0;
+    font-size: 2rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
 }
 
 .options-container {
@@ -153,13 +313,14 @@
     border: 2px solid var(--border);
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     background: var(--background);
     font-size: 1.1rem;
     line-height: 1.5;
     position: relative;
     overflow: hidden;
     color: var(--text-primary);
+    transform-origin: center;
 }
 
 .option::before {
@@ -169,18 +330,46 @@
     left: -100%;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
-    transition: left 0.3s ease;
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+    transition: left 0.4s ease;
+}
+
+.option:nth-child(1)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #8b5cf6;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.option:nth-child(2)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #10b981;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .option:hover {
     border-color: #2696FE;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 32px rgba(38, 150, 254, 0.2);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(38, 150, 254, 0.2);
 }
 
 .option:hover::before {
     left: 0;
+}
+
+.option:hover::after {
+    opacity: 1;
 }
 
 .option.selected {
@@ -188,8 +377,12 @@
     background: linear-gradient(135deg, rgba(38, 150, 254, 0.15) 0%, rgba(14, 165, 233, 0.15) 100%);
     color: #2696FE;
     font-weight: 700;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(38, 150, 254, 0.3);
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.3);
+}
+
+.option.selected::after {
+    opacity: 1;
 }
 
 .navigation-buttons {
@@ -205,9 +398,11 @@
     border-radius: var(--radius-lg);
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 1.1rem;
     min-width: 160px;
+    position: relative;
+    overflow: hidden;
 }
 
 .btn-prev {
@@ -219,18 +414,34 @@
 .btn-prev:hover {
     border-color: #2696FE;
     background: rgba(38, 150, 254, 0.05);
-    transform: translateY(-2px);
+    transform: translateY(-3px) scale(1.05);
 }
 
 .btn-next {
     background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     color: white;
     box-shadow: 0 4px 16px rgba(38, 150, 254, 0.3);
+    position: relative;
+}
+
+.btn-next::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-next:hover::before {
+    left: 100%;
 }
 
 .btn-next:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(38, 150, 254, 0.4);
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.4);
 }
 
 .btn-next:disabled {
@@ -246,6 +457,24 @@
     background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(38, 150, 254, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.assessment-complete::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(38, 150, 254, 0.1), transparent);
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 .assessment-complete h2 {
@@ -253,6 +482,8 @@
     font-weight: 700;
     color: #2696FE;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 .loading-spinner {
@@ -263,6 +494,8 @@
     height: 60px;
     animation: spin 1s linear infinite;
     margin: 2rem auto;
+    position: relative;
+    z-index: 1;
 }
 
 @keyframes spin {
@@ -279,15 +512,32 @@
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 8px 24px rgba(38, 150, 254, 0.3);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.start-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s;
+}
+
+.start-button:hover::before {
+    left: 100%;
 }
 
 .start-button:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 32px rgba(38, 150, 254, 0.4);
+    transform: translateY(-6px) scale(1.05);
+    box-shadow: 0 16px 40px rgba(38, 150, 254, 0.4);
 }
 
 @media (max-width: 768px) {
@@ -295,8 +545,21 @@
         padding: 1rem;
     }
 
+    .assessment-banner {
+        margin: -1rem -1rem 2rem -1rem;
+        padding: 2rem 1rem;
+    }
+
+    .assessment-banner h1 {
+        font-size: 2rem;
+    }
+
     .question-text {
         font-size: 1.2rem;
+    }
+
+    .question-text::before {
+        display: none;
     }
 
     .option {
@@ -322,10 +585,6 @@
         font-size: 0.9rem;
     }
 
-    .assessment-header {
-        padding: 2rem 1rem;
-    }
-
     .assessment-intro {
         padding: 2rem 1.5rem;
     }
@@ -334,7 +593,6 @@
 .hidden {
     display: none !important;
 }
-</style>
 </style>
 
  
