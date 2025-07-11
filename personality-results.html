@@ -8,358 +8,354 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        .results-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
 
-        .results-header {
-            text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 2rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .results-summary {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
-            padding: 2rem;
-            border-radius: var(--radius-lg);
-            border: 1px solid rgba(99, 102, 241, 0.1);
-            margin-bottom: 3rem;
-        }
-
-        .top-three-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-bottom: 3rem;
-        }
-
-.personality-card {
-    background: var(--surface);
-    border-radius: var(--radius-lg);
+<style>
+.assessment-container {
+    max-width: 900px;
+    margin: 0 auto;
     padding: 2rem;
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    background: var(--surface);
+    min-height: 100vh;
 }
 
-.personality-card::before {
+/* Hero Banner */
+.assessment-banner {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    padding: 3rem 2rem;
+    text-align: center;
+    margin: -2rem -2rem 3rem -2rem;
+    border-radius: 0 0 16px 16px;
+}
+
+.assessment-banner h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.assessment-banner p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.assessment-header {
+    display: none;
+}
+
+.assessment-intro {
+    background: var(--background);
+    padding: 2.5rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    margin-bottom: 3rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.assessment-intro:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.15);
+    border-color: rgba(38, 150, 254, 0.3);
+}
+
+.assessment-intro h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #2696FE;
+}
+
+.assessment-intro ul li {
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-start;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.assessment-intro ul li span {
+    color: #2696FE;
+    margin-right: 1rem;
+    font-size: 1.2rem;
+    margin-top: 0.1rem;
+}
+
+.question-container {
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.question-container::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-}
-
-.personality-card:nth-child(2)::before {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-}
-
-.personality-card:nth-child(3)::before {
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-}
-
-        .personality-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .personality-card.primary {
-            border: 2px solid var(--primary);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.03) 0%, rgba(14, 165, 233, 0.03) 100%);
-        }
-
-        .personality-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .personality-name {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-
-        .personality-score {
-            background: var(--primary);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-weight: 700;
-        }
-
-        .personality-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-
-.quadrant-badge {
-    display: inline-block;
-    padding: 0.4rem 1rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    margin-bottom: 1rem;
-}
-
-.connector { 
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
-    color: white; 
-}
-.visionary { 
-    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); 
-    color: white; 
-}
-.leader { 
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); 
-    color: white; 
-}
-.producer { 
-    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); 
-    color: white; 
-}
-
-.charts-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    margin-bottom: 3rem;
-}
-
-@media (max-width: 1024px) {
-    .charts-container {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-    }
-    
-    .chart-container {
-        height: 350px;
-        max-width: 500px;
-        margin: 0 auto;
-    }
-}
-
-@media (max-width: 768px) {
-    .chart-container {
-        height: 300px;
-        max-width: 400px;
-    }
-}
-
-@media (max-width: 480px) {
-    .chart-container {
-        height: 250px;
-        max-width: 350px;
-    }
-}
-
-        .chart-card {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-        }
-
-        .chart-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 1.5rem;
-            text-align: center;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
-            margin-bottom: 1rem;
-        }
-
-        .actions-container {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 2rem;
-            border-top: 2px solid var(--border);
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 2rem;
-        }
-
-        .btn-action {
-            padding: 0.75rem 2rem;
-            border: none;
-            border-radius: var(--radius-lg);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 1rem;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary-action {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-            color: white;
-        }
-
-        .btn-secondary-action {
-            background: var(--surface);
-            color: var(--text-primary);
-            border: 2px solid var(--border);
-        }
-
-        .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: var(--text-muted);
-        }
-
-        @media (max-width: 768px) {
-            .results-container {
-                padding: 1rem;
-            }
-
-            .charts-container {
-                grid-template-columns: 1fr;
-                gap: 2rem;
-            }
-
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .btn-action {
-                width: 100%;
-                max-width: 300px;
-            }
-        }
-
-        .detailed-analysis {
-            background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow);
-            margin-bottom: 2rem;
-        }
-
-        .analysis-section {
-            margin-bottom: 2rem;
-        }
-
-        .analysis-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .analysis-content {
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .tips-list {
-            list-style: none;
-            padding: 0;
-        }
-
-        .tips-list li {
-            padding: 0.5rem 0;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .tips-list li:last-child {
-            border-bottom: none;
-        }
-
-.tips-list li:before {
-    content: "•";
-    margin-right: 0.5rem;
-    color: var(--primary);
-    font-weight: bold;
-}
-
-        /* Add colorful accents to detailed analysis cards */
-.detailed-analysis:nth-child(2) {
-    border-left: 4px solid var(--primary);
-}
-
-.detailed-analysis:nth-child(3) {
-    border-left: 4px solid #10b981;
-}
-
-.detailed-analysis:nth-child(4) {
-    border-left: 4px solid #f59e0b;
-}
-
-.analysis-title {
-    position: relative;
-}
-
-.analysis-title::before {
-    content: '';
-    position: absolute;
-    left: -1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4px;
-    height: 20px;
     background: var(--primary);
-    border-radius: 2px;
 }
 
-/* Colorful stat numbers */
-.stat-number {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+.question-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
+    border-color: rgba(38, 150, 254, 0.3);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.question-number {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 12px rgba(38, 150, 254, 0.3);
+}
+
+.progress-bar {
+    flex: 1;
+    height: 12px;
+    background: var(--border);
+    border-radius: 10px;
+    margin: 0 1.5rem;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+    width: 0%;
+    box-shadow: 0 2px 8px rgba(38, 150, 254, 0.3);
+}
+
+.progress-text {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    min-width: 80px;
+    text-align: right;
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-/* Add subtle background patterns */
-.results-summary {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(14, 165, 233, 0.08) 100%);
+.question-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 2.5rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.options-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.option {
+    padding: 2rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--background);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    color: var(--text-primary);
     position: relative;
 }
 
-.results-summary::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100px;
-    height: 100px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
+.option:hover {
+    border-color: #2696FE;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.15);
 }
-    </style>
+
+.option.selected {
+    border-color: #2696FE;
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.1) 0%, rgba(14, 165, 233, 0.1) 100%);
+    color: #2696FE;
+    font-weight: 700;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(38, 150, 254, 0.2);
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 3rem;
+    gap: 1.5rem;
+}
+
+.btn-nav {
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+    min-width: 160px;
+}
+
+.btn-prev {
+    background: var(--background);
+    color: var(--text-primary);
+    border: 2px solid var(--border);
+}
+
+.btn-prev:hover {
+    border-color: #2696FE;
+    background: rgba(38, 150, 254, 0.05);
+    transform: translateY(-2px);
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(38, 150, 254, 0.3);
+}
+
+.btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(38, 150, 254, 0.4);
+}
+
+.btn-next:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.assessment-complete {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(14, 165, 233, 0.05) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(38, 150, 254, 0.1);
+}
+
+.assessment-complete h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2696FE;
+    margin-bottom: 1rem;
+}
+
+.loading-spinner {
+    border: 4px solid var(--border);
+    border-top: 4px solid #2696FE;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 2rem auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.start-button {
+    background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+    color: white;
+    padding: 1.25rem 3.5rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(38, 150, 254, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.start-button:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(38, 150, 254, 0.4);
+}
+
+@media (max-width: 768px) {
+    .assessment-container {
+        padding: 1rem;
+    }
+
+    .assessment-banner {
+        margin: -1rem -1rem 2rem -1rem;
+        padding: 2rem 1rem;
+    }
+
+    .assessment-banner h1 {
+        font-size: 2rem;
+    }
+
+    .question-text {
+        font-size: 1.2rem;
+    }
+
+    .option {
+        padding: 1.5rem;
+        font-size: 1rem;
+    }
+
+    .navigation-buttons {
+        flex-direction: column;
+    }
+
+    .btn-nav {
+        width: 100%;
+    }
+
+    .question-number {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .progress-text {
+        font-size: 0.9rem;
+    }
+
+    .assessment-intro {
+        padding: 2rem 1.5rem;
+    }
+}
+
+.hidden {
+    display: none !important;
+}
+</style>
+    
 </head>
 <body>
     <div class="app-container">
@@ -1581,54 +1577,121 @@ analysisCard.innerHTML = `
 
 function downloadPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF('p', 'mm', 'a4');
     
-    // Page settings
-    const pageWidth = 210;
-    const pageHeight = 297;
-    const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
-    let yPos = 25;
+    // Constants for consistent spacing
+    const PAGE_WIDTH = 210;
+    const PAGE_HEIGHT = 297;
+    const MARGIN = 20;
+    const CONTENT_WIDTH = PAGE_WIDTH - (MARGIN * 2);
+    const LINE_HEIGHT = 1.4;
+    const FOOTER_HEIGHT = 15;
+    const MAX_Y = PAGE_HEIGHT - FOOTER_HEIGHT;
     
-    // Helper function for text wrapping
-    function addText(text, x, y, maxWidth, fontSize = 10, options = {}) {
-        doc.setFontSize(fontSize);
-        const lines = doc.splitTextToSize(text, maxWidth);
-        doc.text(lines, x, y, options);
-        return y + (lines.length * fontSize * 1.2) + 5;
+    let currentY = MARGIN;
+    let pageNumber = 1;
+    
+    // Helper function to add new page
+    function addNewPage() {
+        doc.addPage();
+        pageNumber++;
+        currentY = MARGIN;
+        return currentY;
     }
     
-    // Helper function for new page
-    function checkNewPage(currentY, spaceNeeded = 40) {
-        if (currentY + spaceNeeded > 250) {
-            doc.addPage();
-            return 25;
+    // Helper function to check if we need a new page
+    function checkPageBreak(spaceNeeded) {
+        if (currentY + spaceNeeded > MAX_Y) {
+            addNewPage();
         }
+        return currentY;
+    }
+    
+    // Helper function to add text with proper wrapping and spacing
+    function addText(text, x, y, options = {}) {
+        const fontSize = options.fontSize || 10;
+        const fontWeight = options.fontWeight || 'normal';
+        const color = options.color || [0, 0, 0];
+        const maxWidth = options.maxWidth || CONTENT_WIDTH;
+        const align = options.align || 'left';
+        
+        doc.setFontSize(fontSize);
+        doc.setFont('helvetica', fontWeight);
+        doc.setTextColor(...color);
+        
+        const lines = doc.splitTextToSize(text, maxWidth);
+        const textHeight = lines.length * fontSize * LINE_HEIGHT;
+        
+        // Check if we need a new page
+        checkPageBreak(textHeight + 5);
+        
+        doc.text(lines, x, currentY, { align: align });
+        currentY += textHeight + 3;
+        
+        return currentY;
+    }
+    
+    // Helper function to add section header
+    function addSectionHeader(title, color = [99, 102, 241]) {
+        checkPageBreak(20);
+        
+        doc.setFillColor(...color);
+        doc.rect(MARGIN, currentY - 3, CONTENT_WIDTH, 12, 'F');
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text(title, MARGIN + 5, currentY + 5);
+        
+        currentY += 15;
         return currentY;
     }
     
     // Title page
     doc.setFillColor(99, 102, 241);
-    doc.rect(0, 0, pageWidth, 40, 'F');
+    doc.rect(0, 0, PAGE_WIDTH, 40, 'F');
     
-    doc.setFontSize(24);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 255, 255);
-    doc.text('Personality Assessment Results', pageWidth/2, 25, { align: 'center' });
+    doc.text('Personality Assessment Results', PAGE_WIDTH/2, 25, { align: 'center' });
     
-    const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
+    const completionDate = new Date(resultsData.completedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    
     doc.setFontSize(12);
-    doc.text(`Completed: ${completionDate}`, pageWidth/2, 35, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Completed: ${completionDate}`, PAGE_WIDTH/2, 35, { align: 'center' });
     
-    yPos = 60;
-    doc.setTextColor(0, 0, 0);
+    currentY = 55;
     
-    // Summary
-    doc.setFontSize(16);
-    doc.setTextColor(99, 102, 241);
-    yPos = addText('Your Top 3 Personality Types', margin, yPos, contentWidth, 16, { align: 'center' });
-    yPos += 10;
+    // Executive Summary
+    addText('Executive Summary', MARGIN, currentY, { 
+        fontSize: 16, 
+        fontWeight: 'bold', 
+        color: [99, 102, 241],
+        align: 'center'
+    });
     
-    // Top 3 types
+    const topThreeNames = resultsData.topThree.map(([name]) => name).join(', ');
+    addText(`Your top personality types: ${topThreeNames}`, MARGIN, currentY, { 
+        fontSize: 11,
+        align: 'center'
+    });
+    
+    addText('Based on comprehensive analysis of 64 personality questions', MARGIN, currentY, { 
+        fontSize: 10,
+        align: 'center'
+    });
+    
+    currentY += 10;
+    
+    // Top Three Types Summary
+    addSectionHeader('Your Top 3 Personality Types');
+    
     resultsData.topThree.forEach((type, index) => {
         const [typeName, score] = type;
         const percentage = Math.round((score / resultsData.totalQuestions) * 100);
@@ -1636,69 +1699,184 @@ function downloadPDF() {
         
         if (!typeData) return;
         
-        yPos = checkNewPage(yPos);
+        checkPageBreak(25);
         
-        // Type header
-        doc.setFontSize(14);
-        doc.setTextColor(99, 102, 241);
-        yPos = addText(`${index + 1}. ${typeName} (${percentage}%)`, margin, yPos, contentWidth, 14);
+        // Type number and name
+        addText(`${index + 1}. ${typeName} (${percentage}%) - ${typeData.quadrant} Quadrant`, MARGIN, currentY, {
+            fontSize: 12,
+            fontWeight: 'bold',
+            color: [99, 102, 241]
+        });
         
         // Description
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        yPos = addText(typeData.description, margin, yPos, contentWidth, 10);
-        yPos += 10;
+        addText(typeData.description, MARGIN, currentY, {
+            fontSize: 10
+        });
+        
+        currentY += 5; // Extra space between types
     });
     
     // Detailed analysis for each type
     resultsData.topThree.forEach((type, index) => {
         const [typeName, score] = type;
+        const percentage = Math.round((score / resultsData.totalQuestions) * 100);
         const typeData = personalityTypes[typeName];
         
         if (!typeData) return;
         
-        // New page for each detailed type
-        doc.addPage();
-        yPos = 25;
+        // Start new page for detailed analysis
+        addNewPage();
         
         // Header
-        doc.setFontSize(16);
+        addSectionHeader(`${index + 1}. ${typeName} (${percentage}%) - Detailed Analysis`);
+        
+        // Authentic Self
+        addText('Authentic Self:', MARGIN, currentY, {
+            fontSize: 11,
+            fontWeight: 'bold',
+            color: [99, 102, 241]
+        });
+        addText(typeData.authenticSelf, MARGIN, currentY, { fontSize: 10 });
+        currentY += 5;
+        
+        // Protection Pattern
+        addText('Common Protection Pattern:', MARGIN, currentY, {
+            fontSize: 11,
+            fontWeight: 'bold',
+            color: [99, 102, 241]
+        });
+        addText(typeData.protection, MARGIN, currentY, { fontSize: 10 });
+        currentY += 8;
+        
+        // Quick Steps (left column)
+        const leftColX = MARGIN;
+        const rightColX = MARGIN + (CONTENT_WIDTH / 2) + 5;
+        const colWidth = (CONTENT_WIDTH / 2) - 5;
+        
+        checkPageBreak(40);
+        
+        // Save current Y for columns
+        const columnStartY = currentY;
+        
+        // Left column - Quick Steps
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
         doc.setTextColor(99, 102, 241);
-        yPos = addText(`${typeName} - Detailed Analysis`, margin, yPos, contentWidth, 16);
-        yPos += 10;
+        doc.text('Quick Steps:', leftColX, currentY);
         
-        // Sections
-        const sections = [
-            { title: 'Authentic Self', content: typeData.authenticSelf },
-            { title: 'Protection Pattern', content: typeData.protection },
-            { title: 'Strengths', content: typeData.strengths.slice(0, 3).join('; ') },
-            { title: 'Growth Areas', content: typeData.weaknesses.slice(0, 3).join('; ') },
-            { title: 'Career Fits', content: typeData.professions.slice(0, 6).join(', ') }
-        ];
-        
-        sections.forEach(section => {
-            yPos = checkNewPage(yPos, 30);
-            
-            doc.setFontSize(12);
-            doc.setTextColor(99, 102, 241);
-            yPos = addText(section.title + ':', margin, yPos, contentWidth, 12);
-            
-            doc.setFontSize(10);
+        let leftY = currentY + 8;
+        typeData.quickSteps.slice(0, 3).forEach(step => {
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
             doc.setTextColor(0, 0, 0);
-            yPos = addText(section.content, margin, yPos, contentWidth, 10);
-            yPos += 5;
+            const lines = doc.splitTextToSize(`• ${step}`, colWidth);
+            doc.text(lines, leftColX, leftY);
+            leftY += lines.length * 9 * LINE_HEIGHT + 2;
+        });
+        
+        // Right column - Motivators
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(99, 102, 241);
+        doc.text('What Motivates You:', rightColX, columnStartY);
+        
+        let rightY = columnStartY + 8;
+        typeData.motivators.forEach(motivator => {
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            const lines = doc.splitTextToSize(`• ${motivator}`, colWidth);
+            doc.text(lines, rightColX, rightY);
+            rightY += lines.length * 9 * LINE_HEIGHT + 2;
+        });
+        
+        // Move Y to the bottom of both columns
+        currentY = Math.max(leftY, rightY) + 10;
+        
+        // Strengths and Growth Areas
+        checkPageBreak(40);
+        const strengthsStartY = currentY;
+        
+        // Left column - Strengths
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(99, 102, 241);
+        doc.text('Key Strengths:', leftColX, currentY);
+        
+        leftY = currentY + 8;
+        typeData.strengths.slice(0, 3).forEach(strength => {
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            const lines = doc.splitTextToSize(`• ${strength}`, colWidth);
+            doc.text(lines, leftColX, leftY);
+            leftY += lines.length * 9 * LINE_HEIGHT + 2;
+        });
+        
+        // Right column - Growth Areas
+        doc.setFontSize(11);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(99, 102, 241);
+        doc.text('Growth Areas:', rightColX, strengthsStartY);
+        
+        rightY = strengthsStartY + 8;
+        typeData.weaknesses.slice(0, 3).forEach(weakness => {
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(0, 0, 0);
+            const lines = doc.splitTextToSize(`• ${weakness}`, colWidth);
+            doc.text(lines, rightColX, rightY);
+            rightY += lines.length * 9 * LINE_HEIGHT + 2;
+        });
+        
+        currentY = Math.max(leftY, rightY) + 10;
+        
+        // Career Fits
+        addText('Career Fits:', MARGIN, currentY, {
+            fontSize: 11,
+            fontWeight: 'bold',
+            color: [99, 102, 241]
+        });
+        addText(typeData.professions.slice(0, 8).join(', '), MARGIN, currentY, { fontSize: 10 });
+        currentY += 10;
+        
+        // Growth Story on new page
+        addNewPage();
+        
+        addText(`Growth Story: ${typeName}`, MARGIN, currentY, {
+            fontSize: 12,
+            fontWeight: 'bold',
+            color: [99, 102, 241]
+        });
+        
+        // Break growth story into manageable chunks
+        const storyWords = typeData.growthStory.split(' ');
+        const chunksOf50Words = [];
+        
+        for (let i = 0; i < storyWords.length; i += 50) {
+            chunksOf50Words.push(storyWords.slice(i, i + 50).join(' '));
+        }
+        
+        chunksOf50Words.forEach((chunk, chunkIndex) => {
+            addText(chunk, MARGIN, currentY, { fontSize: 10 });
+            if (chunkIndex < chunksOf50Words.length - 1) {
+                currentY += 3; // Small gap between chunks
+            }
         });
     });
     
-    // Add page numbers
+    // Add page numbers to all pages
     const totalPages = doc.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Page ${i} of ${totalPages}`, pageWidth/2, 285, { align: 'center' });
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(128, 128, 128);
+        doc.text(`Page ${i} of ${totalPages}`, PAGE_WIDTH/2, PAGE_HEIGHT - 10, { align: 'center' });
+        doc.text('Entrepreneur Emotional Health - Alivist Personality Assessment', PAGE_WIDTH/2, PAGE_HEIGHT - 5, { align: 'center' });
     }
     
+    // Save the PDF
     doc.save('personality-assessment-results.pdf');
 }
         
