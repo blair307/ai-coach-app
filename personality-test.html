@@ -339,25 +339,520 @@
         let userAnswers = [];
         let assessmentQuestions = [];
 
-        // Sample questions - replace with your actual questions from CSV
-        const sampleQuestions = [
+// All 64 questions from your CSV
+        const assessmentQuestions = [
             {
                 id: 1,
-                question: "When facing a difficult decision, I prefer to:",
-                optionA: "Analyze all the facts and data thoroughly",
-                typeA: "Thinker",
-                optionB: "Trust my gut feeling and intuition",
-                typeB: "Believer"
+                question: "I prefer to:",
+                optionA: "Help others process their emotions",
+                typeA: "Healer",
+                optionB: "Create innovative solutions to problems",
+                typeB: "Creator"
             },
             {
                 id: 2,
-                question: "In social situations, I tend to:",
-                optionA: "Connect deeply with a few people",
+                question: "I'm more energized by:",
+                optionA: "Making sure everyone feels included",
+                typeA: "Peacemaker",
+                optionB: "Taking charge and directing projects",
+                typeB: "Director"
+            },
+            {
+                id: 3,
+                question: "I naturally:",
+                optionA: "Get energized by inluencing others to take action",
+                typeA: "Motivator",
+                optionB: "Notice ways to improve systems",
+                typeB: "Problem-Solver"
+            },
+            {
+                id: 4,
+                question: "I'm better at:",
+                optionA: "Getting people excited about possibilities",
+                typeA: "Promoter",
+                optionB: "Implementing practical solutions",
+                typeB: "Implementer"
+            },
+            {
+                id: 5,
+                question: "I tend to:",
+                optionA: "Have strong faith in positive outcomes",
+                typeA: "Believer",
+                optionB: "Think deeply about complex issues",
+                typeB: "Thinker"
+            },
+            {
+                id: 6,
+                question: "I prefer to:",
+                optionA: "Make others laugh and feel good",
+                typeA: "Entertainer",
+                optionB: "Stand firm against harmful behaviors",
+                typeB: "Protector"
+            },
+            {
+                id: 7,
+                question: "I'm more likely to:",
+                optionA: "Improve what I'm working on",
+                typeA: "Actualizer",
+                optionB: "Get things done efficiently",
+                typeB: "Executor"
+            },
+            {
+                id: 8,
+                question: "I naturally:",
+                optionA: "Help others reach their full potential",
+                typeA: "Actualizer",
+                optionB: "Am aware of others' emotional states",
+                typeB: "Peacemaker"
+            },
+            {
+                id: 9,
+                question: "I'm more comfortable:",
+                optionA: "Analyzing all sides of a complex situation",
+                typeA: "Thinker",
+                optionB: "Making an immediate impact on a problem",
+                typeB: "Executor"
+            },
+            {
+                id: 10,
+                question: "I naturally:",
+                optionA: "Light up a room with my energy",
+                typeA: "Entertainer",
+                optionB: "Guide others toward better versions of themselves",
+                typeB: "Actualizer"
+            },
+            {
+                id: 11,
+                question: "I prefer to:",
+                optionA: "Bring peace to tense situations",
+                typeA: "Peacemaker",
+                optionB: "Share my enthusiasm for things I value",
+                typeB: "Promoter"
+            },
+            {
+                id: 12,
+                question: "I'm more likely to:",
+                optionA: "Listen deeply to others' struggles",
+                typeA: "Healer",
+                optionB: "Take bold action when something isn't right",
+                typeB: "Protector"
+            },
+            {
+                id: 13,
+                question: "I tend to:",
+                optionA: "See possibilities beyond current limitations",
+                typeA: "Dreamer",
+                optionB: "Know how to bring projects to completion",
+                typeB: "Implementer"
+            },
+            {
+                id: 14,
+                question: "I'm energized by:",
+                optionA: "Understanding others' life stories",
                 typeA: "Relater",
-                optionB: "Entertain and engage with many people",
+                optionB: "Moving groups toward clear goals",
+                typeB: "Director"
+            },
+            {
+                id: 15,
+                question: "I'm better at:",
+                optionA: "Seeing ways to enhance existing systems",
+                typeA: "Problem-Solver",
+                optionB: "Coming up with original ideas",
+                typeB: "Creator"
+            },
+            {
+                id: 16,
+                question: "I naturally:",
+                optionA: "Trust that good things will unfold",
+                typeA: "Believer",
+                optionB: "Break down complex projects into steps",
+                typeB: "Executor"
+            },
+            {
+                id: 17,
+                question: "I'm more drawn to:",
+                optionA: "Speaking up when others might get hurt",
+                typeA: "Protector",
+                optionB: "Seeing past what is to what could be",
+                typeB: "Dreamer"
+            },
+            {
+                id: 18,
+                question: "When working with others I:",
+                optionA: "Create organized systems",
+                typeA: "Implementer",
+                optionB: "Bring fun to any situation",
                 typeB: "Entertainer"
+            },
+            {
+                id: 19,
+                question: "Others often:",
+                optionA: "Open up to me about personal matters",
+                typeA: "Healer",
+                optionB: "Look to me to take the lead",
+                typeB: "Director"
+            },
+            {
+                id: 20,
+                question: "I feel most alive when:",
+                optionA: "Building something from scratch",
+                typeA: "Creator",
+                optionB: "Understanding the depths of a situation",
+                typeB: "Thinker"
+            },
+            {
+                id: 21,
+                question: "My natural response to problems is to:",
+                optionA: "Look for structural improvements",
+                typeA: "Problem-Solver",
+                optionB: "Help everyone feel valued",
+                typeB: "Relater"
+            },
+            {
+                id: 22,
+                question: "I'm at my best when:",
+                optionA: "Inspiring others to take action",
+                typeA: "Motivator",
+                optionB: "Finding common ground in conflicts",
+                typeB: "Peacemaker"
+            },
+            {
+                id: 23,
+                question: "I'm most satisfied after:",
+                optionA: "Bringing a project to completion",
+                typeA: "Executor",
+                optionB: "Seeing someone embrace their potential",
+                typeB: "Actualizer"
+            },
+            {
+                id: 24,
+                question: "My friends would say I:",
+                optionA: "Champion causes I care about",
+                typeA: "Promoter",
+                optionB: "Hold onto hope when others doubt",
+                typeB: "Believer"
+            },
+            {
+                id: 25,
+                question: "I naturally tend to:",
+                optionA: "Trust my intuition about people's hearts",
+                typeA: "Healer",
+                optionB: "Break down exactly what's going wrong",
+                typeB: "Problem-Solver"
+            },
+            {
+                id: 26,
+                question: "My natural response is to:",
+                optionA: "Make sure no one feels left out",
+                typeA: "Peacemaker",
+                optionB: "Tell people what they need to hear",
+                typeB: "Protector"
+            },
+            {
+                id: 27,
+                question: "In difficult times I:",
+                optionA: "Find myself stuck in mental loops",
+                typeA: "Thinker",
+                optionB: "Get lost in daydreams or possibilities",
+                typeB: "Dreamer"
+            },
+            {
+                id: 28,
+                question: "I'm most satisfied when:",
+                optionA: "Working in bursts of inspiration",
+                typeA: "Creator",
+                optionB: "Seeing something through to completion",
+                typeB: "Executor"
+            },
+            {
+                id: 29,
+                question: "Others say I:",
+                optionA: "Know how to make things excellent",
+                typeA: "Actualizer",
+                optionB: "Know how to get people to take action",
+                typeB: "Motivator"
+            },
+            {
+                id: 30,
+                question: "I typically:",
+                optionA: "Get others excited about possibilities",
+                typeA: "Motivator",
+                optionB: "Help others feel deeply understood",
+                typeB: "Relater"
+            },
+            {
+                id: 31,
+                question: "My friends know me as someone who:",
+                optionA: "Brings fun to any situation",
+                typeA: "Entertainer",
+                optionB: "Brings clarity to any situation",
+                typeB: "Director"
+            },
+            {
+                id: 32,
+                question: "I naturally:",
+                optionA: "Share enthusiastically about what works",
+                typeA: "Promoter",
+                optionB: "Notice what needs to be fixed first",
+                typeB: "Problem-Solver"
+            },
+            {
+                id: 33,
+                question: "When working with others I:",
+                optionA: "Keep track of all the details",
+                typeA: "Implementer",
+                optionB: "Keep everyone's spirits high",
+                typeB: "Entertainer"
+            },
+            {
+                id: 34,
+                question: "My friends would say I:",
+                optionA: "Take on their emotional burdens",
+                typeA: "Healer",
+                optionB: "Take charge when things are unclear",
+                typeB: "Director"
+            },
+            {
+                id: 35,
+                question: "I tend to:",
+                optionA: "Have big dreams about what could be",
+                typeA: "Dreamer",
+                optionB: "Focus on making current things better",
+                typeB: "Actualizer"
+            },
+            {
+                id: 36,
+                question: "When faced with a challenge I:",
+                optionA: "Look for the most efficient solution",
+                typeA: "Executor",
+                optionB: "Consider how it affects everyone involved",
+                typeB: "Relater"
+            },
+            {
+                id: 37,
+                question: "My natural strength is:",
+                optionA: "Seeing beyond current limitations",
+                typeA: "Creator",
+                optionB: "Standing firm against wrong behavior",
+                typeB: "Protector"
+            },
+            {
+                id: 38,
+                question: "I'm most comfortable when:",
+                optionA: "Finding common ground between people",
+                typeA: "Peacemaker",
+                optionB: "Getting people to take bold action",
+                typeB: "Motivator"
+            },
+            {
+                id: 39,
+                question: "When things are difficult I:",
+                optionA: "Trust everything will work out",
+                typeA: "Believer",
+                optionB: "Analyze until I understand why",
+                typeB: "Thinker"
+            },
+            {
+                id: 40,
+                question: "I prefer to:",
+                optionA: "Work alone with the details",
+                typeA: "Implementer",
+                optionB: "Come up with novel ideas",
+                typeB: "Creator"
+            },
+            {
+                id: 41,
+                question: "In groups I tend to:",
+                optionA: "Break the tension with humor",
+                typeA: "Entertainer",
+                optionB: "Guide people through hard emotions",
+                typeB: "Healer"
+            },
+            {
+                id: 42,
+                question: "I'm better at:",
+                optionA: "Getting projects completed",
+                typeA: "Executor",
+                optionB: "Making sure everyone is included",
+                typeB: "Peacemaker"
+            },
+            {
+                id: 43,
+                question: "I'm more likely to:",
+                optionA: "Find ways to promote good things",
+                typeA: "Promoter",
+                optionB: "Create detailed plans for success",
+                typeB: "Implementer"
+            },
+            {
+                id: 44,
+                question: "Others say I:",
+                optionA: "Have unwavering trust in people",
+                typeA: "Believer",
+                optionB: "Know how to make progress happen",
+                typeB: "Executor"
+            },
+            {
+                id: 45,
+                question: "My natural response is to:",
+                optionA: "Take bold action when needed",
+                typeA: "Protector",
+                optionB: "Ask questions to understand deeply",
+                typeB: "Relater"
+            },
+            {
+                id: 46,
+                question: "When leading others I:",
+                optionA: "Know how to coordinate diverse teams",
+                typeA: "Director",
+                optionB: "Know what gets people passionate",
+                typeB: "Motivator"
+            },
+            {
+                id: 47,
+                question: "I excel at:",
+                optionA: "Sharing what excites me",
+                typeA: "Promoter",
+                optionB: "Breaking down complex problems",
+                typeB: "Problem-Solver"
+            },
+            {
+                id: 48,
+                question: "My friends say I:",
+                optionA: "Always believe the best will happen",
+                typeA: "Believer",
+                optionB: "Always find a way to make things work",
+                typeB: "Director"
+            },
+            {
+                id: 49,
+                question: "Others often:",
+                optionA: "Follow my enthusiastic suggestions",
+                typeA: "Promoter",
+                optionB: "Come to me for emotional support",
+                typeB: "Healer"
+            },
+            {
+                id: 50,
+                question: "I prefer to:",
+                optionA: "Build deep connections with others",
+                typeA: "Relater",
+                optionB: "Create innovative solutions",
+                typeB: "Creator"
+            },
+            {
+                id: 51,
+                question: "I naturally:",
+                optionA: "See what needs to be improved",
+                typeA: "Actualizer",
+                optionB: "Find ways to lift people's spirits",
+                typeB: "Entertainer"
+            },
+            {
+                id: 52,
+                question: "When stressed I tend to:",
+                optionA: "Get lost in analysis",
+                typeA: "Thinker",
+                optionB: "Trust everything will work out",
+                typeB: "Believer"
+            },
+            {
+                id: 53,
+                question: "I'm most effective when:",
+                optionA: "Working through complex details",
+                typeA: "Implementer",
+                optionB: "Inspiring others to act",
+                typeB: "Motivator"
+            },
+            {
+                id: 54,
+                question: "I'm most comfortable:",
+                optionA: "Getting to know someone deeply",
+                typeA: "Relater",
+                optionB: "Making a group feel energized",
+                typeB: "Motivator"
+            },
+            {
+                id: 55,
+                question: "I tend to:",
+                optionA: "Dream about future possibilities",
+                typeA: "Dreamer",
+                optionB: "Notice what steps need to be taken",
+                typeB: "Implementer"
+            },
+            {
+                id: 56,
+                question: "Others seek me out to:",
+                optionA: "Share their personal struggles",
+                typeA: "Healer",
+                optionB: "Get clear direction on projects",
+                typeB: "Director"
+            },
+            {
+                id: 57,
+                question: "I naturally:",
+                optionA: "Stand firm when something's wrong",
+                typeA: "Protector",
+                optionB: "Find ways to keep peace in groups",
+                typeB: "Peacemaker"
+            },
+            {
+                id: 58,
+                question: "I prefer:",
+                optionA: "Getting lost in creative projects",
+                typeA: "Creator",
+                optionB: "Getting things accomplished",
+                typeB: "Executor"
+            },
+            {
+                id: 59,
+                question: "My friends know I:",
+                optionA: "Can solve most problems quickly",
+                typeA: "Problem-Solver",
+                optionB: "Can promote anything effectively",
+                typeB: "Promoter"
+            },
+            {
+                id: 60,
+                question: "I'm satisfied when:",
+                optionA: "Making others feel good",
+                typeA: "Entertainer",
+                optionB: "Making others feel understood",
+                typeB: "Relater"
+            },
+            {
+                id: 61,
+                question: "When challenged I:",
+                optionA: "Think through every angle",
+                typeA: "Thinker",
+                optionB: "Trust in positive outcomes",
+                typeB: "Believer"
+            },
+            {
+                id: 62,
+                question: "I excel at:",
+                optionA: "Seeing potential in situations",
+                typeA: "Actualizer",
+                optionB: "Living in a world of possibilities",
+                typeB: "Dreamer"
+            },
+            {
+                id: 63,
+                question: "Others say I:",
+                optionA: "Know how to analyze any situation",
+                typeA: "Thinker",
+                optionB: "Know how to fix what's broken",
+                typeB: "Problem-Solver"
+            },
+            {
+                id: 64,
+                question: "My natural tendency is to:",
+                optionA: "Dream up new possibilities",
+                typeA: "Dreamer",
+                optionB: "Take action to protect others",
+                typeB: "Protector"
             }
-            // Add all 64 questions here
         ];
 
         function startAssessment() {
