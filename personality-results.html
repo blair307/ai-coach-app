@@ -1625,15 +1625,19 @@ function createPDFDefinition(resultsData, chartImages = {}) {
         day: 'numeric'
     });
 
-
-
     const content = [
-        // Title Page
+        // Title Page with Logo
+        {
+            image: 'Images/logo.png',
+            width: 80,
+            alignment: 'center',
+            margin: [0, 40, 0, 30]
+        },
         {
             text: 'Personality Assessment Results',
             style: 'title',
             alignment: 'center',
-            margin: [0, 80, 0, 20]
+            margin: [0, 0, 0, 20]
         },
         {
             text: `Completed: ${completionDate}`,
@@ -1642,7 +1646,7 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             margin: [0, 0, 0, 60]
         },
         
-        // Executive Summary - MUCH MORE PROMINENT
+        // Executive Summary - NEW PAGE
         {
             text: 'EXECUTIVE SUMMARY',
             style: 'executiveSummaryTitle',
@@ -1667,7 +1671,7 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             margin: [0, 0, 0, 30]
         },
         
-        // Top 3 Results - Very Prominent
+        // Top 3 Results - Better Formatted
         ...resultsData.topThree.map(([typeName, score], index) => {
             const percentage = Math.round((score / resultsData.totalQuestions) * 100);
             const typeData = personalityTypes[typeName];
@@ -1711,53 +1715,55 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             };
         }),
 
-  // Charts Section
-{
-    text: 'Visual Analysis',
-    style: 'header',
-    margin: [0, 40, 0, 20]
-},
-...(chartImages.pieChart ? [{
-    text: 'Personality Type Distribution',
-    style: 'chartTitle',
-    margin: [0, 0, 0, 10]
-}, {
-    image: chartImages.pieChart,
-    width: 350,
-    alignment: 'center',
-    margin: [0, 0, 0, 30]
-}] : []),
-...(chartImages.radarChart ? [{
-    text: 'Quadrant Analysis',
-    style: 'chartTitle',
-    margin: [0, 0, 0, 10]
-}, {
-    image: chartImages.radarChart,
-    width: 350,
-    alignment: 'center',
-    margin: [0, 0, 0, 30]
-}] : []),
+        // Charts Section - NEW PAGE
+        {
+            text: 'Visual Analysis',
+            style: 'header',
+            pageBreak: 'before',
+            margin: [0, 40, 0, 20]
+        },
+        ...(chartImages.pieChart ? [{
+            text: 'Personality Type Distribution',
+            style: 'chartTitle',
+            margin: [0, 0, 0, 10]
+        }, {
+            image: chartImages.pieChart,
+            width: 350,
+            alignment: 'center',
+            margin: [0, 0, 0, 30]
+        }] : []),
+        ...(chartImages.radarChart ? [{
+            text: 'Quadrant Analysis',
+            style: 'chartTitle',
+            margin: [0, 0, 0, 10]
+        }, {
+            image: chartImages.radarChart,
+            width: 350,
+            alignment: 'center',
+            margin: [0, 0, 0, 30]
+        }] : []),
     ];
 
-    // Add detailed analysis for each top personality type
+    // Add detailed analysis for each top personality type - EACH ON NEW PAGE
     resultsData.topThree.forEach(([typeName, score], index) => {
         const percentage = Math.round((score / resultsData.totalQuestions) * 100);
         const typeData = personalityTypes[typeName];
         
         if (!typeData) return;
 
-        // Section header
+        // Section header - NEW PAGE
         content.push({
             text: `${index + 1}. ${typeName} (${percentage}%) - Detailed Analysis`,
             style: 'sectionHeader',
             pageBreak: 'before',
-            margin: [0, 0, 0, 20]
+            margin: [0, 40, 0, 20]
         });
 
         // Description
         content.push({
             text: 'Description',
-            style: 'subheader'
+            style: 'subheader',
+            margin: [0, 0, 0, 5]
         });
         content.push({
             text: typeData.description,
@@ -1853,15 +1859,16 @@ function createPDFDefinition(resultsData, chartImages = {}) {
         });
         content.push({
             text: typeData.professions.join(', '),
-            margin: [0, 0, 0, 20]
+            margin: [0, 0, 0, 30]
         });
 
-        // Growth Story on new page
+        // Growth Story on NEW PAGE
         if (typeData.growthStory) {
             content.push({
                 text: `Growth Story: ${typeName}`,
                 style: 'subheader',
-                pageBreak: 'before'
+                pageBreak: 'before',
+                margin: [0, 40, 0, 15]
             });
             content.push({
                 text: typeData.growthStory,
@@ -1871,12 +1878,12 @@ function createPDFDefinition(resultsData, chartImages = {}) {
         }
     });
 
-    // Footer
+    // Footer page
     content.push({
         text: 'This assessment provides insights into your personality patterns and potential growth areas. Use these insights as a foundation for personal development and better understanding of your natural tendencies.',
         style: 'footer',
         pageBreak: 'before',
-        margin: [0, 50, 0, 0]
+        margin: [0, 100, 0, 0]
     });
 
     return {
@@ -1891,7 +1898,6 @@ function createPDFDefinition(resultsData, chartImages = {}) {
                 fontSize: 14,
                 color: '#6b7280'
             },
-            // NEW EXECUTIVE SUMMARY STYLES - MUCH MORE PROMINENT
             executiveSummaryTitle: {
                 fontSize: 22,
                 bold: true,
@@ -1930,8 +1936,7 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             header: {
                 fontSize: 18,
                 bold: true,
-                color: '#6366f1',
-                margin: [0, 0, 0, 15]
+                color: '#6366f1'
             },
             chartTitle: {
                 fontSize: 14,
