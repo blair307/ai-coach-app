@@ -353,31 +353,144 @@
     <script src="sidebar-toggle.js"></script>
     <script>
 
-        function loadResults() {
-    const savedResults = localStorage.getItem('personalityTestResults');
-    
-    if (!savedResults) {
-        document.getElementById('noResults').style.display = 'block';
-        document.getElementById('resultsContent').style.display = 'none';
-        return;
-    }
-    
+// REPLACE your loadResults() function with this:
+
+async function loadResults() {
     try {
-        resultsData = JSON.parse(savedResults);
+        // Get auth token (adjust this based on how you store it)
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
         
-        // Validate required data
-        if (!resultsData.topThree || !resultsData.allScores || !resultsData.totalQuestions) {
-            throw new Error('Invalid results data');
+        if (!token) {
+            console.log('No auth token found');
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('resultsContent').style.display = 'none';
+            return;
         }
+
+        // Try to load from your server
+        const response = await fetch('/api/personality-test/results', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
         
-        document.getElementById('noResults').style.display = 'none';
-        document.getElementById('resultsContent').style.display = 'block';
-        
-        displayResults();
+        if (response.ok) {
+            const data = await response.json();
+            resultsData = data.results; // The actual results are nested in the response
+            
+            // Validate the data structure
+            if (resultsData && resultsData.allScores && resultsData.topThree) {
+                document.getElementById('noResults').style.display = 'none';
+                document.getElementById('resultsContent').style.display = 'block';
+                displayResults();
+            } else {
+                throw new Error('Invalid results data structure');
+            }
+        } else if (response.status === 404) {
+            // No results found on server, check localStorage as fallback
+            console.log('No results found on server, checking localStorage...');
+            const savedResults = localStorage.getItem('personalityTestResults');
+            if (savedResults) {
+                resultsData = JSON.parse(savedResults);
+                // Also save to server for future use
+                await saveResultsToServer(resultsData);
+                document.getElementById('noResults').style.display = 'none';
+                document.getElementById('resultsContent').style.display = 'block';
+                displayResults();
+            } else {
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('resultsContent').style.display = 'none';
+            }
+        } else {
+            throw new Error(`Server error: ${response.status}`);
+        }
     } catch (error) {
         console.error('Error loading results:', error);
-        document.getElementById('noResults').style.display = 'block';
-        document.getElementById('resultsContent').style.display = 'none';
+        
+        // Fallback to localStorage if server fails
+        try {
+            const savedResults = localStorage.getItem('personalityTestResults');
+            if (savedResults) {
+                resultsData = JSON.parse(savedResults);
+                document.getElementById('noResults').style.display = 'none';
+                document.getElementById('resultsContent').style.display = 'block';
+                displayResults();
+                console.log('Loaded from localStorage as fallback');
+            } else {
+                document.getElementById('noResults').style.display = 'block';
+                document.getElementById('resultsContent').style.display = 'none';
+            }
+        } catch (localError) {
+            console.error('Error loading from localStorage:', localError);
+            document.getElementById('noResults').style.display = 'block';
+            document.getElementById('resultsContent').style.display = 'none';
+        }
+    }
+}
+
+// ADD this new function to save results to server:
+async function saveResultsToServer(resultsData) {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        
+        if (!token) {
+            console.log('No auth token available for server save');
+            return false;
+        }
+
+        const response = await fetch('/api/personality-test/results', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                answers: [], // You might want to save the actual answers if you have them
+                results: resultsData
+            })
+        });
+        
+        if (response.ok) {
+            console.log('✅ Results saved to server successfully');
+            return true;
+        } else {
+            console.error('❌ Failed to save to server:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error saving to server:', error);
+        return false;
+    }
+}
+
+// UPDATE your retakeAssessment function:
+async function retakeAssessment() {
+    if (confirm('Are you sure you want to retake the assessment? This will replace your current results.')) {
+        try {
+            // Try to delete from server first
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+            
+            if (token) {
+                await fetch('/api/personality-test/results', {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('✅ Results deleted from server');
+            }
+        } catch (error) {
+            console.error('Error deleting from server:', error);
+        }
+        
+        // Also clear localStorage
+        localStorage.removeItem('personalityTestResults');
+        
+        // Redirect to test
+        window.location.href = 'personality-test.html';
     }
 }
         
