@@ -352,154 +352,678 @@
 
     <script src="sidebar-toggle.js"></script>
     <script>
-        // Personality type definitions with detailed descriptions
-        const personalityTypes = {
-            'Entertainer': {
-                quadrant: 'Connector',
-                description: 'Brings life, laughter, and amusement to situations while being present and emotionally connected.',
-                authenticSelf: 'Brings life, laughter, and amusement to situations while being present and emotionally connected.',
-                protection: 'Perform Instead of Being Known - Entertainers commonly find their role in their abilities.',
-                strengths: ['Can lighten most environments', 'Naturally makes others feel better', 'Creative, witty, and humorous'],
-                weaknesses: ['Avoiding pain through humor', 'Avoidance of subtle forms of intimacy', 'Feeling threatened when confronted'],
-                tips: ['You don\'t have to be "on" all the time', 'Learn to enjoy being fully present', 'Accept your performing self as part of your true nature']
-            },
-            'Healer': {
-                quadrant: 'Connector',
-                description: 'Offers compassion and wisdom for hurting people without taking on emotions or false responsibility.',
-                authenticSelf: 'Offers compassion and wisdom for hurting people without taking on emotions or false responsibility.',
-                protection: 'False Responsibility - Healers often assume responsibility for painful circumstances.',
-                strengths: ['Uncommon patience and avid listening', 'Kindness and creating relational rapport', 'Emotional intelligence'],
-                weaknesses: ['Over-responsibility for others\' lives', 'Being emotionally affected by others', 'Low-key savior complex'],
-                tips: ['Be aware of atmospheres', 'Don\'t take on other peoples\' burdens', 'Maintain clear boundaries']
-            },
-            'Peacemaker': {
-                quadrant: 'Connector',
-                description: 'Brings honesty, clarity, and peace to situations without minimizing their own strength and personality.',
-                authenticSelf: 'Brings honesty, clarity, and peace to situations without minimizing their own strength and personality.',
-                protection: 'Playing Small - Peacemakers "play small" to maintain connection with others.',
-                strengths: ['Faithfulness and kindness', 'Excellent communication skills', 'Patience and ability to carry peace'],
-                weaknesses: ['Hiding strengths to make others comfortable', 'Feeling shame if too good at something', 'High stress if lack of harmony'],
-                tips: ['You don\'t have to take care of everyone', 'Be aware of self-sabotaging tendencies', 'Be a modeler instead of a manager']
-            },
-            'Relater': {
-                quadrant: 'Connector',
-                description: 'Fosters healthy relationships with reciprocal interest and care.',
-                authenticSelf: 'Fosters healthy relationships with reciprocal interest and care.',
-                protection: 'Neglectful of Being Known in Return - Keep attention on the other person.',
-                strengths: ['Attentive and present with others', 'Making others feel loved and valued', 'Sincere curiosity about people'],
-                weaknesses: ['Losing track of time when connecting', 'Being tired from deep relating', 'Compromising boundaries'],
-                tips: ['Be aware of major energy drains', 'Prioritize self-care', 'Work in a relational profession']
-            },
-            'Believer': {
-                quadrant: 'Visionary',
-                description: 'Offers faith, confidence, and hope without disconnecting from reality, emotions, or objective evidence.',
-                authenticSelf: 'Offers faith, confidence, and hope without disconnecting from reality, emotions, or objective evidence.',
-                protection: 'Magical Thinking - Believers can hide in their optimistic faith instead of being grounded.',
-                strengths: ['Consistently optimistic and hopeful', 'Feels grounded by confidence in God and others', 'Generous and caring'],
-                weaknesses: ['Overlooks pain and reality', 'Disillusioned when paradigm is threatened', 'Getting lost in faith thinking'],
-                tips: ['Your strength is also your weakness', 'Partner with grounded friends', 'Your faith must remain fluid']
-            },
-            'Creator': {
-                quadrant: 'Visionary',
-                description: 'Introduces beauty, depth, and novelty to life without being dependent on "passion" to stay engaged.',
-                authenticSelf: 'Introduces beauty, depth, and novelty to life without being dependent on "passion" to stay engaged.',
-                protection: 'Apathetic When Uninspired - Creators can become detached if not highly engaged.',
-                strengths: ['Extremely passionate when motivated', 'Produce beautiful creations', 'Enrich people\'s worlds through aesthetic'],
-                weaknesses: ['Not completing detailed tasks', 'Excitement about one thing after another', 'Requiring passion to be productive'],
-                tips: ['Connect with a pragmatist', 'Learn your particular state of flow', 'Follow your pleasure to find your path']
-            },
-            'Dreamer': {
-                quadrant: 'Visionary',
-                description: 'Robust dream-life while remaining rooted in reality and current circumstances.',
-                authenticSelf: 'Robust dream-life while remaining rooted in reality and current circumstances.',
-                protection: 'Disconnected from Reality - Dreamers can be lost in their own worlds.',
-                strengths: ['Imaginative problem solving', 'Thinking beyond current boundaries', 'Introducing others to creative ideas'],
-                weaknesses: ['Overestimating positives of ideas', 'Not completing projects when interest wanes', 'Neglecting practical issues'],
-                tips: ['Give yourself time to dream', 'Do something with your dreams', 'Connect with other Dreamers']
-            },
-            'Promoter': {
-                quadrant: 'Visionary',
-                description: 'Raises the value in a person, project, or organization without exaggerating or playing on emotions.',
-                authenticSelf: 'Raises the value in a person, project, or organization without exaggerating or playing on emotions.',
-                protection: 'Too Much Hype - Promoters can hide in enthusiasm and over-hype when insecure.',
-                strengths: ['Persuasive towards products and people', 'Naturally passionate about what they enjoy', 'Help people believe in strengths'],
-                weaknesses: ['Tricking self into thinking something is better', 'Potential for manipulation', 'Exaggerating claims unintentionally'],
-                tips: ['Use your superpower carefully', 'Hype is unnecessary for you', 'Give yourself permission to benefit']
-            },
-            'Director': {
-                quadrant: 'Leader',
-                description: 'Seamlessly directs teams, delegates work, and utilizes individuals\' strengths without dehumanizing people.',
-                authenticSelf: 'Seamlessly directs teams, delegates work, and utilizes individuals\' strengths without dehumanizing people.',
-                protection: 'Overlook Individuals for The Bigger Picture - Focus on process instead of people when stressed.',
-                strengths: ['Handling complex circumstances', 'Excellent at managing teams', 'Understanding how to utilize strengths'],
-                weaknesses: ['Overlooking individuals when stressed', 'Frustration if lack of stimulation', 'Difficulty without big picture understanding'],
-                tips: ['Load management is key', 'Try not to micromanage', 'Be clear with boundaries']
-            },
-            'Executor': {
-                quadrant: 'Leader',
-                description: 'Finishes projects consistently without neglecting family, friends, co-workers, or themselves.',
-                authenticSelf: 'Finishes projects consistently without neglecting family, friends, co-workers, or themselves.',
-                protection: 'Compromise Self or Others for Outcomes - Achievement becomes smokescreen for being seen.',
-                strengths: ['Dependable outcomes with work', 'Productive, consistent, and strategic', 'Launching or finishing stalled projects'],
-                weaknesses: ['Anxiety if answers not forthcoming', 'Disconnecting emotionally to finish', 'Impatience with complexity'],
-                tips: ['Enjoy the process and completion', 'The ends do not justify the means', 'Quality is important']
-            },
-            'Motivator': {
-                quadrant: 'Leader',
-                description: 'Excite and inspire people without compromising truth or ignoring potential pitfalls.',
-                authenticSelf: 'Excite and inspire people without compromising truth or ignoring potential pitfalls.',
-                protection: 'Fantastical Optimism - Believing their own hype and getting lost in enthusiasm.',
-                strengths: ['Highly influential', 'Capacity to help people overcome obstacles', 'Inspiring passion for what they advance'],
-                weaknesses: ['Tendency for manipulation', 'Communicating without considering consequences', 'Disconnecting from emotions'],
-                tips: ['Turn off your Motivator-mode', 'Be judicious about what you hype', 'Be excited and wise']
-            },
-            'Protector': {
-                quadrant: 'Leader',
-                description: 'Healthily confrontive, protective, and bold without steamrolling others\' emotions or opinions.',
-                authenticSelf: 'Healthily confrontive, protective, and bold without steamrolling others\' emotions or opinions.',
-                protection: 'Overly Aggressive - Tendency to hide in anger, boldness, or confrontive nature.',
-                strengths: ['Highly loyal to friends and family', 'Creating environments of honesty', 'Giving healthy feedback'],
-                weaknesses: ['Being aggressive instead of diplomatic', 'Confronting when not necessary', 'Being selfish towards family'],
-                tips: ['Pause and give others benefit of doubt', 'You\'re not the villain', 'Allow others to fight their battles']
-            },
-            'Actualizer': {
-                quadrant: 'Producer',
-                description: 'Recognizes potential in people and organizations and helps them achieve it without compromising individuality.',
-                authenticSelf: 'Recognizes potential in people and organizations and helps them achieve it without compromising individuality.',
-                protection: 'People Become Projects - Disconnected when others aren\'t growing or listening to advice.',
-                strengths: ['Collaborating with others', 'Recognizing potential and creating path to fulfill it', 'Hope and energy towards process'],
-                weaknesses: ['Unwilling to start if can\'t become excellent', 'Losing interest without influence', 'Frustration if growth stalled'],
-                tips: ['Turn off your gift when not valued', 'Allow personal reprieves from self-improvement', 'Accept people as they are']
-            },
-            'Implementer': {
-                quadrant: 'Producer',
-                description: 'Takes big ideas and turns them into realities without compromising mental health or self-care.',
-                authenticSelf: 'Takes big ideas and turns them into realities without compromising mental health or self-care.',
-                protection: 'Frustration - When blocked or stymied, become frustrated with work, relationships, or life.',
-                strengths: ['Creativity in getting things done', 'Trustworthy and willing to sacrifice', 'Taking ethereal concepts and producing steps'],
-                weaknesses: ['Used as a workhorse', 'Feeling taken for granted', 'Frustration due to others\' endless ideas'],
-                tips: ['Don\'t overwork', 'Only take on what you can comfortably handle', 'Engage with finished product']
-            },
-            'Problem-Solver': {
-                quadrant: 'Producer',
-                description: 'Removes hindrances, blocks, or weaknesses in tandem with recognizing strengths and opportunities.',
-                authenticSelf: 'Removes hindrances, blocks, or weaknesses in tandem with recognizing strengths and opportunities.',
-                protection: 'Sees Issues Everywhere - Overfocusing on what is wrong or needs to be fixed.',
-                strengths: ['Recognizing issues and ways to resolve them', 'Consistent desire for health and wholeness', 'Outside-the-box thinking'],
-                weaknesses: ['Focusing on problems instead of solutions', 'Overwhelmed by many issues', 'Apathy when lack of influence'],
-                tips: ['Practice being grateful regularly', 'Sometimes having answer doesn\'t mean sharing it', 'Recognize the positives first']
-            },
-            'Thinker': {
-                quadrant: 'Producer',
-                description: 'Deeply considers personal, relational, or organizational dynamics without disconnecting from emotions.',
-                authenticSelf: 'Deeply considers personal, relational, or organizational dynamics without disconnecting from emotions.',
-                protection: 'Disconnects from Emotions by Overthinking - Use intellect to avoid emotions when stressed.',
-                strengths: ['Taking large amounts of information and simplifying', 'Analytical about past, present, and future', 'Creating strategic plans'],
-                weaknesses: ['Disconnecting from others', 'Obsessing over fixing emotions', 'Anxious when overthinking'],
-                tips: ['Balance emotions and intellect', 'Broken record thinking indicates wrong arena', 'Iron sharpens iron']
-            }
-        };
 
+// Complete personality types with ALL information from the Word document - ALL 16 TYPES
+const personalityTypes = {
+    'Entertainer': {
+        quadrant: 'Connector',
+        description: 'An Entertainer (a.k.a. the performer) wants to make themselves, and others, feel good. They use creativity, wit, and expression to draw people into their diverting worlds.',
+        authenticSelf: 'Brings life, laughter, and amusement to situations while being present and emotionally connected.',
+        protection: 'Perform Instead of Being Known - Entertainers commonly find their role (including purpose and value) in their abilities. Performance becomes the substitute for being understood and satisfyingly known.',
+        quickSteps: [
+            'Check in with yourself.',
+            'Let yourself feel whatever is going on.',
+            'Recognize and engage with what is happening in the present.'
+        ],
+        motivators: [
+            'Bringing joy and happiness into others\' lives.',
+            'The pleasure of expressing self in an engaging way.'
+        ],
+        strengths: [
+            'Can lighten most environments.',
+            'Naturally makes others or themselves feel better.',
+            'Creative, witty, and humorous.'
+        ],
+        weaknesses: [
+            'Avoiding pain through humor, being on display, or directionless activity.',
+            'Avoidance of subtle forms of intimacy.',
+            'Feeling threatened when confronted or not allowed to entertain.'
+        ],
+        professions: ['Entertainer', 'Comedian', 'Spokesperson', 'Entrepreneur', 'Politician', 'Public Speaker'],
+        tips: [
+            'You don\'t have to be "on" all the time. Many Entertainers have burnt out because they try to maintain the facade they\'re always energetic, entertaining, and enjoyable.',
+            'Learn to enjoy being fully present. Spend intentional effort grounding yourself into any given moment, because you have a higher than typical tendency to escape it.',
+            'Accept your performing self as part of your true nature. Don\'t get caught thinking you are either authentic or performing. You can be authentic while performing.',
+            'Learn to notice the difference between escaping and entertaining. Escaping is when you are trying to avoid tension, difficult emotions, or relational discord. Entertaining is when you enjoy yourself and allow others to enjoy you.',
+            'Your entertainment gift has value and substance. As long as you aren\'t using your gift to hide, it is healthy for you to integrate your entertainment gift into your romantic relationships, community engagements, and work.',
+            'You won\'t be universally accepted. That\'s okay. Being present with yourself in your entertaining gift will be a natural litmus test for relationships.',
+            'Entertainment is your strength and defense mechanism. At times, you will need to restrain yourself so you can experience the deeper emotions or connections that are presenting themselves.'
+        ],
+        relating: [
+            'Invite them to share their painful experiences or emotions with you.',
+            'Keep an open dialogue about your desire for them to be able to connect with you without performing or having to entertain.',
+            'Encourage them to connect to you without diversions. Do something quiet together (working, reading, walking, etc.).'
+        ],
+        growthStory: 'Brad has a lot of energy. When he is "on," he can get any group of people to roll with laughter. He will have them in stitches, and build momentum as he tells story after story. After his "performances," everyone\'s faces were sore from smiling and they would be tired from laughing. But Brad wasn\'t truly happy. He knew, deep down, he felt empty despite his performances. His work felt empty. His relationship with his wife felt hollow. And when left alone, he felt lost. Brad was tired of performing but didn\'t know how to stop. He was known as the entertainer, the funny one, the guy everyone could count on for a good time. He felt stuck in performance and felt overlooked as a complete person. Dissonance grew between his "performances" and his personal life, and he fell into a depression. "If I didn\'t laugh, I\'d cry," he\'d tell his therapist. Unmoved and not entertained, the therapist would ask, "What would be so wrong with crying?" Brad started to sob as he began to realize why he felt so stuck. Brad grew up in a family in chaos. As the youngest, he couldn\'t understand how his family members could inflict so much pain on one another. As an impulse, he began to crack jokes, do characters, and entertain his family. At times, he could get them to stop fighting. He found he could "break the tension" with his wit. He was the youngest, but somehow he became responsible for keeping the peace by entertaining (distracting) his family. His humor was adaptive and highly entertaining. It utilized his quick wit, creative nature, and ability to read a room. It was his superpower. Unfortunately for him, it was highly celebrated. He received compliments, affirmations on his cleverness, and the sweet relief of a respite from the fighting. Over time his performance—instead of being a temporary state of being—became his default setting. He wore a smile no matter what the situation and entertained even when he had no energy left. After his painful realization about his family and his role, he began to invite his close friends and family into other facets of his personality: deep thinking, sadness, anger, quiet creativity, and more. Slowly, he began to feel known more for who he was instead of how he could make others feel. A peace slowly blanketed his life as he realized he was surrendering to his more well-rounded nature. Brad still entertains. He can make others laugh (sometimes breathlessly), but he doesn\'t feel the compulsion to do it. He can turn it on or off. He can be energetic or at rest. At long last, he feels comfortable allowing all aspects of himself to be known.'
+    },
+    'Healer': {
+        quadrant: 'Connector',
+        description: 'A Healer (a.k.a. the counselor) is gifted at the restoration of relationships, trauma, or emotions.',
+        authenticSelf: 'Offers compassion and wisdom for hurting people without taking on emotions or false responsibility.',
+        protection: 'False Responsibility - Healers often assume responsibility for painful circumstances, relational dynamics, or the emotional states of others.',
+        quickSteps: [
+            'Recognize the burden of false responsibility.',
+            'Imagine giving the other person back their emotions, responsibility for their life, etc.',
+            'Take back what is "yours" and imagine a healthy division between your two identities.'
+        ],
+        motivators: [
+            'Help others feel seen and loved.',
+            'Enjoyment of seeing others get breakthrough or emotional freedom.'
+        ],
+        strengths: [
+            'Uncommon patience and avid listening.',
+            'Kindness, counseling, and creating relational rapport.',
+            'Emotional intelligence.'
+        ],
+        weaknesses: [
+            'Over-responsibility for others\' lives or emotions.',
+            'Being emotionally affected by others\' emotional states.',
+            'A low-key savior (responsible for the world) complex.'
+        ],
+        professions: ['Counselor', 'Therapist', 'Life Coach', 'Social Worker', 'Pastor', 'Human Resources Specialist'],
+        tips: [
+            'Be aware of atmospheres. Often, what you are feeling is not coming from you, but who or what is around you. Create a mental distinction between the surrounding atmosphere and your own.',
+            'Don\'t take on other peoples\' burdens or emotions. Their burdens are a necessary pressure for them to be motivated to change. If you take on their burdens you are enabling them to stay stuck.',
+            'It\'s not your job to fix or heal anyone. Your job is to be present with them. Your deeper value doesn\'t come from what you can do for them, but your being present with them.',
+            'For your own mental and emotional health, you must maintain clear boundaries at work, in relationships, and in your community.',
+            'Don\'t perpetually work on yourself. Have clear times when you work on your problems, but otherwise learn to simply live life. It is better to be imperfect and present rather than perpetually in process.',
+            'Find your emotional center. It\'s easy for a Healer to export their life-compass. You must be clear on what you want, instead of what those around you want or are trying to get from you.',
+            'Don\'t process your emotions vicariously. It\'s easy for a Healer to externalize their emotions by consistently "helping" others feel theirs. It\'s a form of emotional exertion without personal relief.'
+        ],
+        relating: [
+            'Communicate that you want agency over your own life. You appreciate their love and support, but they are in no way responsible for you.',
+            'Let them know you recognize how much they do for you and others.',
+            'Absolve them of shame by saying you love them exactly how they are, and even if they don\'t change a thing.'
+        ],
+        growthStory: 'Beth is universally known as "a sweetheart." Her kindness and patience with others endears her to almost everyone she meets. Friends and family alike come to her for counsel, support, and healing advice; and she has an intuitive gift to give it. However, she had struggled in her personal life. She found herself overly emotional, wrestling with self value, and consistently trying to "fix" herself through self-help or counseling. It hadn\'t worked. She had an internal monologue that constantly questioned, "What is wrong with me? How can I fix my pain? What else do I have to do?" In many ways, she felt defeated. Through a series of fortunate events, she began to get clarity on her situation. She had grown up in a family at war. Her dad and mom fought viciously until their seemingly inevitable divorce. She was 7 years old at the time. Instead of being able to disassociate from the pain, and rightfully place the responsibility for the divorce on her parents...she blamed herself. She was still in the egocentric stage of development during her family\'s turmoil, so whatever happened to her was "because of her." In addition, she wanted to feel empowered against her pain, so she further assumed if it were her fault she could do something about it. Unfortunately, this was her gift-of-healing gone awry. Her sense of responsibility ran so deep she subconsciously took ownership of almost every negative situation in her life: her mom\'s cancer, her dad\'s depression, her brother\'s drug addiction, her poor treatment in her marriage. She was responsible for the pain of the world. It was all her fault. She hadn\'t realized this on the surface, of course, but deep down she knew it was because of her. After her "enlightenment," she started getting clarity on what was her responsibility and what was not. She made intentional decisions to start exporting areas of false responsibility from every stage of her life. She gave herself permission to feel angry, disappointed, and even sad about what had happened to her. She was no longer responsible for everything and everyone. Unsurprisingly, she found herself feeling much lighter. She was no longer trying to solve equations without the variables, or taking responsibility for situations that weren\'t hers. She gained clarity on her life, and felt empowered to make changes to better her situation. Her emotions stabilized because she was no longer internalizing the pain and disappointment of others. Counseling others became enjoyable because she was no longer owning their pain or need for a solution. She found her voice in her romantic relationship, and changes were gradually made to make the relationship beyond satisfying. By exporting false responsibility, she found the outlines of her identity and personality. She became happy. She became herself.'
+    },
+    'Peacemaker': {
+        quadrant: 'Connector',
+        description: 'A Peacemaker (a.k.a. the diplomat) creates a healthy atmosphere by providing a space with reduced tensions so people can safely be themselves.',
+        authenticSelf: 'Brings honesty, clarity, and peace to situations without minimizing their own strength and personality.',
+        protection: 'Playing Small - Peacemakers "play small" in a subconscious attempt to maintain connection with others. They may sabotage themselves or limit their potential to avoid challenging relational dynamics or a familiar status quo.',
+        quickSteps: [
+            'Recognize what atmospheres people and places are carrying.',
+            'Step out from underneath others\' atmosphere.',
+            'Re-establish your healthy personal atmosphere; including feeling peace, powerful, etc.'
+        ],
+        motivators: [
+            'Fostering environments where people can be themselves.',
+            'Cultivating intimacy by reducing tensions.'
+        ],
+        strengths: [
+            'Faithfulness and kindness regardless of circumstances.',
+            'Excellent communication skills.',
+            'Patience, the ability to "carry" peace, valuing others, and listening intently.'
+        ],
+        weaknesses: [
+            'Hiding strengths to make others comfortable.',
+            'Feeling shame if they are too good at something when compared to others.',
+            'High levels of stress if there is a lack of harmony.'
+        ],
+        professions: ['Diplomat', 'Public Speaker', 'Teacher', 'Nurse', 'Pastor', 'Therapist', 'Life Coach', 'Social Worker'],
+        tips: [
+            'You don\'t have to take care of everyone else. For healthy living, it\'s necessary for Peacemakers to give others responsibility for their own care and comfort.',
+            'Be aware of self-sabotaging tendencies. It\'s common for Peacemakers to sabotage their own growth or success, because subconsciously they believe their growth will cost them relationships.',
+            'Be a modeler instead of a manager. Learn to be happy and invite others into your atmosphere instead of trying to fix others\' atmospheres.',
+            'Allow yourself to be present-age-powerful. Peacemakers often revert to smaller (or younger) versions of themselves under stress.',
+            'Accept that your growth and greatness is GOOD for everyone. You won\'t outshine everyone else (leaving you alone), but instead inspire others to step into their more powerful selves.',
+            'Recognize that inauthentic tranquility is false peace. To achieve true peace, all parties must be open and honest about their feelings and how you affect one another.',
+            'You are a Peacemaker, not a peacekeeper. Sometimes, you must be willing to allow others to be uncomfortable in order to achieve authentic peace.'
+        ],
+        relating: [
+            'Invite them to show up and be as big as they want.',
+            'Champion their dreams, desires, and most hopeful expectations.',
+            'Invite them to share about their own difficulties or painful experiences.'
+        ],
+        growthStory: 'Jake had a reasonable life. Ever since he could remember, it had been just "okay." Fine grades. Respectable job. He\'d never thrived, but he\'d never been destitute either. The problem was, Jake always knew he was meant for more. He had a deep inner-craving for making a difference and having a thriving romantic relationship. As it was, he had a job most would consider admirable...but it wasn\'t inspiring for him. His relationship with his wife was even more mediocre. It had flashes of greatness with large stretches of the unexceptional. Together, they had settled into a repetitive lifestyle of similar activities on different days. Jake wasn\'t unsatisfied. He just couldn\'t get over the feeling that life didn\'t feel... complete. After reaching his late thirties, having two children, a middling relationship with his wife, and going in and out of mild depressions, he decided to seek help. He worked with an insightful therapist and started making significant realizations. Primarily, he realized that he was "deathly afraid of being his fully powerful, authentic self." Early in life he had concluded that his thriving equated to him being alone. It made sense considering his background and temperament. Jake is a particularly gifted man, and when growing up, his family was in turmoil. He subconsciously concluded that his expressing his fully powerful self would create more tension in the household. In fact, it might isolate him further from an already fragile and disconnected family. In essence, he learned he must "play small" in order to maintain any semblance of intimacy with those he loved. After a few months of heart-rending work with his therapist, he realized his determination that "being himself equals being alone" was untrue. In fact, hiding his authentic self keeps him alone; he can\'t be seen, known, or loved if he isn\'t showing up as himself. As a result of his insights, he started making intentional changes to express his true nature. He became more bold at work. He started being more goofy and playful with his wife. He found himself enjoying his children more often and more easily. He allowed himself to grow into his authentic self. He found, as most Peacemakers do, that the world is not antagonistic to powerful authenticity but waiting on bated breath for it to emerge.'
+    },
+    'Relater': {
+        quadrant: 'Connector',
+        description: 'A Relater (a.k.a. the connector) wants others to feel seen, known, and appreciated. They highly value and prioritize interpersonal relating.',
+        authenticSelf: 'Fosters healthy relationships with reciprocal interest and care.',
+        protection: 'Neglectful of Being Known in Return - Relaters are kind and curious. They have a tendency to keep the attention on the other person.',
+        quickSteps: [
+            'Ask yourself if you allow others space to know you (like you do with them).',
+            'Create space to be known, or lead others into ways to inquire about you.',
+            'Allow yourself to be known by being present, open, and vulnerable.'
+        ],
+        motivators: [
+            'Making other people feel seen, understood, and valued.',
+            'Deeply enjoying the presence of another person.'
+        ],
+        strengths: [
+            'Attentive and present with others.',
+            'Making others feel loved, seen, and valued.',
+            'Sincere curiosity about getting to know other people.'
+        ],
+        weaknesses: [
+            'Losing track of time or priorities when connecting with others.',
+            'Being tired from consistent, deep relating.',
+            'Compromising boundaries out of a desire to connect or "value" another person.',
+            'Neglectful of practical issues.',
+            'Neglectful of being "known in return."'
+        ],
+        professions: ['Therapist', 'Counselor', 'Life Coach', 'Speaker', 'HR Director', 'Realtor', 'Teacher'],
+        tips: [
+            'Be aware of major energy drains. Relaters are often competent to do mundane or detail-oriented work, but it may tap disproportionate amounts of your bandwidth.',
+            'Prioritize self-care. Relaters consume large amounts of energy when connecting with others, so they need to recharge and rejuvenate often.',
+            'Work in a relational profession. Even if you work in a non-relational workplace, you can find areas where networking, connecting, or collaborating make sense.',
+            'Find a balance between relating and logistical responsibility. Relaters often add stress to their lives by not being timely with budgeting, taxes, or day-to-day logistical responsibilities.',
+            'Don\'t fret over haters. Relaters are almost universally liked, and think positively of others. As such, when they don\'t get along with someone, or are rejected, it can be confusing or disillusioning.',
+            'Give yourself intentional pauses from deep relating. Relational strength can be more balanced by learning to be comfortable simply being present with others.',
+            'Gravitate towards individuals who seek to understand you. Your tendency to care for others, and be curious about them, naturally makes you well-liked.'
+        ],
+        relating: [
+            'Ask them questions about their history, passions, or beliefs.',
+            'Spend quality time with them without making questions the focal point of the conversation.',
+            'Ask the Relater if there are areas where you can help them or specific needs you can meet.'
+        ],
+        growthStory: 'Sarah loves people well. She spends significant time getting to know others on a personal level. She asks insightful questions, and has seemingly no limit to how she cares for others. Her family jokes that she can\'t be taken anywhere without someone sharing their life story with her. For the most part, Sarah likes her life. She has a lot of good friends where she feels loved and connected. Her husband is a kind man, good worker, and well-liked by almost everyone. The only problem was a lingering thought, "I don\'t feel truly seen. I would love someone to understand me the way I see and understand others." Her gift, although truly appreciated by Sarah, almost always made the other person the focal point. Whether it was her mom, best friend, husband, random person on the street, pastor, or anyone else, conversations always became focused on the other person. She loved "seeing others," but felt an emptiness for not feeling truly seen herself. Even worse, she didn\'t know how to change this pattern because getting to know others felt so natural and easy. Sarah\'s life-pivot came on a night with several friends. The friends guided the conversation to be focused on Sarah, and they began asking questions: "What do you really want to do? Where do you feel seen and unseen? What brings you the most life? What would you like people to know about you? How can we support and champion you?" The surprise of being the focal point flooded Sarah with emotions. She sob-cried through her answers. Her friends, intuitively knowing Sarah\'s gift was being flipped on her, wouldn\'t relent. They spent several hours relishing getting to know Sarah. Many exclaimed, "I never truly saw you before tonight." Sarah, without saying so aloud, agreed with them. Upon reflection, Sarah realized that she had learned to be the listener (the curious one) when she was growing up in her family. She had a knack for asking good questions, making others feel seen and heard, and it felt good to make others feel loved. Unfortunately, she didn\'t know how to receive in the same manner (or it wasn\'t offered). She learned to care about others, but not to expect similar care in return. After her shocking night of "being seen," Sarah started to feel worthy of being known. She realized that her sharing about herself was a different form of loving and connecting with others. She still defaults to "getting to know others," but she is now willing to be seen and share about herself.'
+    },
+    'Believer': {
+        quadrant: 'Visionary',
+        description: 'A Believer (a.k.a. the optimist) has substantive faith. They believe in God, themselves, or others to an unusual degree. They inspire others to have faith and confidence in something that can seem unstable or unknowable.',
+        authenticSelf: 'Offers faith, confidence, and hope without disconnecting from reality, emotions, or objective evidence.',
+        protection: 'Magical Thinking - Believers can hide in their optimistic faith, instead of being grounded in the present reality.',
+        quickSteps: [
+            'Ask yourself whether your current decision or belief would be denied by "common sense."',
+            'Ask if you can be patient with this decision/belief before making substantive changes.',
+            'If it is not harmful, enjoy engaging with your decision or belief.'
+        ],
+        motivators: [
+            'To live in a higher level of peace, love, and joy than "the world" offers.',
+            'Offering love and support to people in a world full of pain.'
+        ],
+        strengths: [
+            'Consistently optimistic and hopeful.',
+            'Feels grounded by confidence in God and others.',
+            'Generous and caring to a fault.'
+        ],
+        weaknesses: [
+            'Overlooks pain and/or reality.',
+            'Disillusioned when paradigm is threatened.',
+            'Getting lost in "faith" thinking instead of thinking realistically.'
+        ],
+        professions: ['Pastor', 'Speaker', 'Manager', 'Teacher', 'Professor', 'Advocate', 'Counselor'],
+        tips: [
+            'Your strength is also your weakness: you believe in something bigger than yourself. The risk is you will lose touch of your internal compass.',
+            'You can believe in something or someone too much. You will want to be close to a grounded (good common sense) friend.',
+            'Your faith must remain fluid and evolving to avoid burnout or disillusionment. Learn to live with expectancy instead of expectations.',
+            'Instead of seeking "direction," seek understanding of your design and how to healthily relate with others.',
+            'Partner your gift of faith with discerning what brings you "life." By doing so, you\'ll have stability, consistency, and passion.',
+            'You will live more fully and fruitfully if you choose to expose your faith instead of impose your faith.',
+            'Your faith is a superpower. By believing in a higher reality you can raise the frequency of our existences, sense of purpose, and life fulfillment.'
+        ],
+        relating: [
+            'Have deep discussions about what you and they believe in, and why.',
+            'Have discussions completely unrelated to belief and/or faith.',
+            'Share openly your disappointments and invite them to do the same.'
+        ],
+        growthStory: 'Frank was a man with exceptional faith. He had a beaming personality, and was always gregarious, hopeful, and kind. His faith in God was firm, and his confidence in others was unwavering. He was a pillar for others emotionally, and a source of strength for many. Sadly, he went through a difficult season that shook his beliefs to the core. He was praying for a sick friend whom he thought would get better. His friend passed away. He invested in a business venture with "Christian" men. He was defrauded. He spent multiple years in Christian counseling with his wife. His wife divorced him anyway. His hardships challenged his perception of God, and his confidence in other people. For several years, he held in tension a firm sense of faith with a sense of disillusionment based on his experiences. He couldn\'t reconcile a loving God with his pain and disappointment. He decided to visit with a pastor whom he trusted. The pastor, after hearing his story, empathized with Frank. He acknowledged how painful his experience must have been, and how it must have challenged his faith. Frank cried softly. He finally felt validated in feeling weak and confused after pretending to be so strong. Frank and his pastor met several times over the course of the next several weeks. The pastor helped Frank mature his sense of faith. He shared, "We don\'t understand how everything works, so we must live with expectancy and not expectations. Living with an open hope doesn\'t disappoint, but expectations will." He talked to Frank about not giving people his trust simply because they were "Christians," but to seek counsel from people who are wise in the areas he was considering. And finally, the pastor shared how life will give us ample evidence to accuse God or to believe He must not exist (or not be loving). BUT, he concluded, "God doesn\'t prevent all pain, but he does want to be near us in it." Frank didn\'t feel better all at once. He was still hurt, angry, and sad about what had happened. It took time to release the emotions that had built in him through his disappointments. But slowly, intentionally and incrementally, he started to feel peace and hope again. He learned to live with "question marks," but still have faith. He grew in his ability to discern what was trustworthy without being bitter or cynical. Challenging his faith refined it to the point of being immovable despite circumstances. Frank\'s confidence in God through hardships created a depth that could be experienced by those going through similar difficulties. He learned to share vulnerably about his pain, and to be with others in theirs. His faith grew to experience a God that didn\'t orchestrate or intentionally cause pain, but didn\'t prevent it either. It created an unshakable confidence in God\'s presence despite circumstances.'
+};
+
+        'Creator': {
+        quadrant: 'Visionary',
+        description: 'A Creator (a.k.a. the originator) thrives on generating something novel. They use their gifts to produce art, innovations, inventions, or business strategies and products.',
+        authenticSelf: 'Introduces beauty, depth, and novelty to life without being dependent on "passion" to stay engaged.',
+        protection: 'Apathetic When Uninspired - Creators can become detached or dispassionate if not highly engaged.',
+        quickSteps: [
+            'Ask yourself whether you are being lazy or if you are resting.',
+            'If resting, continue. If being lazy, engage in activities outside of your norm.',
+            'Practice being present in the subtle aspects of life: relationships, work, household duties, etc.'
+        ],
+        motivators: [
+            'Feeling expressed through creating something new, beautiful, or enjoyable.',
+            'Finding satisfaction from birthing something wanting to be released.',
+            'Creating for the joy of creating.'
+        ],
+        strengths: [
+            'Extremely passionate and resourceful when motivated or inspired.',
+            'Produce beautiful creations.',
+            'Enrich people\'s worlds through aesthetic, design, and innovation.'
+        ],
+        weaknesses: [
+            'Not completing detailed tasks or long-term projects.',
+            'Excitement about one thing after another (instead of seeing something through to completion).',
+            'Requiring passion to be productive.'
+        ],
+        professions: ['Artist', 'Singer', 'Performer', 'Graphic Designer', 'Writer', 'Musician', 'Inventor', 'Entrepreneur', 'Photographer'],
+        tips: [
+            'Connect with a pragmatist to assist you in profiting off your gift.',
+            'Learn your particular state of flow. Some Creators need consistency to stoke passions, others need inspiration, still others need collaboration.',
+            'The more you enjoy what you are producing, the more it will be enjoyed. Follow your pleasure to find your path.',
+            'Your eccentricity is your strength. Embrace where you think differently, look different, or feel different in order to find your unique contribution.',
+            'A Creator who becomes consistent finds contentment. The tortured Creator lives in fits and starts. The healthy Creator creates...even if they must change venues, business partners, outlets, etc.',
+            'Healthy creation is a result of peace and presence...not torment and drama. Spend time learning to be at peace to become a clear channel for creation.',
+            'You do not get value from your creations. Your creations get value from you. The more you invest in self-love, healing, and understanding your identity; the more you will infuse your creations with value and soul.'
+        ],
+        relating: [
+            'Stay connected relationally even when they are not in a "passionate" space (without taking on responsibility for their lethargy).',
+            'Do creative activities with them in their choice of modalities (or show interest if you don\'t want to engage personally).',
+            'Value the person by showing interest and enjoyment in their creations (and view them as expressions of that person instead of just "things").'
+        ],
+        growthStory: 'Tyson is gifted. He has the ability to create new concepts, strategies, and even works of art. His friends have become accustomed to his tendency to generate novel things. He is also extremely passionate, and works with almost frenetic energy when he gets struck with inspiration. Despite all of his giftings, he has a glaring weakness: follow-through. He will have an idea, a revelation, or a new project regularly; but just as regularly, abandon it after it has lost its luster. As a result, he never seems to get traction on his ideas or ventures. In fact, he is consistently frustrated because he will often find someone being successful in the "space" that he recently abandoned. It often sounds like, "Hey! I thought of that" or, "I had that same idea two years ago!" For most of his adult life, he has worked for corporations. They mildly value his talent but don\'t recognize his true value. As such, he has tried to launch out several times in entrepreneurial ventures. Every time, the idea sounds completely feasible, potentially even destined for success. But the success never comes to fruition, and he is forced to go back to a corporation or start a new venture. His breakthrough came with the simplest of revelations: he could grow something incrementally instead of explosively. The thought haunted him for months before he started implementing it. He reviewed his history with work and was able to find a consistent pattern of frenetic starts and sabotaging endings. He harnessed his new insight into practical action. Instead of working from frantic passion, he began to view things from a more objective standpoint. He started considering projects and decisions in the long-view, which often required short-term sacrifices. Tyson\'s mindset went from using his exceptional natural giftings explosively to nurturing his talents over the long-term. After two years of engaging with the same venture, developing and refining it over time, his business became fruitful. Tyson created a business consulting practice. At first, there was minimal traction. Over time, he developed his repertoire, curriculum, strategies, and ability to speak and sell to his potential clients. He found a way to embrace his ability to be extremely creative in his business (for his clients and himself), but he partnered it with the practical necessities of building over time. Tyson is thriving. He\'s surrounded himself with numerous people who are able to take his ideas and put them into practical use: for social media, business, marketing materials, and more. They also gently remind him when he is becoming a little too ready to make a knee jerk reaction. Tyson allowed himself to mature without sacrificing what makes him unique. As a result, he feels like himself but gets to enjoy the abundance of following through on his ideas.'
+    },
+    'Dreamer': {
+        quadrant: 'Visionary',
+        description: 'A Dreamer (a.k.a. the fantasist) is a highly imaginative individual who weaves worlds in their minds. They may dream of the past, future, what could be, or what has never been.',
+        authenticSelf: 'Robust dream-life while remaining rooted in reality and current circumstances.',
+        protection: 'Disconnected from Reality - Dreamers can be lost in their own worlds instead of the "real world."',
+        quickSteps: [
+            'Recognize when you are dreaming and/or fantasizing',
+            'Determine whether it is an appropriate time or not.',
+            'If not, prioritize a different time to dream so you can focus on what needs to be done in the present.'
+        ],
+        motivators: [
+            'Thinking beyond present realities to a better alternative.',
+            'Engaging in life-giving creativity so their soul can be expressed.'
+        ],
+        strengths: [
+            'Imaginative problem solving.',
+            'Thinking beyond current boundaries or restrictions.',
+            'Introducing others to creative or novel ideas.'
+        ],
+        weaknesses: [
+            'Overestimating positives of an idea, venture, or concept.',
+            'Not completing projects when interest wanes.',
+            'Neglecting practical life issues in pursuit of "dreams" or "visions."'
+        ],
+        professions: ['Inventor', 'Storyteller', 'Prognosticator', 'Consultant', 'Artist', 'Writer', 'Videographer', 'Photographer', 'Graphic Designer'],
+        tips: [
+            'Dreamers think outside the box. But to not become frustrated, Dreamers must realize that some of their ideas will be accepted and others rejected. Believe in an abundance of ideas and you won\'t be dismayed if one doesn\'t get accepted.',
+            'Give yourself time to dream. This may sound obvious at first blush, but it isn\'t. Dreamers need concentrated times to allow their minds to wander. Otherwise, their dream-life will invade their work or relationships in destructive ways.',
+            'Do something with your dreams. Many Dreamers never move beyond dreaming. The satisfied Dreamers put action to their ideas and test them in the real world.',
+            'Connect with other Dreamers regularly. As a particular type of person, you will be rejuvenated by being around similar thinkers. Join a club. Make some friends with similar interests. Initiate conversations with fellow Dreamers.',
+            'Allow some of your dreams to steep within you. Sometimes, Dreamers are excitable. Unfortunately, this burns others out on their ideas and doesn\'t allow depth to form beneath a dream.',
+            'Find teachers or mentors. As Dreamers, your ideas will become more powerful, enjoyable, and publicly appreciated if you mature in your gifts. Mentors will help you progress in your dreams, instead of simply allowing them to remain a fantastical idea.',
+            'Allow dreaming to be nourishment. Some dreams will become tangible, but the very act of dreaming can bring you pleasure and a sense of purpose.'
+        ],
+        relating: [
+            'Make space for them sharing about their life (including dreams).',
+            'Partner with Dreamers to understand the deeper themes their dreams may be telling them.',
+            'Engage in their imaginative nature by being playful or going on adventures.'
+        ],
+        growthStory: 'Beth was imaginative. Her friends and family might call it "distracted." Her time in school was a significant force of will. She didn\'t want to be distracted in her classes, but she always found her mind wandering. The same thing happened in the workplace. She would be neck deep in a project, and her mind would begin weaving fantastical stories. Her mind especially wandered when she was doing tedious or repetitive activities. Put simply, she was miserable. It felt like her inner world and outer world were in conflict with one another. Her dreams were full of fantasy, engagement, adventure, plot development, and powerful character expression. Her day-to-day life was a typical, almost hum-drum experience. She went to work, did her job, came home, and then did it all over again. Ironically, the more anxious she became the more she would day-dream, which would make her more anxious. "She needed to focus!", she would tell herself over and over. It never seemed to work. Finally, she sought help. She started working with a life coach to help her break the mental ruts she had created for herself. This particular life coach was brilliant. He started to ask her about her experiences as a child, at school, and in the workplace. He discovered that she had been in near-constant war with her nature. Essentially, she was trying to direct the flow of her "life river" to match the culture, but it was always trying to self-correct. After several sessions, they created a game plan for her to start aligning with her more natural self. She didn\'t quit her job, but she did start writing stories as a hobby. Writing started off slowly as she learned to find her voice and sharpen her craft. It soon became her obsession. Over the next several years she found herself developing beautiful manuscripts, and was in the process of seeking an agent for her work. Interestingly, she would love her work to be published but it wasn\'t a compelling need for her. She loved writing, and it was satisfying to simply do the work. Additionally, her work life started excelling! Giving herself an opportunity to vent her creativity in the evenings allowed her to focus on her work during the day. If she had an idea, she would write it down, which would allow her to comfortably re-engage with her work without fear of losing the concept. Eventually, she did get published. With the proceeds from the book (and her teaching writing classes) she was able to leave her corporate job and work full time in the writing industry. Her life was fulfilling, constantly changing, and allowing her to come into agreement with her natural design.'
+    },
+    'Promoter': {
+        quadrant: 'Visionary',
+        description: 'A Promoter (a.k.a. the persuader) is someone whose belief in a business, project, person, or resource causes them to share it widely. Their gift draws people into the experience, activity, or connection.',
+        authenticSelf: 'Raises the value in a person, project, or organization without exaggerating or playing on emotions.',
+        protection: 'Too Much Hype - Promoters can hide in enthusiasm. They may over-hype a project, product, or person when they feel insecure.',
+        quickSteps: [
+            'Consider what you love and enjoy about the person/place you are suggesting.',
+            'Ask yourself if you are embellishing or hyping.',
+            'Enjoy sharing what you truly love with 100% integrity.'
+        ],
+        motivators: [
+            'Sharing something they enjoy with others.',
+            'The satisfaction of supporting something or someone they believe deserves championing.'
+        ],
+        strengths: [
+            'Persuasive towards a product, organization, or a person.',
+            'Naturally passionate about what they enjoy.',
+            'Help people believe in others\' strengths and dreams.'
+        ],
+        weaknesses: [
+            'Tricking self into thinking something is better than it really is.',
+            'Potential for manipulation.',
+            'Exaggerating claims unintentionally as part of selling someone on something.'
+        ],
+        professions: ['Salesperson', 'Public Speaker', 'Marketer', 'Social Media Personality', 'Entrepreneur', 'Freelance Worker'],
+        tips: [
+            'Your superpower is people believe you. So for you to feel happy and satisfied, use that superpower carefully by intentionally choosing who or what you endorse.',
+            'You will be positively or negatively influential. But you will feel more clean and clear if you don\'t use your influence to diminish a person, place, or business (except in extreme cases).',
+            'Hype is unnecessary for you. Although you might be excited, you will feel more grounded if you share your authentic story without embellishment.',
+            'Don\'t burn yourself out. Frankly, you can make someone or someplace a success. People often recognize that influence. Only endorse those people or projects you truly believe in, and when you feel you have the bandwidth to do it.',
+            'Give yourself permission to benefit from your gift. Some Promoters can easily promote others but avoid "promoting" themselves. There\'s nothing wrong with endorsing where you add value and spend effort.',
+            'Become comfortable owning your persuasiveness. Instead of it being negative (unscrupulous used car salesman), think of it as a gift for sending people in the right direction and endorsing those deserving support.',
+            'At certain times, turn off your promotion gift with friends and family. They will enjoy your presence more if you aren\'t consistently in "endorsement mode."'
+        ],
+        relating: [
+            'Clarify that you don\'t need anything from them and you have no agenda in the relationship except connection.',
+            'Instead of just receiving their "promotions" on face value, ask questions to learn more about why those things matter to them.',
+            'Stay grounded in yourself regardless of what they are presenting. Don\'t fluctuate based on their energy level.'
+        ],
+        growthStory: 'Becky is persuasive. Very persuasive. When she believes in a person, product, or business; she endorses it highly and often. It\'s become a joke among her friends that she can sell anyone on anything. Becky isn\'t trying to sell or promote; she simply believes in something and naturally shares it with those she loves. She finds enjoyment and fulfilment in sharing with others the joy that something brought into her life. Most times, her enthusiastic endorsements are completely unconscious to her. Regardless, people trust Becky. Someone is almost guaranteed to be a success if Becky throws her weight behind them. When she found a therapist she liked, she sent 15 people to her soon after. When she found a hole-in-the-wall restaurant with five-star food, she had all her friends trying it out within a month. When she discovered an app that made her life easier, she had everyone she knew download it within days. She wasn\'t trying to make these things happen, they just did. Ironically, the hardest person to promote or endorse was herself. She found it self-serving and in poor taste to hype something she was doing. As such, she has been building a life coaching business for several years without much success. Ironically, she\'s helped several friends successfully launch life consulting businesses! Needless to say, she was frustrated. After some soul-searching, she started coming to healthier conclusions. First, she invested heavily in improving her sense of self-value. She came from a family that was humble to a fault. They taught her to remain "hidden" and don\'t expect too much. "It\'s more important to give away," they would often tell her. Unfortunately, it had the side effect of her not believing in herself. After working intentionally and consistently on her self-value, she started making positive life changes. She improved the way she dressed. She gave a facelift to her website. And she started talking about herself differently. Another significant thing she did was to approach her services objectively. Instead of thinking of it as "her offerings," she considered it from an outside perspective. She found that she loved, valued, and respected the services she was rendering. After her personal and professional insights, she began talking differently about her business. She found sharing about it didn\'t make her feel gross or selfish, but expressed and authentic. People soon responded to her sense of confidence and newfound clarity by utilizing her services. She booked out her practice, started selling curriculum, and gracefully found her sweet spot. She had a newfound sense of peace because she had worked out the dissonance between her gift of promotion and her personal desires. They were no longer in conflict. They were meant to highlight wonderful gifts for others, even if those gifts came from her!'
+    },
+    'Director': {
+        quadrant: 'Leader',
+        description: 'A Director (a.k.a. the conductor) has the ability to orchestrate many people, projects, or ideas simultaneously. They understand the big picture and what is necessary to make it work.',
+        authenticSelf: 'Seamlessly directs teams, delegates work, and utilizes individuals\' strengths without dehumanizing the people involved.',
+        protection: 'Overlook Individuals for The Bigger Picture - When under stress, Directors can become over-focused on the project or process instead of the people involved.',
+        quickSteps: [
+            'Take a step back and disengage from the process.',
+            'Re-focus on the individuals who are included.',
+            'Intentionally consider their welfare, emotional state, and alignment with their assigned role.'
+        ],
+        motivators: [
+            'Creating a clear path out of a complex situation.',
+            'A personal vision for an end goal or purpose.'
+        ],
+        strengths: [
+            'Capable of handling complex or difficult circumstances.',
+            'Excellent at managing teams effectively.',
+            'Understand how to utilize strengths and minimize weaknesses.'
+        ],
+        weaknesses: [
+            'Overlooking individuals or feelings when stressed.',
+            'Frustration if there is a lack of stimulation, autonomy, or sense of purpose.',
+            'Difficulty working on projects without big picture understanding.'
+        ],
+        professions: ['Manager', 'Director', 'Project Lead', 'President', 'Team Leader', 'COO', 'CEO'],
+        tips: [
+            'Two words: load management. Directors have a high capacity for input, understanding, and strategy. However, they can neglect their energy levels. Instead, a healthy Director should have "margin" in their lives.',
+            'Try not to micromanage. Understanding the big picture can make Directors feel overly responsible. Directors thrive when they delegate to people they trust, give general direction, and allow for individuality.',
+            'Be clear with boundaries at work and in relationships. Just because you are capable doesn\'t mean you are responsible.',
+            'Invest in your team. Being a Director can often mean you assume people know what you know. They sometimes don\'t. Inform, engage, and invest in those around you by sharing what you know and allowing them to be part of the process.',
+            'Find safe places to rest and rejuvenate. By nature, you run at a high level of exertion. It\'s necessary for you to prioritize disengaging and relaxing.',
+            'Personalize the people around you (or beneath you in the workplace). People aren\'t cogs in a machine; and your quality of life, productivity, and long-term success will skyrocket when you personally connect with those around you.',
+            'Give yourself vacations. As a high-output individual, you need diverting experiences. Plan mini-vacations, stay-cations, and full vacations so you can keep your tank full.'
+        ],
+        relating: [
+            'Discuss what they enjoy personally, playfully, and recreationally.',
+            'Ask them how they feel most known and understood.',
+            'Have discussions as to why they are doing what they are doing (in their work, personal life, etc.).'
+        ],
+        growthStory: 'When describing Kathy, capable is an understatement. She\'s always had an ability to handle anything that gets thrown her way: challenges, group dynamics, projects, or work. She handles it all. She is so capable, in fact, that she often gets highlighted as the person who should be managing her team or coworkers. She doesn\'t necessarily seek this recognition or promotion, but focuses on doing a good job and almost always gets highlighted. Kathy had a big problem though, and it was growing. Utilizing her talents and the consistent encouragement from her supervisors were no longer satisfying her. She had begun longing for a romantic relationship, and didn\'t know how to begin one. She was also beginning to be frustrated at work because there was a lack of vision in the company. She felt she was working effectively but with no grander purpose. She felt unfulfilled, unseen, and uninspired. Fortunately, Kathy was resourceful. She started using her natural gifts of utilizing peoples\' strengths and expertise for her own enlightenment. She recognized the people who were living the lives she wanted, and she started plumbing the depths of their wisdom. She asked, "How did you get into this relationship? How do you get inspired? How can someone identify their passions? What must I do to find purpose?". As might be expected, those she interviewed didn\'t always have eloquent answers. They would give her bits and pieces of wisdom, and share from their personal experiences. But for Kathy, it was enough. She started realizing it was HER RESPONSIBILITY to create the life she wanted. Over the next few years, she left her job and joined a startup in a field she admired. Her co-workers, instead of just being work associates, became her close friends and confidants. She started coming alive with her newfound purpose and associations, and it showed in her countenance. Put simply, she became more attractive. Suitors started showing up in every area of her life. Eventually, she responded to one particular person who became her husband. Kathy attributed her life-change to intentionality. She recognized she could have stayed treading water in life for years or even decades, but she chose not to. When she decided to pivot her life, she applied her natural strengths to become equipped and make the necessary adjustments.'
+    },
+        
+        'Executor': {
+        quadrant: 'Leader',
+        description: 'An Executor (a.k.a. the finisher) completes what they start. They enjoy the feeling of accomplishment more than they enjoy the process required to get them there.',
+        authenticSelf: 'Finishes projects or ventures consistently without neglecting family, friends, co-workers, or themselves.',
+        protection: 'Compromise Self or Others for Outcomes - Executors can hide in achievement. Their accomplishments can become smokescreens for being seen or vulnerable.',
+        quickSteps: [
+            'Ask yourself whether you invited others\' into your process.',
+            'Intentionally be present with others in the process.',
+            'Remind yourself to focus on incremental growth or improvement instead of ideal outcomes.'
+        ],
+        motivators: [
+            'The internal satisfaction from a sense of accomplishment.',
+            'Feeling productive by adding value to the world and having a tangible result from efforts.'
+        ],
+        strengths: [
+            'Dependable outcomes with work.',
+            'Productive, consistent, and strategic.',
+            'Launching or finishing projects that have been stymied or delayed.'
+        ],
+        weaknesses: [
+            'Anxiety if answers are not forthcoming.',
+            'Disconnecting emotionally to "finish" projects.',
+            'Impatience in the face of complexity or delays.',
+            'Frustration if progress (in any area) becomes stalled.'
+        ],
+        professions: ['CEO', 'President', 'Entrepreneur', 'Manager', 'Engineer', 'Architect', 'Coder', 'Medical Doctor'],
+        tips: [
+            'Executors enjoy completion. They have a higher than average need for resolution. To be balanced, however, they must appreciate the process, either by breaking the project up into "little completions" or learning to enjoy incremental growth.',
+            'The ends do not justify the means. Healthy Executors don\'t disconnect from people, workers, or themselves in order to complete a project or venture.',
+            'Quality is important. Although they are efficient, and capable, sometimes Executors need to be reminded to be a little more patient for a much better outcome.',
+            'To be successful in relationships, Executors must learn to be present. Being present, for an Executor, is suspending the need to fix, figure out, or improve something when relating to others.',
+            'Put yourself in a position to thrive. Executors get disheartened and frustrated when their efforts are stymied, delayed, or indefinitely suspended. Executors will thrive when they have control over their businesses, their "arenas," or even over a small area where they are responsible and empowered.',
+            'Surround yourself with people different from you. Specifically, connect with people who enjoy "the journey" and aren\'t overly concerned with outcomes.',
+            'Executors thrive on progress relationally, professionally, and personally. It\'s important to recognize that other people may not have your same need for accomplishment, but it\'s equally important you communicate your expectations and get clear on theirs.'
+        ],
+        relating: [
+            'Find ways to relate where they feel no agenda or need for accomplishment (be present with them).',
+            'Offer to be a sounding board to help prioritize or clarify their projects.',
+            'Celebrate accomplishments (big and small) so they feel connected when completing their undertakings.'
+        ],
+        growthStory: 'Bethany likes achievement. It isn\'t a character flaw; it\'s a character trait. She\'s always been like that. When she was younger, she wanted to complete her homework assignments before stopping working. When her friends had ideas, she would want to implement them and put them into action. She enjoyed taking action on ideas, but more than simply working on them, she wanted to bring them to fruition. Her cleverness and ability to complete assignments gave her continual promotions at work. She found herself being given more and more authority as she became known as someone that "got things done." Lingering projects, stalled ventures, and half-baked products were her specialty. She could bring these, and other challenges, through to completion. Despite her successes, Bethany knew something was missing from her life. Her relationship with her husband was shallow. They, both being high achievers, had unquestionably prioritized work over their relationship. Although they truly cared for one another, they hadn\'t invested in their relationship in some time. As a result, they slowly became "ships passing in the night." She also found that life in general had become dull. It was almost as if her senses had been turned down, and her emotions had followed. Her sadnesses, joys, passion, purpose, hopes, dreams, etc. had all been tempered. She wasn\'t so much living as passing through life. As an act of desperation, she went to visit the Life Coach her business had employed. He was brilliant and experienced. He saw the symptoms of her malady almost immediately. He helped her to voice her true priorities. To her surprise, it was almost the opposite of how she had been living. She wanted to live in the present, but she was living for the rare moments of accomplishment. She wanted to prioritize intimacy, but was instead prioritizing her career. She was prioritizing completing a project, instead of developing in the process. In essence, she wasn\'t ever "stopping to smell the roses." After her realizations, she started making incremental changes to her lifestyle. She started focusing on her staff more personally, instead of through the metrics. She prioritized her relationship with her husband...even if that meant postponing the completion of a project. She also created boundaries around her job so that she could re-balance her life with friends, community, and relaxation. To her surprise, her work became more fruitful. Her staff responded to her newfound investment in them. Productivity and creativity flourished. Her relationship with her husband became intimate and affectionate. And possibly most importantly, she was present in her life again. She had regained her sense of balance, and with it came her sense of peace and joyful personality.'
+    },
+    'Motivator': {
+        quadrant: 'Leader',
+        description: 'A Motivator (a.k.a. the activator) stirs the affections and desires within an individual or group. They energize individuals to enter into their desired ventures, exploits, or relationships.',
+        authenticSelf: 'Excite and inspire people to join a cause, pursue a venture, or follow personal ambitions; and doing so without compromising the truth or ignoring potential pitfalls.',
+        protection: 'Fantastical Optimism - Motivators have a tendency to believe their own hype. They can get lost in enthusiasm, instead of being grounded in the moment or a necessary process.',
+        quickSteps: [
+            'Ask yourself whether you are excited about potential or something substantive.',
+            'Consider, do you believe your motivation is setting others up for success in the long-run.',
+            'Question whether you have results or personal experience that warrant sharing your excitement.'
+        ],
+        motivators: [
+            'Seeing others get activated in their dreams or desires.',
+            'The enjoyment from finding ways to help individuals overcome obstacles, be inspired, or believe in themselves.'
+        ],
+        strengths: [
+            'Highly influential.',
+            'The capacity and skill to get people over their hindrances or blocks.',
+            'Inspiring passion for whatever they are advancing.'
+        ],
+        weaknesses: [
+            'A tendency for manipulation.',
+            'Communicating enthusiastically without considering the consequences of where motivation might lead others.',
+            'Disconnecting from emotions because of their ability to delude themselves.'
+        ],
+        professions: ['Public Speaker', 'Motivational Speaker', 'CEO', 'Online Personality', 'Salesperson'],
+        tips: [
+            'Be intentional about turning off your Motivator-mode. Think of this mode like a persona you utilize. It is part of you, but if you overuse your motivating tendencies in relationships and at work, you will be disconnected.',
+            'Be judicious about choosing what you hype. If you motivate people to do something that is beneficial for you, but not them, you will feel dissonant. The same is true in reverse.',
+            'Embrace your ability to be optimistic and enthusiastic, but also embrace your need for rest and quiet. It is equally important for you to rejuvenate as it is for you to motivate.',
+            'Be intentional about utilizing your strengths at work. You will wither if you aren\'t allowed to express your natural influencing abilities in some form. Where can it fit? What can you change to express it more often?',
+            'Be excited and wise. Your natural optimism can lead you astray by giving you rose-colored glasses for opportunities. Be patient. Giving yourself more time before making major decisions will allow fantastical enthusiasm to wane and substantive opportunities to remain.',
+            'Be connected to the outcomes of your motivation. Connect with those you impact for feedback and encouragement.',
+            'Live in two realities. For most people, this would create dissonance. But it is healthy for you. For you to thrive, you must live in your hope-filled, optimistic, happy reality...and, be grounded in day-to-day realities necessary for responsible living.'
+        ],
+        relating: [
+            'Create spaces where they can be quiet and known, instead of energetic and on display.',
+            'Engage in conversations where they can be enthusiastic for their own interests or desires.',
+            'Ask how you can meet their needs or help them feel personally known.'
+        ],
+        growthStory: 'Byron knew he was influential. He always had "the gift" to get people to do what they didn\'t think they could. It was first obvious in middle and high school. He would convince his friends to break rules or get into some hijinx or other. They never did anything malicious, but Byron was always convincing his friends to join him in doing something he didn\'t want to do alone (or at least, not get caught by himself). Byron enjoyed his influence until his early twenties. He was in Student Government throughout his schooling and often spoke at various events around town. He was thoroughly enjoyed as a presenter, and often brought attention or resources to those events where he spoke. However, he had a crisis of conscience at 23. He felt convicted about his ability to influence, and started to wonder whether it was just a form of manipulation. He also couldn\'t shake the idea he was speaking for his own adoration and attention rather than doing something meaningful. He was horrified. As a result of his "insights," he backed away from publicity. He focused on being as upright as possible in his job, relationships, and friendships. He became an entrepreneur, and found joy in his innovative strategies and unique work. But he knew, deep down, something was missing. His revelation came during a night talking with friends over beers. They were discussing "what you like to do most," and Byron blurted out public speaking. He surprised himself and his friends. When he realized what he had said, he felt a massive grief sweep over him, similar to feeling the lost time with an estranged friend. He missed public speaking. He missed motivating. He missed influencing and encouraging. His friends interrogated him about his desire, and they soon realized that his motivations weren\'t bad...they never had been. His intentions were always positive when he was speaking. And furthermore, he felt the most alive and like himself when he was doing it. Instead of being manipulative, they reasoned, his public speaking was a needed motivation for others to take action on their dreams and latent desires. In fact, by squelching his gift for speaking, he was robbing others of his unique capacity to inspire. Relief flooded Byron as he was able to accept himself and his desire to publicly speak. Over the next several months he began to embrace his long-dormant ability. He started with small events, but the events soon grew in size and enthusiasm. His businesses became far more successful; his audience took massive steps to improving their lives; and he had the distinct sense of "coming home" to self.'
+    },
+    'Protector': {
+        quadrant: 'Leader',
+        description: 'A Protector (a.k.a. the defender) has an innate desire for clarity and safety. They are comfortable confronting a person or organization if they believe that person is a threat to health, safety, themselves, or those they love.',
+        authenticSelf: 'Healthily confrontive, protective, and bold; but without steamrolling others\' emotions or opinions.',
+        protection: 'Overly Aggressive - Protectors have a tendency to hide in their anger, boldness, or confrontive natures.',
+        quickSteps: [
+            'Ask yourself if you have given the other person (or organization) the benefit of the doubt.',
+            'Reflect on what their perspective might be in the situation.',
+            'Question whether you have adequately tried diplomacy before protecting yourself and others.'
+        ],
+        motivators: [
+            'Creating safety for themselves and those they love.',
+            'Removing any potential threats to connection and clarity.'
+        ],
+        strengths: [
+            'Highly loyal to friends, family, or those in need.',
+            'Creating environments of honesty and transparency.',
+            'Giving healthy feedback for others to grow and mature.',
+            'Maintaining clear boundaries.'
+        ],
+        weaknesses: [
+            'Being aggressive instead of diplomatic.',
+            'Confronting when not necessary or appropriate.',
+            'Being selfish towards family or themselves.'
+        ],
+        professions: ['CEO', 'President', 'Entrepreneur', 'Manager', 'Real Estate Investor', 'Stock Broker', 'Politician'],
+        tips: [
+            'Pause and give others the benefit of the doubt. You have ample grace for those you love, but sometimes need to be reminded to offer the same grace to others. If you do, however, you\'ll find that your success, favor, and reputation will improve.',
+            'You\'re not the villain. Your strong nature can make others frustrated, angry, or even cause them to dislike you. You can avoid much of these misconceptions by becoming surgical in using your protection gift. Choose your battles.',
+            'Allow others to fight some of their battles. Your energy levels and enjoyment of life will increase if you give those you love a "vote of confidence" by trusting they can handle many of their own problems.',
+            'Defend those needing defense. You can have the conversations others won\'t. You can confront the bully. To use your gift effectively, defend those needing defending and confront those needing confronting.',
+            'Show your soft side. If you are a Protector, ironically, you\'re a softie. Let people see your vulnerable, emotional, or intimate side more often. You\'ll feel seen and they\'ll feel connected.',
+            'Disengage from the fight. As a Protector, your mind can sometimes become a broken record as to "what needs to be done." Allow yourself to frequently disengage from the problem so you can maintain balance in your life.',
+            'Make space for others\' voices and opinions. You might have a strong sense of right and wrong. But if you want to have lasting relationships, you have to become comfortable with agreeing to disagree (and respecting them for their differing opinions).'
+        ],
+        relating: [
+            'Invite them into sharing their more tender side (fears, disappointments, anxieties, etc.).',
+            'Approach them relationally with the assumption they are soft, kind, and approachable.',
+            'Be appreciative of what they do for you, but also offer to take on responsibilities or decision-making when possible.'
+        ],
+        growthStory: 'Belinda was a hothead. At least, that is what her friends and family called her. She would get upset at people she loved and those she didn\'t alike. It seemed she was always provoked in one way or another. But Belinda was misunderstood. Belinda is, in actuality, a softie. She protects her tender insides with a bold and sometimes abrasive exterior. Unfortunately, her tough exterior was wearing thin on her family, friends, and colleagues. Her relationships were strained in every direction and she didn\'t know what to do. Belinda wasn\'t trying to threaten her primary relationships. In fact, it was quite the opposite. She would get upset when she felt her connection with someone was being threatened. It was almost a default response to angrily try to persuade them that they weren\'t thinking right, or that they had misinterpreted her. Sadly, what Belinda thought was the medicine (convincing the other person she was right) was actually far worse than the disease (differing opinions). At almost any point, she could salvage trust and connection if the issue hadn\'t escalated; but that wasn\'t Belinda\'s strong-suit. Belinda\'s breakthrough came from a particularly painful night. After getting into yet another fight with her spouse, she broke down sobbing. She couldn\'t stop crying as it seemed the world was going to swallow her up. She felt empty. Unseen. Unheard. And completely alone. After her harrowing night, she committed to getting help. Luckily, she knew of a remarkably powerful older woman in her church. This woman, who was no wallflower, had many of the same qualities as Belinda but was almost universally loved. "This woman, if anyone, will know what to do," Belinda told herself. She humbly told the woman her situation, and how much pain she was in. She didn\'t spare any details including her own culpability. The woman, with kindness in her smile, shared with Belinda: "I\'ve been where you are at now. I know exactly how you feel. When younger, I was a hothead, but it wasn\'t because I didn\'t care but because I DID! I was trying to protect those I love from outside threats, protect my relationships from misunderstandings, and I was so afraid that I would be left all alone if I didn\'t get clarity in whatever was happening. Fortunately, my husband was willing to speak to me boldly and honestly. He said disagreement is not disconnection and that I was secure in our relationship, but the threat was my temper...When I used anger, I was actually pushing people away...even if they stayed in the room. His words gave me permission to disagree and still feel loved and seen. They helped me recognize I was being my own worst enemy. Since that time, I still say my piece but I don\'t do it with anger or violence. I do it in love. If they don\'t take the feedback, I\'m okay with them making that decision (and living with the consequences). I get to be the powerful me, but I don\'t feel so insecure that I have to use my temper to protect myself or try to protect my relationships." Belinda was dumbfounded. She knew her anger had also been her insecurity with relationships and fear she would be alone. But if what the woman said was true, she was working against herself. After their conversation, Belinda started practicing being comfortable with disagreement. She also worked on confrontation without anger, anxiety, or high stakes. Healthy confrontation became a tool to provide clarity in relationships, and often became valued by the other person as well. Her husband had never felt closer to her, Belinda felt truly authentic, and she learned that her power doesn\'t have to be "violent" in order to be present.'
+    },
+    'Actualizer': {
+        quadrant: 'Producer',
+        description: 'An Actualizer (a.k.a the maximizer) takes what is available and maximizes it—or them—into their best version. They can see clearly how to make a person, project, or organization become the best possible version.',
+        authenticSelf: 'Recognizes potential in people and organizations and helps them to achieve it; they do so without compromising individuality in the process.',
+        protection: 'People Become Projects - Actualizers can become disconnected when they feel others aren\'t growing, fulfilling their potential, or listening to their advice.',
+        quickSteps: [
+            'Take a step back and consider whether you are valuing the whole entity (or person) or just focusing on areas for improvement.',
+            'Give yourself permission to appreciate where they are (with no agenda) before introducing changes.',
+            'Be okay internally if they can\'t see the potential you do or aren\'t ready to implement your ideas.'
+        ],
+        motivators: [
+            'Fulfillment in bringing something to its potential.',
+            'Feeling alive by taking something from good to great.'
+        ],
+        strengths: [
+            'Collaborating with others.',
+            'Recognizing potential and creating a path to fulfill it.',
+            'Hope and energy towards a productive (or potentially difficult) process.'
+        ],
+        weaknesses: [
+            'Being unwilling to start or stick with something if it can\'t become excellent.',
+            'Losing interest if there isn\'t influence for improvement.',
+            'Frustration if growth (or improvement) is stymied or stalled.'
+        ],
+        professions: ['Life Coach', 'Motivational Speaker', 'Online Personality', 'CEO', 'Project Lead', 'Co-Entrepreneur', 'Graphic Design', 'Management Role'],
+        tips: [
+            'Turn off your gift when it is not valued or requested. As an Actualizer, you can always find ways to improve a business, person, or situation. But you will be most effective if you offer suggestions after they have been requested.',
+            'Allow yourself personal reprieves from self-improvement. Although you can always find something to work on, sometimes, you need to enjoy life without an ulterior agenda.',
+            'Accept people as they are. When you respect people in their current state, your suggestions for improvement won\'t feel as though they are requisite for connection or value.',
+            'Become effusively grateful. Your state of gratefulness will allow you to enjoy the present without feeling it necessary to improve upon it.',
+            'Learn to celebrate incremental changes. As an Actualizer, you can see the potential in someone or something, but every step in the right direction should also be celebrated. Perfection is not necessary for engagement and celebration.',
+            'Give yourself outlets to share your gifting publicly. By exposing your gifting publicly, you will draw a crowd that has an appetite for your offerings. This way, you will be connecting with the perfect audience to appreciate you, which allows you to use your gift with joy.',
+            'Launch at 80%. In order for you to share something, do something, create something, or publish something, you\'ll have to accept it won\'t be excellent at first. By launching something you will be able to improve upon it over time (and with feedback).'
+        ],
+        relating: [
+            'Allow them to talk through their frustration in areas they feel stymied or stalled.',
+            'Make space for them to give input into areas where life, work, or relationships can be improved.',
+            'Ground them into the present by accepting and valuing them in the moment.'
+        ],
+        growthStory: 'Justin has always enjoyed improving things. It didn\'t really matter what he was improving, he simply enjoyed the idea of making things better. He would grease the wheels on his skateboard to make it go faster. He would help train his friends in whatever sport they were attempting. He would spend countless hours considering how to maximize his potential (or the potential in others). Of course, he didn\'t do this consciously. It was a subconscious compulsion that was rewarded with pleasurable feelings. His desire to improve whatever he put his mind to was enjoyable to him...until others got involved. He found himself in the middle of a business that didn\'t share his passion for excellence. In typical entrepreneur form, his boss wanted productivity over having every "t" crossed and "i" dotted for each project. Justin was frustrated, because in his mind, with just a little more effort the projects and products could be vastly improved. After several years of being encouraged to "get it done" instead of "get it right," he was losing interest in the business altogether. "If this is how it is," he concluded he didn\'t want any part of it. At the behest of the other business partners, Justin\'s boss brought in a business consultant. After working with the company for a short time, the consultant recognized that Justin was not thriving in his work, and no longer had passion for his projects. He discussed with Justin his disappointments or frustrations, and concluded that Justin was being misapplied. The consultant, Justin, and his boss worked together to find a solution. Justin was moved from an innovative area of the business to a developmental aspect of the business. Essentially, he would take designs or products mid-development and turn them into exceptional products. His new role fit Justin perfectly. Formerly, it felt like he was running through mud in the company, and now it felt like he was water skiing. He intellectually and naturally matched the ability to improve products and make them exceptional. As a result, the business started launching FAR more successful products, and brand loyalty and appreciation went through the roof.'
+    },
+
+'Implementer': {
+        quadrant: 'Producer',
+        description: 'An Implementer (a.k.a. the manifestor) can take a vision, dream, or concept; and create steps to make it a tangible reality.',
+        authenticSelf: 'Takes big ideas and turns them into realities without compromising mental health or self-care.',
+        protection: 'Frustration - When blocked or stymied, Implementers can become frustrated with work, relationships, or life in general.',
+        quickSteps: [
+            'Ask yourself: Am I comfortable with my current roles and responsibilities?',
+            'If not, question how you can reassert healthy boundaries or expectations.',
+            'Voice your authentic feelings first to yourself, and then to the necessary parties.'
+        ],
+        motivators: [
+            'The joy of utilizing strengths to turn an idea into a reality.',
+            'The satisfaction of feeling productive for myself or someone else.'
+        ],
+        strengths: [
+            'Creativity in getting things done.',
+            'Trustworthy in work and willing to sacrifice to be productive.',
+            'Can take ethereal concepts and produce tangible steps to materialize them.'
+        ],
+        weaknesses: [
+            'Used as a workhorse in organizations.',
+            'Can feel taken for granted if not getting credit or recognized for contributions.',
+            'Frustration at work because of responsibility for others\' un-ending ideas.',
+            'Requiring others to come up with big ideas.'
+        ],
+        professions: ['Administrator', 'Coder', 'Assistant', 'COO', 'Co-Entrepreneur', 'Accountant'],
+        tips: [
+            'Implementers are multi-talented. They have a number of gifts that allow them to take an idea, break it into parts, and create a strategy for implementing it. As such, you are invaluable. Although you may not be in the spotlight, find people or organizations that value your contribution.',
+            'Don\'t overwork. Having boundaries around your work-life (or home-life) will allow you to enjoy your work without becoming frustrated. It will also teach others to value your time and not overload your capacity.',
+            'Only take on what you can comfortably take on. Just because you can do something doesn\'t mean you should. Saying no, or limiting the scope of a project, is a form of self-love and self-understanding.',
+            'If you want to delegate effectively, you\'ll need to create systems or strategies. Not everyone has your innate gift for translating ideas into realities, so you might need to tell people more explicitly what they need to do.',
+            'Engage with the finished product of your work. People are more satisfied when they have a connection to the final product, client reactions, or tangible outcomes.',
+            'Don\'t invest in a person or organization you don\'t believe in. Misappropriating your gift in areas where you are not emotionally connected leads to burnout and frustration.',
+            'Stay relational. Implementers tend to be doers. But they can just as healthily be present with others. When balanced, an Implementer has a rich relational life in combination with rewarding work.'
+        ],
+        relating: [
+            'Invite them into the decision-making process (including prioritization or determining direction).',
+            'Celebrate their work on regular intervals or when various milestones are met.',
+            'Discuss their dreams, desires, vision, and "why" for their life.'
+        ],
+        growthStory: 'Dave is a hard worker. In fact, he typically enjoys his work. He particularly likes a big challenge. He thrives when there is a really complicated situation, and it requires his creating a structure or system to make it work (and for it to make sense to others). Dave has never had to be the "front person." He doesn\'t mind leading when necessary, but he is just as comfortable being a number two. It was his willingness to accept the no. 2 position that led him to his burnout. His partner was a true visionary. He came up with ideas as easily as breathing. Many of his ideas were excellent and would lead Dave and his partner to expand their business. They made an agreement that Dave\'s partner would come up with ideas and lead the teams, and Dave would create the infrastructure to make the businesses work. At first, everything went swimmingly. They were thriving, and both were happy to be using their most natural strengths. The problems started when Dave\'s partner continued to come up with ideas. For Dave, it felt as if his partner was giving him a new problem every day, and he was responsible for cleaning up the messes. After a year of working too hard, Dave burnt out. They brought in a business consultant to aid them in restructuring the business. The business consultant, wisely recognizing the situation, encouraged Dave to have "a voice" about his experiences and process. Interestingly, this was a new concept for Dave. He started to share his boundaries, demanding priorities on ideas or projects, and having intentional celebrations for milestones or accomplishments. Dave was back in his element. He quickly found that the work hadn\'t been the problem. He loved what he was doing, but HATED being responsible without any authority. By communicating with his partner, he gave himself permission to have authority for his responsibilities, which allowed him to feel invested (and protect his bandwidth). A year later, their business is thriving. Dave and his partner have a great personal and professional relationship, and their communication is clear, powerful, and mutually valuing.'
+    },
+    'Problem-Solver': {
+        quadrant: 'Producer',
+        description: 'A Problem-Solver (a.k.a. the fixer) has the uncanny ability to see what is wrong, a hindrance, or a block; and create pragmatic solutions to remove it.',
+        authenticSelf: 'Removes hindrances, blocks, or weaknesses in tandem with recognizing strengths and opportunities.',
+        protection: 'Sees Issues Everywhere - A Problem-Solver commonly disconnects by overfocusing on what is wrong or needs to be fixed.',
+        quickSteps: [
+            'Take a step back and practice gratitude for good qualities or circumstances.',
+            'Give yourself permission not to "fix" or "figure it out."',
+            'Release the need to offer solutions until they are requested.'
+        ],
+        motivators: [
+            'A sense of satisfaction and release of tension by introducing solutions to unresolved problems.',
+            'The pleasure from improving products, services, and performance.'
+        ],
+        strengths: [
+            'Recognizing issues AND ways to resolve them.',
+            'Is consistent in desire for people and organizations to be healthy and whole.',
+            'Demonstrating outside-of-the-box thinking to create healthy solutions.'
+        ],
+        weaknesses: [
+            'Focusing on problems instead of solutions.',
+            'Overwhelmed by a lot of issues.',
+            'Apathy when there is a lack of influence or agency.'
+        ],
+        professions: ['Consultant', 'Entrepreneur', 'Business Owner', 'Mechanic', 'IT Specialist', 'HR Specialist', 'Medical Doctor'],
+        tips: [
+            'Practice being grateful regularly. It will align you with reality. Otherwise, your tendency to find issues will cause you to feel dark, depressed, or defeated.',
+            'Sometimes having the answer doesn\'t mean you always share the answer. To be able to connect relationally, ask your partner (or friend) if this is a time to listen or to offer solutions.',
+            'To have people fully accept your gift, you must recognize the positives in a person or organization; and only then, offer your solutions. Your solutions will be accepted when they know you value them or their organization.',
+            'Recognizing problems is extremely valuable. It\'s important to enjoy and celebrate your gift. And equally important, it\'s necessary to find people or organizations that value it. Otherwise, you will be spending your efforts in unfruitful areas.',
+            'Put yourself in situations where you can utilize your gift. Be proactive about finding areas in the workplace or in communities where your gift is desired.',
+            'Let others own the consequences of not fixing their problems. Some people won\'t be able or ready to implement your solutions. It isn\'t an indictment on your solution, and it isn\'t your responsibility if they don\'t implement them.',
+            'Make room for other people to find solutions. Ask questions, get feedback, and see what others are already aware of. In this way, you will be strengthening others\' ability to problem solve and also share the burden of responsibility.'
+        ],
+        relating: [
+            'Help them feel known by asking questions about why they do what they do.',
+            'Discuss topics that make them happy or feel content (if possible, avoid the "problems" with those topics).',
+            'Do activities that don\'t require observation or analysis (go outdoors, on an adventure, play games, or be affectionate).'
+        ],
+        growthStory: 'Kim wasn\'t particularly liked. It wasn\'t that she wasn\'t likable; it was just that she found issues wherever she looked. When she went grocery shopping, she knew all the ways the grocer was running their businesses wrong. When she was out with friends, she was giving relationship advice (even when it wasn\'t called for). When she worked for a business, she couldn\'t help but find all the shortcomings and end up frustrating her bosses. In other words, sometimes it was hard to be around Kim. Kim always had a clever and strategic mind. She could take in large amounts of information, and quickly zero in on what needed improving. Often, she would have a solution in hand before even analyzing a situation. She could do it intuitively. She was also appreciated, to be sure, but sometimes not enjoyed when in \'fix it\' mode. For all her efforts, Kim found she was never satisfied. She hadn\'t developed the depth of community she wanted, and hadn\'t found a business where she seemed to fit (despite working in a number of arenas). Kim decided to go to a profession-matching fair. The fair lasted several days, and had applicants go through a number of tests. After tallying the results, participants would be matched to their best potential careers (and given training in that industry). To her surprise, Kim scored off the charts in the "business consulting" industry. Her gifts aligned perfectly with the short-term SWAT team process a business consultant uses to serve clients. The idea gave her everything she wanted in a job: meet new people, learn about various industries, help businesses thrive, find problems and offer solutions, and only spend limited amounts of time in one business. After being trained for 12 weeks, she was hired by a business consulting firm. Unsurprisingly, she thrived. Not only did she thrive, but she found that the outlet of "problem solving" at work allowed her to disconnect when she was at home. She had "scratched the itch" of problem solving, and found it much easier to relax and simply be present with friends and family. In fact, she became extremely intentional about NOT solving people\'s problems. She only offered solutions or insights when she was directly asked. She found that this new "only when asked" mentality made her feel wanted, and allowed the other person to feel comfortable and not assaulted with solutions. After only 2 years, Kim became a project supervisor in her business. She now oversees a team of 6 business consultants. Most importantly, she found a business (and lifestyle) that allows her to be herself. She finally feels seen and understood for who she is, and gets to be appreciated and rewarded for her unique talents.'
+    },
+    'Thinker': {
+        quadrant: 'Producer',
+        description: 'A Thinker (a.k.a. the analyst) is intelligent. They will deeply consider concepts, projects, problems, relational dynamics, or emotions. They use their minds to create clarity or direction.',
+        authenticSelf: 'Deeply considers personal, relational, or organizational dynamics without disconnecting from emotions.',
+        protection: 'Disconnects from Emotions by Overthinking - When under stress, Thinkers commonly use their intellect to avoid emotions, connection, or vulnerability.',
+        quickSteps: [
+            'Ask yourself whether what you are over-considering is within or outside of your control.',
+            'Check in with yourself to see if your emotional state around "thinking" is peaceful or frantic-frustrated.',
+            'Release unsolvable problems or frustrated thinking, and give yourself permission to live in the moment (or feel what needs to be felt).'
+        ],
+        motivators: [
+            'Finding understanding for an un-resolved, complicated, or confusing situation.',
+            'Simplifying complex concepts to be clearly understood.'
+        ],
+        strengths: [
+            'Capable of taking large amounts of information and simplifying it.',
+            'Analytical about the past, present, and making the future the best it can be.',
+            'Brilliant at creating strategic plans or helping people get clarity.'
+        ],
+        weaknesses: [
+            'Disconnecting from others.',
+            'Obsessing over fixing or "figuring out" emotions.',
+            'Anxious or frantic when overthinking.',
+            'Going to "mental processing" when feeling threatened or a lack of clarity.'
+        ],
+        professions: ['Entrepreneur', 'CEO', 'CFO', 'Real Estate Professional', 'Engineer', 'Coder', 'Professor', 'Medical Doctor'],
+        tips: [
+            'Thinkers thrive when their emotions and intellect are in balance. To be at peace, they must make space for their emotions without having to understand them. A Thinker needs to be comfortable with mysteries in life.',
+            'Broken record thinking is an indication that your mind is trying to figure out something outside of it\'s arena. It may be a feeling, a spiritual impulse, or a relational dynamic. At times, Thinkers must relinquish the need to understand in order to experience what is happening or regain peace.',
+            'Iron sharpens iron. It\'s important to surround yourself with other intellectual people. What may seem like a superfluous or ethereal conversation to a non-Thinker could be highly enjoyable to you.',
+            'Challenge yourself intellectually. You\'ll feel alive when you are tackling a new project, developing a concept, or coming up with a strategy. You\'ll feel even more alive if you output your thoughts into some form of self-expression: book, blog, videos, blueprint, product, etc.',
+            'Connect with others on an emotional level. Your relationships, especially primary ones, won\'t feel connected if you are consistently intellectual. Be present with others. Listen with curiosity. Don\'t fix their problems or have an agenda.',
+            'Thinkers turn to their intellect in anxiety. Unfortunately, anxiety is often a buffer for tender emotions so intellectualizing isn\'t beneficial. Instead of "understanding" your anxiety, allow yourself to acknowledge it. Recognize the anxiety, and make space for the tender emotion underneath that is longing to surface.',
+            'Disengage your overthinking by becoming present. Take a few moments to notice your surroundings, take note of what sensations you are feeling, and recognize any emotions present in you. By engaging with the present you can break the rut of unproductive thinking.'
+        ],
+        relating: [
+            'Create a safe environment by validating their emotions.',
+            'Invite them into having feelings without either party needing to fix them, understand them, or solve whatever is happening circumstantially.',
+            'Engage in activities strictly for enjoyment, play, adventure, and/or fun.'
+        ],
+        growthStory: 'Madelyn is intelligent. From a very young age, she was surprising family and friends with her insights and ability to understand situations. In many ways, she was advanced for her age. She could figure out circumstances, and even relational dynamics, starting in grade school. Her ability to understand made her a natural leader with her friends. Unfortunately, her strengths also became her weaknesses. She was struggling in relationships and with anxiety. Instead of seeking help, she did what she normally did, and tried to "figure out" what was wrong. Her incessant need for understanding and resolution caused her to dig deeply into self-help, self-improvement, and psychology. The information she learned was insightful and interesting, but never provided the relief she was seeking. After over a decade of "working on herself" with psychology, she began to feel disillusioned. She thought, "Shouldn\'t this have worked by now? What am I doing wrong?" She felt stuck treading water with feelings she couldn\'t adequately diagnose or cure. Eventually, she humbled herself and sought clinical help. She worked with a Family and Marriage Therapist who was recommended by her best friend. At first, she was reluctant to engage in the process because it felt vulnerable to let someone into her inner world. But after a few months, she started becoming truly vulnerable. After speaking with her therapist, they clarified her natural defense mechanism: overthinking. Madelyn learned that she turned to thinking whenever she was stressed or felt tension in a relationship. Essentially, she would go into a fix it or figure it out mode which inevitably would make her more stressed. Her therapist helped her realize that she was trying to intellectually process her feelings. In other words, she was trying to fix what needed to be felt. Madelyn started making space for her feelings and giving herself permission to not understand them. She found herself crying uncontrollably, becoming angry, and expressing long-dormant grief from her childhood. It wasn\'t comfortable at first, but it was relieving. The pressure in her life subsided as she processed her pent-up feelings. She found herself comfortable in the present, and much more available for connection with others. Madelyn still uses her intellect. She enjoys understanding her process, emotions, and relational dynamics. But, she has learned to be comfortable feeling emotions without the need to dissect or understand them.'
+    }
+        
+};
+        
         let resultsData = null;
         let pieChart = null;
         let radarChart = null;
