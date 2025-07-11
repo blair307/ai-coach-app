@@ -1493,33 +1493,56 @@ function downloadPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
     
-    function addWrappedText(text, x, y, maxWidth, fontSize = 10) {
+    // Helper function to add text with word wrapping and better spacing
+    function addWrappedText(text, x, y, maxWidth, fontSize = 10, lineHeight = 1.4) {
         doc.setFontSize(fontSize);
         const lines = doc.splitTextToSize(text, maxWidth);
         doc.text(lines, x, y);
-        return y + (lines.length * (fontSize * 0.4));
+        return y + (lines.length * fontSize * lineHeight);
     }
     
-    doc.setFontSize(24);
-    doc.setTextColor(99, 102, 241);
-    doc.text('Personality Assessment Results', 105, 30, { align: 'center' });
+    // Helper function to add a new page with consistent styling
+    function addNewPage() {
+        doc.addPage();
+        return 30; // Starting Y position for new pages
+    }
     
+    // Title Page
+    doc.setFillColor(99, 102, 241);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setFontSize(28);
+    doc.setTextColor(255, 255, 255);
+    doc.text('Personality Assessment Results', 105, 25, { align: 'center' });
+    
+    doc.setFontSize(14);
+    const completionDate = new Date(resultsData.completedAt).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long', 
+        day: 'numeric'
+    });
+    doc.text(`Completed: ${completionDate}`, 105, 50, { align: 'center' });
+    
+    // Executive Summary Box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, 70, 170, 40, 'F');
     doc.setDrawColor(99, 102, 241);
-    doc.setLineWidth(2);
-    doc.line(20, 35, 190, 35);
-    
-    doc.setFontSize(12);
-    doc.setTextColor(100, 100, 100);
-    const completionDate = new Date(resultsData.completedAt).toLocaleDateString();
-    doc.text(`Completed: ${completionDate}`, 105, 45, { align: 'center' });
-    
-    let yPos = 65;
+    doc.setLineWidth(1);
+    doc.rect(20, 70, 170, 40);
     
     doc.setFontSize(16);
-    doc.setTextColor(0, 0, 0);
-    doc.text('Your Top 3 Personality Types', 20, yPos);
-    yPos += 15;
+    doc.setTextColor(99, 102, 241);
+    doc.text('Executive Summary', 105, 85, { align: 'center' });
     
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    const topThreeNames = resultsData.topThree.map(([name]) => name).join(', ');
+    doc.text(`Your top personality types: ${topThreeNames}`, 105, 95, { align: 'center' });
+    doc.text(`Based on comprehensive analysis of 64 personality questions`, 105, 105, { align: 'center' });
+    
+    let yPos = 130;
+    
+    // Process each personality type
     resultsData.topThree.forEach((type, index) => {
         const [typeName, score] = type;
         const percentage = Math.round((score / resultsData.totalQuestions) * 100);
@@ -1527,147 +1550,214 @@ function downloadPDF() {
         
         if (!typeData) return;
         
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 30;
+        // Check if we need a new page (leave room for at least header + some content)
+        if (yPos > 220) {
+            yPos = addNewPage();
         }
+        
+        // Type Header with colored background
+        const headerColor = index === 0 ? [99, 102, 241] : index === 1 ? [16, 185, 129] : [245, 158, 11];
+        doc.setFillColor(...headerColor);
+        doc.rect(20, yPos - 5, 170, 20, 'F');
         
         doc.setFontSize(18);
-        doc.setTextColor(99, 102, 241);
-        doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 20, yPos);
-        yPos += 10;
+        doc.setTextColor(255, 255, 255);
+        doc.text(`${index + 1}. ${typeName} (${percentage}%)`, 25, yPos + 7);
         
+        // Quadrant badge
         doc.setFontSize(10);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`${typeData.quadrant} Quadrant`, 20, yPos);
-        yPos += 15;
+        doc.text(`${typeData.quadrant} Quadrant`, 160, yPos + 7);
+        yPos += 25;
         
+        // Description
         doc.setFontSize(12);
-        doc.setTextColor(99, 102, 241);
-        doc.text('Description:', 20, yPos);
-        yPos += 5;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.description, 20, yPos, 170, 10);
-        yPos += 10;
-        
-        doc.setTextColor(99, 102, 241);
-        doc.text('Authentic Self:', 20, yPos);
-        yPos += 5;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.authenticSelf, 20, yPos, 170, 10);
-        yPos += 10;
-        
-        doc.setTextColor(99, 102, 241);
-        doc.text('Protection Pattern:', 20, yPos);
-        yPos += 5;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.protection, 20, yPos, 170, 10);
-        yPos += 10;
-        
-        doc.setTextColor(99, 102, 241);
-        doc.text('Quick Steps:', 20, yPos);
+        doc.setTextColor(...headerColor);
+        doc.text('Description:', 25, yPos);
         yPos += 8;
         doc.setTextColor(0, 0, 0);
-        typeData.quickSteps.forEach(step => {
-            yPos = addWrappedText(`• ${step}`, 25, yPos, 165, 9);
-            yPos += 3;
-        });
-        yPos += 5;
-        
-        doc.setTextColor(99, 102, 241);
-        doc.text('What Motivates You:', 20, yPos);
+        yPos = addWrappedText(typeData.description, 25, yPos, 160, 10, 1.5);
         yPos += 8;
-        doc.setTextColor(0, 0, 0);
-        typeData.motivators.forEach(motivator => {
-            yPos = addWrappedText(`• ${motivator}`, 25, yPos, 165, 9);
-            yPos += 3;
-        });
-        yPos += 5;
         
+        // Check for page break
         if (yPos > 240) {
-            doc.addPage();
-            yPos = 30;
+            yPos = addNewPage();
         }
         
-        doc.setTextColor(99, 102, 241);
-        doc.text('Strengths:', 20, yPos);
+        // Authentic Self
+        doc.setTextColor(...headerColor);
+        doc.text('Authentic Self:', 25, yPos);
         yPos += 8;
         doc.setTextColor(0, 0, 0);
-        typeData.strengths.forEach(strength => {
-            yPos = addWrappedText(`• ${strength}`, 25, yPos, 165, 9);
-            yPos += 3;
-        });
-        yPos += 5;
+        yPos = addWrappedText(typeData.authenticSelf, 25, yPos, 160, 10, 1.5);
+        yPos += 8;
         
-        doc.setTextColor(99, 102, 241);
-        doc.text('Growth Areas:', 20, yPos);
+        // Protection Pattern
+        doc.setTextColor(...headerColor);
+        doc.text('Common Protection Pattern:', 25, yPos);
         yPos += 8;
         doc.setTextColor(0, 0, 0);
-        typeData.weaknesses.forEach(weakness => {
-            yPos = addWrappedText(`• ${weakness}`, 25, yPos, 165, 9);
-            yPos += 3;
-        });
-        yPos += 5;
-        
-        doc.setTextColor(99, 102, 241);
-        doc.text('Career Fits:', 20, yPos);
-        yPos += 5;
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.professions.join(', '), 20, yPos, 170, 10);
+        yPos = addWrappedText(typeData.protection, 25, yPos, 160, 10, 1.5);
         yPos += 10;
         
+        // Check for page break
         if (yPos > 200) {
-            doc.addPage();
-            yPos = 30;
+            yPos = addNewPage();
         }
         
-        doc.setTextColor(99, 102, 241);
-        doc.text('Tips for Thriving (Top 3):', 20, yPos);
+        // Two-column layout for lists
+        const leftColX = 25;
+        const rightColX = 110;
+        const colWidth = 75;
+        
+        // Quick Steps (Left Column)
+        doc.setTextColor(...headerColor);
+        doc.text('Quick Steps:', leftColX, yPos);
+        let leftY = yPos + 8;
+        
+        typeData.quickSteps.slice(0, 3).forEach(step => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            leftY = addWrappedText(`• ${step}`, leftColX, leftY, colWidth, 9, 1.3);
+            leftY += 3;
+        });
+        
+        // Motivators (Right Column)
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('What Motivates You:', rightColX, yPos);
+        let rightY = yPos + 8;
+        
+        typeData.motivators.forEach(motivator => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            rightY = addWrappedText(`• ${motivator}`, rightColX, rightY, colWidth, 9, 1.3);
+            rightY += 3;
+        });
+        
+        yPos = Math.max(leftY, rightY) + 10;
+        
+        // Check for page break
+        if (yPos > 210) {
+            yPos = addNewPage();
+        }
+        
+        // Strengths and Growth Areas (Two columns)
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('Key Strengths:', leftColX, yPos);
+        doc.text('Growth Areas:', rightColX, yPos);
+        
+        leftY = yPos + 8;
+        rightY = yPos + 8;
+        
+        // Strengths (Left)
+        typeData.strengths.slice(0, 3).forEach(strength => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            leftY = addWrappedText(`• ${strength}`, leftColX, leftY, colWidth, 9, 1.3);
+            leftY += 3;
+        });
+        
+        // Growth Areas (Right)
+        typeData.weaknesses.slice(0, 3).forEach(weakness => {
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            rightY = addWrappedText(`• ${weakness}`, rightColX, rightY, colWidth, 9, 1.3);
+            rightY += 3;
+        });
+        
+        yPos = Math.max(leftY, rightY) + 10;
+        
+        // Career Fits
+        if (yPos > 240) {
+            yPos = addNewPage();
+        }
+        
+        doc.setTextColor(...headerColor);
+        doc.setFontSize(12);
+        doc.text('Career Fits:', 25, yPos);
         yPos += 8;
         doc.setTextColor(0, 0, 0);
-        typeData.tips.slice(0, 3).forEach(tip => {
-            yPos = addWrappedText(`• ${tip}`, 25, yPos, 165, 9);
-            yPos += 3;
-        });
-        yPos += 10;
-        
-        doc.addPage();
-        yPos = 30;
-        
-        doc.setFontSize(16);
-        doc.setTextColor(99, 102, 241);
-        doc.text(`Growth Story: ${typeName}`, 20, yPos);
+        yPos = addWrappedText(typeData.professions.slice(0, 6).join(', '), 25, yPos, 160, 10, 1.5);
         yPos += 15;
         
-        doc.setTextColor(0, 0, 0);
-        yPos = addWrappedText(typeData.growthStory, 20, yPos, 170, 10);
-        yPos += 20;
+        // Add decorative line
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(20, yPos, 190, yPos);
+        yPos += 15;
     });
     
-    doc.addPage();
-    doc.setFontSize(20);
+    // Charts Page
+    yPos = addNewPage();
+    doc.setFontSize(22);
     doc.setTextColor(99, 102, 241);
-    doc.text('Personality Charts', 105, 30, { align: 'center' });
+    doc.text('Personality Charts & Analysis', 105, yPos, { align: 'center' });
+    yPos += 20;
     
     try {
+        // Add charts side by side with proper sizing
         const pieCanvas = document.getElementById('pieChart');
-        const pieImgData = pieCanvas.toDataURL('image/png');
-        doc.addImage(pieImgData, 'PNG', 20, 50, 80, 80);
-        
         const radarCanvas = document.getElementById('radarChart');
-        const radarImgData = radarCanvas.toDataURL('image/png');
-        doc.addImage(radarImgData, 'PNG', 110, 50, 80, 80);
         
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text('All 16 Types Distribution', 60, 140, { align: 'center' });
-        doc.text('Quadrant Profile', 150, 140, { align: 'center' });
+        if (pieCanvas && radarCanvas) {
+            const pieImgData = pieCanvas.toDataURL('image/png', 1.0);
+            const radarImgData = radarCanvas.toDataURL('image/png', 1.0);
+            
+            // Add charts with better positioning and sizing
+            doc.addImage(pieImgData, 'PNG', 15, yPos, 85, 85);
+            doc.addImage(radarImgData, 'PNG', 110, yPos, 85, 85);
+            
+            // Chart labels
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('All 16 Types Distribution', 57.5, yPos + 95, { align: 'center' });
+            doc.text('Quadrant Profile Analysis', 152.5, yPos + 95, { align: 'center' });
+        }
     } catch (error) {
         console.error('Error adding charts to PDF:', error);
+        doc.setTextColor(200, 0, 0);
+        doc.text('Charts could not be generated', 105, yPos + 50, { align: 'center' });
     }
     
-    doc.save('comprehensive-personality-results.pdf');
+    // Growth Stories Section
+    resultsData.topThree.forEach((type, index) => {
+        const [typeName] = type;
+        const typeData = personalityTypes[typeName];
+        
+        if (!typeData || !typeData.growthStory) return;
+        
+        yPos = addNewPage();
+        
+        // Growth Story Header
+        const headerColor = index === 0 ? [99, 102, 241] : index === 1 ? [16, 185, 129] : [245, 158, 11];
+        doc.setFillColor(...headerColor);
+        doc.rect(20, yPos - 5, 170, 15, 'F');
+        
+        doc.setFontSize(16);
+        doc.setTextColor(255, 255, 255);
+        doc.text(`Growth Story: ${typeName}`, 25, yPos + 5);
+        yPos += 25;
+        
+        // Story content with better formatting
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(10);
+        yPos = addWrappedText(typeData.growthStory, 25, yPos, 160, 10, 1.6);
+    });
+    
+    // Footer on last page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+        doc.text('Entrepreneur Emotional Health - Alivist Personality Assessment', 105, 285, { align: 'center' });
+    }
+    
+    doc.save('personality-assessment-comprehensive.pdf');
 }
+        
 
         function retakeAssessment() {
             if (confirm('Are you sure you want to retake the assessment? This will replace your current results.')) {
