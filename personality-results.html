@@ -1565,6 +1565,9 @@ function createPDFDefinition(resultsData) {
         day: 'numeric'
     });
 
+    // Create chart data for the PDF
+    const chartData = createChartDataForPDF(resultsData);
+
     const content = [
         // Title Page
         {
@@ -1580,31 +1583,93 @@ function createPDFDefinition(resultsData) {
             margin: [0, 0, 0, 60]
         },
         
-        // Executive Summary
+        // Executive Summary - MUCH MORE PROMINENT
         {
-            text: 'Executive Summary',
-            style: 'header',
-            pageBreak: 'before'
+            text: 'EXECUTIVE SUMMARY',
+            style: 'executiveSummaryTitle',
+            alignment: 'center',
+            pageBreak: 'before',
+            margin: [0, 40, 0, 30]
+        },
+        {
+            text: 'Your Top 3 Personality Types',
+            style: 'executiveSummarySubtitle',
+            alignment: 'center',
+            margin: [0, 0, 0, 20]
         },
         {
             text: [
                 'Based on comprehensive analysis of ',
                 { text: '64 personality questions', style: 'bold' },
-                ', your top personality types are:'
+                ', here are your dominant personality characteristics:'
             ],
-            margin: [0, 0, 0, 15]
+            style: 'executiveSummaryText',
+            alignment: 'center',
+            margin: [0, 0, 0, 30]
+        },
+        
+        // Top 3 Results - Very Prominent
+        ...resultsData.topThree.map(([typeName, score], index) => {
+            const percentage = Math.round((score / resultsData.totalQuestions) * 100);
+            const typeData = personalityTypes[typeName];
+            const position = ['1st', '2nd', '3rd'][index];
+            
+            return {
+                table: {
+                    widths: ['100%'],
+                    body: [
+                        [{
+                            stack: [
+                                {
+                                    text: `${position}: ${typeName}`,
+                                    style: 'topTypeTitle',
+                                    alignment: 'center'
+                                },
+                                {
+                                    text: `${percentage}% Match`,
+                                    style: 'topTypePercentage',
+                                    alignment: 'center'
+                                },
+                                {
+                                    text: `${typeData?.quadrant || 'Unknown'} Quadrant`,
+                                    style: 'topTypeQuadrant',
+                                    alignment: 'center'
+                                },
+                                {
+                                    text: typeData?.description || 'No description available',
+                                    style: 'topTypeDescription',
+                                    alignment: 'center',
+                                    margin: [20, 10, 20, 0]
+                                }
+                            ],
+                            fillColor: index === 0 ? '#f0f4ff' : '#f8f9fa',
+                            border: [true, true, true, true],
+                            borderColor: '#6366f1'
+                        }]
+                    ]
+                },
+                margin: [0, 0, 0, 15]
+            };
+        }),
+
+        // Charts Section
+        {
+            text: 'Visual Analysis',
+            style: 'header',
+            margin: [0, 40, 0, 20]
         },
         {
-            ul: resultsData.topThree.map(([typeName, score]) => {
-                const percentage = Math.round((score / resultsData.totalQuestions) * 100);
-                const typeData = personalityTypes[typeName];
-                return [
-                    { text: `${typeName} (${percentage}%)`, style: 'bold', color: '#6366f1' },
-                    ` - ${typeData?.quadrant || 'Unknown'} Quadrant`
-                ];
-            }),
-            margin: [20, 0, 0, 30]
-        }
+            text: 'Personality Type Distribution',
+            style: 'chartTitle',
+            margin: [0, 0, 0, 10]
+        },
+        chartData.pieChartTable,
+        {
+            text: 'Quadrant Analysis',
+            style: 'chartTitle',
+            margin: [0, 30, 0, 10]
+        },
+        chartData.quadrantTable
     ];
 
     // Add detailed analysis for each top personality type
@@ -1618,8 +1683,8 @@ function createPDFDefinition(resultsData) {
         content.push({
             text: `${index + 1}. ${typeName} (${percentage}%) - Detailed Analysis`,
             style: 'sectionHeader',
-            pageBreak: index === 0 ? 'before' : undefined,
-            margin: [0, index === 0 ? 0 : 30, 0, 20]
+            pageBreak: 'before',
+            margin: [0, 0, 0, 20]
         });
 
         // Description
@@ -1759,11 +1824,53 @@ function createPDFDefinition(resultsData) {
                 fontSize: 14,
                 color: '#6b7280'
             },
+            // NEW EXECUTIVE SUMMARY STYLES - MUCH MORE PROMINENT
+            executiveSummaryTitle: {
+                fontSize: 22,
+                bold: true,
+                color: '#6366f1',
+                decoration: 'underline'
+            },
+            executiveSummarySubtitle: {
+                fontSize: 18,
+                bold: true,
+                color: '#4f46e5'
+            },
+            executiveSummaryText: {
+                fontSize: 12,
+                color: '#374151'
+            },
+            topTypeTitle: {
+                fontSize: 16,
+                bold: true,
+                color: '#6366f1'
+            },
+            topTypePercentage: {
+                fontSize: 14,
+                bold: true,
+                color: '#059669'
+            },
+            topTypeQuadrant: {
+                fontSize: 11,
+                color: '#6b7280',
+                italics: true
+            },
+            topTypeDescription: {
+                fontSize: 10,
+                color: '#374151',
+                lineHeight: 1.3
+            },
             header: {
                 fontSize: 18,
                 bold: true,
                 color: '#6366f1',
                 margin: [0, 0, 0, 15]
+            },
+            chartTitle: {
+                fontSize: 14,
+                bold: true,
+                color: '#4f46e5',
+                alignment: 'center'
             },
             sectionHeader: {
                 fontSize: 16,
@@ -1805,6 +1912,94 @@ function createPDFDefinition(resultsData) {
                 margin: [0, 20, 0, 0]
             };
         }
+    };
+}
+
+// NEW FUNCTION - Add this right after the createPDFDefinition function
+function createChartDataForPDF(resultsData) {
+    // Get all personality types and their scores
+    const allTypes = Object.keys(personalityTypes);
+    const typeData = allTypes.map(type => ({
+        type: type,
+        score: resultsData.allScores[type] || 0,
+        percentage: Math.round(((resultsData.allScores[type] || 0) / resultsData.totalQuestions) * 100)
+    })).sort((a, b) => b.score - a.score);
+
+    // Create pie chart table (top 8 types)
+    const topTypes = typeData.slice(0, 8);
+    const pieChartRows = [];
+    for (let i = 0; i < topTypes.length; i += 2) {
+        const row = [];
+        if (topTypes[i]) {
+            row.push({
+                text: `${topTypes[i].type}: ${topTypes[i].percentage}%`,
+                style: { fontSize: 10, margin: [0, 2, 0, 2] }
+            });
+        }
+        if (topTypes[i + 1]) {
+            row.push({
+                text: `${topTypes[i + 1].type}: ${topTypes[i + 1].percentage}%`,
+                style: { fontSize: 10, margin: [0, 2, 0, 2] }
+            });
+        } else {
+            row.push({ text: '', style: { fontSize: 10 } });
+        }
+        pieChartRows.push(row);
+    }
+
+    const pieChartTable = {
+        table: {
+            widths: ['50%', '50%'],
+            body: pieChartRows
+        },
+        layout: 'lightHorizontalLines',
+        margin: [0, 0, 0, 20]
+    };
+
+    // Create quadrant analysis
+    const quadrants = {
+        'Connector': [],
+        'Visionary': [],
+        'Leader': [],
+        'Producer': []
+    };
+    
+    Object.entries(personalityTypes).forEach(([typeName, typeInfo]) => {
+        const score = resultsData.allScores[typeName] || 0;
+        quadrants[typeInfo.quadrant].push(score);
+    });
+    
+    const quadrantScores = Object.entries(quadrants).map(([quadrant, scores]) => {
+        const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        return {
+            quadrant: quadrant,
+            score: Math.round(average),
+            percentage: Math.round((average / resultsData.totalQuestions) * 100)
+        };
+    }).sort((a, b) => b.score - a.score);
+
+    const quadrantTable = {
+        table: {
+            widths: ['40%', '30%', '30%'],
+            body: [
+                [
+                    { text: 'Quadrant', style: { bold: true, fillColor: '#f3f4f6' } },
+                    { text: 'Score', style: { bold: true, fillColor: '#f3f4f6' } },
+                    { text: 'Percentage', style: { bold: true, fillColor: '#f3f4f6' } }
+                ],
+                ...quadrantScores.map(q => [
+                    { text: q.quadrant, style: { fontSize: 10 } },
+                    { text: q.score.toString(), style: { fontSize: 10, alignment: 'center' } },
+                    { text: `${q.percentage}%`, style: { fontSize: 10, alignment: 'center' } }
+                ])
+            ]
+        },
+        layout: 'lightHorizontalLines'
+    };
+
+    return {
+        pieChartTable: pieChartTable,
+        quadrantTable: quadrantTable
     };
 }
         
