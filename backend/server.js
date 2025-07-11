@@ -2227,6 +2227,124 @@ app.post('/api/messages/:id/like', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
+// PERSONALITY TEST API ROUTES
+// ==========================================
+
+// Personality Test Schema
+const personalityTestSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  answers: [{
+    questionId: Number,
+    selectedOption: String,
+    type: String
+  }],
+  results: {
+    allScores: Object,
+    topThree: Array,
+    totalQuestions: Number,
+    completedAt: { type: Date, default: Date.now }
+  },
+  retakeCount: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const PersonalityTest = mongoose.model('PersonalityTest', personalityTestSchema);
+
+// Save personality test results
+app.post('/api/personality-test/results', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { answers, results } = req.body;
+    
+    if (!answers || !results) {
+      return res.status(400).json({ error: 'Answers and results are required' });
+    }
+    
+    // Check if user already has results
+    let existingTest = await PersonalityTest.findOne({ userId });
+    
+    if (existingTest) {
+      // Update existing results (retake)
+      existingTest.answers = answers;
+      existingTest.results = results;
+      existingTest.retakeCount += 1;
+      existingTest.updatedAt = new Date();
+      await existingTest.save();
+      
+      res.json({
+        message: 'Personality test results updated successfully',
+        results: existingTest,
+        isRetake: true
+      });
+    } else {
+      // Create new results
+      const newTest = new PersonalityTest({
+        userId,
+        answers,
+        results,
+        retakeCount: 0
+      });
+      
+      await newTest.save();
+      
+      // Create notification for completion
+      try {
+        const notification = new Notification({
+          userId,
+          type: 'system',
+          title: '🎯 Personality Assessment Complete!',
+          content: `You've discovered your top personality traits: ${results.topThree.map(([type]) => type).join(', ')}`,
+          priority: 'high'
+        });
+        await notification.save();
+      } catch (notifError) {
+        console.error('Error creating personality test notification:', notifError);
+      }
+      
+      res.json({
+        message: 'Personality test results saved successfully',
+        results: newTest,
+        isRetake: false
+      });
+    }
+  } catch (error) {
+    console.error('Save personality test results error:', error);
+    res.status(500).json({ error: 'Failed to save results' });
+  }
+});
+
+// Get personality test results
+app.get('/api/personality-test/results', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const test = await PersonalityTest.findOne({ userId });
+    
+    if (!test) {
+      return res.status(404).json({ error: 'No personality test results found' });
+    }
+    
+    res.json(test);
+  } catch (error) {
+    console.error('Get personality test results error:', error);
+    res.status(500).json({ error: 'Failed to get results' });
+  }
+});
+
+// Delete personality test results (for retaking)
+app.delete('/api/personality-test/results', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    await PersonalityTest.findOneAndDelete({ userId });
+    
+    res.json({ message: 'Personality test results deleted successfully' });
+  } catch (error) {
+    console.error('Delete personality test results error:', error);
+    res.status(500).json({ error: 'Failed to delete results' });
+  }
+});
+
+// ==========================================
 // SETTINGS API ROUTES
 // ==========================================
 
