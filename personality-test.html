@@ -855,24 +855,24 @@
             }
         ];
 
-        function startAssessment() {
+function startAssessment() {
             document.getElementById('assessmentIntro').classList.add('hidden');
             document.getElementById('assessmentQuestions').classList.remove('hidden');
             
-  // Load all 64 questions
-            assessmentQuestions = assessmentQuestions;
+            // Load all 64 questions
+            loadedQuestions = assessmentQuestions;
             currentQuestionIndex = 0;
             userAnswers = [];
             
             displayQuestion();
         }
 
-        function displayQuestion() {
-            const question = assessmentQuestions[currentQuestionIndex];
+      function displayQuestion() {
+            const question = loadedQuestions[currentQuestionIndex];
             
             document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
-            document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${assessmentQuestions.length}`;
-            document.getElementById('progressFill').style.width = `${((currentQuestionIndex + 1) / assessmentQuestions.length) * 100}%`;
+            document.getElementById('progressText').textContent = `${currentQuestionIndex + 1} / ${loadedQuestions.length}`;
+            document.getElementById('progressFill').style.width = `${((currentQuestionIndex + 1) / loadedQuestions.length) * 100}%`;
             document.getElementById('questionText').textContent = question.question;
             
             const optionsContainer = document.getElementById('optionsContainer');
@@ -899,7 +899,7 @@
             document.querySelector(`[data-option="${option}"]`).classList.add('selected');
             
             // Store answer
-            const question = assessmentQuestions[currentQuestionIndex];
+            const question = loadedQuestions[currentQuestionIndex];
             userAnswers[currentQuestionIndex] = {
                 questionId: question.id,
                 selectedOption: option,
@@ -910,8 +910,8 @@
             document.getElementById('nextBtn').disabled = false;
         }
 
-        function nextQuestion() {
-            if (currentQuestionIndex < assessmentQuestions.length - 1) {
+      function nextQuestion() {
+            if (currentQuestionIndex < loadedQuestions.length - 1) {
                 currentQuestionIndex++;
                 displayQuestion();
             } else {
@@ -965,7 +965,7 @@
                 completedAt: new Date().toISOString(),
                 allScores: typeScores,
                 topThree: sortedTypes,
-                totalQuestions: assessmentQuestions.length,
+                totalQuestions: loadedQuestions.length,
                 answers: userAnswers
             };
             
