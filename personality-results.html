@@ -9,6 +9,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     
 <style>
 .results-container {
@@ -1545,7 +1547,7 @@ analysisCard.innerHTML = `
             });
         }
 
-function downloadPDF() {
+async function downloadPDF() {
     // Get your actual results data
     const actualResultsData = localStorage.getItem('personalityTestResults');
     if (!actualResultsData) {
@@ -1554,19 +1556,74 @@ function downloadPDF() {
     }
     
     const resultsData = JSON.parse(actualResultsData);
-    const docDefinition = createPDFDefinition(resultsData);
-    pdfMake.createPdf(docDefinition).download('personality-assessment-results.pdf');
+    
+    // Show loading message
+    const originalButton = document.querySelector('.btn-primary-action');
+    const originalText = originalButton.textContent;
+    originalButton.textContent = 'Generating PDF...';
+    originalButton.disabled = true;
+    
+    try {
+        // Capture the charts as images
+        const chartImages = await captureCharts();
+        
+        // Create PDF with chart images
+        const docDefinition = createPDFDefinition(resultsData, chartImages);
+        pdfMake.createPdf(docDefinition).download('personality-assessment-results.pdf');
+    } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Error generating PDF. Please try again.');
+    } finally {
+        // Restore button
+        originalButton.textContent = originalText;
+        originalButton.disabled = false;
+    }
 }
 
-function createPDFDefinition(resultsData) {
+async function captureCharts() {
+    const images = {};
+    
+    try {
+        // Capture pie chart
+        const pieChartCanvas = document.getElementById('pieChart');
+        if (pieChartCanvas) {
+            const pieChartContainer = pieChartCanvas.closest('.chart-container');
+            const pieChartImage = await html2canvas(pieChartContainer, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                width: 400,
+                height: 400
+            });
+            images.pieChart = pieChartImage.toDataURL('image/png');
+        }
+        
+        // Capture radar chart
+        const radarChartCanvas = document.getElementById('radarChart');
+        if (radarChartCanvas) {
+            const radarChartContainer = radarChartCanvas.closest('.chart-container');
+            const radarChartImage = await html2canvas(radarChartContainer, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                width: 400,
+                height: 400
+            });
+            images.radarChart = radarChartImage.toDataURL('image/png');
+        }
+    } catch (error) {
+        console.error('Error capturing charts:', error);
+    }
+    
+    return images;
+}
+
+function createPDFDefinition(resultsData, chartImages = {}) {
     const completionDate = new Date(resultsData.completedAt).toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     });
 
-    // Create chart data for the PDF
-    const chartData = createChartDataForPDF(resultsData);
+
 
     const content = [
         // Title Page
@@ -1652,24 +1709,32 @@ function createPDFDefinition(resultsData) {
             };
         }),
 
-        // Charts Section
-        {
-            text: 'Visual Analysis',
-            style: 'header',
-            margin: [0, 40, 0, 20]
-        },
-        {
-            text: 'Personality Type Distribution',
-            style: 'chartTitle',
-            margin: [0, 0, 0, 10]
-        },
-        chartData.pieChartTable,
-        {
-            text: 'Quadrant Analysis',
-            style: 'chartTitle',
-            margin: [0, 30, 0, 10]
-        },
-        chartData.quadrantTable
+  // Charts Section
+{
+    text: 'Visual Analysis',
+    style: 'header',
+    margin: [0, 40, 0, 20]
+},
+...(chartImages.pieChart ? [{
+    text: 'Personality Type Distribution',
+    style: 'chartTitle',
+    margin: [0, 0, 0, 10]
+}, {
+    image: chartImages.pieChart,
+    width: 350,
+    alignment: 'center',
+    margin: [0, 0, 0, 30]
+}] : []),
+...(chartImages.radarChart ? [{
+    text: 'Quadrant Analysis',
+    style: 'chartTitle',
+    margin: [0, 0, 0, 10]
+}, {
+    image: chartImages.radarChart,
+    width: 350,
+    alignment: 'center',
+    margin: [0, 0, 0, 30]
+}] : []),
     ];
 
     // Add detailed analysis for each top personality type
@@ -1915,93 +1980,7 @@ function createPDFDefinition(resultsData) {
     };
 }
 
-// NEW FUNCTION - Add this right after the createPDFDefinition function
-function createChartDataForPDF(resultsData) {
-    // Get all personality types and their scores
-    const allTypes = Object.keys(personalityTypes);
-    const typeData = allTypes.map(type => ({
-        type: type,
-        score: resultsData.allScores[type] || 0,
-        percentage: Math.round(((resultsData.allScores[type] || 0) / resultsData.totalQuestions) * 100)
-    })).sort((a, b) => b.score - a.score);
 
-    // Create pie chart table (top 8 types)
-    const topTypes = typeData.slice(0, 8);
-    const pieChartRows = [];
-    for (let i = 0; i < topTypes.length; i += 2) {
-        const row = [];
-        if (topTypes[i]) {
-            row.push({
-                text: `${topTypes[i].type}: ${topTypes[i].percentage}%`,
-                style: { fontSize: 10, margin: [0, 2, 0, 2] }
-            });
-        }
-        if (topTypes[i + 1]) {
-            row.push({
-                text: `${topTypes[i + 1].type}: ${topTypes[i + 1].percentage}%`,
-                style: { fontSize: 10, margin: [0, 2, 0, 2] }
-            });
-        } else {
-            row.push({ text: '', style: { fontSize: 10 } });
-        }
-        pieChartRows.push(row);
-    }
-
-    const pieChartTable = {
-        table: {
-            widths: ['50%', '50%'],
-            body: pieChartRows
-        },
-        layout: 'lightHorizontalLines',
-        margin: [0, 0, 0, 20]
-    };
-
-    // Create quadrant analysis
-    const quadrants = {
-        'Connector': [],
-        'Visionary': [],
-        'Leader': [],
-        'Producer': []
-    };
-    
-    Object.entries(personalityTypes).forEach(([typeName, typeInfo]) => {
-        const score = resultsData.allScores[typeName] || 0;
-        quadrants[typeInfo.quadrant].push(score);
-    });
-    
-    const quadrantScores = Object.entries(quadrants).map(([quadrant, scores]) => {
-        const average = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-        return {
-            quadrant: quadrant,
-            score: Math.round(average),
-            percentage: Math.round((average / resultsData.totalQuestions) * 100)
-        };
-    }).sort((a, b) => b.score - a.score);
-
-    const quadrantTable = {
-        table: {
-            widths: ['40%', '30%', '30%'],
-            body: [
-                [
-                    { text: 'Quadrant', style: { bold: true, fillColor: '#f3f4f6' } },
-                    { text: 'Score', style: { bold: true, fillColor: '#f3f4f6' } },
-                    { text: 'Percentage', style: { bold: true, fillColor: '#f3f4f6' } }
-                ],
-                ...quadrantScores.map(q => [
-                    { text: q.quadrant, style: { fontSize: 10 } },
-                    { text: q.score.toString(), style: { fontSize: 10, alignment: 'center' } },
-                    { text: `${q.percentage}%`, style: { fontSize: 10, alignment: 'center' } }
-                ])
-            ]
-        },
-        layout: 'lightHorizontalLines'
-    };
-
-    return {
-        pieChartTable: pieChartTable,
-        quadrantTable: quadrantTable
-    };
-}
         
 
         function retakeAssessment() {
