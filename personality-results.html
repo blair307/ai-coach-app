@@ -1317,8 +1317,8 @@ function displayTopThree() {
         card.className = `personality-card ${isPrimary ? 'primary' : ''}`;
         card.style.cursor = 'pointer';
         
-        // FIXED: Clean click handler with proper syntax
-        card.onclick = () => {
+        // FIXED: Proper click handler syntax
+        card.addEventListener('click', function() {
             // Find the specific detailed analysis section for this personality type
             const detailedSections = document.querySelectorAll('#detailedAnalysis .detailed-analysis');
             const targetSection = detailedSections[index];
@@ -1328,11 +1328,11 @@ function displayTopThree() {
                 // Add a subtle highlight effect
                 targetSection.style.background = 'rgba(99, 102, 241, 0.1)';
                 targetSection.style.transition = 'background 0.5s ease';
-                setTimeout(() => {
+                setTimeout(function() {
                     targetSection.style.background = '';
                 }, 2000);
             }
-        };
+        });
         
         card.innerHTML = `
             <div class="personality-header">
