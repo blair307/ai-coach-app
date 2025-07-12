@@ -1518,7 +1518,7 @@ function setupAutoExpandTextarea() {
     console.log('✅ Single-line auto-expand textarea setup complete - works with horizontal layout');
 }
 
-// Auto-refresh messages every 30 seconds
+// Auto-refresh messages every 3 minutes
 setInterval(async () => {
     if (currentRoomId && isInitialized) {
         try {
@@ -1527,7 +1527,7 @@ setInterval(async () => {
             console.log('⚠️ Auto-refresh failed, will try again next time');
         }
     }
-}, 30000);
+}, 180000);
 
 // Update notification count periodically
 updateNotificationCount();
