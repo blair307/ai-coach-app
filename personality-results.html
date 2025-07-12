@@ -1410,19 +1410,7 @@ plugins: {
                             }
                         }
                 }
-plugins: {
-    datalabels: {
-        formatter: (value, context) => {
-            const percentage = Math.round((value / resultsData.totalQuestions) * 100);
-            return percentage > 3 ? `${percentage}%` : ''; // Only show if > 3%
-        },
-        color: 'white',
-        font: {
-            weight: 'bold',
-            size: 10
-        }
-    }
-}
+
                     }
                 }
             });
