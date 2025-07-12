@@ -4141,6 +4141,9 @@ console.log('✅ Enhanced admin coupon management routes loaded successfully');
 // ENHANCED ADMIN DASHBOARD HTML
 // Replace your existing admin-dashboard.html with this enhanced version:
 
+// ENHANCED ADMIN DASHBOARD HTML
+// Replace your existing admin-dashboard.html with this enhanced version:
+
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   try {
