@@ -1376,37 +1376,38 @@ function displayTopThree() {
                         borderColor: '#fff'
                     }]
                 },
-                options: {
+               options: {
                     responsive: true,
                     maintainAspectRatio: false,
-plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 15,
-                            usePointStyle: true,
-                            font: {
-                                size: 11
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
                             }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
-                                return `${context.label}: ${percentage}%`;
-                            }
-                        }
-                    },
-                    datalabels: {
-                        formatter: (value, context) => {
-                            const percentage = Math.round((value / resultsData.totalQuestions) * 100);
-                            return percentage > 2 ? `${percentage}%` : '';
                         },
-                        color: 'white',
-                        font: {
-                            weight: 'bold',
-                            size: 10
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
+                                    return `${context.label}: ${percentage}%`;
+                                }
+                            }
+                        },
+                        datalabels: {
+                            formatter: (value, context) => {
+                                const percentage = Math.round((value / resultsData.totalQuestions) * 100);
+                                return percentage > 2 ? `${percentage}%` : '';
+                            },
+                            color: 'white',
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            }
                         }
                     }
                 }
