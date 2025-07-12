@@ -455,12 +455,16 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
 // Load messages for a room
 async function loadMessages(roomId) {
     try {
-        // Prevent rapid successive calls
-        const now = Date.now();
-        if (isLoadingMessages || (now - lastLoadTime) < MIN_LOAD_INTERVAL) {
-            console.log('⏭️ Skipping message load - too soon or already loading');
-            return;
-        }
+    // Prevent rapid successive calls for the same room
+const now = Date.now();
+const isSameRoom = (window.lastLoadedRoomId === roomId);
+if (isLoadingMessages || (isSameRoom && (now - lastLoadTime) < MIN_LOAD_INTERVAL)) {
+    console.log('⏭️ Skipping message load - too soon or already loading same room');
+    return;
+}
+
+// Track which room we're loading
+window.lastLoadedRoomId = roomId;
         
         isLoadingMessages = true;
         lastLoadTime = now;
