@@ -2584,16 +2584,20 @@ function showLikeToast(message) {
             }
         }
 
-        // Auto-refresh messages every 3 minutes (180 seconds)
-        setInterval(async () => {
-            if (currentRoomId && isInitialized) {
-                try {
-                    await loadMessages(currentRoomId);
-                } catch (error) {
-                    console.log('⚠️ Auto-refresh failed, will try again next time');
-                }
-            }
-        }, 180000); // Changed from 30000 (30 seconds) to 180000 (3 minutes)
+       // Auto-refresh messages every 3 minutes (180 seconds) - SINGLE INTERVAL
+if (window.communityAutoRefresh) {
+    clearInterval(window.communityAutoRefresh);
+}
+
+window.communityAutoRefresh = setInterval(async () => {
+    if (currentRoomId && isInitialized && !isLoadingMessages) {
+        try {
+            await loadMessages(currentRoomId);
+        } catch (error) {
+            console.log('⚠️ Auto-refresh failed, will try again next time');
+        }
+    }
+}, 180000); // 3 minutes
 
         // Update notification count periodically
         updateNotificationCount();
