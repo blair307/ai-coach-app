@@ -1347,8 +1347,11 @@ function displayTopThree() {
         container.appendChild(card);
     });
 }
-        function createPieChart() {
-            const ctx = document.getElementById('pieChart').getContext('2d');
+      function createPieChart() {
+    // Register the datalabels plugin
+    Chart.register(ChartDataLabels);
+    
+    const ctx = document.getElementById('pieChart').getContext('2d');
             
             // Get all 16 types with their scores (0 if not present)
             const allTypes = Object.keys(personalityTypes);
@@ -1376,25 +1379,37 @@ function displayTopThree() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                padding: 15,
-                                usePointStyle: true,
-                                font: {
-                                    size: 11
-                                }
+plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            font: {
+                                size: 11
                             }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
+                                return `${context.label}: ${percentage}%`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        formatter: (value, context) => {
+                            const percentage = Math.round((value / resultsData.totalQuestions) * 100);
+                            return percentage > 2 ? `${percentage}%` : '';
                         },
-                        tooltip: {
-    callbacks: {
-        label: function(context) {
-            const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
-            return `${context.label}: ${percentage}%`;
-        }
-    }
-},
+                        color: 'white',
+                        font: {
+                            weight: 'bold',
+                            size: 10
+                        }
+                    }
+                }
 plugins: {
     datalabels: {
         formatter: (value, context) => {
