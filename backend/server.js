@@ -3934,6 +3934,116 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+// ADD THIS ROUTE TO YOUR server.js file after the other admin routes
+// (around line 2200, after the other admin coupon routes)
+
+// Get overall admin analytics
+app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('📊 Getting overall admin analytics...');
+    
+    // User stats
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({
+      'streakData.lastLoginDate': { 
+        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) 
+      }
+    });
+    
+    // Subscription stats
+    const subscriptionStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 },
+          activeCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$subscription.status', 'active'] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Coupon usage stats
+    const couponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+    
+    // Recent signups
+    const recentSignups = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('firstName lastName email subscription createdAt');
+    
+    // Revenue estimation (based on active subscriptions)
+    const revenueData = await User.aggregate([
+      {
+        $match: {
+          'subscription.status': 'active',
+          'subscription.plan': { $in: ['monthly', 'yearly'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const monthlyRevenue = (revenueData.find(r => r._id === 'monthly')?.count || 0) * 247;
+    const yearlyRevenue = (revenueData.find(r => r._id === 'yearly')?.count || 0) * 2497;
+    const estimatedMonthlyRevenue = monthlyRevenue + (yearlyRevenue / 12);
+    
+    res.json({
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        recentSignups: recentSignups.map(user => ({
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          plan: user.subscription?.plan || 'free',
+          signupDate: user.createdAt
+        }))
+      },
+      subscriptions: subscriptionStats,
+      coupons: couponStats,
+      revenue: {
+        estimatedMonthlyRevenue,
+        monthlySubscriptions: revenueData.find(r => r._id === 'monthly')?.count || 0,
+        yearlySubscriptions: revenueData.find(r => r._id === 'yearly')?.count || 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting admin analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to get analytics',
+      message: error.message 
+    });
+  }
+});
+
+console.log('✅ Admin analytics route loaded successfully');
+
 // ENHANCED ADMIN DASHBOARD HTML
 // Replace your existing admin-dashboard.html with this enhanced version:
 
