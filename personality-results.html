@@ -10,6 +10,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js"></script>
+
 
     
 <style>
@@ -1386,13 +1388,26 @@ function displayTopThree() {
                             }
                         },
                         tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
-                                    return `${context.label}: ${context.parsed} (${percentage}%)`;
-                                }
-                            }
-                        }
+    callbacks: {
+        label: function(context) {
+            const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
+            return `${context.label}: ${percentage}%`;
+        }
+    }
+},
+plugins: {
+    datalabels: {
+        formatter: (value, context) => {
+            const percentage = Math.round((value / resultsData.totalQuestions) * 100);
+            return percentage > 3 ? `${percentage}%` : ''; // Only show if > 3%
+        },
+        color: 'white',
+        font: {
+            weight: 'bold',
+            size: 10
+        }
+    }
+}
                     }
                 }
             });
@@ -1733,16 +1748,17 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             alignment: 'center',
             margin: [0, 0, 0, 30]
         }] : []),
-        ...(chartImages.radarChart ? [{
-            text: 'Quadrant Analysis',
-            style: 'chartTitle',
-            margin: [0, 0, 0, 10]
-        }, {
-            image: chartImages.radarChart,
-            width: 350,
-            alignment: 'center',
-            margin: [0, 0, 0, 30]
-        }] : []),
+       ...(chartImages.radarChart ? [{
+    text: 'Quadrant Analysis',
+    style: 'chartTitle',
+    pageBreak: 'before',
+    margin: [0, 40, 0, 10]
+}, {
+    image: chartImages.radarChart,
+    width: 350,
+    alignment: 'center',
+    margin: [0, 0, 0, 30]
+}] : []),
     ];
 
     // Add detailed analysis for each top personality type - EACH ON NEW PAGE
