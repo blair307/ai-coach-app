@@ -3687,6 +3687,460 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
 
 console.log('✅ Admin routes loaded successfully');
 
+// ADD THESE NEW ROUTES TO YOUR server.js file
+// Insert these routes after your existing admin routes (around line 2100)
+
+// ==========================================
+// ENHANCED ADMIN COUPON MANAGEMENT ROUTES
+// ==========================================
+
+// Get all coupons from Stripe
+app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('🎫 Fetching all coupons from Stripe...');
+    
+    // Get coupons from Stripe
+    const stripeCoupons = await stripe.coupons.list({
+      limit: 100,
+      expand: ['data.promotion_codes']
+    });
+    
+    // Get local coupon usage stats
+    const localCouponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          usageCount: { $sum: 1 },
+          users: {
+            $push: {
+              name: { $concat: ['$firstName', ' ', '$lastName'] },
+              email: '$email',
+              createdAt: '$createdAt'
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Combine Stripe data with local usage
+    const enhancedCoupons = stripeCoupons.data.map(stripeCoupon => {
+      const localStats = localCouponStats.find(stat => stat._id === stripeCoupon.id);
+      
+      return {
+        id: stripeCoupon.id,
+        name: stripeCoupon.name || stripeCoupon.id,
+        percentOff: stripeCoupon.percent_off,
+        amountOff: stripeCoupon.amount_off,
+        currency: stripeCoupon.currency,
+        duration: stripeCoupon.duration,
+        durationInMonths: stripeCoupon.duration_in_months,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        timesRedeemed: stripeCoupon.times_redeemed,
+        valid: stripeCoupon.valid,
+        created: new Date(stripeCoupon.created * 1000),
+        redeemBy: stripeCoupon.redeem_by ? new Date(stripeCoupon.redeem_by * 1000) : null,
+        localUsage: localStats ? localStats.usageCount : 0,
+        localUsers: localStats ? localStats.users : []
+      };
+    });
+    
+    console.log(`✅ Found ${enhancedCoupons.length} coupons`);
+    
+    res.json({
+      coupons: enhancedCoupons,
+      total: enhancedCoupons.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching coupons:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch coupons',
+      message: error.message 
+    });
+  }
+});
+
+// Create new coupon
+app.post('/api/admin/coupons', authenticateAdmin, async (req, res) => {
+  try {
+    const {
+      id,
+      name,
+      percentOff,
+      amountOff,
+      currency,
+      duration,
+      durationInMonths,
+      maxRedemptions,
+      redeemBy
+    } = req.body;
+    
+    console.log('🎫 Creating new coupon:', { id, name, percentOff, amountOff });
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Coupon ID is required' });
+    }
+    
+    if (!percentOff && !amountOff) {
+      return res.status(400).json({ error: 'Either percent_off or amount_off is required' });
+    }
+    
+    // Prepare coupon data for Stripe
+    const couponData = {
+      id: id.toUpperCase(),
+      name: name || id,
+      duration: duration || 'once'
+    };
+    
+    // Add discount type
+    if (percentOff) {
+      couponData.percent_off = parseInt(percentOff);
+    } else if (amountOff) {
+      couponData.amount_off = parseInt(amountOff * 100); // Convert to cents
+      couponData.currency = currency || 'usd';
+    }
+    
+    // Add optional fields
+    if (durationInMonths && duration === 'repeating') {
+      couponData.duration_in_months = parseInt(durationInMonths);
+    }
+    
+    if (maxRedemptions) {
+      couponData.max_redemptions = parseInt(maxRedemptions);
+    }
+    
+    if (redeemBy) {
+      couponData.redeem_by = Math.floor(new Date(redeemBy).getTime() / 1000);
+    }
+    
+    // Create coupon in Stripe
+    const stripeCoupon = await stripe.coupons.create(couponData);
+    
+    console.log('✅ Coupon created successfully:', stripeCoupon.id);
+    
+    res.json({
+      message: 'Coupon created successfully',
+      coupon: {
+        id: stripeCoupon.id,
+        name: stripeCoupon.name,
+        percentOff: stripeCoupon.percent_off,
+        amountOff: stripeCoupon.amount_off,
+        currency: stripeCoupon.currency,
+        duration: stripeCoupon.duration,
+        durationInMonths: stripeCoupon.duration_in_months,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        valid: stripeCoupon.valid,
+        created: new Date(stripeCoupon.created * 1000)
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating coupon:', error);
+    
+    if (error.type === 'StripeInvalidRequestError') {
+      res.status(400).json({ 
+        error: 'Invalid coupon data',
+        message: error.message 
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Failed to create coupon',
+        message: error.message 
+      });
+    }
+  }
+});
+
+// Update coupon (limited operations)
+app.put('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    const { name } = req.body;
+    
+    console.log('🎫 Updating coupon:', couponId);
+    
+    // Note: Stripe only allows updating name and metadata on coupons
+    const updateData = {};
+    if (name) updateData.name = name;
+    
+    const stripeCoupon = await stripe.coupons.update(couponId, updateData);
+    
+    console.log('✅ Coupon updated successfully');
+    
+    res.json({
+      message: 'Coupon updated successfully',
+      coupon: stripeCoupon
+    });
+    
+  } catch (error) {
+    console.error('❌ Error updating coupon:', error);
+    res.status(500).json({ 
+      error: 'Failed to update coupon',
+      message: error.message 
+    });
+  }
+});
+
+// Delete coupon
+app.delete('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    
+    console.log('🗑️ Deleting coupon:', couponId);
+    
+    const deletedCoupon = await stripe.coupons.del(couponId);
+    
+    console.log('✅ Coupon deleted successfully');
+    
+    res.json({
+      message: 'Coupon deleted successfully',
+      couponId: couponId,
+      deleted: deletedCoupon.deleted
+    });
+    
+  } catch (error) {
+    console.error('❌ Error deleting coupon:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete coupon',
+      message: error.message 
+    });
+  }
+});
+
+// Get coupon usage analytics
+app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    
+    console.log('📊 Getting analytics for coupon:', couponId);
+    
+    // Get Stripe coupon data
+    const stripeCoupon = await stripe.coupons.retrieve(couponId);
+    
+    // Get local usage data
+    const usageData = await User.find({
+      'subscription.couponUsed': couponId
+    }).select('firstName lastName email subscription.plan subscription.status createdAt');
+    
+    // Calculate analytics
+    const analytics = {
+      stripeData: {
+        timesRedeemed: stripeCoupon.times_redeemed,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        valid: stripeCoupon.valid
+      },
+      localUsage: {
+        totalUsers: usageData.length,
+        usersByPlan: usageData.reduce((acc, user) => {
+          const plan = user.subscription?.plan || 'free';
+          acc[plan] = (acc[plan] || 0) + 1;
+          return acc;
+        }, {}),
+        recentUsers: usageData
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 10)
+          .map(user => ({
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            plan: user.subscription?.plan || 'free',
+            status: user.subscription?.status || 'inactive',
+            signupDate: user.createdAt
+          }))
+      }
+    };
+    
+    res.json(analytics);
+    
+  } catch (error) {
+    console.error('❌ Error getting coupon analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to get analytics',
+      message: error.message 
+    });
+  }
+});
+
+// Get overall admin analytics
+app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('📊 Getting overall admin analytics...');
+    
+    // User stats
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({
+      'streakData.lastLoginDate': { 
+        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) 
+      }
+    });
+    
+    // Subscription stats
+    const subscriptionStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 },
+          activeCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$subscription.status', 'active'] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Coupon usage stats
+    const couponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+    
+    // Recent signups
+    const recentSignups = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('firstName lastName email subscription createdAt');
+    
+    // Revenue estimation (based on active subscriptions)
+    const revenueData = await User.aggregate([
+      {
+        $match: {
+          'subscription.status': 'active',
+          'subscription.plan': { $in: ['monthly', 'yearly'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const monthlyRevenue = (revenueData.find(r => r._id === 'monthly')?.count || 0) * 247;
+    const yearlyRevenue = (revenueData.find(r => r._id === 'yearly')?.count || 0) * 2497;
+    const estimatedMonthlyRevenue = monthlyRevenue + (yearlyRevenue / 12);
+    
+    res.json({
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        recentSignups: recentSignups.map(user => ({
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          plan: user.subscription?.plan || 'free',
+          signupDate: user.createdAt
+        }))
+      },
+      subscriptions: subscriptionStats,
+      coupons: couponStats,
+      revenue: {
+        estimatedMonthlyRevenue,
+        monthlySubscriptions: revenueData.find(r => r._id === 'monthly')?.count || 0,
+        yearlySubscriptions: revenueData.find(r => r._id === 'yearly')?.count || 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting admin analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to get analytics',
+      message: error.message 
+    });
+  }
+});
+
+// Bulk operations
+app.post('/api/admin/bulk-actions', authenticateAdmin, async (req, res) => {
+  try {
+    const { action, userIds, data } = req.body;
+    
+    console.log(`🔄 Performing bulk action: ${action} on ${userIds?.length} users`);
+    
+    switch (action) {
+      case 'delete_users':
+        if (!userIds || !Array.isArray(userIds)) {
+          return res.status(400).json({ error: 'User IDs array required' });
+        }
+        
+        // Delete users and all their data
+        await Promise.all([
+          User.deleteMany({ _id: { $in: userIds } }),
+          LifeGoal.deleteMany({ userId: { $in: userIds } }),
+          Chat.deleteMany({ userId: { $in: userIds } }),
+          Notification.deleteMany({ userId: { $in: userIds } }),
+          Message.deleteMany({ userId: { $in: userIds.map(id => id.toString()) } }),
+          DailyPromptResponse.deleteMany({ userId: { $in: userIds } }),
+          DailyProgress.deleteMany({ userId: { $in: userIds } }),
+          Insight.deleteMany({ userId: { $in: userIds } })
+        ]);
+        
+        res.json({ 
+          message: `Successfully deleted ${userIds.length} users and their data`,
+          deletedCount: userIds.length
+        });
+        break;
+        
+      case 'send_notification':
+        if (!userIds || !data?.title || !data?.content) {
+          return res.status(400).json({ error: 'User IDs, title, and content required' });
+        }
+        
+        const notifications = userIds.map(userId => ({
+          userId,
+          type: data.type || 'system',
+          title: data.title,
+          content: data.content,
+          priority: data.priority || 'normal',
+          createdAt: new Date()
+        }));
+        
+        await Notification.insertMany(notifications);
+        
+        res.json({ 
+          message: `Sent notifications to ${userIds.length} users`,
+          notificationCount: userIds.length
+        });
+        break;
+        
+      default:
+        res.status(400).json({ error: 'Unknown bulk action' });
+    }
+    
+  } catch (error) {
+    console.error('❌ Error performing bulk action:', error);
+    res.status(500).json({ 
+      error: 'Failed to perform bulk action',
+      message: error.message 
+    });
+  }
+});
+
+console.log('✅ Enhanced admin coupon management routes loaded successfully');
+
+// ENHANCED ADMIN DASHBOARD HTML
+// Replace your existing admin-dashboard.html with this enhanced version:
+
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   try {
