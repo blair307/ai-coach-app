@@ -169,8 +169,15 @@ switch (coupon.type) {
         showCouponMessage('🎉 Test discount applied! Payment reduced to $1 for testing!', 'success');
         break;
         
+    case 'standard_discount':
+        // Handle any admin-created discount coupons
+        showCouponMessage(`🎉 Coupon applied! ${coupon.description}`, 'success');
+        break;
+        
     default:
-        throw new Error('Unknown coupon type');
+        // For any other coupon type, just show the description
+        showCouponMessage(`🎉 Coupon applied! ${coupon.description}`, 'success');
+        break;
 }
         
     } catch (error) {
