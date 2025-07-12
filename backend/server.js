@@ -3687,11 +3687,8 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
 
 console.log('✅ Admin routes loaded successfully');
 
-// ADD THESE NEW ROUTES TO YOUR server.js file
-// Insert these routes after your existing admin routes (around line 2100)
-
 // ==========================================
-// ENHANCED ADMIN COUPON MANAGEMENT ROUTES
+// ENHANCED ADMIN COUPON MANAGEMENT ROUTES - ADD TO server.js
 // ==========================================
 
 // Get all coupons from Stripe
@@ -3856,36 +3853,6 @@ app.post('/api/admin/coupons', authenticateAdmin, async (req, res) => {
   }
 });
 
-// Update coupon (limited operations)
-app.put('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
-  try {
-    const couponId = req.params.id;
-    const { name } = req.body;
-    
-    console.log('🎫 Updating coupon:', couponId);
-    
-    // Note: Stripe only allows updating name and metadata on coupons
-    const updateData = {};
-    if (name) updateData.name = name;
-    
-    const stripeCoupon = await stripe.coupons.update(couponId, updateData);
-    
-    console.log('✅ Coupon updated successfully');
-    
-    res.json({
-      message: 'Coupon updated successfully',
-      coupon: stripeCoupon
-    });
-    
-  } catch (error) {
-    console.error('❌ Error updating coupon:', error);
-    res.status(500).json({ 
-      error: 'Failed to update coupon',
-      message: error.message 
-    });
-  }
-});
-
 // Delete coupon
 app.delete('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
   try {
@@ -3960,177 +3927,6 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
     console.error('❌ Error getting coupon analytics:', error);
     res.status(500).json({ 
       error: 'Failed to get analytics',
-      message: error.message 
-    });
-  }
-});
-
-// Get overall admin analytics
-app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
-  try {
-    console.log('📊 Getting overall admin analytics...');
-    
-    // User stats
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({
-      'streakData.lastLoginDate': { 
-        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) 
-      }
-    });
-    
-    // Subscription stats
-    const subscriptionStats = await User.aggregate([
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 },
-          activeCount: {
-            $sum: {
-              $cond: [
-                { $eq: ['$subscription.status', 'active'] },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-    
-    // Coupon usage stats
-    const couponStats = await User.aggregate([
-      {
-        $match: {
-          'subscription.couponUsed': { $exists: true, $ne: null }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.couponUsed',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]);
-    
-    // Recent signups
-    const recentSignups = await User.find()
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select('firstName lastName email subscription createdAt');
-    
-    // Revenue estimation (based on active subscriptions)
-    const revenueData = await User.aggregate([
-      {
-        $match: {
-          'subscription.status': 'active',
-          'subscription.plan': { $in: ['monthly', 'yearly'] }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-    
-    const monthlyRevenue = (revenueData.find(r => r._id === 'monthly')?.count || 0) * 247;
-    const yearlyRevenue = (revenueData.find(r => r._id === 'yearly')?.count || 0) * 2497;
-    const estimatedMonthlyRevenue = monthlyRevenue + (yearlyRevenue / 12);
-    
-    res.json({
-      users: {
-        total: totalUsers,
-        active: activeUsers,
-        recentSignups: recentSignups.map(user => ({
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          plan: user.subscription?.plan || 'free',
-          signupDate: user.createdAt
-        }))
-      },
-      subscriptions: subscriptionStats,
-      coupons: couponStats,
-      revenue: {
-        estimatedMonthlyRevenue,
-        monthlySubscriptions: revenueData.find(r => r._id === 'monthly')?.count || 0,
-        yearlySubscriptions: revenueData.find(r => r._id === 'yearly')?.count || 0
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Error getting admin analytics:', error);
-    res.status(500).json({ 
-      error: 'Failed to get analytics',
-      message: error.message 
-    });
-  }
-});
-
-// Bulk operations
-app.post('/api/admin/bulk-actions', authenticateAdmin, async (req, res) => {
-  try {
-    const { action, userIds, data } = req.body;
-    
-    console.log(`🔄 Performing bulk action: ${action} on ${userIds?.length} users`);
-    
-    switch (action) {
-      case 'delete_users':
-        if (!userIds || !Array.isArray(userIds)) {
-          return res.status(400).json({ error: 'User IDs array required' });
-        }
-        
-        // Delete users and all their data
-        await Promise.all([
-          User.deleteMany({ _id: { $in: userIds } }),
-          LifeGoal.deleteMany({ userId: { $in: userIds } }),
-          Chat.deleteMany({ userId: { $in: userIds } }),
-          Notification.deleteMany({ userId: { $in: userIds } }),
-          Message.deleteMany({ userId: { $in: userIds.map(id => id.toString()) } }),
-          DailyPromptResponse.deleteMany({ userId: { $in: userIds } }),
-          DailyProgress.deleteMany({ userId: { $in: userIds } }),
-          Insight.deleteMany({ userId: { $in: userIds } })
-        ]);
-        
-        res.json({ 
-          message: `Successfully deleted ${userIds.length} users and their data`,
-          deletedCount: userIds.length
-        });
-        break;
-        
-      case 'send_notification':
-        if (!userIds || !data?.title || !data?.content) {
-          return res.status(400).json({ error: 'User IDs, title, and content required' });
-        }
-        
-        const notifications = userIds.map(userId => ({
-          userId,
-          type: data.type || 'system',
-          title: data.title,
-          content: data.content,
-          priority: data.priority || 'normal',
-          createdAt: new Date()
-        }));
-        
-        await Notification.insertMany(notifications);
-        
-        res.json({ 
-          message: `Sent notifications to ${userIds.length} users`,
-          notificationCount: userIds.length
-        });
-        break;
-        
-      default:
-        res.status(400).json({ error: 'Unknown bulk action' });
-    }
-    
-  } catch (error) {
-    console.error('❌ Error performing bulk action:', error);
-    res.status(500).json({ 
-      error: 'Failed to perform bulk action',
       message: error.message 
     });
   }
