@@ -3698,8 +3698,7 @@ app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
     
     // Get coupons from Stripe
     const stripeCoupons = await stripe.coupons.list({
-      limit: 100,
-      expand: ['data.promotion_codes']
+      limit: 100
     });
     
     // Get local coupon usage stats
@@ -3726,7 +3725,7 @@ app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
     
     // Combine Stripe data with local usage
     const enhancedCoupons = stripeCoupons.data.map(stripeCoupon => {
-      const localStats = localCouponStats.find(stat => stat._id === stripeCoupon.id);
+      const localStats = localCouponStats.find(stat => stat._id === stripeCoupon.id) || {};
       
       return {
         id: stripeCoupon.id,
@@ -3741,8 +3740,8 @@ app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
         valid: stripeCoupon.valid,
         created: new Date(stripeCoupon.created * 1000),
         redeemBy: stripeCoupon.redeem_by ? new Date(stripeCoupon.redeem_by * 1000) : null,
-        localUsage: localStats ? localStats.usageCount : 0,
-        localUsers: localStats ? localStats.users : []
+        localUsage: localStats.usageCount || 0,
+        localUsers: localStats.users || []
       };
     });
     
