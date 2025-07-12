@@ -1379,7 +1379,7 @@ function displayTopThree() {
                options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
+plugins: {
                         legend: {
                             position: 'bottom',
                             labels: {
@@ -1390,7 +1390,7 @@ function displayTopThree() {
                                 }
                             }
                         },
-                        tooltip: {
+            tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const percentage = Math.round((context.parsed / resultsData.totalQuestions) * 100);
@@ -1401,7 +1401,7 @@ function displayTopThree() {
                         datalabels: {
                             formatter: (value, context) => {
                                 const percentage = Math.round((value / resultsData.totalQuestions) * 100);
-                                return percentage > 2 ? `${percentage}%` : '';
+                                return percentage > 3 ? `${percentage}%` : '';
                             },
                             color: 'white',
                             font: {
@@ -1409,7 +1409,6 @@ function displayTopThree() {
                                 size: 10
                             }
                         }
-                    }
                 }
 plugins: {
     datalabels: {
