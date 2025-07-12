@@ -1072,7 +1072,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     // Price IDs - Make sure these match your actual Stripe Price IDs
     const priceIds = {
       monthly: 'price_1Rhv3uIjRmg2uv1cnnt5X12z', 
-      yearly: 'price_1Rhv3aIjRmg2uv1cXZIIDG6M'   
+      yearly: 'price_1Rk5FYIjRmg2uv1caGouvbFc'   
     };
 
     const priceId = priceIds[plan];
