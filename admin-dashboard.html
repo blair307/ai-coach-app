@@ -972,6 +972,87 @@ async function loadCoupons() {
     }
 }
 
+        function renderCouponsTable(coupons) {
+    const container = document.getElementById('couponsTableContainer');
+    
+    // Safety check for undefined/null coupons
+    if (!coupons || !Array.isArray(coupons)) {
+        console.error('❌ Invalid coupons data:', coupons);
+        container.innerHTML = `
+            <div class="error">
+                Invalid coupons data received. Expected an array but got: ${typeof coupons}
+                <br><small>Check server response format</small>
+            </div>
+        `;
+        return;
+    }
+    
+    if (coupons.length === 0) {
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">No coupons found</div>';
+        return;
+    }
+    
+    let tableHTML = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Discount</th>
+                    <th>Duration</th>
+                    <th>Usage</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    coupons.forEach(coupon => {
+        // Safety checks for coupon properties
+        const discount = coupon.percentOff ? `${coupon.percentOff}% off` : 
+                        coupon.amountOff ? `$${(coupon.amountOff / 100).toFixed(2)} off` : 
+                        'Unknown discount';
+        
+        const usage = coupon.maxRedemptions ? 
+                     `${coupon.timesRedeemed || 0}/${coupon.maxRedemptions}` : 
+                     (coupon.timesRedeemed || 0);
+        
+        const created = coupon.created ? new Date(coupon.created).toLocaleDateString() : 'Unknown';
+        const expired = coupon.redeemBy && new Date(coupon.redeemBy) < new Date();
+        
+        tableHTML += `
+            <tr>
+                <td>
+                    <div style="font-weight: 600;">${coupon.id || 'Unknown'}</div>
+                    ${coupon.name && coupon.name !== coupon.id ? `<div style="font-size: 0.75rem; color: #6b7280;">${coupon.name}</div>` : ''}
+                </td>
+                <td>${discount}</td>
+                <td>
+                    <span class="badge badge-info">${coupon.duration || 'once'}</span>
+                    ${coupon.durationInMonths ? `<div style="font-size: 0.75rem; color: #6b7280;">${coupon.durationInMonths} months</div>` : ''}
+                </td>
+                <td>
+                    <div>${usage} uses</div>
+                    ${(coupon.localUsage || 0) > 0 ? `<div style="font-size: 0.75rem; color: #6b7280;">Local: ${coupon.localUsage}</div>` : ''}
+                </td>
+                <td>
+                    <span class="badge badge-${expired ? 'danger' : (coupon.valid !== false ? 'success' : 'warning')}">
+                        ${expired ? 'Expired' : (coupon.valid !== false ? 'Active' : 'Inactive')}
+                    </span>
+                </td>
+                <td>${created}</td>
+                <td>
+                    <button class="btn btn-outline btn-small" onclick="viewCouponDetails('${coupon.id}')">View</button>
+                    <button class="btn btn-danger btn-small" onclick="deleteCoupon('${coupon.id}')">Delete</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += '</tbody></table>';
+    container.innerHTML = tableHTML;
+}
       
 
         function openCreateCouponModal() {
