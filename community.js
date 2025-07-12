@@ -8,6 +8,11 @@ let rooms = [];
 let isInitialized = false;
 let currentReplyTo = null;
 
+// Prevent rapid message loading
+let isLoadingMessages = false;
+let lastLoadTime = 0;
+const MIN_LOAD_INTERVAL = 2000; // 2 seconds minimum between loads
+
 // NEW: Local message storage for permanent deletions
 let deletedMessages = new Set();
 const DELETED_MESSAGES_KEY = 'eeh_deleted_messages';
@@ -450,6 +455,16 @@ function createMessageElement(message, isReply = false, parentIndex = null) {
 // Load messages for a room
 async function loadMessages(roomId) {
     try {
+        // Prevent rapid successive calls
+        const now = Date.now();
+        if (isLoadingMessages || (now - lastLoadTime) < MIN_LOAD_INTERVAL) {
+            console.log('⏭️ Skipping message load - too soon or already loading');
+            return;
+        }
+        
+        isLoadingMessages = true;
+        lastLoadTime = now;
+        
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
             throw new Error('No authentication token');
@@ -491,9 +506,11 @@ async function loadMessages(roomId) {
         
         displayThreadedMessages(messages);
         
-    } catch (error) {
+} catch (error) {
         console.error('❌ Error loading messages:', error);
         displayThreadedMessages([]);
+    } finally {
+        isLoadingMessages = false;
     }
 }
 
