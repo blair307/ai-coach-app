@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - EEH</title>
+    <title>Enhanced Admin Dashboard - EEH</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         body {
@@ -19,12 +19,43 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .admin-header h1 {
             margin: 0;
             color: #1f2937;
             font-size: 1.5rem;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .nav-tab.active {
+            background: #6366f1;
+            color: white;
+            border-color: #6366f1;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #f9fafb;
+            border-color: #9ca3af;
         }
 
         .logout-btn {
@@ -42,9 +73,17 @@
         }
 
         .admin-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .stats-grid {
@@ -75,11 +114,12 @@
             font-weight: 500;
         }
 
-        .users-section {
+        .section-card {
             background: white;
             border-radius: 8px;
             border: 1px solid #e5e7eb;
             overflow: hidden;
+            margin-bottom: 2rem;
         }
 
         .section-header {
@@ -97,6 +137,219 @@
             color: #1f2937;
         }
 
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5b64ec;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #6366f1;
+            border: 1px solid #6366f1;
+        }
+
+        .btn-outline:hover {
+            background: #6366f1;
+            color: white;
+        }
+
+        .btn-small {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .data-table th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .data-table tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem;
+        }
+
+        .success {
+            background: #f0fdf4;
+            color: #166534;
+            padding: 1rem;
+            border-radius: 6px;
+            margin: 1rem;
+        }
+
         .search-box {
             padding: 0.5rem 1rem;
             border: 1px solid #d1d5db;
@@ -105,72 +358,24 @@
             width: 250px;
         }
 
-        .users-table {
-            width: 100%;
-            border-collapse: collapse;
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .users-table th,
-        .users-table td {
-            padding: 1rem 1.5rem;
-            text-align: left;
-            border-bottom: 1px solid #f3f4f6;
+        .chart-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
         }
 
-        .users-table th {
-            background: #f9fafb;
-            font-weight: 600;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-
-        .users-table tr:hover {
-            background: #f9fafb;
-        }
-
-        .plan-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .plan-free {
-            background: #f3f4f6;
-            color: #374151;
-        }
-
-        .plan-monthly {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .plan-yearly {
-            background: #dcfce7;
-            color: #166534;
-        }
-
-        .status-active {
-            color: #059669;
-        }
-
-        .status-inactive {
-            color: #dc2626;
-        }
-
-        .delete-btn {
-            background: #fef2f2;
-            color: #991b1b;
-            border: 1px solid #fecaca;
-            padding: 0.375rem 0.75rem;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            cursor: pointer;
-        }
-
-        .delete-btn:hover {
-            background: #fee2e2;
+        .chart-container h3 {
+            margin-top: 0;
+            color: #1f2937;
+            font-size: 1rem;
         }
 
         .pagination {
@@ -211,18 +416,26 @@
             cursor: not-allowed;
         }
 
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #6b7280;
+        .metric-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .error {
-            background: #fef2f2;
-            color: #991b1b;
-            padding: 1rem;
-            border-radius: 6px;
-            margin: 1rem;
+        .metric-item:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: #1f2937;
         }
 
         @media (max-width: 768px) {
@@ -230,8 +443,17 @@
                 padding: 1rem;
             }
             
+            .admin-nav {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
             }
             
             .section-header {
@@ -244,12 +466,12 @@
                 width: 100%;
             }
             
-            .users-table {
+            .data-table {
                 font-size: 0.875rem;
             }
             
-            .users-table th,
-            .users-table td {
+            .data-table th,
+            .data-table td {
                 padding: 0.75rem;
             }
         }
@@ -257,25 +479,167 @@
 </head>
 <body>
     <div class="admin-header">
-        <h1>Admin Dashboard</h1>
-        <button onclick="logout()" class="logout-btn">Logout</button>
+        <h1>Enhanced Admin Dashboard</h1>
+        <div class="admin-nav">
+            <button class="nav-tab active" onclick="switchTab('overview')">Overview</button>
+            <button class="nav-tab" onclick="switchTab('users')">Users</button>
+            <button class="nav-tab" onclick="switchTab('coupons')">Coupons</button>
+            <button class="nav-tab" onclick="switchTab('analytics')">Analytics</button>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
     </div>
 
     <div class="admin-content">
-        <!-- Stats Overview -->
-        <div class="stats-grid" id="statsGrid">
-            <div class="loading">Loading statistics...</div>
-        </div>
-
-        <!-- Users Management -->
-        <div class="users-section">
-            <div class="section-header">
-                <h2>All Users</h2>
-                <input type="text" class="search-box" placeholder="Search users..." id="searchInput" onkeyup="searchUsers()">
+        <!-- Overview Tab -->
+        <div class="tab-content active" id="overview">
+            <div class="stats-grid" id="statsGrid">
+                <div class="loading">Loading statistics...</div>
             </div>
             
-            <div id="usersTableContainer">
-                <div class="loading">Loading users...</div>
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Recent Activity</h2>
+                    <button class="btn btn-outline" onclick="refreshOverview()">Refresh</button>
+                </div>
+                <div id="recentActivity">
+                    <div class="loading">Loading recent activity...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div class="tab-content" id="users">
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>All Users</h2>
+                    <input type="text" class="search-box" placeholder="Search users..." id="searchInput" onkeyup="searchUsers()">
+                </div>
+                
+                <div id="usersTableContainer">
+                    <div class="loading">Loading users...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coupons Tab -->
+        <div class="tab-content" id="coupons">
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Coupon Management</h2>
+                    <button class="btn btn-primary" onclick="openCreateCouponModal()">Create New Coupon</button>
+                </div>
+                
+                <div id="couponsTableContainer">
+                    <div class="loading">Loading coupons...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-content" id="analytics">
+            <div class="analytics-grid" id="analyticsGrid">
+                <div class="loading">Loading analytics...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Coupon Modal -->
+    <div class="modal" id="createCouponModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Coupon</h3>
+                <button class="modal-close" onclick="closeModal('createCouponModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="createCouponForm">
+                    <div class="form-group">
+                        <label for="couponId">Coupon Code</label>
+                        <input type="text" id="couponId" name="id" required style="text-transform: uppercase;" placeholder="e.g., NEWCLIENT2024">
+                        <small>Must be unique and uppercase</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="couponName">Display Name</label>
+                        <input type="text" id="couponName" name="name" placeholder="Optional display name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="discountType">Discount Type</label>
+                        <select id="discountType" name="discountType" onchange="toggleDiscountFields()" required>
+                            <option value="">Select discount type</option>
+                            <option value="percent">Percentage Off</option>
+                            <option value="amount">Fixed Amount Off</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="percentOffGroup" style="display: none;">
+                        <label for="percentOff">Percentage Off</label>
+                        <input type="number" id="percentOff" name="percentOff" min="1" max="100" placeholder="e.g., 25">
+                        <small>Enter percentage (1-100)</small>
+                    </div>
+                    
+                    <div class="form-group" id="amountOffGroup" style="display: none;">
+                        <label for="amountOff">Amount Off</label>
+                        <input type="number" id="amountOff" name="amountOff" min="0.01" step="0.01" placeholder="e.g., 50.00">
+                        <small>Enter amount in dollars</small>
+                    </div>
+                    
+                    <div class="form-group" id="currencyGroup" style="display: none;">
+                        <label for="currency">Currency</label>
+                        <select id="currency" name="currency">
+                            <option value="usd">USD</option>
+                            <option value="eur">EUR</option>
+                            <option value="gbp">GBP</option>
+                            <option value="cad">CAD</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">Duration</label>
+                        <select id="duration" name="duration" onchange="toggleDurationFields()" required>
+                            <option value="once">One-time use</option>
+                            <option value="repeating">Repeating</option>
+                            <option value="forever">Forever</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="durationMonthsGroup" style="display: none;">
+                        <label for="durationInMonths">Duration in Months</label>
+                        <input type="number" id="durationInMonths" name="durationInMonths" min="1" placeholder="e.g., 6">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxRedemptions">Max Redemptions</label>
+                        <input type="number" id="maxRedemptions" name="maxRedemptions" min="1" placeholder="Leave empty for unlimited">
+                        <small>Maximum number of times this coupon can be used</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="redeemBy">Expiration Date</label>
+                        <input type="datetime-local" id="redeemBy" name="redeemBy">
+                        <small>Leave empty for no expiration</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('createCouponModal')">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="createCoupon()">Create Coupon</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon Details Modal -->
+    <div class="modal" id="couponDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Coupon Details</h3>
+                <button class="modal-close" onclick="closeModal('couponDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body" id="couponDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" onclick="closeModal('couponDetailsModal')">Close</button>
             </div>
         </div>
     </div>
@@ -284,6 +648,7 @@
         const API_BASE_URL = 'https://ai-coach-backend-pbse.onrender.com';
         let currentPage = 1;
         let searchTimeout;
+        let currentTab = 'overview';
 
         // Check admin authentication on load
         document.addEventListener('DOMContentLoaded', function() {
@@ -297,8 +662,7 @@
                 return;
             }
             
-            loadStats();
-            loadUsers();
+            loadOverview();
         }
 
         function logout() {
@@ -326,6 +690,45 @@
             }
             
             return response;
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update active content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load data for the tab
+            switch(tabName) {
+                case 'overview':
+                    loadOverview();
+                    break;
+                case 'users':
+                    loadUsers();
+                    break;
+                case 'coupons':
+                    loadCoupons();
+                    break;
+                case 'analytics':
+                    loadAnalytics();
+                    break;
+            }
+        }
+
+        // Overview Tab Functions
+        async function loadOverview() {
+            await Promise.all([loadStats(), loadRecentActivity()]);
+        }
+
+        async function refreshOverview() {
+            await loadOverview();
+            showNotification('Overview refreshed successfully', 'success');
         }
 
         async function loadStats() {
@@ -357,9 +760,59 @@
             }
         }
 
+        async function loadRecentActivity() {
+            try {
+                const response = await makeAdminRequest('/api/admin/analytics');
+                const data = await response.json();
+                
+                let activityHTML = '';
+                
+                if (data.users.recentSignups.length > 0) {
+                    activityHTML += '<h4 style="margin: 1rem 1.5rem 0.5rem; color: #374151;">Recent Signups</h4>';
+                    data.users.recentSignups.slice(0, 5).forEach(user => {
+                        const date = new Date(user.signupDate).toLocaleDateString();
+                        activityHTML += `
+                            <div class="metric-item">
+                                <div>
+                                    <div style="font-weight: 600;">${user.name}</div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">${user.email}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge badge-${user.plan === 'free' ? 'info' : 'success'}">${user.plan}</span>
+                                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">${date}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (data.coupons.length > 0) {
+                    activityHTML += '<h4 style="margin: 1rem 1.5rem 0.5rem; color: #374151;">Popular Coupons</h4>';
+                    data.coupons.slice(0, 3).forEach(coupon => {
+                        activityHTML += `
+                            <div class="metric-item">
+                                <span class="metric-label">${coupon._id}</span>
+                                <span class="metric-value">${coupon.count} uses</span>
+                            </div>
+                        `;
+                    });
+                }
+                
+                if (!activityHTML) {
+                    activityHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">No recent activity</div>';
+                }
+                
+                document.getElementById('recentActivity').innerHTML = activityHTML;
+            } catch (error) {
+                console.error('Error loading recent activity:', error);
+                document.getElementById('recentActivity').innerHTML = '<div class="error">Failed to load recent activity</div>';
+            }
+        }
+
+        // Users Tab Functions
         async function loadUsers() {
             try {
-                const search = document.getElementById('searchInput').value;
+                const search = document.getElementById('searchInput')?.value || '';
                 const params = new URLSearchParams({
                     page: currentPage,
                     limit: 25,
@@ -385,7 +838,7 @@
             }
             
             let tableHTML = `
-                <table class="users-table">
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -414,12 +867,12 @@
                             </div>
                         </td>
                         <td>${user.email}</td>
-                        <td><span class="plan-badge plan-${user.plan}">${user.plan}</span></td>
-                        <td><span class="status-${user.status}">${user.status}</span></td>
+                        <td><span class="badge badge-${user.plan === 'free' ? 'info' : user.plan === 'monthly' ? 'warning' : 'success'}">${user.plan}</span></td>
+                        <td><span class="badge badge-${user.status === 'active' ? 'success' : 'danger'}">${user.status}</span></td>
                         <td>${memberSince}</td>
                         <td>${lastLogin}</td>
                         <td>
-                            <button class="delete-btn" onclick="deleteUser('${user.id}', '${user.name}', '${user.email}')">
+                            <button class="btn btn-danger btn-small" onclick="deleteUser('${user.id}', '${user.name}', '${user.email}')">
                                 Delete
                             </button>
                         </td>
@@ -478,18 +931,472 @@
                 });
                 
                 if (response.ok) {
-                    alert('User deleted successfully');
+                    showNotification('User deleted successfully', 'success');
                     loadUsers(); // Refresh the table
                     loadStats(); // Refresh stats
                 } else {
                     const error = await response.json();
-                    alert('Failed to delete user: ' + error.message);
+                    showNotification('Failed to delete user: ' + error.message, 'error');
                 }
             } catch (error) {
                 console.error('Error deleting user:', error);
-                alert('Failed to delete user');
+                showNotification('Failed to delete user', 'error');
             }
         }
+
+        // Coupons Tab Functions
+        async function loadCoupons() {
+            try {
+                const response = await makeAdminRequest('/api/admin/coupons');
+                const data = await response.json();
+                
+                renderCouponsTable(data.coupons);
+            } catch (error) {
+                console.error('Error loading coupons:', error);
+                document.getElementById('couponsTableContainer').innerHTML = '<div class="error">Failed to load coupons</div>';
+            }
+        }
+
+        function renderCouponsTable(coupons) {
+            const container = document.getElementById('couponsTableContainer');
+            
+            if (coupons.length === 0) {
+                container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">No coupons found</div>';
+                return;
+            }
+            
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Discount</th>
+                            <th>Duration</th>
+                            <th>Usage</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            coupons.forEach(coupon => {
+                const discount = coupon.percentOff ? `${coupon.percentOff}% off` : `${(coupon.amountOff / 100).toFixed(2)} off`;
+                const usage = coupon.maxRedemptions ? `${coupon.timesRedeemed}/${coupon.maxRedemptions}` : coupon.timesRedeemed;
+                const created = new Date(coupon.created).toLocaleDateString();
+                const expired = coupon.redeemBy && new Date(coupon.redeemBy) < new Date();
+                
+                tableHTML += `
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">${coupon.id}</div>
+                            ${coupon.name && coupon.name !== coupon.id ? `<div style="font-size: 0.75rem; color: #6b7280;">${coupon.name}</div>` : ''}
+                        </td>
+                        <td>${discount}</td>
+                        <td>
+                            <span class="badge badge-info">${coupon.duration}</span>
+                            ${coupon.durationInMonths ? `<div style="font-size: 0.75rem; color: #6b7280;">${coupon.durationInMonths} months</div>` : ''}
+                        </td>
+                        <td>
+                            <div>${usage} uses</div>
+                            ${coupon.localUsage > 0 ? `<div style="font-size: 0.75rem; color: #6b7280;">Local: ${coupon.localUsage}</div>` : ''}
+                        </td>
+                        <td>
+                            <span class="badge badge-${expired ? 'danger' : coupon.valid ? 'success' : 'warning'}">
+                                ${expired ? 'Expired' : coupon.valid ? 'Active' : 'Inactive'}
+                            </span>
+                        </td>
+                        <td>${created}</td>
+                        <td>
+                            <button class="btn btn-outline btn-small" onclick="viewCouponDetails('${coupon.id}')">View</button>
+                            <button class="btn btn-danger btn-small" onclick="deleteCoupon('${coupon.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        function openCreateCouponModal() {
+            document.getElementById('createCouponModal').classList.add('active');
+            document.getElementById('createCouponForm').reset();
+            toggleDiscountFields();
+            toggleDurationFields();
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function toggleDiscountFields() {
+            const discountType = document.getElementById('discountType').value;
+            const percentGroup = document.getElementById('percentOffGroup');
+            const amountGroup = document.getElementById('amountOffGroup');
+            const currencyGroup = document.getElementById('currencyGroup');
+            
+            if (discountType === 'percent') {
+                percentGroup.style.display = 'block';
+                amountGroup.style.display = 'none';
+                currencyGroup.style.display = 'none';
+                document.getElementById('amountOff').value = '';
+            } else if (discountType === 'amount') {
+                percentGroup.style.display = 'none';
+                amountGroup.style.display = 'block';
+                currencyGroup.style.display = 'block';
+                document.getElementById('percentOff').value = '';
+            } else {
+                percentGroup.style.display = 'none';
+                amountGroup.style.display = 'none';
+                currencyGroup.style.display = 'none';
+            }
+        }
+
+        function toggleDurationFields() {
+            const duration = document.getElementById('duration').value;
+            const monthsGroup = document.getElementById('durationMonthsGroup');
+            
+            if (duration === 'repeating') {
+                monthsGroup.style.display = 'block';
+            } else {
+                monthsGroup.style.display = 'none';
+                document.getElementById('durationInMonths').value = '';
+            }
+        }
+
+        async function createCoupon() {
+            try {
+                const form = document.getElementById('createCouponForm');
+                const formData = new FormData(form);
+                
+                const couponData = {
+                    id: formData.get('id'),
+                    name: formData.get('name'),
+                    duration: formData.get('duration'),
+                    maxRedemptions: formData.get('maxRedemptions') || null,
+                    redeemBy: formData.get('redeemBy') || null
+                };
+                
+                // Add discount data
+                const discountType = formData.get('discountType');
+                if (discountType === 'percent') {
+                    couponData.percentOff = formData.get('percentOff');
+                } else if (discountType === 'amount') {
+                    couponData.amountOff = formData.get('amountOff');
+                    couponData.currency = formData.get('currency');
+                }
+                
+                // Add duration months if repeating
+                if (couponData.duration === 'repeating') {
+                    couponData.durationInMonths = formData.get('durationInMonths');
+                }
+                
+                // Validate required fields
+                if (!couponData.id || !discountType || (!couponData.percentOff && !couponData.amountOff)) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+                
+                const response = await makeAdminRequest('/api/admin/coupons', {
+                    method: 'POST',
+                    body: JSON.stringify(couponData)
+                });
+                
+                if (response.ok) {
+                    showNotification('Coupon created successfully', 'success');
+                    closeModal('createCouponModal');
+                    loadCoupons();
+                } else {
+                    const error = await response.json();
+                    showNotification('Failed to create coupon: ' + error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error creating coupon:', error);
+                showNotification('Failed to create coupon', 'error');
+            }
+        }
+
+        async function viewCouponDetails(couponId) {
+            try {
+                const response = await makeAdminRequest(`/api/admin/coupons/${couponId}/analytics`);
+                const data = await response.json();
+                
+                let detailsHTML = `
+                    <div style="margin-bottom: 1.5rem;">
+                        <h4 style="margin-bottom: 0.5rem;">Usage Statistics</h4>
+                        <div class="metric-item">
+                            <span class="metric-label">Stripe Redemptions</span>
+                            <span class="metric-value">${data.stripeData.timesRedeemed}</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Local Usage</span>
+                            <span class="metric-value">${data.localUsage.totalUsers}</span>
+                        </div>
+                        ${data.stripeData.maxRedemptions ? `
+                        <div class="metric-item">
+                            <span class="metric-label">Max Redemptions</span>
+                            <span class="metric-value">${data.stripeData.maxRedemptions}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                if (Object.keys(data.localUsage.usersByPlan).length > 0) {
+                    detailsHTML += `
+                        <div style="margin-bottom: 1.5rem;">
+                            <h4 style="margin-bottom: 0.5rem;">Usage by Plan</h4>
+                    `;
+                    
+                    Object.entries(data.localUsage.usersByPlan).forEach(([plan, count]) => {
+                        detailsHTML += `
+                            <div class="metric-item">
+                                <span class="metric-label">${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan</span>
+                                <span class="metric-value">${count} users</span>
+                            </div>
+                        `;
+                    });
+                    
+                    detailsHTML += '</div>';
+                }
+                
+                if (data.localUsage.recentUsers.length > 0) {
+                    detailsHTML += `
+                        <div>
+                            <h4 style="margin-bottom: 0.5rem;">Recent Users</h4>
+                    `;
+                    
+                    data.localUsage.recentUsers.forEach(user => {
+                        const date = new Date(user.signupDate).toLocaleDateString();
+                        detailsHTML += `
+                            <div class="metric-item">
+                                <div>
+                                    <div style="font-weight: 600;">${user.name}</div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">${user.email}</div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <span class="badge badge-${user.plan === 'free' ? 'info' : 'success'}">${user.plan}</span>
+                                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">${date}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    detailsHTML += '</div>';
+                }
+                
+                document.getElementById('couponDetailsContent').innerHTML = detailsHTML;
+                document.getElementById('couponDetailsModal').classList.add('active');
+                
+            } catch (error) {
+                console.error('Error loading coupon details:', error);
+                showNotification('Failed to load coupon details', 'error');
+            }
+        }
+
+        async function deleteCoupon(couponId) {
+            if (!confirm(`Are you sure you want to delete coupon "${couponId}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await makeAdminRequest(`/api/admin/coupons/${couponId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    showNotification('Coupon deleted successfully', 'success');
+                    loadCoupons();
+                } else {
+                    const error = await response.json();
+                    showNotification('Failed to delete coupon: ' + error.message, 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting coupon:', error);
+                showNotification('Failed to delete coupon', 'error');
+            }
+        }
+
+        // Analytics Tab Functions
+        async function loadAnalytics() {
+            try {
+                const response = await makeAdminRequest('/api/admin/analytics');
+                const data = await response.json();
+                
+                renderAnalytics(data);
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('analyticsGrid').innerHTML = '<div class="error">Failed to load analytics</div>';
+            }
+        }
+
+        function renderAnalytics(data) {
+            const container = document.getElementById('analyticsGrid');
+            
+            let analyticsHTML = `
+                <div class="chart-container">
+                    <h3>User Statistics</h3>
+                    <div class="metric-item">
+                        <span class="metric-label">Total Users</span>
+                        <span class="metric-value">${data.users.total}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Active Users (30 days)</span>
+                        <span class="metric-value">${data.users.active}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Activity Rate</span>
+                        <span class="metric-value">${data.users.total > 0 ? Math.round((data.users.active / data.users.total) * 100) : 0}%</span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Subscription Breakdown</h3>
+            `;
+            
+            if (data.subscriptions.length > 0) {
+                data.subscriptions.forEach(sub => {
+                    const planName = sub._id || 'Unknown';
+                    analyticsHTML += `
+                        <div class="metric-item">
+                            <span class="metric-label">${planName.charAt(0).toUpperCase() + planName.slice(1)} Plan</span>
+                            <span class="metric-value">${sub.count} users (${sub.activeCount} active)</span>
+                        </div>
+                    `;
+                });
+            } else {
+                analyticsHTML += '<div style="padding: 1rem; color: #6b7280;">No subscription data available</div>';
+            }
+            
+            analyticsHTML += `
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Revenue Estimate</h3>
+                    <div class="metric-item">
+                        <span class="metric-label">Monthly Subscriptions</span>
+                        <span class="metric-value">${data.revenue.monthlySubscriptions}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Yearly Subscriptions</span>
+                        <span class="metric-value">${data.revenue.yearlySubscriptions}</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-label">Est. Monthly Revenue</span>
+                        <span class="metric-value">${Math.round(data.revenue.estimatedMonthlyRevenue).toLocaleString()}</span>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Popular Coupons</h3>
+            `;
+            
+            if (data.coupons.length > 0) {
+                data.coupons.slice(0, 5).forEach(coupon => {
+                    analyticsHTML += `
+                        <div class="metric-item">
+                            <span class="metric-label">${coupon._id}</span>
+                            <span class="metric-value">${coupon.count} uses</span>
+                        </div>
+                    `;
+                });
+            } else {
+                analyticsHTML += '<div style="padding: 1rem; color: #6b7280;">No coupon usage data</div>';
+            }
+            
+            analyticsHTML += '</div>';
+            
+            container.innerHTML = analyticsHTML;
+        }
+
+        // Utility Functions
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 10000;
+                max-width: 400px;
+                animation: slideInRight 0.3s ease;
+            `;
+            
+            // Set background color based on type
+            switch(type) {
+                case 'success':
+                    notification.style.background = '#059669';
+                    break;
+                case 'error':
+                    notification.style.background = '#dc2626';
+                    break;
+                case 'warning':
+                    notification.style.background = '#d97706';
+                    break;
+                default:
+                    notification.style.background = '#6366f1';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 5000);
+        }
+
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideInRight {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes slideOutRight {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('active');
+            }
+        });
+
+        // Handle escape key to close modals
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
     </script>
 </body>
 </html>
