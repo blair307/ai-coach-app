@@ -1012,25 +1012,36 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     
     console.log('Creating subscription with coupon:', couponCode);
     
-    // Only validate coupon if one is provided
-    if (couponCode) {
-      try {
-        // First check our local validation
-        const validCoupons = {
-          'EEHCLIENT': { type: 'forever_free' },
-          'FREEMONTH': { type: 'first_month_free' },
-          'EEHCLIENT6': { type: 'six_months_free' },
-              'CRAZYDISCOUNT': { type: 'test_discount' }
+   // Only validate coupon if one is provided
+if (couponCode) {
+  try {
+    // First try to validate directly with Stripe
+    try {
+      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+      if (!stripeCoupon.valid) {
+        return res.status(400).json({ 
+          error: 'This coupon has expired or reached its usage limit' 
+        });
+      }
+      console.log('✅ Stripe coupon validated:', stripeCoupon.id);
+    } catch (stripeCouponError) {
+      // If coupon doesn't exist in Stripe, check local list
+      console.log('⚠️ Coupon not found in Stripe, checking local list:', couponCode);
+      
+      const validCoupons = {
+        'EEHCLIENT': { type: 'forever_free' },
+        'FREEMONTH': { type: 'first_month_free' },
+        'EEHCLIENT6': { type: 'six_months_free' },
+        'CRAZYDISCOUNT': { type: 'test_discount' }
+      };
 
-        };
-
-        const localCoupon = validCoupons[couponCode.toUpperCase()];
-        if (!localCoupon) {
-          return res.status(400).json({ 
-            error: 'Invalid coupon code. Please check and try again.' 
-          });
-        }
-
+      const localCoupon = validCoupons[couponCode.toUpperCase()];
+      if (!localCoupon) {
+        return res.status(400).json({ 
+          error: 'Invalid coupon code. Please check and try again.' 
+        });
+      }
+    }
         // Then verify with Stripe (only if it exists in Stripe)
         try {
           const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
@@ -1185,38 +1196,65 @@ app.post('/api/payments/validate-coupon', async (req, res) => {
       return res.status(400).json({ error: 'Coupon code is required' });
     }
 
-    // Validate against your predefined coupons
-    const validCoupons = {
-      'EEHCLIENT': {
-        type: 'forever_free',
-        description: 'Completely free account',
-        discount: '100% off forever'
-      },
-      'FREEMONTH': {
-        type: 'first_month_free',
-        description: 'First month free',
-        discount: '100% off first month'
-      },
-      'EEHCLIENT6': {
-        type: 'six_months_free',
-        description: 'Six months free',
-        discount: '100% off for 6 months'
-      },
-        'CRAZYDISCOUNT': {
-    type: 'test_discount',
-    description: 'Test discount - $1 payment',
-    discount: 'Reduces to $1 for testing'
+   // First try to validate with Stripe directly
+try {
+  const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+  if (!stripeCoupon.valid) {
+    return res.status(400).json({ 
+      valid: false, 
+      error: 'Coupon has expired or reached its usage limit' 
+    });
   }
-    };
-
-    const coupon = validCoupons[couponCode.toUpperCase()];
-    
-    if (!coupon) {
-      return res.status(400).json({ 
-        valid: false, 
-        error: 'Invalid coupon code' 
-      });
+  
+  // If Stripe coupon exists and is valid, create response
+  let couponType = 'standard_discount';
+  let description = 'Discount applied';
+  
+  if (stripeCoupon.percent_off === 100) {
+    couponType = stripeCoupon.duration === 'forever' ? 'forever_free' : 'first_month_free';
+    description = `${stripeCoupon.percent_off}% off ${stripeCoupon.duration === 'forever' ? 'forever' : 'for ' + (stripeCoupon.duration_in_months || 1) + ' month(s)'}`;
+  } else if (stripeCoupon.percent_off) {
+    description = `${stripeCoupon.percent_off}% off`;
+  } else if (stripeCoupon.amount_off) {
+    description = `$${(stripeCoupon.amount_off / 100).toFixed(2)} off`;
+  }
+  
+  return res.json({
+    valid: true,
+    coupon: {
+      code: couponCode.toUpperCase(),
+      type: couponType,
+      description: description,
+      discount: description
     }
+  });
+  
+} catch (stripeError) {
+  console.log('Coupon not found in Stripe, checking local list...');
+  
+  // Fallback to local validation for special coupons
+  const validCoupons = {
+    'EEHCLIENT': {
+      type: 'forever_free',
+      description: 'Completely free account',
+      discount: '100% off forever'
+    },
+      'FREETOOME': {
+    type: 'forever_free',
+    description: '100% off',
+    discount: '100% off'
+  }
+  };
+
+  const coupon = validCoupons[couponCode.toUpperCase()];
+  
+  if (!coupon) {
+    return res.status(400).json({ 
+      valid: false, 
+      error: 'Invalid coupon code' 
+    });
+  }
+}
 
     // Optionally check with Stripe to ensure coupon is still active
     try {
