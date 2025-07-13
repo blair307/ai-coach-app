@@ -94,6 +94,7 @@ function loadCoachPhotos() {
 let recognition = null;
 let isListening = false;
 let voiceInputEnabled = true;
+let silenceTimer = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
@@ -1025,38 +1026,45 @@ if (typeof recognition.speechStartTimeout !== 'undefined') {
     recognition.speechStartTimeout = 8000; // 8 seconds to start speaking
 }
         
-        // Handle speech recognition results
-        recognition.onresult = function(event) {
-            let transcript = '';
-            let isFinal = false;
+      // Handle speech recognition results
+recognition.onresult = function(event) {
+    let transcript = '';
+    let isFinal = false;
+    
+    // Clear any existing silence timer since we got speech
+    if (silenceTimer) {
+        clearTimeout(silenceTimer);
+        silenceTimer = null;
+    }
+    
+    // Process recognition results
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+            isFinal = true;
+        }
+    }
+    
+    // Update input field with transcript
+    const inputField = findInputField();
+    if (inputField) {
+        if (isFinal) {
+            // Final result - clean up and format
+            inputField.value = transcript.trim();
             
-            // Process recognition results
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                transcript += event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    isFinal = true;
-                }
-            }
-            
-            // Update input field with transcript
-            const inputField = findInputField();
-            if (inputField) {
-                if (isFinal) {
-                    // Final result - clean up and format
-                    inputField.value = transcript.trim();
+            // Set a 3-second timer to auto-send if no more speech
+            if (transcript.trim().length > 0) {
+                silenceTimer = setTimeout(() => {
                     stopVoiceInput();
-                    // Auto-send the message
-                    if (transcript.trim().length > 0) {
-                        setTimeout(() => {
-                            sendMessageNow();
-                        }, 500);
-                    }
-                } else {
-                    // Interim result - show what's being spoken
-                    inputField.value = transcript;
-                }
+                    sendMessageNow();
+                }, 3000); // 3 seconds of silence before sending
             }
-        };
+        } else {
+            // Interim result - show what's being spoken
+            inputField.value = transcript;
+        }
+    }
+};
         
         // Handle recognition errors
         recognition.onerror = function(event) {
