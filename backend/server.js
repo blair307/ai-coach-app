@@ -11,6 +11,19 @@ const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 require('dotenv').config();
 
+// Add this after your other require statements
+const fetch = require('node-fetch'); // You may need to install this: npm install node-fetch
+
+// ElevenLabs configuration
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
+
+// Voice IDs (we'll update these when your voice clones are ready)
+const VOICE_IDS = {
+    coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
+    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id'
+};
+
 // Make sure all important settings are configured
 const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
 const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
@@ -1318,6 +1331,40 @@ const COACHES = {
   }
 };
 
+// Voice generation function
+async function generateVoice(text, voiceId) {
+    if (!ELEVENLABS_API_KEY) {
+        throw new Error('ElevenLabs API key not configured');
+    }
+    
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': ELEVENLABS_API_KEY
+        },
+        body: JSON.stringify({
+            text: text,
+            model_id: 'eleven_monolingual_v1',
+            voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.5
+            }
+        })
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+    }
+    
+    // Convert audio response to base64 for frontend
+    const audioBuffer = await response.arrayBuffer();
+    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
+    return `data:audio/mpeg;base64,${audioBase64}`;
+}
+
 // Send message to AI Assistant with Coach Selection
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
@@ -1408,12 +1455,28 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
 
+// Generate voice if coach voice is enabled
+    let audioUrl = null;
+    const selectedCoachId = selectedCoach;
+    
+    if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
+        try {
+            console.log('🎤 Generating voice for coach:', selectedCoachId);
+            audioUrl = await generateVoice(response, VOICE_IDS[selectedCoachId]);
+            console.log('✅ Voice generated successfully');
+        } catch (voiceError) {
+            console.error('⚠️ Voice generation failed:', voiceError.message);
+            // Continue without voice - don't fail the whole request
+        }
+    }
+    
     res.json({ 
       response,
       coach: {
         name: coach.name,
         id: selectedCoach
-      }
+      },
+      audio: audioUrl ? { url: audioUrl, enabled: true } : null
     });
 
   } catch (error) {
