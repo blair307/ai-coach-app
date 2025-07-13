@@ -348,6 +348,14 @@ async function callAI(message) {
     console.log('🤖 Calling Render backend...');
     
     try {
+        // Check if coach is selected
+        if (!selectedCoach) {
+            removeThinkingMessage();
+            addMessageToChat('Please select a coach first to start your conversation.', 'ai');
+            showCoachSelector();
+            return;
+        }
+        
         // Get auth token with enhanced checking
         const token = getAuthToken();
         
@@ -363,11 +371,13 @@ async function callAI(message) {
         
         console.log('📡 Calling:', `${BACKEND_URL}/api/chat/send`);
         console.log('🔑 Using token:', token.substring(0, 20) + '...');
+        console.log('🎯 Using coach:', selectedCoach, COACHES[selectedCoach]?.name);
         
-        // Include coaching style preferences in the request
+        // Include coaching style preferences and selected coach in the request
         const requestBody = {
             message: message,
             chatHistory: [],
+            selectedCoach: selectedCoach,
             preferences: {
                 tone: coachSettings.coachingTone,
                 responseLength: coachSettings.responseLength
@@ -494,6 +504,48 @@ function populateSettingsForm() {
     const sessionReminderSelect = document.getElementById('sessionReminder');
     if (sessionReminderSelect) sessionReminderSelect.value = coachSettings.sessionReminder;
 }
+
+// Add coach selection to settings modal
+function addCoachSelectionToSettings() {
+    const modal = document.getElementById('settingsModal');
+    if (!modal) return;
+    
+    // Find the coaching style section
+    const coachingStyleSection = modal.querySelector('div[style*="padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9;"]:nth-child(3)');
+    if (!coachingStyleSection) return;
+    
+    // Add coach selection HTML
+    const coachSelectionHTML = `
+        <div style="margin-bottom: 1rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem; font-weight: 500; color: #374151;">Current coach:</label>
+            <div style="display: flex; gap: 1rem; align-items: center; padding: 0.75rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                    ${selectedCoach ? COACHES[selectedCoach].avatar : 'AI'}
+                </div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #374151;">${selectedCoach ? COACHES[selectedCoach].name : 'No coach selected'}</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">${selectedCoach ? COACHES[selectedCoach].personality : 'Please select a coach'}</div>
+                </div>
+                <button onclick="showCoachSelector(); closeSettings();" style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; font-size: 0.875rem; cursor: pointer;">
+                    ${selectedCoach ? 'Switch Coach' : 'Select Coach'}
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Insert at the beginning of the coaching style section
+    coachingStyleSection.insertAdjacentHTML('afterbegin', coachSelectionHTML);
+}
+
+// Update the toggleSettings function to include coach selection
+const originalToggleSettings = toggleSettings;
+function toggleSettings() {
+    if (typeof originalToggleSettings === 'function') {
+        originalToggleSettings();
+    } else {
+        console.log('⚙️ Opening settings modal...');
+        const modal = document.getElementById('settingsModal');
+        if (modal)
 
 // Save settings
 function saveSettings() {
@@ -867,4 +919,14 @@ function logout() {
     }
 }
 
-console.log('✅ AI Coach script loaded with Render backend, token fixes, and working settings!');
+console.log('✅ AI Coach script loaded with Render backend, token fixes, working settings, and coach selection!');
+
+// Initialize coach selection on page load
+window.addEventListener('load', function() {
+    // Small delay to ensure DOM is fully ready
+    setTimeout(() => {
+        if (selectedCoach) {
+            updateCoachDisplay();
+        }
+    }, 500);
+});
