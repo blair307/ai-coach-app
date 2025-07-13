@@ -472,8 +472,18 @@ async function callAI(message) {
             const data = await response.json();
             console.log('✅ Got AI response from your custom Assistant!');
             console.log('🤖 Response preview:', data.response.substring(0, 100) + '...');
-            addMessageToChat(data.response, 'ai');
-            
+// Clean the response for display (remove markdown formatting)
+const cleanedDisplayResponse = data.response
+    .replace(/\*\*/g, '') // Remove ** bold markers
+    .replace(/\*/g, '')   // Remove * italic markers
+    .replace(/#{1,6}\s/g, '') // Remove # headers
+    .replace(/`([^`]+)`/g, '$1') // Remove single backticks, keep content
+    .replace(/```[^`]*```/g, '') // Remove code blocks completely
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
+    .trim();
+
+addMessageToChat(cleanedDisplayResponse, 'ai');
+         
     // Handle voice response with interruption support
 if (data.audio && data.audio.url && voiceEnabled) {
     console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
