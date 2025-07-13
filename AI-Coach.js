@@ -463,13 +463,27 @@ async function callAI(message) {
         // Remove thinking message
         removeThinkingMessage();
         
-        if (response.ok) {
+     if (response.ok) {
             const data = await response.json();
             console.log('✅ Got AI response from your custom Assistant!');
             console.log('🤖 Response preview:', data.response.substring(0, 100) + '...');
             addMessageToChat(data.response, 'ai');
             
+            // NEW: Handle voice response
+            if (data.audio && data.audio.url) {
+                console.log('🎵 Playing voice response');
+                try {
+                    const audio = new Audio(data.audio.url);
+                    audio.play().catch(error => {
+                        console.log('Audio playback failed:', error);
+                    });
+                } catch (audioError) {
+                    console.log('Audio creation failed:', audioError);
+                }
+            }
+            
         } else if (response.status === 401 || response.status === 403) {
+         
             // Token is invalid/expired
             console.log('🔒 Authentication failed - token invalid or expired');
             
