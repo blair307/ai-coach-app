@@ -405,6 +405,11 @@ const messageSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
   }],
   likeCount: { type: Number, default: 0 },
+     // Image upload fields
+  image: { type: String }, // Base64 image data
+  imageName: { type: String }, // Original filename
+  imageSize: { type: Number }, // File size in bytes
+  createdAt: { type: Date, default: Date.now }
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -1979,6 +1984,37 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       profilePhoto: user?.profilePhoto || null
     };
 
+    // Handle image upload
+    if (req.body.image) {
+      console.log('📷 Processing image upload for message');
+      
+      // Validate image data
+      if (!req.body.image.startsWith('data:image/')) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid image format' 
+        });
+      }
+      
+      // Check image size (approximate - base64 is ~33% larger than original)
+      const imageSizeBytes = (req.body.image.length * 0.75);
+      if (imageSizeBytes > 5 * 1024 * 1024) { // 5MB limit
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Image too large. Please use an image under 5MB.' 
+        });
+      }
+      
+      // Add image data to message
+      messageData.image = req.body.image;
+      messageData.imageName = req.body.imageName || 'image.jpg';
+      messageData.imageSize = req.body.imageSize || imageSizeBytes;
+      
+      console.log('✅ Image data added to message:', {
+        name: messageData.imageName,
+        size: Math.round(imageSizeBytes / 1024) + 'KB'
+      });
+    }
     if (req.body.replyTo) {
       messageData.replyTo = {
         messageId: req.body.replyTo.messageId,
