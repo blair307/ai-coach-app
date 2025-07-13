@@ -917,6 +917,7 @@ function logout() {
         window.location.href = 'login.html';
     }
 }
+}
 
 console.log('✅ AI Coach script loaded with Render backend, token fixes, working settings, and coach selection!');
 
