@@ -42,11 +42,56 @@ const COACHES = {
 // Current selected coach
 let selectedCoach = localStorage.getItem('selectedCoach') || null;
 
+// Current selected coach
+let selectedCoach = localStorage.getItem('selectedCoach') || null;
+
+// Load coach photos
+function loadCoachPhotos() {
+    console.log('📸 Loading coach photos...');
+    
+    // Load Blair's photo
+    const blairPhoto = document.getElementById('blairPhoto');
+    const blairInitials = document.getElementById('blairInitials');
+    
+    if (COACHES.coach1.hasPhoto && COACHES.coach1.photoUrl && blairPhoto) {
+        blairPhoto.src = COACHES.coach1.photoUrl;
+        blairPhoto.onload = function() {
+            blairPhoto.style.display = 'block';
+            if (blairInitials) blairInitials.style.display = 'none';
+            console.log('✅ Blair photo loaded');
+        };
+        blairPhoto.onerror = function() {
+            console.log('⚠️ Blair photo failed to load, using initials');
+            blairPhoto.style.display = 'none';
+            if (blairInitials) blairInitials.style.display = 'flex';
+        };
+    }
+    
+    // Load Dave's photo
+    const davePhoto = document.getElementById('davePhoto');
+    const daveInitials = document.getElementById('daveInitials');
+    
+    if (COACHES.coach2.hasPhoto && COACHES.coach2.photoUrl && davePhoto) {
+        davePhoto.src = COACHES.coach2.photoUrl;
+        davePhoto.onload = function() {
+            davePhoto.style.display = 'block';
+            if (daveInitials) daveInitials.style.display = 'none';
+            console.log('✅ Dave photo loaded');
+        };
+        davePhoto.onerror = function() {
+            console.log('⚠️ Dave photo failed to load, using initials');
+            davePhoto.style.display = 'none';
+            if (daveInitials) daveInitials.style.display = 'flex';
+        };
+    }
+}
+
 // Wait for page to fully load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
     loadSettings();
     loadRecentInsights(); // Load real insights
+    loadCoachPhotos(); // Load coach photos
     checkCoachSelection(); // Check if user has selected a coach
     setTimeout(setupChat, 1000);
     
@@ -140,7 +185,19 @@ function updateCoachDisplay() {
     const nameEl = document.getElementById('currentCoachName');
     const statusEl = document.getElementById('currentCoachStatus');
     
-    if (avatarEl) avatarEl.textContent = coach.avatar;
+    if (avatarEl) {
+        if (coach.hasPhoto && coach.photoUrl) {
+            // Use photo as background image
+            avatarEl.style.backgroundImage = `url(${coach.photoUrl})`;
+            avatarEl.style.backgroundSize = 'cover';
+            avatarEl.style.backgroundPosition = 'center';
+            avatarEl.textContent = '';
+        } else {
+            // Use initials
+            avatarEl.style.backgroundImage = 'none';
+            avatarEl.textContent = coach.avatar;
+        }
+    }
     if (nameEl) nameEl.textContent = coach.name;
     if (statusEl) statusEl.textContent = coach.status;
     
