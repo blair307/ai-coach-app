@@ -1012,8 +1012,8 @@ function initializeVoiceRecognition() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
         
-       // Configure recognition settings
-recognition.continuous = false;
+   // Configure recognition settings
+recognition.continuous = true;  // CHANGED: Keep listening continuously
 recognition.interimResults = true;
 recognition.lang = 'en-US';
 recognition.maxAlternatives = 1;
@@ -1090,10 +1090,22 @@ recognition.onresult = function(event) {
             showToast(errorMessage);
         };
         
-        // Handle recognition end
-        recognition.onend = function() {
+       // Handle recognition end - restart if still supposed to be listening
+recognition.onend = function() {
+    if (isListening) {
+        // Restart recognition to keep listening
+        try {
+            setTimeout(() => {
+                if (isListening) {
+                    recognition.start();
+                }
+            }, 100);
+        } catch (error) {
+            console.log('Could not restart recognition:', error);
             stopVoiceInput();
-        };
+        }
+    }
+};
         
         console.log('✅ Voice recognition initialized successfully');
         voiceInputEnabled = true;
