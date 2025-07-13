@@ -1095,10 +1095,12 @@ function resetAutoSendTimer() {
         voiceTimeout = null;
     }
     
-    // Set new 3-second timer
+    // Set new 3-second timer (keeping your preferred timing)
     voiceTimeout = setTimeout(() => {
         console.log('⏰ 3 seconds of silence - auto-sending');
-        finishVoiceInput();
+        if (isCurrentlyListening && completeTranscript.trim().length > 0) {
+            finishVoiceInput();
+        }
     }, 3000);
 }
 
