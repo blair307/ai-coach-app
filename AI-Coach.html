@@ -342,53 +342,63 @@
                 </div>
             </header>
 
-           <!-- Coach Selector (initially hidden) -->
-            <div class="coach-selector-container" id="coachSelector" style="display: none;">
-                <div class="coach-selector-header">
-                    <h2>Choose Your AI Coach</h2>
-                    <p>Select the coaching style that resonates with you. You can switch anytime in settings.</p>
-                </div>
-                
-<div class="coaches-grid">
-    <!-- Blair Reynolds -->
-    <div class="coach-card" data-coach="coach1" onclick="selectCoach('coach1')">
-        <div class="coach-avatar-large" id="blairAvatar">
-            <img src="" alt="Blair Reynolds" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="blairPhoto">
-            <span id="blairInitials">BR</span>
-        </div>
-        <h3>Blair Reynolds</h3>
-        <p class="coach-description">Transformative, humor-focused coach with deep empathy. Combines entrepreneurial enthusiasm with personal and relational health expertise.</p>
-        <div class="coach-features">
-            <div class="feature-tag">Transformation</div>
-            <div class="feature-tag">Inner Peace</div>
-            <div class="feature-tag">Relationships</div>
-        </div>
-        <button class="btn btn-outline coach-select-btn">Select Blair</button>
-    </div>
-    
-    <!-- Dave Charlson -->
-    <div class="coach-card" data-coach="coach2" onclick="selectCoach('coach2')">
-        <div class="coach-avatar-large" id="daveAvatar">
-            <img src="" alt="Dave Charlson" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="davePhoto">
-            <span id="daveInitials">DC</span>
-        </div>
-        <h3>Dave Charlson</h3>
-        <p class="coach-description">Strategic, warm coach focused on sustainable growth. Balanced approach combining business success with personal fulfillment and well-being.</p>
-        <div class="coach-features">
-            <div class="feature-tag">Health & Fitness</div>
-            <div class="feature-tag">Business Growth</div>
-            <div class="feature-tag">Life Balance</div>
-        </div>
-        <button class="btn btn-outline coach-select-btn">Select Dave</button>
-    </div>
-</div>
-                
-                <div class="coach-selector-footer">
-                    <p><small>Don't worry - you can change coaches anytime in your settings</small></p>
+<!-- Coach Selector (initially hidden) -->
+            <div class="coach-selector-container" id="coachSelector" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 9999; backdrop-filter: blur(4px); overflow-y: auto;">
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem;">
+                    <div style="background: white; border-radius: 16px; max-width: 1200px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative;">
+                        <!-- Close button -->
+                        <button onclick="closeCoachSelector()" style="position: absolute; top: 1rem; right: 1rem; background: #f1f5f9; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 1.5rem; color: #64748b; z-index: 10000; display: flex; align-items: center; justify-content: center;">&times;</button>
+                        
+                        <div style="padding: 3rem;">
+                            <div class="coach-selector-header">
+                                <h2>Choose Your Ai Assisted Coach</h2>
+                                <p>Select the coaching style that resonates with you. Each coach brings unique strengths to help you succeed.</p>
+                            </div>
+                            
+                            <div class="coaches-grid">
+                                <!-- Blair Reynolds -->
+                                <div class="coach-card" data-coach="coach1" onclick="selectCoach('coach1')">
+                                    <div class="coach-avatar-large" id="blairAvatar">
+                                        <img src="" alt="Blair Reynolds" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="blairPhoto">
+                                        <span id="blairInitials">BR</span>
+                                    </div>
+                                    <h3>Blair Reynolds</h3>
+                                    <p class="coach-description">Transformative, humor-focused coach with deep empathy. Combines entrepreneurial enthusiasm with personal and relational health expertise.</p>
+                                    <div class="coach-features">
+                                        <div class="feature-tag">Transformation</div>
+                                        <div class="feature-tag">Inner Peace</div>
+                                        <div class="feature-tag">Relationships</div>
+                                    </div>
+                                    <button class="btn btn-outline coach-select-btn">Select Blair</button>
+                                </div>
+                                
+                                <!-- Dave Charlson -->
+                                <div class="coach-card" data-coach="coach2" onclick="selectCoach('coach2')">
+                                    <div class="coach-avatar-large" id="daveAvatar">
+                                        <img src="" alt="Dave Charlson" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="davePhoto">
+                                        <span id="daveInitials">DC</span>
+                                    </div>
+                                    <h3>Dave Charlson</h3>
+                                    <p class="coach-description">Strategic, warm coach focused on sustainable growth. Balanced approach combining business success with personal fulfillment and well-being.</p>
+                                    <div class="coach-features">
+                                        <div class="feature-tag">Health & Fitness</div>
+                                        <div class="feature-tag">Business Growth</div>
+                                        <div class="feature-tag">Life Balance</div>
+                                    </div>
+                                    <button class="btn btn-outline coach-select-btn">Select Dave</button>
+                                </div>
+                            </div>
+                            
+                            <div class="coach-selector-footer">
+                                <p>You can change coaches anytime in your settings</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
+               
                 <!-- Chat Container -->
                 <div class="chat-container">
 <div class="chat-header">
