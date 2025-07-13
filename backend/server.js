@@ -1417,9 +1417,23 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       content: message
     });
 
-    const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: coach.assistantId // Use selected coach's assistant
-    });
+// Check for active runs and cancel them
+try {
+  const activeRuns = await openai.beta.threads.runs.list(threadId, { limit: 5 });
+  for (const existingRun of activeRuns.data) {
+    if (existingRun.status === 'in_progress' || existingRun.status === 'queued') {
+      console.log('⏳ Canceling existing run:', existingRun.id);
+      await openai.beta.threads.runs.cancel(threadId, existingRun.id);
+    }
+  }
+} catch (cancelError) {
+  console.log('⚠️ Could not cancel existing runs:', cancelError.message);
+}
+
+const run = await openai.beta.threads.runs.create(threadId, {
+  assistant_id: coach.assistantId
+});
+      
 
     let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
     
