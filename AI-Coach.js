@@ -1011,12 +1011,12 @@ function toggleVoice() {
     const voiceBtn = document.getElementById('voiceToggleBtn');
     
     if (voiceEnabled) {
-        voiceBtn.textContent = '🔊 Voice On';
+        voiceBtn.textContent = 'Voice On';
         voiceBtn.classList.remove('btn-secondary');
         voiceBtn.classList.add('btn-outline');
         showToast('Voice responses enabled');
     } else {
-        voiceBtn.textContent = '🔇 Voice Off';
+        voiceBtn.textContent = 'Voice Off';
         voiceBtn.classList.remove('btn-outline');
         voiceBtn.classList.add('btn-secondary');
         showToast('Voice responses disabled');
