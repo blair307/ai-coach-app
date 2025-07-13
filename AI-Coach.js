@@ -1276,15 +1276,21 @@ function finishVoiceInput() {
         // Ensure the input has the final transcript
         inputField.value = completeTranscript.trim();
         
-        // Stop voice input
+        // Stop voice input first
         stopVoiceInput();
+        
+        // Clear the transcript to prevent double-sending
+        const messageToSend = completeTranscript.trim();
+        completeTranscript = '';
         
         // Send the message
         setTimeout(() => {
-            sendMessageNow();
-        }, 100);
+            if (inputField.value.trim() === messageToSend) {
+                sendMessageNow();
+                console.log('📤 Voice message sent:', messageToSend);
+            }
+        }, 200);
         
-        console.log('📤 Voice message sent:', completeTranscript.trim());
     } else {
         // No text to send, just stop
         stopVoiceInput();
