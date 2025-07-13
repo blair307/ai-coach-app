@@ -1476,7 +1476,18 @@ const run = await openai.beta.threads.runs.create(threadId, {
     if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
         try {
             console.log('🎤 Generating voice for coach:', selectedCoachId);
-            audioUrl = await generateVoice(response, VOICE_IDS[selectedCoachId]);
+// Clean the response text for voice synthesis
+const cleanedResponse = response
+    .replace(/\*\*/g, '') // Remove ** bold markers
+    .replace(/\*/g, '')   // Remove * italic markers
+    .replace(/#{1,6}\s/g, '') // Remove # headers
+    .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
+    .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
+    .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
+    .trim();
+
+audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
             console.log('✅ Voice generated successfully');
         } catch (voiceError) {
             console.error('⚠️ Voice generation failed:', voiceError.message);
