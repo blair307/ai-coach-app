@@ -42,8 +42,6 @@ const COACHES = {
 // Current selected coach
 let selectedCoach = localStorage.getItem('selectedCoach') || null;
 
-// Current selected coach
-let selectedCoach = localStorage.getItem('selectedCoach') || null;
 
 // Load coach photos
 function loadCoachPhotos() {
