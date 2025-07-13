@@ -538,7 +538,6 @@ function addCoachSelectionToSettings() {
 }
 
 // Update the toggleSettings function to include coach selection
-const originalToggleSettings = toggleSettings;
 function toggleSettings() {
     if (typeof originalToggleSettings === 'function') {
         originalToggleSettings();
