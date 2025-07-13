@@ -2136,8 +2136,67 @@ const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
 
 
         
-// ENHANCED UPDATE LIKE DISPLAY FUNCTION
-function updateLikeDisplay(likeElement, count) {
+}
+
+        // Toggle like functionality
+        async function toggleLike(messageId) {
+            try {
+                const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+                if (!token) {
+                    throw new Error('No authentication token');
+                }
+
+                console.log('❤️ Toggling like for message:', messageId);
+
+                const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to toggle like: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('📊 Like toggle response:', data);
+
+                const likeButton = document.querySelector(`[onclick="toggleLike('${messageId}')"]`);
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                const likeCountElement = messageElement?.querySelector('.like-count');
+
+                if (likeButton) {
+                    if (data.isLiked) {
+                        likeButton.classList.add('liked');
+                        likeButton.innerHTML = '♥';
+                        showLikeToast('❤️ Liked!');
+                    } else {
+                        likeButton.classList.remove('liked');
+                        likeButton.innerHTML = '♡';
+                        showLikeToast('💔 Unliked');
+                    }
+                }
+
+                if (likeCountElement) {
+                    updateLikeDisplay(likeCountElement, data.likeCount);
+                }
+
+                console.log('✅ Like toggled successfully:', {
+                    messageId,
+                    isLiked: data.isLiked,
+                    count: data.likeCount
+                });
+
+            } catch (error) {
+                console.error('❌ Error toggling like:', error);
+                showErrorMessage('Failed to like message. Please try again.');
+            }
+        }
+
+        // ENHANCED UPDATE LIKE DISPLAY FUNCTION
+        function updateLikeDisplay(likeElement, count) {
     if (!likeElement) {
         console.error('❌ Like element not provided to updateLikeDisplay');
         return;
