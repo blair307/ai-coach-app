@@ -4006,6 +4006,54 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+// Clean up old images (optional - run manually or via cron)
+app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
+  try {
+    const { daysOld = 30 } = req.body;
+    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
+    
+    console.log(`🧹 Cleaning up images older than ${daysOld} days`);
+    
+    // Find messages with images older than cutoff date
+    const oldMessages = await Message.find({
+      image: { $exists: true },
+      createdAt: { $lt: cutoffDate },
+      deleted: true
+    });
+    
+    console.log(`📊 Found ${oldMessages.length} old deleted messages with images`);
+    
+    // Remove image data from old deleted messages
+    const result = await Message.updateMany(
+      {
+        image: { $exists: true },
+        createdAt: { $lt: cutoffDate },
+        deleted: true
+      },
+      {
+        $unset: { 
+          image: 1, 
+          imageName: 1, 
+          imageSize: 1 
+        }
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: `Cleaned up ${result.modifiedCount} old images`,
+      messagesProcessed: oldMessages.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error cleaning up images:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to cleanup images' 
+    });
+  }
+});
+
 // ADD THIS ROUTE TO YOUR server.js file after the other admin routes
 // (around line 2200, after the other admin coupon routes)
 
