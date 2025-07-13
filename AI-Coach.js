@@ -25,8 +25,8 @@ const COACHES = {
         description: "Entrepreneurial enthusiasm with a focus on personal and relational health",
         avatar: "BR",
         status: "Ready to transform your journey",
-        photoUrl: null, // Add Blair's photo URL here when ready
-        hasPhoto: false
+        photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/blair.png",
+        hasPhoto: true
     },
     coach2: {
         name: "Dave Charlson", 
@@ -34,8 +34,8 @@ const COACHES = {
         description: "Balanced approach combining business success with personal fulfillment",
         avatar: "DC",
         status: "Ready to guide your growth",
-        photoUrl: null, // Add Dave's photo URL here when ready
-        hasPhoto: false
+        photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/dave.png",
+        hasPhoto: true
     }
 };
 
