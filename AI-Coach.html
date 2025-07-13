@@ -243,9 +243,12 @@
                 </div>
                 
                 <div class="coaches-grid">
-                    <!-- Blair Reynolds -->
+                   <!-- Blair Reynolds -->
                     <div class="coach-card" data-coach="coach1" onclick="selectCoach('coach1')">
-                        <div class="coach-avatar-large">BR</div>
+                        <div class="coach-avatar-large" id="blairAvatar">
+                            <img src="" alt="Blair Reynolds" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="blairPhoto">
+                            <span id="blairInitials">BR</span>
+                        </div>
                         <h3>Blair Reynolds</h3>
                         <p class="coach-personality">Humorous, empathy-oriented coach focused on transformative solutions</p>
                         <p class="coach-description">Entrepreneurial enthusiasm with a focus on personal and relational health</p>
@@ -259,7 +262,10 @@
                     
                     <!-- Dave Charlson -->
                     <div class="coach-card" data-coach="coach2" onclick="selectCoach('coach2')">
-                        <div class="coach-avatar-large">DC</div>
+                        <div class="coach-avatar-large" id="daveAvatar">
+                            <img src="" alt="Dave Charlson" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: none;" id="davePhoto">
+                            <span id="daveInitials">DC</span>
+                        </div>
                         <h3>Dave Charlson</h3>
                         <p class="coach-personality">Warm, strategic coach focused on sustainable growth and well-being</p>
                         <p class="coach-description">Balanced approach combining business success with personal fulfillment</p>
