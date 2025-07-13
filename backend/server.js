@@ -410,7 +410,6 @@ const messageSchema = new mongoose.Schema({
   imageName: { type: String }, // Original filename
   imageSize: { type: Number }, // File size in bytes
   createdAt: { type: Date, default: Date.now }
-  createdAt: { type: Date, default: Date.now }
 });
 
 const Message = mongoose.model('Message', messageSchema);
