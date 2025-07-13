@@ -1713,18 +1713,18 @@ const likeCount = message.likeCount || likes.length || 0; // Start at 0
 const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
     const hasLikes = likeCount > 0; // ADD THIS LINE
 
-    let actionButtons = `
-        <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
-                onclick="toggleLike('${message._id || message.id || Date.now()}')" 
-                title="Like">
-            ${isLikedByUser ? '♥' : '♡'}
-        </button>
-        <button class="action-btn reply-btn" 
-                onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
-                title="Reply">
-            ↳
-        </button>
-    `;
+   let actionButtons = `
+    <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
+            onclick="toggleLike('${message._id || message.id || Date.now()}')" 
+            title="Like">
+        ${isLikedByUser ? '♥' : '♡'}
+    </button>
+    <button class="action-btn reply-btn" 
+            onclick="replyToMessage('${message._id || message.id || Date.now()}', '${username.replace(/'/g, "\\'")}', '${content.replace(/'/g, "\\'")}', '${message.userId || ''}')" 
+            title="Reply">
+        ↳
+    </button>
+`;
 
     if (isOwnMessage) {
         actionButtons += `
