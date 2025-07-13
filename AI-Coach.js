@@ -1476,3 +1476,44 @@ function toggleVoice() {
     
     console.log('🎵 Voice toggle:', voiceEnabled ? 'ON' : 'OFF');
 }
+
+// Force button spacing with JavaScript
+function fixButtonSpacing() {
+    const inputActions = document.querySelector('.input-actions');
+    const voiceBtn = document.getElementById('voiceInputBtn');
+    const sendBtn = document.getElementById('sendButton');
+    
+    if (inputActions && voiceBtn && sendBtn) {
+        // Force styles with JavaScript
+        inputActions.style.cssText = `
+            display: flex !important;
+            gap: 2rem !important;
+            justify-content: center !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            padding-top: 1rem !important;
+        `;
+        
+        voiceBtn.style.cssText += `
+            min-width: 140px !important;
+            margin: 0 1rem !important;
+            flex: 0 0 auto !important;
+        `;
+        
+        sendBtn.style.cssText += `
+            min-width: 140px !important;
+            margin: 0 1rem !important;
+            flex: 0 0 auto !important;
+        `;
+        
+        console.log('✅ Button spacing fixed with JavaScript');
+    }
+}
+
+// Run the fix when page loads and after voice button is created
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(fixButtonSpacing, 1500);
+});
+
+// Also run after voice system initializes
+setTimeout(fixButtonSpacing, 2000);
