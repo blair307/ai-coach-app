@@ -95,6 +95,7 @@ let recognition = null;
 let isListening = false;
 let voiceInputEnabled = true;
 let silenceTimer = null;
+let fullTranscript = '';
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
@@ -1026,26 +1027,18 @@ if (typeof recognition.speechStartTimeout !== 'undefined') {
     recognition.speechStartTimeout = 8000; // 8 seconds to start speaking
 }
         
-   // Handle speech recognition results
+ // Handle speech recognition results
 recognition.onresult = function(event) {
-    let transcript = '';
-    let isFinal = false;
+    let newTranscript = '';
     
-    // Process recognition results
+    // Get only the latest result
     for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-            isFinal = true;
-        }
-    }
-    
-    // Update input field with transcript
-    const inputField = findInputField();
-    if (inputField) {
-        inputField.value = transcript;
+        newTranscript += event.results[i][0].transcript;
         
-        // If we got a final result, set up auto-send timer
-        if (isFinal && transcript.trim().length > 0) {
+        if (event.results[i].isFinal) {
+            // Add this final part to our full transcript
+            fullTranscript += newTranscript;
+            
             // Clear any existing timer
             if (silenceTimer) {
                 clearTimeout(silenceTimer);
@@ -1053,12 +1046,18 @@ recognition.onresult = function(event) {
             
             // Set 3-second timer to send message
             silenceTimer = setTimeout(() => {
-                if (inputField.value.trim().length > 0) {
+                if (fullTranscript.trim().length > 0) {
                     stopVoiceInput();
                     sendMessageNow();
                 }
             }, 3000);
         }
+    }
+    
+    // Update input field with full transcript + current interim
+    const inputField = findInputField();
+    if (inputField) {
+        inputField.value = fullTranscript + newTranscript;
     }
 };
         
@@ -1171,12 +1170,13 @@ function startVoiceInput() {
     if (!recognition || isListening) return;
     
     try {
-        // Clear input field
-        const inputField = findInputField();
-        if (inputField) {
-            inputField.value = '';
-            inputField.placeholder = 'Listening... speak now!';
-        }
+       // Clear input field and reset transcript
+fullTranscript = '';
+const inputField = findInputField();
+if (inputField) {
+    inputField.value = '';
+    inputField.placeholder = 'Listening... speak now!';
+}
         
         // Start recognition
         recognition.start();
