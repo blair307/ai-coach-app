@@ -1201,6 +1201,12 @@ function stopVoiceInput() {
     
     // Update button appearance
     updateVoiceButtonState(false);
+
+// Clear any pending silence timer
+if (silenceTimer) {
+    clearTimeout(silenceTimer);
+    silenceTimer = null;
+}
     
     // Restore placeholder
     const inputField = findInputField();
