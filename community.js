@@ -1,4 +1,4 @@
-// Enhanced Community.js - WITH PERMANENT MESSAGE DELETION
+// SIMPLIFIED COMMUNITY.JS - NO LOOPS, NO COMPLEX LOGIC
 
 const API_BASE_URL = 'https://api.eehcommunity.com';
 let currentRoomId = null;
@@ -8,22 +8,16 @@ let rooms = [];
 let isInitialized = false;
 let currentReplyTo = null;
 
-// Prevent rapid message loading - GLOBAL
-window.isLoadingMessages = false;
-window.lastLoadTime = 0;
-window.MIN_LOAD_INTERVAL = 5000;
-
-// NEW: Local message storage for permanent deletions
+// Simple message storage for deletions
 let deletedMessages = new Set();
 const DELETED_MESSAGES_KEY = 'eeh_deleted_messages';
 
-// Load deleted messages from localStorage on startup
+// Load deleted messages
 function loadDeletedMessages() {
     try {
         const stored = localStorage.getItem(DELETED_MESSAGES_KEY);
         if (stored) {
             deletedMessages = new Set(JSON.parse(stored));
-            console.log('📚 Loaded deleted messages:', deletedMessages.size);
         }
     } catch (error) {
         console.error('Error loading deleted messages:', error);
@@ -31,254 +25,113 @@ function loadDeletedMessages() {
     }
 }
 
-// Save deleted messages to localStorage
+// Save deleted messages
 function saveDeletedMessages() {
     try {
         localStorage.setItem(DELETED_MESSAGES_KEY, JSON.stringify([...deletedMessages]));
-        console.log('💾 Saved deleted messages:', deletedMessages.size);
     } catch (error) {
         console.error('Error saving deleted messages:', error);
     }
 }
 
-// Check if a message is deleted
+// Check if message is deleted
 function isMessageDeleted(messageId) {
     return deletedMessages.has(messageId);
 }
 
-// Mark a message as deleted permanently
+// Mark message as deleted
 function markMessageAsDeleted(messageId) {
     deletedMessages.add(messageId);
     saveDeletedMessages();
-    console.log('🗑️ Message marked as permanently deleted:', messageId);
 }
 
-// Initialize community when page loads
+// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Enhanced Community with PERMANENT MESSAGE DELETION loading...');
-    
-    // Load deleted messages first
+    console.log('🚀 Simple Community Chat loading...');
     loadDeletedMessages();
-    
-    // FORCE HIDE modals immediately on page load
-    setTimeout(() => {
-        const searchResults = document.getElementById('searchResults');
-        const emojiModal = document.getElementById('emojiModal');
-        
-        if (searchResults) {
-            searchResults.style.display = 'none';
-            searchResults.style.visibility = 'hidden';
-        }
-        
-        if (emojiModal) {
-            emojiModal.style.display = 'none';
-            emojiModal.style.visibility = 'hidden';
-        }
-    }, 50);
-    
-    hideLoadingOverlay();
-    
-    setTimeout(() => {
-        initializeCommunity();
-    }, 100);
+    setTimeout(() => initializeCommunity(), 500);
 });
 
-// Hide loading overlay
-function hideLoadingOverlay() {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) {
-        loadingOverlay.style.display = 'none';
-    }
-}
-
-// Show error in community area
-function showCommunityError(message) {
-    const messagesContainer = document.getElementById('communityMessages');
-    if (messagesContainer) {
-        messagesContainer.innerHTML = `
-            <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                <h3 style="color: var(--error); margin-bottom: 1rem;">⚠️ Connection Issue</h3>
-                <p style="margin-bottom: 1.5rem;">${message}</p>
-                <button onclick="retryInitialization()" class="btn btn-primary">
-                    Try Again
-                </button>
-            </div>
-        `;
-    }
-}
-
-// Retry initialization
-function retryInitialization() {
-    console.log('🔄 Retrying community initialization...');
-    const messagesContainer = document.getElementById('communityMessages');
-    if (messagesContainer) {
-        messagesContainer.innerHTML = `
-            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                <p>Reconnecting...</p>
-            </div>
-        `;
-    }
-    
-    isInitialized = false;
-    setTimeout(() => {
-        initializeCommunity();
-    }, 1000);
-}
-
-// Set layout for screen size
-function setLayoutForScreenSize() {
-    const isMobile = window.innerWidth <= 1024;
-    console.log('📱 Setting layout for screen size:', { isMobile, width: window.innerWidth });
-    
-    const mobileSelector = document.querySelector('.mobile-room-selector');
-    const desktopSidebar = document.querySelector('.rooms-sidebar');
-    const desktopOnlyElements = document.querySelectorAll('.desktop-only');
-
-    if (isMobile) {
-        if (mobileSelector) mobileSelector.style.display = 'block';
-        if (desktopSidebar) desktopSidebar.style.display = 'none';
-        
-        desktopOnlyElements.forEach(el => {
-            if (!el.classList.contains('rooms-sidebar')) {
-                el.style.display = 'none';
-            }
-        });
-
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            if (input.style.fontSize !== '16px') {
-                input.style.fontSize = '16px';
-            }
-        });
-
-    } else {
-        if (mobileSelector) mobileSelector.style.display = 'none';
-        if (desktopSidebar) desktopSidebar.style.display = 'flex';
-        
-        desktopOnlyElements.forEach(el => {
-            el.style.display = '';
-        });
-    }
-}
-
-// Get current user info
+// Get current user
 function getCurrentUser() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            console.log('❌ No auth token found');
-            return null;
-        }
+        const token = localStorage.getItem('authToken');
+        if (!token) return null;
         
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const user = {
+        return {
             id: payload.userId,
             email: payload.email,
             name: localStorage.getItem('userName') || payload.email?.split('@')[0] || 'User'
         };
-        
-        console.log('✅ Current user:', user);
-        return user;
     } catch (error) {
-        console.error('❌ Error getting current user:', error);
+        console.error('Error getting user:', error);
         return null;
     }
 }
 
-// Load rooms from backend
+// Load rooms - SIMPLE VERSION
 async function loadRooms() {
     try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        console.log('📡 Fetching rooms from backend...');
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
 
         const response = await fetch(`${API_BASE_URL}/api/rooms`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            },
-            signal: controller.signal
+            }
         });
 
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Failed to load rooms: ${response.status}`);
+        if (response.ok) {
+            rooms = await response.json();
+        } else {
+            // Fallback rooms
+            rooms = [
+                { _id: 'general', name: 'General Discussion', description: 'Open chat' },
+                { _id: 'business', name: 'Business Growth', description: 'Scaling strategies' }
+            ];
         }
-
-        rooms = await response.json();
-        console.log('📁 Loaded rooms:', rooms.length);
         
         updateRoomsList();
         return true;
-        
     } catch (error) {
-        console.error('❌ Error loading rooms:', error);
-        
-        console.log('🔄 Using fallback rooms...');
+        console.error('Error loading rooms:', error);
         rooms = [
-            { _id: 'general', name: 'General Discussion', description: 'Open chat for everyone' },
-            { _id: 'business-growth', name: 'Business Growth', description: 'Scaling strategies & challenges' },
-            { _id: 'work-life-balance', name: 'Work-Life Balance', description: 'Managing entrepreneurial stress' }
+            { _id: 'general', name: 'General Discussion', description: 'Open chat' }
         ];
         updateRoomsList();
         return true;
     }
 }
 
-// Update rooms list UI
+// Update rooms list
 function updateRoomsList() {
     const roomsList = document.getElementById('roomsList');
     const roomDropdown = document.getElementById('roomDropdown');
     
-    console.log('🔄 Updating rooms list UI...');
-    
-    if (roomsList && rooms && rooms.length > 0) {
+    if (roomsList && rooms.length > 0) {
         roomsList.innerHTML = '';
-
         rooms.forEach(room => {
             const roomElement = document.createElement('div');
             roomElement.className = 'room-item';
             roomElement.setAttribute('data-room', room._id);
+            roomElement.onclick = () => switchRoom(room._id);
             
-            if (room.isDefault) {
-                roomElement.setAttribute('data-default', 'true');
-            }
-            
-            roomElement.onclick = (e) => {
-                if (e.target.classList.contains('room-delete-btn')) {
-                    return;
-                }
-                switchRoom(room._id);
-            };
-
             if (room._id === currentRoomId) {
                 roomElement.classList.add('active');
             }
-
+            
             roomElement.innerHTML = `
-                <div class="room-info">
-                    <h4>${room.name}</h4>
-                    <p>${room.description}</p>
-                </div>
-                <div class="room-stats">
-                    ${!room.isDefault ? `<button class="room-delete-btn" onclick="deleteRoom('${room._id}')" title="Delete room">×</button>` : ''}
-                </div>
+                <h4>${room.name}</h4>
+                <p>${room.description}</p>
             `;
-
             roomsList.appendChild(roomElement);
         });
     }
     
-    if (roomDropdown && rooms && rooms.length > 0) {
-        roomDropdown.innerHTML = '<option value="">Select a room...</option>';
-        
+    if (roomDropdown && rooms.length > 0) {
+        roomDropdown.innerHTML = '<option value="">Select a room</option>';
         rooms.forEach(room => {
             const option = document.createElement('option');
             option.value = room._id;
@@ -287,537 +140,197 @@ function updateRoomsList() {
             roomDropdown.appendChild(option);
         });
     }
-    
-    console.log('✅ Rooms list updated');
 }
 
-// Switch to a room
+// Switch room - SIMPLE VERSION
 async function switchRoom(roomId) {
+    if (!roomId) return;
+    
+    const room = rooms.find(r => r._id === roomId);
+    if (!room) return;
+    
+    console.log('Switching to room:', room.name);
+    
+    currentRoomId = roomId;
+    currentRoomName = room.name;
+    
+    // Update UI
+    document.querySelectorAll('.room-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    const currentRoomElement = document.querySelector(`[data-room="${roomId}"]`);
+    if (currentRoomElement) {
+        currentRoomElement.classList.add('active');
+    }
+    
+    const roomDropdown = document.getElementById('roomDropdown');
+    if (roomDropdown) {
+        roomDropdown.value = roomId;
+    }
+    
+    // Enable inputs
+    const messageInput = document.getElementById('communityMessageInput');
+    const sendButton = document.getElementById('sendCommunityButton');
+    const emojiButton = document.getElementById('emojiBtn');
+    
+    if (messageInput) {
+        messageInput.disabled = false;
+        messageInput.placeholder = `Message ${room.name}...`;
+    }
+    if (sendButton) sendButton.disabled = false;
+    if (emojiButton) emojiButton.disabled = false;
+    
+    // Load messages ONCE
+    await loadMessages(roomId);
+}
+
+// Load messages - SIMPLE VERSION WITH NO LOOPS
+async function loadMessages(roomId) {
     try {
-        if (!roomId) {
-            console.log('⚠️ No room ID provided');
-            return;
-        }
-
-        const room = rooms.find(r => r._id === roomId);
-        if (!room) {
-            console.error('❌ Room not found:', roomId);
-            return;
-        }
-
-        console.log('🔄 Switching to room:', room.name);
-
-        cancelReply();
-
-        currentRoomId = roomId;
-        currentRoomName = room.name;
-
-        document.querySelectorAll('.room-item').forEach(item => {
-            item.classList.remove('active');
-        });
-
-        const currentRoomElement = document.querySelector(`[data-room="${roomId}"]`);
-        if (currentRoomElement) {
-            currentRoomElement.classList.add('active');
-        }
-
-        const roomDropdown = document.getElementById('roomDropdown');
-        if (roomDropdown) {
-            roomDropdown.value = roomId;
-        }
-
-        const roomNameElement = document.getElementById('currentRoomName');
-        const roomDescElement = document.getElementById('currentRoomDescription');
-        if (roomNameElement) roomNameElement.textContent = room.name;
-        if (roomDescElement) roomDescElement.textContent = room.description;
-
-        const messageInput = document.getElementById('communityMessageInput');
-        const sendButton = document.getElementById('sendCommunityButton');
-        const emojiButton = document.getElementById('emojiBtn');
+        console.log('Loading messages for:', roomId);
         
-        if (messageInput) {
-            messageInput.disabled = false;
-            messageInput.placeholder = `Message ${room.name}...`;
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
+        
+        const messagesContainer = document.getElementById('communityMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = '<div class="welcome-message"><p>Loading...</p></div>';
         }
-        if (sendButton) sendButton.disabled = false;
-        if (emojiButton) emojiButton.disabled = false;
-
-        await loadMessages(roomId);
-
-        console.log('✅ Successfully switched to room:', room.name);
+        
+        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/messages`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const messages = await response.json();
+        console.log('Loaded', messages.length, 'messages');
+        
+        displayMessages(messages);
+        
     } catch (error) {
-        console.error('❌ Error switching rooms:', error);
-        showErrorMessage('Failed to switch rooms. Please try again.');
+        console.error('Error loading messages:', error);
+        const messagesContainer = document.getElementById('communityMessages');
+        if (messagesContainer) {
+            messagesContainer.innerHTML = '<div class="welcome-message"><h3>Unable to load messages</h3><p>Please try refreshing the page.</p></div>';
+        }
     }
 }
 
+// Display messages - SIMPLE VERSION
+function displayMessages(messages) {
+    const messagesContainer = document.getElementById('communityMessages');
+    if (!messagesContainer) return;
+    
+    // Filter out deleted messages
+    const visibleMessages = messages.filter(message => {
+        const messageId = message._id || message.id;
+        return !isMessageDeleted(messageId);
+    });
+    
+    if (visibleMessages.length === 0) {
+        messagesContainer.innerHTML = '<div class="welcome-message"><h3>No messages yet</h3><p>Be the first to start the conversation!</p></div>';
+        return;
+    }
+    
+    messagesContainer.innerHTML = '';
+    
+    visibleMessages.forEach(message => {
+        const messageElement = createMessageElement(message);
+        messagesContainer.appendChild(messageElement);
+    });
+    
+    // Scroll to bottom
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
 
-// REPLACE WITH THIS NEW CODE:
-
-// ENHANCED: Create message element with PROFILE PHOTOS and better delete button handling
-function createMessageElement(message, isReply = false, parentIndex = null) {
+// Create message element
+function createMessageElement(message) {
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message-group';
-    messageDiv.setAttribute('data-message-id', message._id || message.id || Date.now());
+    messageDiv.setAttribute('data-message-id', message._id || message.id);
     
-    if (isReply) {
-        messageDiv.classList.add('reply');
-        messageDiv.setAttribute('data-parent-id', parentIndex);
-    }
-
     const username = message.username || 'User';
     const userInitials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
     const timestamp = formatMessageTime(message.createdAt || message.timestamp);
     const content = message.content || message.message || '';
-    
-    // Check if this message belongs to the current user
     const isOwnMessage = message.userId === currentUser?.id;
     
-    // NEW: Get profile photo URL from message data
-    const profilePhoto = message.profilePhoto || null;
+    let avatarHTML = `<div class="user-avatar" style="background-color: #6366f1">${userInitials}</div>`;
     
-    // NEW: Create avatar HTML - either photo or initials
-    let avatarHTML;
-    if (profilePhoto) {
-        avatarHTML = `
-            <div class="user-avatar photo-avatar" style="background-color: ${message.avatarColor || '#6366f1'}; position: relative;">
-                <img src="${profilePhoto}" 
-                     alt="${escapeHtml(username)}" 
-                     style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; position: absolute; top: 0; left: 0;"
-                     onerror="this.style.display='none'; this.parentElement.innerHTML='${userInitials}'; this.parentElement.classList.remove('photo-avatar');"
-                />
-            </div>
-        `;
-    } else {
-        avatarHTML = `
-            <div class="user-avatar" style="background-color: ${message.avatarColor || '#6366f1'}">
-                ${userInitials}
-            </div>
-        `;
-    }
-    
-    // Simulate like count
-    const likes = message.likes || [];
-    const likeCount = likes.length || Math.floor(Math.random() * 3);
-    const isLikedByUser = likes.includes(currentUser?.id);
-    const hasLikes = likeCount > 0;
-    
-    // Build action buttons with improved delete button
     let actionButtons = `
-        <button class="action-btn like-btn ${isLikedByUser ? 'liked' : ''}" 
-                onclick="toggleLike('${message._id || message.id || Date.now()}')" 
-                title="Like">
-            ${isLikedByUser ? '♥' : '♡'}
-        </button>
-        <button class="action-btn reply-btn" 
-                onclick="replyToMessage('${message._id || message.id || Date.now()}', '${escapeHtml(username)}', '${escapeHtml(content)}', '${message.userId || ''}')" 
-                title="Reply">
-            ↳
-        </button>
+        <button class="action-btn like-btn" onclick="toggleLike('${message._id || message.id}')" title="Like">♡</button>
+        <button class="action-btn reply-btn" onclick="replyToMessage('${message._id || message.id}', '${username}', '${content}')" title="Reply">↳</button>
     `;
-
-    // Add delete button ONLY for own messages with better error handling
+    
     if (isOwnMessage) {
-        actionButtons += `
-            <button class="action-btn delete-btn" 
-                    onclick="deleteMessage('${message._id || message.id || Date.now()}')" 
-                    title="Delete your message"
-                    style="background: rgba(239, 68, 68, 0.1); border-color: #ef4444; color: #ef4444;">
-                🗑️
-            </button>
-        `;
+        actionButtons += `<button class="action-btn delete-btn" onclick="deleteMessage('${message._id || message.id}')" title="Delete">🗑️</button>`;
     }
     
     messageDiv.innerHTML = `
         <div class="message-header">
             ${avatarHTML}
-            <span class="username ${isOwnMessage ? 'own-message-username' : ''}">${escapeHtml(username)}${isOwnMessage ? ' (You)' : ''}</span>
+            <span class="username">${username}${isOwnMessage ? ' (You)' : ''}</span>
             <span class="message-timestamp">${timestamp}</span>
         </div>
-        <div class="message-content ${isOwnMessage ? 'own-message-content' : ''}">
-            <p>${escapeHtml(content)}</p>
-            <div class="message-actions">
-                ${actionButtons}
-            </div>
-        </div>
-        <div class="message-footer">
-            <div class="like-count ${hasLikes ? 'has-likes' : ''}" 
-                 data-count="${likeCount}" 
-                 style="display: ${hasLikes ? 'flex' : 'none'}">
-                ${hasLikes ? `♥ ${likeCount}` : ''}
-            </div>
+        <div class="message-content">
+            <p>${content}</p>
+            <div class="message-actions">${actionButtons}</div>
         </div>
     `;
-
+    
     return messageDiv;
 }
 
-// Load messages for a room
-async function loadMessages(roomId) {
-    try {
-  // Prevent rapid successive calls
-if (window.isLoadingMessages) {
-    console.log('⏭️ Skipping message load - already loading');
-    return;
-}
-
-// Track which room we're loading
-window.lastLoadedRoomId = roomId;
-        
-        window.isLoadingMessages = true;
-
-        
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        console.log('📨 Loading messages for room:', roomId);
-
-        const messagesContainer = document.getElementById('communityMessages');
-        if (messagesContainer) {
-            messagesContainer.innerHTML = `
-                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                    <p>Loading messages...</p>
-                </div>
-            `;
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/messages`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Failed to load messages: ${response.status}`);
-        }
-
-        const messages = await response.json();
-        console.log('💬 Loaded messages for room:', roomId, {
-            total: messages.length,
-            replies: messages.filter(m => m.replyTo).length
-        });
-        
-        displayThreadedMessages(messages);
-        
-} catch (error) {
-        console.error('❌ Error loading messages:', error);
-        displayThreadedMessages([]);
-   } finally {
-    window.isLoadingMessages = false;
-}
-}
-
-// REPLACE the end of your displayThreadedMessages function with this:
-
-// REPLACE WITH THIS NEW CODE:
-
-function displayThreadedMessages(messages) {
-    const messagesContainer = document.getElementById('communityMessages');
-    if (!messagesContainer) return;
-
-    // SMART SCROLL: Check if user is near bottom before updating
-    const wasNearBottom = isUserNearBottom(messagesContainer);
-
-    messagesContainer.innerHTML = '';
-
-    // FILTER OUT DELETED MESSAGES PERMANENTLY
-    const visibleMessages = messages.filter(message => {
-        const messageId = message._id || message.id;
-        const isDeleted = isMessageDeleted(messageId);
-        if (isDeleted) {
-            console.log('🚫 Hiding permanently deleted message:', messageId);
-        }
-        return !isDeleted;
-    });
-
-    console.log(`📊 Filtered messages: ${messages.length} total → ${visibleMessages.length} visible (${messages.length - visibleMessages.length} permanently hidden)`);
-
-    if (visibleMessages.length === 0) {
-        messagesContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                <p>No messages yet. Be the first to start the conversation!</p>
-            </div>
-        `;
-        return;
-    }
-
-    // THREADED ALGORITHM: Group messages by parent-child relationships
-    const messageMap = new Map();
-    const rootMessages = [];
-    
-    // First pass: Create a map of all visible messages
-    visibleMessages.forEach(message => {
-        messageMap.set(message._id, { ...message, replies: [] });
-    });
-    
-    // Second pass: Build the threaded structure
-    visibleMessages.forEach(message => {
-        if (message.replyTo && message.replyTo.messageId) {
-            // This is a reply - find its parent
-            const parent = messageMap.get(message.replyTo.messageId);
-            if (parent) {
-                parent.replies.push(message);
-                console.log(`🔗 Threading reply "${message.content.substring(0, 30)}..." under parent "${parent.content.substring(0, 30)}..."`);
-            } else {
-                // Parent not found (might be deleted), treat as root message
-                rootMessages.push(message);
-            }
-        } else {
-            // This is a root message
-            rootMessages.push(message);
-        }
-    });
-    
-    // Third pass: Render the threaded messages
-    function renderMessage(message, isReply = false, depth = 0) {
-        const messageElement = createMessageElement(message, isReply, depth);
-        messagesContainer.appendChild(messageElement);
-        
-        // Render replies underneath this message
-        const messageData = messageMap.get(message._id);
-        if (messageData && messageData.replies.length > 0) {
-            messageData.replies.forEach(reply => {
-                renderMessage(reply, true, depth + 1);
-            });
-        }
-    }
-    
-    // Render all root messages and their threaded replies
-    rootMessages.forEach(message => {
-        renderMessage(message, false, 0);
-    });
-
-    // SMART SCROLL: Only scroll if user was near bottom before update
-    if (wasNearBottom) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        console.log('📜 Auto-scrolled to bottom (user was near bottom)');
-    } else {
-        console.log('📜 Preserved scroll position (user was reading older messages)');
-    }
-    
-    const replyCount = visibleMessages.filter(m => m.replyTo).length;
-    console.log(`📊 Displayed ${visibleMessages.length} visible messages in THREADED format (${replyCount} replies properly connected)`);
-}
-
-// ADD this new helper function to your community.js:
-function isUserNearBottom(container, threshold = 100) {
-    if (!container) return true; // Default to scrolling if container not found
-    
-    const { scrollTop, scrollHeight, clientHeight } = container;
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-    
-    // User is "near bottom" if within threshold pixels of the bottom
-    return distanceFromBottom <= threshold;
-}
-
-// Keep the displayMessages function for backward compatibility
-function displayMessages(messages) {
-    displayThreadedMessages(messages);
-}
-
-
-// ENHANCED: Reply functionality with notification creation
-function replyToMessage(messageId, username, content, originalUserId) {
-    currentReplyTo = { 
-        messageId, 
-        username, 
-        content,
-        userId: originalUserId
-    };
-    
-    console.log('💬 Replying to message:', { messageId, username, originalUserId });
-    
-    const replyBanner = document.getElementById('replyBanner');
-    const replyToUser = document.getElementById('replyToUser');
-    const replyToMessage = document.getElementById('replyToMessage');
-    const chatInput = document.querySelector('.chat-input');
-    
-    if (replyBanner && replyToUser && replyToMessage && chatInput) {
-        replyToUser.textContent = username;
-        replyToMessage.textContent = content.length > 100 ? content.substring(0, 100) + '...' : content;
-        
-        replyBanner.style.display = 'block';
-        chatInput.classList.add('replying');
-        
-        const messageInput = document.getElementById('communityMessageInput');
-        if (messageInput) {
-            messageInput.focus();
-        }
-        
-        showReplyToast(`Replying to ${username}`);
-        
-        if (navigator.vibrate && window.innerWidth <= 1024) {
-            navigator.vibrate(50);
-        }
-        
-        console.log('✅ Reply banner shown and focused');
-    }
-}
-
-// Reply toast notification
-function showReplyToast(message) {
-    const toast = document.createElement('div');
-    toast.className = 'reply-toast';
-    toast.innerHTML = `💬 ${message}`;
-    
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        right: 20px;
-        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-        color: white;
-        padding: 0.75rem 1rem;
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-lg);
-        z-index: 9999;
-        font-weight: 600;
-        font-size: 0.9rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => toast.style.transform = 'translateY(0)', 100);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// Cancel reply
-function cancelReply() {
-    currentReplyTo = null;
-    
-    const replyBanner = document.getElementById('replyBanner');
-    const chatInput = document.querySelector('.chat-input');
-    
-    if (replyBanner) {
-        replyBanner.style.display = 'none';
-    }
-    
-    if (chatInput) {
-        chatInput.classList.remove('replying');
-    }
-    
-    console.log('✅ Reply cancelled');
-}
-
-// ENHANCED: Send message with reply support
+// Send message - SIMPLE VERSION
 async function sendCommunityMessage() {
     try {
         const messageInput = document.getElementById('communityMessageInput');
         const sendButton = document.getElementById('sendCommunityButton');
         
-        if (!messageInput || !currentRoomId) {
-            console.error('❌ Missing required elements or room not selected');
-            return;
-        }
-
+        if (!messageInput || !currentRoomId) return;
+        
         const messageText = messageInput.value.trim();
-        if (!messageText) {
-            return;
-        }
-
+        if (!messageText) return;
+        
         if (sendButton) {
             sendButton.disabled = true;
             sendButton.textContent = 'Sending...';
         }
-
-        if (navigator.vibrate && window.innerWidth <= 1024) {
-            navigator.vibrate(30);
-        }
-
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
+        
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
+        
         const messageData = {
             content: messageText,
-            avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U',
-            avatarColor: '#6366f1'
+            avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U'
         };
-
-        // ENHANCED: Add reply data with user ID for notifications
-        if (currentReplyTo) {
-            messageData.replyTo = {
-                messageId: currentReplyTo.messageId,
-                userId: currentReplyTo.userId,
-                username: currentReplyTo.username,
-                content: currentReplyTo.content
-            };
-            console.log('📤 Sending THREADED reply with notification data:', {
-                replyToUserId: currentReplyTo.userId,
-                replyToUsername: currentReplyTo.username,
-                replyToMessageId: currentReplyTo.messageId
-            });
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
+        
         const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(messageData),
-            signal: controller.signal
+            body: JSON.stringify(messageData)
         });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Failed to send message: ${response.status}`);
-        }
-
-        const newMessage = await response.json();
-        console.log('📤 Message sent successfully:', {
-            id: newMessage._id,
-            isReply: !!newMessage.replyTo,
-            notificationCreated: !!newMessage.replyTo,
-            willBeThreaded: !!newMessage.replyTo
-        });
-
-        // Track community activity for dashboard
-        localStorage.setItem('eeh_pending_community', JSON.stringify({
-            timestamp: new Date().toISOString(),
-            room: currentRoomName || 'General'
-        }));
-
+        
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        
         messageInput.value = '';
-        cancelReply();
-
-        if (window.innerWidth <= 1024) {
-            messageInput.blur();
-        }
-
-        if (currentReplyTo) {
-            showSuccessToast('Reply sent! Will appear under original message.');
-        }
-
-        // Reload messages to show the new threaded structure
+        
+        // Reload messages ONCE
         await loadMessages(currentRoomId);
-
+        
     } catch (error) {
-        console.error('❌ Error sending message:', error);
-        showErrorMessage('Failed to send message. Please try again.');
+        console.error('Error sending message:', error);
+        showToast('Failed to send message', 'error');
     } finally {
         const sendButton = document.getElementById('sendCommunityButton');
         if (sendButton) {
@@ -826,170 +339,99 @@ async function sendCommunityMessage() {
         }
     }
 }
-// Success toast for confirmation
-function showSuccessToast(message) {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 100px; left: 20px; right: 20px;' : 'bottom: 100px; right: 20px; max-width: 400px;'}
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.4);
-        z-index: 10000;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    `;
-    toast.innerHTML = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(0)';
-    }, 100);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 4000);
-}
 
-// Warning toast for partial success
-function showWarningToast(message) {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 100px; left: 20px; right: 20px;' : 'bottom: 100px; right: 20px; max-width: 400px;'}
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(245, 158, 11, 0.4);
-        z-index: 10000;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    `;
-    toast.innerHTML = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(0)';
-    }, 100);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 5000);
-}
-
-// Initialize the community system
-async function initializeCommunity() {
-    try {
-        if (isInitialized) {
-            console.log('⚠️ Community already initialized, skipping...');
-            return;
-        }
-
-        console.log('🚀 Starting enhanced community with THREADED reply system and PERMANENT MESSAGE DELETION...');
-        
-        const searchResults = document.getElementById('searchResults');
-        const emojiModal = document.getElementById('emojiModal');
-        
-        if (searchResults) {
-            searchResults.style.display = 'none';
-            searchResults.style.visibility = 'hidden';
-        }
-        
-        if (emojiModal) {
-            emojiModal.style.display = 'none';
-            emojiModal.style.visibility = 'hidden';
-        }
-        
-        currentUser = getCurrentUser();
-        if (!currentUser) {
-            console.error('❌ No user found');
-            showCommunityError('Please log in to access the community.');
-            return;
-        }
-
-        console.log('✅ User found:', currentUser.email);
-
-        setLayoutForScreenSize();
-
-        const messagesContainer = document.getElementById('communityMessages');
-        if (messagesContainer) {
-            messagesContainer.innerHTML = `
-                <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                    <p>Loading rooms...</p>
-                </div>
-            `;
-        }
-
-        const roomsLoaded = await loadRooms();
-        
-        if (!roomsLoaded) {
-            console.error('❌ Failed to load rooms');
-            showCommunityError('Unable to load chat rooms. Please check your connection and try again.');
-            return;
-        }
-
-        const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
-        if (generalRoom) {
-            currentRoomId = generalRoom._id;
-            currentRoomName = generalRoom.name;
-            console.log('🏠 Setting default room:', currentRoomName);
-            await switchRoom(generalRoom._id);
-        } else {
-            const messagesContainer = document.getElementById('communityMessages');
-            if (messagesContainer) {
-                messagesContainer.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
-                        <h3>Welcome to Community Chat!</h3>
-                        <p style="margin-bottom: 1.5rem;">No rooms are available yet.</p>
-                        <button onclick="createRoom()" class="btn btn-primary">
-                            Create First Room
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        isInitialized = true;
-        setupAutoExpandTextarea();
-        console.log('✅ Enhanced community with THREADED replies and PERMANENT MESSAGE DELETION initialized successfully');
-        
-    } catch (error) {
-        console.error('❌ Error initializing community:', error);
-        showCommunityError('Failed to initialize community. Please refresh the page or try again later.');
+// Simple like toggle
+async function toggleLike(messageId) {
+    console.log('Like clicked for:', messageId);
+    const likeBtn = document.querySelector(`[data-message-id="${messageId}"] .like-btn`);
+    if (likeBtn) {
+        likeBtn.classList.toggle('liked');
+        likeBtn.textContent = likeBtn.classList.contains('liked') ? '♥' : '♡';
     }
+}
+
+// Delete message
+async function deleteMessage(messageId) {
+    if (!confirm('Delete this message?')) return;
+    
+    try {
+        const token = localStorage.getItem('authToken');
+        if (!token) throw new Error('No token');
+        
+        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            markMessageAsDeleted(messageId);
+            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (messageElement) {
+                messageElement.remove();
+            }
+            showToast('Message deleted', 'success');
+        } else {
+            throw new Error('Delete failed');
+        }
+    } catch (error) {
+        console.error('Error deleting message:', error);
+        showToast('Failed to delete message', 'error');
+    }
+}
+
+// Reply to message
+function replyToMessage(messageId, username, content) {
+    currentReplyTo = { messageId, username, content };
+    
+    const replyBanner = document.getElementById('replyBanner');
+    const replyToUser = document.getElementById('replyToUser');
+    const replyToMessage = document.getElementById('replyToMessage');
+    
+    if (replyBanner && replyToUser && replyToMessage) {
+        replyToUser.textContent = username;
+        replyToMessage.textContent = content.substring(0, 100);
+        replyBanner.style.display = 'block';
+    }
+}
+
+// Cancel reply
+function cancelReply() {
+    currentReplyTo = null;
+    const replyBanner = document.getElementById('replyBanner');
+    if (replyBanner) {
+        replyBanner.style.display = 'none';
+    }
+}
+
+// Initialize community - SIMPLE VERSION
+async function initializeCommunity() {
+    if (isInitialized) return;
+    
+    console.log('Initializing community...');
+    
+    currentUser = getCurrentUser();
+    if (!currentUser) {
+        console.error('No user found');
+        return;
+    }
+    
+    await loadRooms();
+    
+    const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
+    if (generalRoom) {
+        await switchRoom(generalRoom._id);
+    }
+    
+    isInitialized = true;
+    console.log('Community initialized');
 }
 
 // Utility functions
 function formatMessageTime(timestamp) {
     if (!timestamp) return 'Now';
-    
     const messageDate = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now - messageDate) / (1000 * 60));
@@ -997,364 +439,50 @@ function formatMessageTime(timestamp) {
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
-    
     return messageDate.toLocaleDateString();
 }
 
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
-function showErrorMessage(message) {
+function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
+    const colors = { success: '#10b981', error: '#ef4444', info: '#6366f1' };
     
     toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 20px; left: 20px; right: 20px;' : 'bottom: 20px; right: 20px; max-width: 400px;'}
-        background: #ef4444;
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-weight: 500;
+        position: fixed; bottom: 20px; right: 20px;
+        background: ${colors[type]}; color: white;
+        padding: 1rem; border-radius: 8px;
+        z-index: 10000; font-weight: 600;
     `;
     toast.textContent = message;
     
     document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 4000);
-}
-
-
-// Room management
-async function createRoom() {
-    try {
-        const roomName = prompt('Enter room name:');
-        if (!roomName || !roomName.trim()) return;
-
-        const roomDescription = prompt('Enter room description:');
-        if (!roomDescription || !roomDescription.trim()) return;
-
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name: roomName.trim(),
-                description: roomDescription.trim()
-            }),
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Failed to create room: ${response.status}`);
-        }
-
-        const newRoom = await response.json();
-        console.log('🆕 Room created successfully:', newRoom.name);
-
-        await loadRooms();
-        switchRoom(newRoom._id);
-
-    } catch (error) {
-        console.error('❌ Error creating room:', error);
-        showErrorMessage('Failed to create room. Please try again.');
-    }
-}
-
-async function deleteRoom(roomId) {
-    if (!confirm('Are you sure you want to delete this room? This action cannot be undone.')) {
-        return;
-    }
-
-    try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error(`Failed to delete room: ${response.status}`);
-        }
-
-        console.log('🗑️ Room deleted successfully');
-
-        if (currentRoomId === roomId) {
-            const generalRoom = rooms.find(room => room.name === 'General Discussion') || rooms[0];
-            if (generalRoom) {
-                switchRoom(generalRoom._id);
-            }
-        }
-
-        await loadRooms();
-
-    } catch (error) {
-        console.error('❌ Error deleting room:', error);
-        showErrorMessage('Failed to delete room. You may not have permission or the room may not exist.');
-    }
+    setTimeout(() => toast.remove(), 3000);
 }
 
 function handleCommunityKeyPress(event) {
-    if (event.key === 'Enter') {
-        const isMobile = window.innerWidth <= 1024;
-        
-        if (isMobile) {
-            return; // Allow multi-line on mobile
-        } else {
-            if (!event.shiftKey) {
-                event.preventDefault();
-                sendCommunityMessage();
-            }
-        }
+    if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        sendCommunityMessage();
     }
-    
     if (event.key === 'Escape' && currentReplyTo) {
         cancelReply();
     }
 }
 
-// ENHANCED SEARCH FUNCTIONALITY
-let searchTimeout;
-let allMessages = [];
-
-async function performSearch(query) {
-    if (searchTimeout) {
-        clearTimeout(searchTimeout);
-    }
-
-    if (!query || query.trim().length === 0) {
-        closeSearch();
-        return;
-    }
-
-    searchTimeout = setTimeout(async () => {
-        await executeSearch(query.trim());
-    }, 200);
-}
-
-async function executeSearch(query) {
-    try {
-        const searchResults = document.getElementById('searchResults');
-        const searchContent = document.getElementById('searchContent');
-        
-        if (!searchResults || !searchContent) return;
-
-        searchResults.style.display = 'block';
-        searchResults.style.visibility = 'visible';
-        searchResults.style.position = 'fixed';
-        searchResults.style.top = '120px';
-        searchResults.style.right = '20px';
-        searchResults.style.zIndex = '9999';
-        
-        searchContent.innerHTML = `
-            <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
-                <p>🔍 Searching...</p>
-            </div>
-        `;
-
-        if (!currentRoomId) {
-            searchContent.innerHTML = `
-                <div style="text-align: center; padding: 1rem; color: var(--text-muted);">
-                    <p>Please select a room first</p>
-                </div>
-            `;
-            return;
-        }
-
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-        const response = await fetch(`${API_BASE_URL}/api/rooms/${currentRoomId}/messages`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            signal: controller.signal
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch messages for search');
-        }
-
-        allMessages = await response.json();
-
-        const filteredMessages = allMessages.filter(message => {
-            const content = (message.content || message.message || '').toLowerCase();
-            const username = (message.username || '').toLowerCase();
-            const queryLower = query.toLowerCase();
-            return content.includes(queryLower) || username.includes(queryLower);
-        });
-
-        if (filteredMessages.length === 0) {
-            searchContent.innerHTML = `
-                <div style="text-align: center; padding: 1.5rem; color: var(--text-muted);">
-                    <p>❌ No messages found for "${query}"</p>
-                    <small style="opacity: 0.7;">Try different keywords</small>
-                </div>
-            `;
-        } else {
-            searchContent.innerHTML = '';
-            
-            const header = document.createElement('div');
-            header.style.cssText = 'padding: 0.75rem 1rem; background: rgba(99, 102, 241, 0.1); border-bottom: 1px solid var(--border); font-size: 0.875rem; color: var(--primary); font-weight: 600;';
-            header.textContent = `Found ${filteredMessages.length} result${filteredMessages.length !== 1 ? 's' : ''}`;
-            searchContent.appendChild(header);
-            
-            filteredMessages.slice(0, 8).forEach(message => {
-                const resultItem = document.createElement('div');
-                resultItem.className = 'search-result-item';
-                
-                const content = message.content || message.message || '';
-                
-                const highlightedContent = content.replace(
-                    new RegExp(`(${query})`, 'gi'), 
-                    `<mark style="background: #ffd700; color: #000; padding: 0.125rem 0.25rem; border-radius: 0.25rem; font-weight: 600;">$1</mark>`
-                );
-                
-                const timestamp = formatMessageTime(message.createdAt || message.timestamp);
-                const username = message.username || 'User';
-                
-                resultItem.innerHTML = `
-                    <div style="padding: 0.875rem; border-bottom: 1px solid var(--border); cursor: pointer; transition: all 0.2s ease;" 
-                         onclick="scrollToMessage('${message._id}')"
-                         onmouseover="this.style.background='rgba(99, 102, 241, 0.05)'; this.style.transform='translateX(4px)'"
-                         onmouseout="this.style.background=''; this.style.transform='translateX(0)'">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
-                            <strong style="color: var(--primary); font-size: 0.9rem;">${escapeHtml(username)}</strong>
-                            <span style="color: var(--text-muted); font-size: 0.75rem;">${timestamp}</span>
-                        </div>
-                        <p style="margin: 0; color: var(--text-primary); font-size: 0.85rem; line-height: 1.4; word-break: break-word;">${highlightedContent}</p>
-                    </div>
-                `;
-                
-                searchContent.appendChild(resultItem);
-            });
-
-            if (filteredMessages.length > 8) {
-                const moreResults = document.createElement('div');
-                moreResults.style.cssText = 'text-align: center; padding: 0.75rem; color: var(--text-muted); font-size: 0.8rem; border-top: 1px solid var(--border); background: var(--surface);';
-                moreResults.textContent = `... and ${filteredMessages.length - 8} more results`;
-                searchContent.appendChild(moreResults);
-            }
-        }
-
-    } catch (error) {
-        console.error('Search error:', error);
-        const searchContent = document.getElementById('searchContent');
-        if (searchContent) {
-            searchContent.innerHTML = `
-                <div style="text-align: center; padding: 1.5rem; color: var(--error);">
-                    <p>⚠️ Search failed</p>
-                    <small style="opacity: 0.8;">Please try again</small>
-                </div>
-            `;
-        }
-    }
-}
-
-function scrollToMessage(messageId) {
-    closeSearch();
-    console.log('Scrolling to message:', messageId);
-}
-
-function closeSearch() {
-    const searchResults = document.getElementById('searchResults');
-    const searchInput = document.getElementById('desktopSearchInput');
-    
-    if (searchResults) {
-        searchResults.style.display = 'none';
-        searchResults.style.visibility = 'hidden';
-    }
-    
-    if (searchInput) {
-        searchInput.value = '';
-    }
-    
-    allMessages = [];
-}
-
-// EMOJI FUNCTIONALITY
-function toggleEmoji() {
-    const emojiModal = document.getElementById('emojiModal');
-    if (!emojiModal) return;
-    
-    const isCurrentlyVisible = emojiModal.style.display === 'block' && emojiModal.style.visibility !== 'hidden';
-    
-    if (isCurrentlyVisible) {
-        emojiModal.style.display = 'none';
-        emojiModal.style.visibility = 'hidden';
-    } else {
-        emojiModal.style.display = 'block';
-        emojiModal.style.visibility = 'visible';
-        emojiModal.style.position = 'fixed';
-        emojiModal.style.bottom = '120px';
-        emojiModal.style.right = '20px';
-        emojiModal.style.zIndex = '9998';
-    }
-}
-
-function insertEmoji(emoji) {
-    const messageInput = document.getElementById('communityMessageInput');
-    if (messageInput) {
-        const cursorPos = messageInput.selectionStart || messageInput.value.length;
-        const textBefore = messageInput.value.substring(0, cursorPos);
-        const textAfter = messageInput.value.substring(messageInput.selectionEnd || cursorPos);
-        messageInput.value = textBefore + emoji + textAfter;
-        
-        const newPos = cursorPos + emoji.length;
-        messageInput.setSelectionRange(newPos, newPos);
-        messageInput.focus();
-    }
-    
-    const emojiModal = document.getElementById('emojiModal');
-    if (emojiModal) {
-        emojiModal.style.display = 'none';
-        emojiModal.style.visibility = 'hidden';
-    }
-}
-
 // Navigation functions
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.querySelector('.main-content');
+    const overlay = document.getElementById('mobileOverlay');
+    
+    if (window.innerWidth <= 1024) {
+        sidebar.classList.toggle('open');
+        if (overlay) overlay.classList.toggle('active');
+    } else {
+        sidebar.classList.toggle('hidden');
+        mainContent.classList.toggle('sidebar-hidden');
+    }
+}
+
 function goToNotifications() {
     window.location.href = 'notifications.html';
 }
@@ -1364,356 +492,40 @@ function logout() {
     window.location.href = 'index.html';
 }
 
-// Enhanced event listeners
-function initializeEventListeners() {
-    console.log('🚀 Initializing enhanced event listeners');
+// Emoji functions
+function toggleEmoji() {
+    const emojiModal = document.getElementById('emojiModal');
+    if (!emojiModal) return;
     
-    document.addEventListener('click', function(event) {
-        const emojiModal = document.getElementById('emojiModal');
-        const emojiBtn = event.target.closest('#emojiBtn');
-        
-        if (emojiModal && emojiModal.style.display === 'block' && emojiModal.style.visibility === 'visible' &&
-            !emojiModal.contains(event.target) && !emojiBtn) {
-            emojiModal.style.display = 'none';
-            emojiModal.style.visibility = 'hidden';
-        }
-
-        const searchResults = document.getElementById('searchResults');
-        const searchContainer = event.target.closest('.desktop-search-container');
-        
-        if (searchResults && searchResults.style.display === 'block' && searchResults.style.visibility === 'visible' &&
-            !searchResults.contains(event.target) && !searchContainer) {
-            closeSearch();
-        }
-    });
-    
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape') {
-            closeSearch();
-            const emojiModal = document.getElementById('emojiModal');
-            if (emojiModal) {
-                emojiModal.style.display = 'none';
-                emojiModal.style.visibility = 'hidden';
-            }
-            if (currentReplyTo) {
-                cancelReply();
-            }
-        }
-        
-        if ((event.ctrlKey || event.metaKey) && event.key === 'k' && window.innerWidth > 1024) {
-            event.preventDefault();
-            const searchInput = document.getElementById('desktopSearchInput');
-            if (searchInput) {
-                searchInput.focus();
-            }
-        }
-    });
-    
-    console.log('✅ Enhanced event listeners initialized');
+    const isVisible = emojiModal.style.display === 'block';
+    emojiModal.style.display = isVisible ? 'none' : 'block';
+    emojiModal.style.visibility = isVisible ? 'hidden' : 'visible';
 }
 
-// Notification count functionality
-async function updateNotificationCount() {
-    try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) return;
-        
-        const response = await fetch(`${API_BASE_URL}/api/notifications/unread-count`, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            const count = data.count || 0;
-            const countElement = document.getElementById('headerNotificationCount');
-            
-            if (countElement) {
-                countElement.textContent = count;
-                countElement.setAttribute('data-count', count);
-                countElement.style.display = count > 0 ? 'flex' : 'none';
-            }
-        }
-    } catch (error) {
-        console.error('Error fetching notification count:', error);
+function insertEmoji(emoji) {
+    const messageInput = document.getElementById('communityMessageInput');
+    if (messageInput) {
+        const pos = messageInput.selectionStart || messageInput.value.length;
+        const text = messageInput.value;
+        messageInput.value = text.substring(0, pos) + emoji + text.substring(pos);
+        messageInput.focus();
     }
+    toggleEmoji();
 }
 
-// UPDATED: Enhanced Auto-Expand Textarea Function - SINGLE LINE COMPATIBLE
-function setupAutoExpandTextarea() {
-    const textarea = document.getElementById('communityMessageInput');
-    if (!textarea) {
-        console.log('⚠️ Textarea not found for auto-expand setup');
-        return;
-    }
-    
-    console.log('🔧 Setting up single-line auto-expand textarea');
-    
-    // Set initial single-line height - compatible with horizontal layout
-    textarea.style.height = '44px';
-    textarea.style.minHeight = '44px';
-    textarea.style.maxHeight = '44px';
-    textarea.style.lineHeight = '1.4';
-    textarea.style.padding = '12px';
-    textarea.style.overflow = 'hidden';
-    
-    // Function to adjust height for single-line layout
-    function adjustHeight() {
-        // Reset to single line height first
-        textarea.style.height = '44px';
-        textarea.style.maxHeight = '44px';
-        
-        // If content overflows, allow expansion up to max height
-        if (textarea.scrollHeight > 44) {
-            const newHeight = Math.min(textarea.scrollHeight, 120);
-            textarea.style.height = newHeight + 'px';
-            textarea.style.maxHeight = newHeight + 'px';
-            textarea.classList.add('expanded');
-            textarea.style.overflow = 'auto';
-        } else {
-            textarea.classList.remove('expanded');
-            textarea.style.overflow = 'hidden';
-        }
-        
-        // Add visual feedback for content
-        if (textarea.value.trim()) {
-            textarea.classList.add('has-content');
-        } else {
-            textarea.classList.remove('has-content');
-            // Reset to single line when empty
-            textarea.style.height = '44px';
-            textarea.style.maxHeight = '44px';
-            textarea.style.overflow = 'hidden';
-        }
-    }
-    
-    // Event listeners
-    textarea.addEventListener('input', adjustHeight);
-    textarea.addEventListener('paste', () => {
-        // Small delay to allow paste content to be processed
-        setTimeout(adjustHeight, 10);
-    });
-    
-    // Force single line height on focus if empty
-    textarea.addEventListener('focus', () => {
-        if (!textarea.value.trim()) {
-            textarea.style.height = '44px';
-            textarea.style.maxHeight = '44px';
-            textarea.style.overflow = 'hidden';
-        }
-    });
-    
-    // Handle blur to ensure proper state
-    textarea.addEventListener('blur', () => {
-        if (!textarea.value.trim()) {
-            textarea.style.height = '44px';
-            textarea.style.maxHeight = '44px';
-            textarea.style.overflow = 'hidden';
-            textarea.classList.remove('expanded', 'has-content');
-        }
-    });
-    
-    // Initial adjustment
-    adjustHeight();
-    
-    console.log('✅ Single-line auto-expand textarea setup complete - works with horizontal layout');
-}
-
-
-// Update notification count periodically
-updateNotificationCount();
-setInterval(updateNotificationCount, 30000);
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initializeEventListeners);
-} else {
-    initializeEventListeners();
-}
-
-// Export functions for global access
+// Export functions globally
 window.initializeCommunity = initializeCommunity;
-window.retryInitialization = retryInitialization;
 window.sendCommunityMessage = sendCommunityMessage;
 window.handleCommunityKeyPress = handleCommunityKeyPress;
-window.loadMessages = loadMessages;
-window.displayMessages = displayMessages;
-window.displayThreadedMessages = displayThreadedMessages;
-window.createMessageElement = createMessageElement;
 window.replyToMessage = replyToMessage;
 window.cancelReply = cancelReply;
 window.toggleLike = toggleLike;
-window.createRoom = createRoom;
-window.deleteRoom = deleteRoom;
-window.deleteMessage = deleteMessage; // FIXED: Export delete message function
+window.deleteMessage = deleteMessage;
 window.switchRoom = switchRoom;
-window.updateRoomsList = updateRoomsList;
-window.showReplyToast = showReplyToast;
-window.showSuccessToast = showSuccessToast;
-window.showErrorMessage = showErrorMessage;
-window.formatMessageTime = formatMessageTime;
-window.toggleEmoji = toggleEmoji;
-window.insertEmoji = insertEmoji;
-window.performSearch = performSearch;
-window.closeSearch = closeSearch;
-window.scrollToMessage = scrollToMessage;
+window.toggleSidebar = toggleSidebar;
 window.goToNotifications = goToNotifications;
 window.logout = logout;
-window.updateLikeDisplay = updateLikeDisplay;
+window.toggleEmoji = toggleEmoji;
+window.insertEmoji = insertEmoji;
 
-// Export global variables
-window.currentRoomId = currentRoomId;
-window.rooms = rooms;
-window.currentReplyTo = currentReplyTo;
-// ADD this new info toast function for loading states
-function showInfoToast(message) {
-    const toast = document.createElement('div');
-    const isMobile = window.innerWidth <= 1024;
-    
-    toast.style.cssText = `
-        position: fixed;
-        ${isMobile ? 'bottom: 100px; left: 20px; right: 20px;' : 'bottom: 100px; right: 20px; max-width: 400px;'}
-        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-        color: white;
-        padding: 1rem 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 8px 32px rgba(59, 130, 246, 0.4);
-        z-index: 10000;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        transform: translateY(100%);
-        transition: transform 0.3s ease;
-    `;
-    toast.innerHTML = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(0)';
-    }, 100);
-    
-    setTimeout(() => {
-        toast.style.transform = 'translateY(100%)';
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
-    }, 3000);
-}
-
-// COPY THIS ENTIRE FUNCTION TO REPLACE YOUR OLD ONE
-async function deleteMessage(messageId) {
-    try {
-        // Show confirmation dialog
-        const confirmDelete = confirm('Are you sure you want to delete this message? This action cannot be undone.');
-        if (!confirmDelete) {
-            return;
-        }
-
-        console.log('🗑️ Starting deletion for message:', messageId);
-
-        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-        if (!token) {
-            throw new Error('No authentication token');
-        }
-
-        // Add loading state to delete button
-        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
-        if (deleteBtn) {
-            deleteBtn.disabled = true;
-            deleteBtn.innerHTML = '⏳';
-            deleteBtn.style.opacity = '0.6';
-        }
-
-        // Show loading toast
-        showInfoToast('🗑️ Deleting message...');
-
-        // Try to delete from server
-        console.log('🔄 Attempting message deletion...');
-        
-        const response = await fetch(`${API_BASE_URL}/api/messages/${messageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const data = await response.json();
-        console.log('📥 Server response:', data);
-
-        if (response.ok && data.success) {
-            console.log('✅ Server deletion successful:', data.message);
-            
-            // Mark as deleted locally for immediate UI update
-            markMessageAsDeleted(messageId);
-            
-            // Remove message from DOM with animation
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.style.transition = 'all 0.3s ease';
-                messageElement.style.opacity = '0';
-                messageElement.style.transform = 'translateX(-20px)';
-                
-                setTimeout(() => {
-                    if (messageElement.parentNode) {
-                        messageElement.parentNode.removeChild(messageElement);
-                    }
-                }, 300);
-            }
-
-            // Show appropriate success message
-            if (data.hasReplies) {
-                showWarningToast('⚠️ Message deleted - converted to placeholder due to replies');
-            } else {
-                showSuccessToast('✅ Message permanently deleted!');
-            }
-
-            // Refresh messages to show updated state
-            setTimeout(() => {
-                if (currentRoomId) {
-                    loadMessages(currentRoomId);
-                }
-            }, 1000);
-
-        } else {
-            throw new Error(data.message || `Server error: ${response.status}`);
-        }
-
-    } catch (error) {
-        console.error('❌ Error deleting message:', error);
-        
-        // Reset button state
-        const deleteBtn = document.querySelector(`[onclick="deleteMessage('${messageId}')"]`);
-        if (deleteBtn) {
-            deleteBtn.disabled = false;
-            deleteBtn.innerHTML = '🗑️';
-            deleteBtn.style.opacity = '1';
-        }
-
-        // Handle specific error cases
-        if (error.message.includes('permission') || error.message.includes('own messages')) {
-            showErrorMessage('❌ You can only delete your own messages.');
-        } else if (error.message.includes('not found')) {
-            showErrorMessage('❌ Message not found - it may have already been deleted.');
-            // Still remove from UI since it doesn't exist
-            markMessageAsDeleted(messageId);
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement && messageElement.parentNode) {
-                messageElement.parentNode.removeChild(messageElement);
-            }
-        } else if (error.message.includes('No authentication token')) {
-            showErrorMessage('❌ Please log in again to delete messages.');
-        } else {
-            showErrorMessage('❌ Failed to delete message. Please try again.');
-            console.log('📝 Detailed error:', error.message);
-        }
-    }
-}
-
-console.log('✅ Enhanced Community.js loaded with PERMANENT MESSAGE DELETION (messages stay deleted forever)!');
+console.log('✅ Simple Community Chat loaded - NO LOOPS!');
