@@ -24,14 +24,18 @@ const COACHES = {
         personality: "Humorous, empathy-oriented coach focused on transformative solutions",
         description: "Entrepreneurial enthusiasm with a focus on personal and relational health",
         avatar: "BR",
-        status: "Ready to transform your journey"
+        status: "Ready to transform your journey",
+        photoUrl: null, // Add Blair's photo URL here when ready
+        hasPhoto: false
     },
     coach2: {
         name: "Dave Charlson", 
         personality: "Warm, strategic coach focused on sustainable growth and well-being",
         description: "Balanced approach combining business success with personal fulfillment",
         avatar: "DC",
-        status: "Ready to guide your growth"
+        status: "Ready to guide your growth",
+        photoUrl: null, // Add Dave's photo URL here when ready
+        hasPhoto: false
     }
 };
 
