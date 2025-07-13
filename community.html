@@ -2495,16 +2495,8 @@ if (window.communityAutoRefresh) {
     clearInterval(window.communityAutoRefresh);
 }
 
-window.communityAutoRefresh = setInterval(async () => {
-    if (currentRoomId && isInitialized && !isLoadingMessages) {
-        try {
-            await loadMessages(currentRoomId);
-        } catch (error) {
-            console.log('⚠️ Auto-refresh failed, will try again next time');
-        }
-    }
-}, 180000); // 3 minutes
-
+// Auto-refresh disabled temporarily for debugging
+console.log('🛑 Auto-refresh disabled to prevent loops');
 
         // Export functions for global access
         window.initializeCommunity = initializeCommunity;
