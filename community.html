@@ -1852,17 +1852,16 @@ const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
         `;
     }
 
-  let imageHTML = '';
-        if (message.image) {
-            imageHTML = `
-                <div class="message-image" style="margin-bottom: 0.5rem;">
-                    <img src="${message.image}" alt="Shared image" 
-                         style="max-width: 250px; max-height: 200px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; cursor: pointer;"
-                         onclick="openImageModal('${message.image}')">
-                    ${message.imageName ? `<div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">${message.imageName}</div>` : ''}
-                </div>
-            `;
-        }
+let imageHTML = '';
+if (message.image) {
+    imageHTML = `
+        <div class="message-image" style="margin-bottom: 0.5rem;">
+            <img src="${message.image}" alt="Shared image" 
+                 style="max-width: 250px; max-height: 200px; border-radius: 8px; border: 1px solid var(--border); object-fit: cover; cursor: pointer;"
+                 onclick="openImageModal('${message.image}')">
+        </div>
+    `;
+}
 
         messageDiv.innerHTML = `
             <div class="message-header">
@@ -2179,8 +2178,13 @@ const messageData = {
                 });
 
 messageInput.value = '';
-        removeImage();           
-                cancelReply();
+// Clear image after successful send
+selectedImage = null;
+const preview = document.getElementById('imagePreview');
+const fileInput = document.getElementById('imageFileInput');
+if (preview) preview.style.display = 'none';
+if (fileInput) fileInput.value = '';
+cancelReply();
 
                 if (currentReplyTo) {
                     showToast('✅ Reply sent! Will appear under original message.', 'success');
