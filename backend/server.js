@@ -1465,6 +1465,92 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   }
 });
 
+// ==========================================
+// COACH SELECTION API ROUTES
+// ==========================================
+
+// Get available coaches
+app.get('/api/coaches', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('selectedCoach');
+    
+    const availableCoaches = Object.keys(COACHES).map(coachId => ({
+      id: coachId,
+      name: COACHES[coachId].name,
+      personality: COACHES[coachId].personality,
+      description: COACHES[coachId].description,
+      isSelected: user.selectedCoach === coachId
+    }));
+    
+    res.json({
+      coaches: availableCoaches,
+      currentCoach: user.selectedCoach || 'coach1'
+    });
+  } catch (error) {
+    console.error('Get coaches error:', error);
+    res.status(500).json({ error: 'Failed to get coaches' });
+  }
+});
+
+// Switch coach
+app.post('/api/coaches/select', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { coachId } = req.body;
+    
+    if (!coachId || !COACHES[coachId]) {
+      return res.status(400).json({ error: 'Invalid coach selection' });
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { 
+        selectedCoach: coachId,
+        'coachPreferences.lastCoachSwitch': new Date()
+      },
+      { new: true }
+    );
+    
+    const selectedCoach = COACHES[coachId];
+    
+    console.log(`👥 User ${userId} switched to ${selectedCoach.name} (${coachId})`);
+    
+    res.json({
+      success: true,
+      message: `Switched to ${selectedCoach.name}`,
+      coach: {
+        id: coachId,
+        name: selectedCoach.name,
+        personality: selectedCoach.personality
+      }
+    });
+  } catch (error) {
+    console.error('Switch coach error:', error);
+    res.status(500).json({ error: 'Failed to switch coach' });
+  }
+});
+
+// Get current coach info
+app.get('/api/coaches/current', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('selectedCoach');
+    const coachId = user.selectedCoach || 'coach1';
+    const coach = COACHES[coachId];
+    
+    res.json({
+      id: coachId,
+      name: coach.name,
+      personality: coach.personality,
+      description: coach.description
+    });
+  } catch (error) {
+    console.error('Get current coach error:', error);
+    res.status(500).json({ error: 'Failed to get current coach' });
+  }
+});
+
 // Get community messages (legacy support)
 app.get('/api/community/messages/:room', authenticateToken, async (req, res) => {
   try {
