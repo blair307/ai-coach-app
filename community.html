@@ -2115,9 +2115,9 @@ const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
                 if (!token) {
                     throw new Error('No authentication token');
                 }
-
-         const messageData = {
-            content: messageText || '📷 Image',
+                
+const messageData = {
+            content: messageText || (selectedImage ? '📷 Image' : ''),
             avatar: currentUser?.name?.substring(0, 2).toUpperCase() || 'U',
             avatarColor: '#6366f1'
         };
@@ -2125,10 +2125,16 @@ const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
         // Add image data if present
         if (selectedImage) {
             try {
+                console.log('📷 Processing image for upload:', selectedImage.name);
                 const base64Image = await imageToBase64(selectedImage);
                 messageData.image = base64Image;
                 messageData.imageName = selectedImage.name;
                 messageData.imageSize = selectedImage.size;
+                
+                console.log('✅ Image processed successfully:', {
+                    name: selectedImage.name,
+                    size: Math.round(selectedImage.size / 1024) + 'KB'
+                });
             } catch (error) {
                 console.error('Error processing image:', error);
                 showToast('Failed to process image', 'error');
