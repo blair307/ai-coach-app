@@ -17,6 +17,12 @@ let coachSettings = {
     sessionReminder: 'weekly'
 };
 
+// Voice settings (API key will be handled securely on backend)
+const VOICE_SETTINGS = {
+    enabled: true,
+    autoPlay: true
+};
+
 // Coach data
 const COACHES = {
     coach1: {
