@@ -1080,6 +1080,12 @@ function handleVoiceResults(event) {
         resetAutoSendTimer();
     }
     
+    // ALSO reset timer for interim results (while speaking)
+    if (interimTranscript && interimTranscript.trim().length > 0) {
+        console.log('🎤 Interim speech detected, resetting timer');
+        resetAutoSendTimer();
+    }
+    
     // Update input field with complete final + current interim text
     const inputField = findInputField();
     if (inputField) {
@@ -1093,15 +1099,19 @@ function resetAutoSendTimer() {
     if (voiceTimeout) {
         clearTimeout(voiceTimeout);
         voiceTimeout = null;
+        console.log('🔄 Cleared existing timer');
     }
     
-    // Set new 3-second timer (keeping your preferred timing)
+    // Set new 3-second timer
     voiceTimeout = setTimeout(() => {
-        console.log('⏰ 3 seconds of silence - auto-sending');
-        if (isCurrentlyListening && completeTranscript.trim().length > 0) {
+        console.log('⏰ 3 seconds of silence - auto-sending transcript:', completeTranscript);
+        if (completeTranscript && completeTranscript.trim().length > 0) {
             finishVoiceInput();
+        } else {
+            console.log('❌ No transcript to send');
         }
     }, 3000);
+    console.log('⏰ Set 3-second auto-send timer');
 }
 
 // Handle voice recognition errors
