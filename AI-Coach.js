@@ -1051,8 +1051,8 @@ function handleVoiceResults(event) {
     let interimTranscript = '';
     let finalTranscript = '';
     
-    // Process all results
-    for (let i = event.resultIndex; i < event.results.length; i++) {
+    // Process ALL results from the beginning, not just new ones
+    for (let i = 0; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         
         if (event.results[i].isFinal) {
@@ -1062,16 +1062,16 @@ function handleVoiceResults(event) {
         }
     }
     
-    // Add final results to our complete transcript
-    if (finalTranscript) {
-        completeTranscript += finalTranscript;
-        console.log('🎤 Added final speech:', finalTranscript);
+    // Update our complete transcript with all final results
+    if (finalTranscript && finalTranscript !== completeTranscript) {
+        completeTranscript = finalTranscript;
+        console.log('🎤 Updated complete transcript:', completeTranscript);
         
         // Reset the 3-second auto-send timer
         resetAutoSendTimer();
     }
     
-    // Update input field with complete + interim text
+    // Update input field with complete final + current interim text
     const inputField = findInputField();
     if (inputField) {
         inputField.value = completeTranscript + interimTranscript;
