@@ -1312,8 +1312,24 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     const { message } = req.body;
     const userId = req.user.userId;
 
-    const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
-
+// Coach Configuration
+const COACHES = {
+  coach1: {
+    name: "Blair Reynolds", 
+    assistantId: "asst_tpShoq1kPGvtcFhMdxb6EmYg", 
+    voiceId: null, // We'll add this after setting up ElevenLabs
+    personality: "Humorous, empathy-oriented coach focused on transformative solutions",
+    description: "Entrepreneurial enthusiasm with a focus on personal and relational health"
+  },
+  coach2: {
+    name: "Dave Charlson",
+    assistantId: null, // We'll create Dave's assistant next
+    voiceId: null, // We'll add this after setting up ElevenLabs
+    personality: "Warm, strategic coach focused on sustainable growth and well-being",
+    description: "Balanced approach combining business success with personal fulfillment"
+  }
+};
+      
     let chat = await Chat.findOne({ userId });
     let threadId;
 
