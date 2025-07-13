@@ -299,6 +299,15 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   stripeCustomerId: String,
+    selectedCoach: {
+    type: String,
+    enum: ['coach1', 'coach2'],
+    default: 'coach1'
+  },
+  coachPreferences: {
+    voiceEnabled: { type: Boolean, default: true },
+    lastCoachSwitch: { type: Date, default: null }
+  },
  subscription: {
     plan: String,
     status: String,
