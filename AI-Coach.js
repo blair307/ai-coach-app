@@ -140,20 +140,23 @@ function showCoachSelector() {
 // Hide coach selector
 function hideCoachSelector() {
     const selector = document.getElementById('coachSelector');
-    const chatContainer = document.querySelector('[style*="display: flex"]');
     const switchBtn = document.getElementById('switchCoachBtn');
     
     if (selector) {
         selector.style.display = 'none';
     }
     
-    if (chatContainer) {
-        chatContainer.style.display = 'flex';
-    }
-    
     if (switchBtn) {
         switchBtn.style.display = 'inline-flex';
     }
+    
+    // Re-enable body scroll
+    document.body.style.overflow = '';
+}
+
+// Close coach selector function
+function closeCoachSelector() {
+    hideCoachSelector();
 }
 
 // Select a coach
