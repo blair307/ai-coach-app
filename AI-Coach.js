@@ -1011,11 +1011,19 @@ function initializeVoiceRecognition() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
         
-        // Configure recognition settings
-        recognition.continuous = false;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        recognition.maxAlternatives = 1;
+       // Configure recognition settings
+recognition.continuous = false;
+recognition.interimResults = true;
+recognition.lang = 'en-US';
+recognition.maxAlternatives = 1;
+
+// Extend silence timeout to 3 seconds
+if (typeof recognition.speechTimeoutLength !== 'undefined') {
+    recognition.speechTimeoutLength = 3000; // 3 seconds of silence
+}
+if (typeof recognition.speechStartTimeout !== 'undefined') {
+    recognition.speechStartTimeout = 8000; // 8 seconds to start speaking
+}
         
         // Handle speech recognition results
         recognition.onresult = function(event) {
