@@ -90,14 +90,20 @@ function loadCoachPhotos() {
     }
 }
 
-// Wait for page to fully load
+// Voice recognition variables - ADD THESE AT THE TOP
+let recognition = null;
+let isListening = false;
+let voiceInputEnabled = true;
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
     loadSettings();
-    loadRecentInsights(); // Load real insights
-    loadCoachPhotos(); // Load coach photos
-    checkCoachSelection(); // Check if user has selected a coach
-   initializeVoiceRecognition();
+    loadRecentInsights();
+    loadCoachPhotos();
+    checkCoachSelection();
+    
+    // ADD THESE TWO NEW LINES:
+    initializeVoiceRecognition();
     setupVoiceInputButton();
     
     setTimeout(setupChat, 1000);
