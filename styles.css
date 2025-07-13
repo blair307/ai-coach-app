@@ -4812,7 +4812,7 @@ body {
     display: flex !important;
     gap: 1.5rem !important;
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: flex-end !important;
     flex-wrap: wrap !important;
     padding-top: 1rem !important;
 }
@@ -4829,7 +4829,7 @@ body {
 }
 
 /* Mobile specific fixes */
-@media (max-width: 1024px) {
+@media (max-width: 1025px) {
     .chat-input-container .input-actions,
     .input-actions {
         justify-content: center !important;
