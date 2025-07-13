@@ -2099,10 +2099,12 @@ const isLikedByUser = likes.some(like => like.userId === currentUser?.id);
                     return;
                 }
 
-                const messageText = messageInput.value.trim();
-                if (!messageText) {
-                    return;
-                }
+               const messageText = messageInput.value.trim();
+        
+        // Allow sending if we have text OR an image
+        if (!messageText && !selectedImage) {
+            return;
+        }
 
                 if (sendButton) {
                     sendButton.disabled = true;
