@@ -7,7 +7,7 @@
     <title>AI Coach - Entrepreneur Emotional Health</title>
     <link rel="stylesheet" href="styles.css">
   
-    <style>
+   <style>
 /* Override problematic card styles directly */
 .feature::before,
 .pricing-card::before {
@@ -22,6 +22,158 @@
     
     .header-actions {
         gap: 0.75rem !important;
+    }
+}
+
+/* Coach Selector Styles */
+.coach-selector-container {
+    background: var(--background);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border);
+    animation: slideIn 0.5s ease-out;
+}
+
+.coach-selector-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.coach-selector-header h2 {
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.coach-selector-header p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+}
+
+.coaches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.coach-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.coach-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.coach-card.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, rgba(38, 150, 254, 0.05) 0%, rgba(38, 150, 254, 0.02) 100%);
+    box-shadow: var(--shadow-lg);
+}
+
+.coach-avatar-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0 auto 1.5rem auto;
+    border: 4px solid var(--background);
+    box-shadow: var(--shadow);
+}
+
+.coach-card h3 {
+    color: var(--text-primary);
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.coach-personality {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    font-style: italic;
+}
+
+.coach-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.coach-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.feature-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.coach-select-btn {
+    margin-top: auto;
+}
+
+.coach-card.selected .coach-select-btn {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.coach-selector-footer {
+    text-align: center;
+    color: var(--text-muted);
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .coaches-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .coach-card {
+        padding: 1.5rem;
+    }
+    
+    .coach-avatar-large {
+        width: 60px;
+        height: 60px;
+        font-size: 1.4rem;
     }
 }
 </style>
@@ -83,21 +235,71 @@
                 </div>
             </header>
 
+           <!-- Coach Selector (initially hidden) -->
+            <div class="coach-selector-container" id="coachSelector" style="display: none;">
+                <div class="coach-selector-header">
+                    <h2>Choose Your AI Coach</h2>
+                    <p>Select the coaching style that resonates with you. You can switch anytime in settings.</p>
+                </div>
+                
+                <div class="coaches-grid">
+                    <!-- Blair Reynolds -->
+                    <div class="coach-card" data-coach="coach1" onclick="selectCoach('coach1')">
+                        <div class="coach-avatar-large">BR</div>
+                        <h3>Blair Reynolds</h3>
+                        <p class="coach-personality">Humorous, empathy-oriented coach focused on transformative solutions</p>
+                        <p class="coach-description">Entrepreneurial enthusiasm with a focus on personal and relational health</p>
+                        <div class="coach-features">
+                            <span class="feature-tag">🎯 Transformation Focus</span>
+                            <span class="feature-tag">😊 Humor & Empathy</span>
+                            <span class="feature-tag">💡 Creative Solutions</span>
+                        </div>
+                        <button class="btn btn-outline coach-select-btn">Select Blair</button>
+                    </div>
+                    
+                    <!-- Dave Charlson -->
+                    <div class="coach-card" data-coach="coach2" onclick="selectCoach('coach2')">
+                        <div class="coach-avatar-large">DC</div>
+                        <h3>Dave Charlson</h3>
+                        <p class="coach-personality">Warm, strategic coach focused on sustainable growth and well-being</p>
+                        <p class="coach-description">Balanced approach combining business success with personal fulfillment</p>
+                        <div class="coach-features">
+                            <span class="feature-tag">📈 Strategic Growth</span>
+                            <span class="feature-tag">🌱 Sustainability</span>
+                            <span class="feature-tag">⚖️ Work-Life Balance</span>
+                        </div>
+                        <button class="btn btn-outline coach-select-btn">Select Dave</button>
+                    </div>
+                </div>
+                
+                <div class="coach-selector-footer">
+                    <p><small>💡 Don't worry - you can change coaches anytime in your settings</small></p>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 2rem; height: calc(100vh - 12rem);">
                 <!-- Chat Container -->
                 <div class="chat-container">
-                    <div class="chat-header">
+<div class="chat-header">
                         <div class="coach-info">
-                            <div class="coach-avatar">AI</div>
+                            <div class="coach-avatar" id="currentCoachAvatar">AI</div>
                             <div class="coach-details">
-                                <h2>EEH Coach</h2>
+                                <h2 id="currentCoachName">EEH Coach</h2>
                                 <div class="coach-status">
                                     <span class="status-dot"></span>
-                                    Always available to help
+                                    <span id="currentCoachStatus">Always available to help</span>
                                 </div>
                             </div>
                         </div>
-                       
+                        
+                        <div class="chat-actions">
+                            <button class="btn btn-outline btn-small" onclick="showCoachSelector()" id="switchCoachBtn" style="display: none;">
+                                Switch Coach
+                            </button>
+                            <button class="btn btn-outline btn-small" onclick="toggleSettings()" id="settingsBtn">
+                                ⚙️ Settings
+                            </button>
+                        </div>
                     </div>
 
                     <div class="chat-messages" id="chatMessages">
