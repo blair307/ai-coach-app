@@ -43,11 +43,105 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
     loadSettings();
     loadRecentInsights(); // Load real insights
+    checkCoachSelection(); // Check if user has selected a coach
     setTimeout(setupChat, 1000);
     
     // Refresh insights every 3 minutes
     setInterval(loadRecentInsights, 180000);
 });
+
+// Check if user has selected a coach
+function checkCoachSelection() {
+    console.log('🎯 Checking coach selection...');
+    
+    if (!selectedCoach) {
+        console.log('📋 No coach selected, showing selector');
+        showCoachSelector();
+    } else {
+        console.log('✅ Coach already selected:', selectedCoach);
+        updateCoachDisplay();
+        hideCoachSelector();
+    }
+}
+
+// Show coach selector
+function showCoachSelector() {
+    const selector = document.getElementById('coachSelector');
+    const chatContainer = document.querySelector('[style*="display: flex"]');
+    
+    if (selector) {
+        selector.style.display = 'block';
+        console.log('👥 Coach selector shown');
+    }
+    
+    if (chatContainer) {
+        chatContainer.style.display = 'none';
+    }
+}
+
+// Hide coach selector
+function hideCoachSelector() {
+    const selector = document.getElementById('coachSelector');
+    const chatContainer = document.querySelector('[style*="display: flex"]');
+    const switchBtn = document.getElementById('switchCoachBtn');
+    
+    if (selector) {
+        selector.style.display = 'none';
+    }
+    
+    if (chatContainer) {
+        chatContainer.style.display = 'flex';
+    }
+    
+    if (switchBtn) {
+        switchBtn.style.display = 'inline-flex';
+    }
+}
+
+// Select a coach
+function selectCoach(coachId) {
+    console.log('🎯 Selecting coach:', coachId);
+    
+    // Remove selected class from all cards
+    document.querySelectorAll('.coach-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    
+    // Add selected class to chosen card
+    const selectedCard = document.querySelector(`[data-coach="${coachId}"]`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+    }
+    
+    // Save selection
+    selectedCoach = coachId;
+    localStorage.setItem('selectedCoach', coachId);
+    
+    // Update display
+    updateCoachDisplay();
+    
+    // Show confirmation and hide selector after delay
+    setTimeout(() => {
+        hideCoachSelector();
+        showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
+    }, 1000);
+}
+
+// Update coach display in header
+function updateCoachDisplay() {
+    if (!selectedCoach || !COACHES[selectedCoach]) return;
+    
+    const coach = COACHES[selectedCoach];
+    const avatarEl = document.getElementById('currentCoachAvatar');
+    const nameEl = document.getElementById('currentCoachName');
+    const statusEl = document.getElementById('currentCoachStatus');
+    
+    if (avatarEl) avatarEl.textContent = coach.avatar;
+    if (nameEl) nameEl.textContent = coach.name;
+    if (statusEl) statusEl.textContent = coach.status;
+    
+    console.log('✅ Coach display updated:', coach.name);
+}
 
 // Load settings from localStorage
 function loadSettings() {
