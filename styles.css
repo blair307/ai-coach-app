@@ -656,22 +656,57 @@ button[onclick*="startCoachingSession"]:hover,
     .chat-header {
         padding: 0.75rem 1rem !important;
         flex-shrink: 0 !important;
-        text-align: center !important;
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+        display: flex !important;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        gap: 1rem !important;
     }
     
     .chat-header .room-title h2,
     #currentRoomName {
         font-size: 1.1rem !important;
+        margin: 0 !important;
+        flex: 1 !important;
+        text-align: left !important;
     }
     
     .coach-info {
-        display: none !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.75rem !important;
+        flex-shrink: 0 !important;
     }
     
-    .chat-actions,
+    .coach-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1rem !important;
+    }
+    
+    .coach-details h2 {
+        font-size: 1rem !important;
+        margin: 0 !important;
+    }
+    
+    .coach-status {
+        font-size: 0.8rem !important;
+    }
+    
+    .chat-actions {
+        display: flex !important;
+        gap: 0.5rem !important;
+        flex-shrink: 0 !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .chat-actions .btn {
+        font-size: 0.8rem !important;
+        padding: 0.5rem 0.75rem !important;
+        min-height: 36px !important;
+        white-space: nowrap !important;
+    }
+    
     .modern-settings-btn,
     button[onclick*="toggleSettings"] {
         display: none !important;
