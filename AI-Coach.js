@@ -17,6 +17,27 @@ let coachSettings = {
     sessionReminder: 'weekly'
 };
 
+// Coach data
+const COACHES = {
+    coach1: {
+        name: "Blair Reynolds",
+        personality: "Humorous, empathy-oriented coach focused on transformative solutions",
+        description: "Entrepreneurial enthusiasm with a focus on personal and relational health",
+        avatar: "BR",
+        status: "Ready to transform your journey"
+    },
+    coach2: {
+        name: "Dave Charlson", 
+        personality: "Warm, strategic coach focused on sustainable growth and well-being",
+        description: "Balanced approach combining business success with personal fulfillment",
+        avatar: "DC",
+        status: "Ready to guide your growth"
+    }
+};
+
+// Current selected coach
+let selectedCoach = localStorage.getItem('selectedCoach') || null;
+
 // Wait for page to fully load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
