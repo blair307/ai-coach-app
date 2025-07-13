@@ -1016,7 +1016,7 @@ let currentAudio = null; // Track AI voice playback for interruption
 
 // Initialize complete voice system
 function initVoiceSystem() {
-    console.log('🎤 Initializing complete voice system...');
+    console.log('Initializing complete voice system...');
     
     // Check browser support
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
@@ -1227,7 +1227,7 @@ function startVoiceInput() {
         const inputField = findInputField();
         if (inputField) {
             inputField.value = '';
-            inputField.placeholder = '🎤 Listening... speak now!';
+            inputField.placeholder = 'Listening... speak now';
             inputField.focus();
         }
         
