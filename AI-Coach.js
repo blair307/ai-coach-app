@@ -30,7 +30,7 @@ const COACHES = {
         personality: "Humorous, empathy-oriented coach focused on transformative solutions",
         description: "Entrepreneurial enthusiasm with a focus on personal and relational health",
         avatar: "BR",
-        status: "Ready to transform your journey",
+        status: "Ready",
         photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/blair.png",
         hasPhoto: true
     },
@@ -39,7 +39,7 @@ const COACHES = {
         personality: "Warm, strategic coach focused on sustainable growth and well-being",
         description: "Balanced approach combining business success with personal fulfillment",
         avatar: "DC",
-        status: "Ready to guide your growth",
+        status: "Ready",
         photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/dave.png",
         hasPhoto: true
     }
