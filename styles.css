@@ -4750,7 +4750,7 @@ body {
 }
 
 /* Mobile and tablet responsive button layout */
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
     .input-actions {
         justify-content: center !important;
         gap: 1.5rem !important;
@@ -4810,11 +4810,11 @@ body {
 .chat-input-container .input-actions,
 .input-actions {
     display: flex !important;
-    gap: 1rem !important;
+    gap: 1.5rem !important;
     align-items: center !important;
-    justify-content: flex-end !important;
-    flex-wrap: nowrap !important;
-    padding-top: 0.75rem !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    padding-top: 1rem !important;
 }
 
 /* Target specific buttons by ID */
@@ -4829,7 +4829,7 @@ body {
 }
 
 /* Mobile specific fixes */
-@media (max-width: 1025px) {
+@media (max-width: 1024px) {
     .chat-input-container .input-actions,
     .input-actions {
         justify-content: center !important;
