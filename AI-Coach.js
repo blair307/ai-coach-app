@@ -156,7 +156,22 @@ function hideCoachSelector() {
 
 // Close coach selector function
 function closeCoachSelector() {
-    hideCoachSelector();
+    // Allow closing without selecting a coach
+    const selector = document.getElementById('coachSelector');
+    const switchBtn = document.getElementById('switchCoachBtn');
+    
+    if (selector) {
+        selector.style.display = 'none';
+    }
+    
+    if (switchBtn) {
+        switchBtn.style.display = 'inline-flex';
+    }
+    
+    // Re-enable body scroll
+    document.body.style.overflow = '';
+    
+    console.log('👥 Coach selector closed without selection');
 }
 
 // Select a coach
@@ -487,11 +502,11 @@ const cleanedDisplayResponse = data.response
 
 addMessageToChat(cleanedDisplayResponse, 'ai');
          
-    // Handle voice response with interruption support
+// Handle voice response with mobile support
 if (data.audio && data.audio.url && voiceEnabled) {
     console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
     try {
-        playAIAudio(data.audio.url);
+        playAIAudioMobileFriendly(data.audio.url);
     } catch (audioError) {
         console.log('❌ Audio creation failed:', audioError);
     }
@@ -1470,3 +1485,107 @@ function toggleVoice() {
     
     console.log('🎵 Voice toggle:', voiceEnabled ? 'ON' : 'OFF');
 }
+
+}
+
+// Mobile-friendly audio playback
+function playAIAudioMobileFriendly(audioUrl) {
+    try {
+        // Stop any existing audio first
+        stopAIAudio();
+        
+        // Create audio element with mobile-friendly settings
+        currentAudio = new Audio();
+        
+        // Mobile-specific audio settings
+        currentAudio.preload = 'metadata';
+        currentAudio.crossOrigin = 'anonymous';
+        
+        // Set source after creating element (better mobile compatibility)
+        currentAudio.src = audioUrl;
+        
+        // Mobile Safari requires user interaction context
+        const playPromise = currentAudio.play();
+        
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    console.log('🎵 AI audio playing (mobile-friendly)');
+                })
+                .catch(error => {
+                    console.log('⚠️ Audio autoplay blocked (common on mobile):', error.message);
+                    
+                    // Show user they can tap to play audio
+                    showMobileAudioPrompt(audioUrl);
+                });
+        }
+            
+        // Clear reference when done
+        currentAudio.onended = () => {
+            currentAudio = null;
+        };
+        
+        // Handle mobile audio errors
+        currentAudio.onerror = (error) => {
+            console.log('❌ Mobile audio error:', error);
+            currentAudio = null;
+        };
+        
+    } catch (error) {
+        console.log('❌ Mobile audio creation failed:', error);
+    }
+}
+
+// Show prompt for mobile users to manually play audio
+function showMobileAudioPrompt(audioUrl) {
+    // Create a temporary button for mobile audio playback
+    const audioPrompt = document.createElement('div');
+    audioPrompt.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--primary);
+        color: white;
+        padding: 1rem 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        z-index: 9999;
+        cursor: pointer;
+        font-weight: 600;
+        animation: slideUp 0.3s ease-out;
+    `;
+    audioPrompt.innerHTML = '🎵 Tap to hear voice response';
+    
+    audioPrompt.onclick = () => {
+        const audio = new Audio(audioUrl);
+        audio.play()
+            .then(() => {
+                console.log('🎵 Manual audio play successful');
+                audioPrompt.remove();
+            })
+            .catch(err => {
+                console.log('❌ Manual audio play failed:', err);
+                audioPrompt.remove();
+            });
+    };
+    
+    document.body.appendChild(audioPrompt);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (audioPrompt.parentNode) {
+            audioPrompt.remove();
+        }
+    }, 5000);
+}
+
+// Add the slideUp animation to your styles
+const mobileAudioStyle = document.createElement('style');
+mobileAudioStyle.textContent = `
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+`;
+document.head.appendChild(mobileAudioStyle);
