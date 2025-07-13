@@ -1589,3 +1589,50 @@ mobileAudioStyle.textContent = `
     }
 `;
 document.head.appendChild(mobileAudioStyle);
+
+// Restore missing functionality - ADD AT THE VERY END
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🔧 Restoring chat functionality...');
+    
+    // Restore voice button if missing
+    setTimeout(() => {
+        const inputActions = document.querySelector('.input-actions');
+        const voiceBtn = document.getElementById('voiceInputBtn');
+        const sendBtn = document.getElementById('sendButton');
+        
+        if (inputActions && !voiceBtn && sendBtn) {
+            console.log('🎤 Recreating voice button...');
+            createVoiceButton();
+        }
+        
+        // Restore switch coach button if missing
+        const switchBtn = document.getElementById('switchCoachBtn');
+        const chatActions = document.querySelector('.chat-actions');
+        
+        if (chatActions && !switchBtn) {
+            console.log('👥 Recreating switch coach button...');
+            const newSwitchBtn = document.createElement('button');
+            newSwitchBtn.id = 'switchCoachBtn';
+            newSwitchBtn.className = 'btn btn-outline btn-small';
+            newSwitchBtn.textContent = 'Switch Coach';
+            newSwitchBtn.onclick = showCoachSelector;
+            newSwitchBtn.style.display = selectedCoach ? 'inline-flex' : 'none';
+            chatActions.appendChild(newSwitchBtn);
+        }
+        
+        // Restore voice toggle button if missing
+        const voiceToggleBtn = document.getElementById('voiceToggleBtn');
+        const headerActions = document.querySelector('.header-actions');
+        
+        if (headerActions && !voiceToggleBtn) {
+            console.log('🔊 Recreating voice toggle button...');
+            const newVoiceToggle = document.createElement('button');
+            newVoiceToggle.id = 'voiceToggleBtn';
+            newVoiceToggle.className = 'btn btn-outline btn-small';
+            newVoiceToggle.textContent = 'Voice On';
+            newVoiceToggle.onclick = toggleVoice;
+            headerActions.insertBefore(newVoiceToggle, headerActions.firstChild);
+        }
+        
+    }, 1000);
+});
