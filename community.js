@@ -8,10 +8,10 @@ let rooms = [];
 let isInitialized = false;
 let currentReplyTo = null;
 
-// Prevent rapid message loading
-let isLoadingMessages = false;
-let lastLoadTime = 0;
-const MIN_LOAD_INTERVAL = 2000; // 2 seconds minimum between loads
+// Prevent rapid message loading - GLOBAL
+window.isLoadingMessages = false;
+window.lastLoadTime = 0;
+window.MIN_LOAD_INTERVAL = 5000; // 5 seconds minimum between loads
 
 // NEW: Local message storage for permanent deletions
 let deletedMessages = new Set();
@@ -458,7 +458,7 @@ async function loadMessages(roomId) {
     // Prevent rapid successive calls for the same room
 const now = Date.now();
 const isSameRoom = (window.lastLoadedRoomId === roomId);
-if (isLoadingMessages || (isSameRoom && (now - lastLoadTime) < MIN_LOAD_INTERVAL)) {
+if (window.isLoadingMessages || (isSameRoom && (now - window.lastLoadTime) < window.MIN_LOAD_INTERVAL)) {
     console.log('⏭️ Skipping message load - too soon or already loading same room');
     return;
 }
@@ -466,8 +466,8 @@ if (isLoadingMessages || (isSameRoom && (now - lastLoadTime) < MIN_LOAD_INTERVAL
 // Track which room we're loading
 window.lastLoadedRoomId = roomId;
         
-        isLoadingMessages = true;
-        lastLoadTime = now;
+        window.isLoadingMessages = true;
+window.lastLoadTime = now;
         
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
@@ -513,9 +513,9 @@ window.lastLoadedRoomId = roomId;
 } catch (error) {
         console.error('❌ Error loading messages:', error);
         displayThreadedMessages([]);
-    } finally {
-        isLoadingMessages = false;
-    }
+   } finally {
+    window.isLoadingMessages = false;
+}
 }
 
 // REPLACE the end of your displayThreadedMessages function with this:
