@@ -1277,6 +1277,13 @@ function stopVoiceInput() {
         voiceTimeout = null;
     }
     
+    // AUTO-SUBMIT if there's text when manually stopping
+    if (completeTranscript && completeTranscript.trim().length > 0) {
+        console.log('🔇 Voice stopped manually - auto-submitting');
+        finishVoiceInput();
+        return; // Exit early since finishVoiceInput handles everything
+    }
+    
     // Update button appearance
     updateVoiceButtonState(false);
     
