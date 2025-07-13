@@ -1275,13 +1275,6 @@ function stopVoiceInput() {
         voiceTimeout = null;
     }
     
-    // AUTO-SUBMIT if there's text when manually stopping
-    if (completeTranscript && completeTranscript.trim().length > 0) {
-        console.log('🔇 Voice stopped manually - auto-submitting');
-        finishVoiceInput();
-        return; // Exit early since finishVoiceInput handles everything
-    }
-    
     // Update button appearance
     updateVoiceButtonState(false);
     
@@ -1309,31 +1302,13 @@ function finishVoiceInput() {
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-// Finish voice input and send message
-function finishVoiceInput() {
-    const inputField = findInputField();
-    
-    if (inputField && completeTranscript.trim().length > 0) {
-        // Ensure the input has the final transcript
-        inputField.value = completeTranscript.trim();
-        
-        // Stop voice input first
-        stopVoiceInput();
-        
-        // Clear the transcript to prevent double-sending
-        const messageToSend = completeTranscript.trim();
-        completeTranscript = '';
-        
-        // Send the message immediately
-        sendMessageNow();
-        console.log('📤 Voice message sent:', messageToSend);
-        
-    } else {
-        // No text to send, just stop
-        stopVoiceInput();
-        showToast('No speech detected');
-    }
-}
+        // Send the message
+        setTimeout(() => {
+            if (inputField.value.trim() === messageToSend) {
+                sendMessageNow();
+                console.log('📤 Voice message sent:', messageToSend);
+            }
+        }, 200);
         
     } else {
         // No text to send, just stop
