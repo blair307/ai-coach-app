@@ -4376,3 +4376,108 @@ body {
         max-height: 40px !important;
     }
 }
+
+/* =================================
+   VOICE INPUT STYLES - ADD THIS TO BOTTOM OF styles.css
+   ================================= */
+
+/* Voice Input Button Base Styles */
+.voice-input-btn {
+    min-width: 90px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative !important;
+    overflow: hidden !important;
+    border: 2px solid var(--border) !important;
+    background: var(--background) !important;
+    color: var(--text-primary) !important;
+}
+
+.voice-input-btn:hover {
+    border-color: var(--primary) !important;
+    color: var(--primary) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 8px 15px rgba(38, 150, 254, 0.2) !important;
+}
+
+/* Listening State */
+.voice-input-btn.listening {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+    border-color: #ef4444 !important;
+    color: white !important;
+    animation: voicePulse 1.5s infinite !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4) !important;
+}
+
+.voice-input-btn.listening:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+    transform: translateY(-2px) scale(1.02) !important;
+}
+
+/* Pulse Animation for Listening State */
+@keyframes voicePulse {
+    0%, 100% { 
+        box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4), 0 0 0 0 rgba(239, 68, 68, 0.7);
+        transform: translateY(-2px) scale(1);
+    }
+    50% { 
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.6), 0 0 0 8px rgba(239, 68, 68, 0);
+        transform: translateY(-2px) scale(1.05);
+    }
+}
+
+/* Voice Icon Styles */
+.voice-icon {
+    flex-shrink: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    transition: all 0.2s ease !important;
+}
+
+.voice-input-btn.listening .voice-icon {
+    animation: microphoneGlow 1s ease-in-out infinite alternate !important;
+}
+
+@keyframes microphoneGlow {
+    from { opacity: 1; }
+    to { opacity: 0.7; }
+}
+
+/* Button Text */
+.voice-btn-text {
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    .voice-input-btn {
+        min-width: 70px !important;
+        padding: 0.75rem !important;
+        gap: 0.25rem !important;
+    }
+    
+    .voice-btn-text {
+        font-size: 0.8rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .voice-input-btn {
+        min-width: 60px !important;
+        padding: 0.75rem 0.5rem !important;
+    }
+    
+    .voice-btn-text {
+        display: none !important;
+    }
+    
+    .voice-icon {
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
