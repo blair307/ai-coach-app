@@ -4805,3 +4805,66 @@ body {
         margin: 0 auto !important;
     }
 }
+
+/* FORCE BUTTON SEPARATION - HIGH SPECIFICITY */
+.chat-input-container .input-actions,
+.input-actions {
+    display: flex !important;
+    gap: 1.5rem !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: wrap !important;
+    padding-top: 1rem !important;
+}
+
+/* Target specific buttons by ID */
+#voiceInputBtn,
+#sendButton,
+.voice-input-btn {
+    min-width: 140px !important;
+    margin: 0 0.75rem !important;
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.95rem !important;
+    flex: 0 0 auto !important;
+}
+
+/* Mobile specific fixes */
+@media (max-width: 1024px) {
+    .chat-input-container .input-actions,
+    .input-actions {
+        justify-content: center !important;
+        gap: 2rem !important;
+        flex-direction: row !important;
+        padding-top: 1.5rem !important;
+    }
+    
+    #voiceInputBtn,
+    #sendButton,
+    .voice-input-btn {
+        min-width: 130px !important;
+        margin: 0 1rem !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .chat-input-container .input-actions,
+    .input-actions {
+        flex-direction: column !important;
+        gap: 1rem !important;
+        align-items: center !important;
+        padding-top: 1rem !important;
+    }
+    
+    #voiceInputBtn,
+    #sendButton,
+    .voice-input-btn {
+        width: 200px !important;
+        min-width: 200px !important;
+        margin: 0.5rem 0 !important;
+    }
+    
+    .chat-input {
+        flex-direction: column !important;
+        gap: 1.5rem !important;
+    }
+}
