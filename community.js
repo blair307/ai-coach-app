@@ -465,7 +465,7 @@ if (window.isLoadingMessages) {
 window.lastLoadedRoomId = roomId;
         
         window.isLoadingMessages = true;
-window.lastLoadTime = now;
+
         
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
