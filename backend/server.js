@@ -1300,18 +1300,6 @@ try {
   }
 });
 
-// Send message to AI Assistant with Conversation Memory
-app.post('/api/chat/send', authenticateToken, async (req, res) => {
-  try {
-    if (!openai) {
-      return res.json({ 
-        response: "AI chat is temporarily unavailable. Your other app features are working!" 
-      });
-    }
-
-    const { message } = req.body;
-    const userId = req.user.userId;
-
 // Coach Configuration
 const COACHES = {
   coach1: {
@@ -1323,13 +1311,38 @@ const COACHES = {
   },
   coach2: {
     name: "Dave Charlson",
-    assistantId: null, // We'll create Dave's assistant next
+    assistantId: "asst_azEXcPuwPHRaSXWzv2tPzI4t", // We'll create Dave's assistant next
     voiceId: null, // We'll add this after setting up ElevenLabs
     personality: "Warm, strategic coach focused on sustainable growth and well-being",
     description: "Balanced approach combining business success with personal fulfillment"
   }
 };
-      
+
+// Send message to AI Assistant with Coach Selection
+app.post('/api/chat/send', authenticateToken, async (req, res) => {
+  try {
+    if (!openai) {
+      return res.json({ 
+        response: "AI chat is temporarily unavailable. Your other app features are working!" 
+      });
+    }
+
+    const { message } = req.body;
+    const userId = req.user.userId;
+
+    // Get user's selected coach
+    const user = await User.findById(userId).select('selectedCoach');
+    const selectedCoach = user?.selectedCoach || 'coach1';
+    const coach = COACHES[selectedCoach];
+    
+    if (!coach || !coach.assistantId) {
+      return res.status(400).json({ 
+        error: 'Selected coach is not available. Please try again.' 
+      });
+    }
+
+    console.log(`🎯 Using ${coach.name} (${selectedCoach}) for user ${userId}`);
+
     let chat = await Chat.findOne({ userId });
     let threadId;
 
@@ -1358,7 +1371,7 @@ const COACHES = {
     });
 
     const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: ASSISTANT_ID
+      assistant_id: coach.assistantId // Use selected coach's assistant
     });
 
     let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
@@ -1385,17 +1398,23 @@ const COACHES = {
 
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
-      { role: 'assistant', content: response, timestamp: new Date() }
+      { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
     );
     chat.updatedAt = new Date();
     await chat.save();
 
-// Generate insights after successful chat - NEW
+    // Generate insights after successful chat
     if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
 
-    res.json({ response });
+    res.json({ 
+      response,
+      coach: {
+        name: coach.name,
+        id: selectedCoach
+      }
+    });
 
   } catch (error) {
     console.error('Assistant error:', error);
