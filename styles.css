@@ -653,14 +653,15 @@ button[onclick*="startCoachingSession"]:hover,
         overflow: hidden !important;
     }
     
-    .chat-header {
+   .chat-header {
         padding: 0.75rem 1rem !important;
         flex-shrink: 0 !important;
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
         align-items: center !important;
-        gap: 1rem !important;
+        gap: 0.5rem !important;
+        overflow: hidden !important;
     }
     
     .chat-header .room-title h2,
@@ -693,18 +694,20 @@ button[onclick*="startCoachingSession"]:hover,
         font-size: 0.8rem !important;
     }
     
-    .chat-actions {
+   .chat-actions {
         display: flex !important;
-        gap: 0.5rem !important;
+        gap: 0.25rem !important;
         flex-shrink: 0 !important;
-        flex-wrap: wrap !important;
+        flex-wrap: nowrap !important;
+        overflow: hidden !important;
     }
     
     .chat-actions .btn {
-        font-size: 0.8rem !important;
-        padding: 0.5rem 0.75rem !important;
-        min-height: 36px !important;
+        font-size: 0.75rem !important;
+        padding: 0.4rem 0.6rem !important;
+        min-height: 32px !important;
         white-space: nowrap !important;
+        border-radius: 4px !important;
     }
     
     .modern-settings-btn,
@@ -735,6 +738,22 @@ button[onclick*="startCoachingSession"]:hover,
         border-top: 1px solid var(--border) !important;
         background: var(--background) !important;
         padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+    }
+
+.chat-input-container {
+        flex-shrink: 0 !important;
+        padding: 0.75rem !important;
+        border-top: 1px solid var(--border) !important;
+        background: var(--background) !important;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom)) !important;
+        display: flex !important;
+        justify-content: center !important;
+    }
+    
+    .chat-input {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 auto !important;
     }
     
     .chat-input {
@@ -4333,5 +4352,35 @@ body {
         width: 100% !important;
         max-width: none !important;
         min-width: auto !important;
+    }
+}
+
+/* Fix coach avatar aspect ratio on all screen sizes */
+.coach-avatar,
+.coach-avatar img,
+.profile-avatar,
+.profile-avatar img,
+.dropdown-avatar,
+.dropdown-avatar img,
+.user-avatar {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    flex-shrink: 0 !important;
+    overflow: hidden !important;
+    aspect-ratio: 1 / 1 !important;
+}
+
+/* Specific mobile coach avatar fix */
+@media (max-width: 768px) {
+    .coach-avatar,
+    .coach-avatar img {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
     }
 }
