@@ -125,35 +125,44 @@ function checkCoachSelection() {
 // Show coach selector
 function showCoachSelector() {
     const selector = document.getElementById('coachSelector');
-    const chatContainer = document.querySelector('[style*="display: flex"]');
     
     if (selector) {
         selector.style.display = 'block';
         console.log('👥 Coach selector shown');
-    }
-    
-    if (chatContainer) {
-        chatContainer.style.display = 'none';
+        
+        // Prevent body scroll when modal is open
+        document.body.style.overflow = 'hidden';
     }
 }
 
 // Hide coach selector
 function hideCoachSelector() {
     const selector = document.getElementById('coachSelector');
-    const chatContainer = document.querySelector('[style*="display: flex"]');
     const switchBtn = document.getElementById('switchCoachBtn');
     
     if (selector) {
         selector.style.display = 'none';
     }
     
-    if (chatContainer) {
-        chatContainer.style.display = 'flex';
-    }
-    
     if (switchBtn) {
         switchBtn.style.display = 'inline-flex';
     }
+    
+    // Re-enable body scroll
+    document.body.style.overflow = '';
+}
+
+// Close coach selector function - ADD THIS NEW FUNCTION HERE
+function closeCoachSelector() {
+    const selector = document.getElementById('coachSelector');
+    
+    if (selector) {
+        selector.style.display = 'none';
+        console.log('👥 Coach selector closed by user');
+    }
+    
+    // Re-enable body scroll if it was disabled
+    document.body.style.overflow = '';
 }
 
 // Select a coach
