@@ -97,6 +97,9 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecentInsights(); // Load real insights
     loadCoachPhotos(); // Load coach photos
     checkCoachSelection(); // Check if user has selected a coach
+   initializeVoiceRecognition();
+    setupVoiceInputButton();
+    
     setTimeout(setupChat, 1000);
     
     // Refresh insights every 3 minutes
