@@ -11,7 +11,7 @@ let currentReplyTo = null;
 // Prevent rapid message loading - GLOBAL
 window.isLoadingMessages = false;
 window.lastLoadTime = 0;
-window.MIN_LOAD_INTERVAL = 5000; // 5 seconds minimum between loads
+window.MIN_LOAD_INTERVAL = 5000;
 
 // NEW: Local message storage for permanent deletions
 let deletedMessages = new Set();
