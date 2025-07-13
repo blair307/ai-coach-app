@@ -469,17 +469,19 @@ async function callAI(message) {
             console.log('🤖 Response preview:', data.response.substring(0, 100) + '...');
             addMessageToChat(data.response, 'ai');
             
-            // NEW: Handle voice response
-            if (data.audio && data.audio.url) {
-                console.log('🎵 Playing voice response');
+         // Handle voice response
+            if (data.audio && data.audio.url && voiceEnabled) {
+                console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
                 try {
                     const audio = new Audio(data.audio.url);
-                    audio.play().catch(error => {
-                        console.log('Audio playback failed:', error);
-                    });
+                    audio.play()
+                        .then(() => console.log('✅ Audio playing successfully'))
+                        .catch(error => console.log('❌ Audio playback failed:', error));
                 } catch (audioError) {
-                    console.log('Audio creation failed:', audioError);
+                    console.log('❌ Audio creation failed:', audioError);
                 }
+            } else if (data.audio && data.audio.url && !voiceEnabled) {
+                console.log('🔇 Voice response received but voice is disabled');
             }
             
         } else if (response.status === 401 || response.status === 403) {
@@ -1000,3 +1002,25 @@ window.addEventListener('load', function() {
         }
     }, 500);
 });
+
+// Voice toggle functionality - ADD THIS HERE
+let voiceEnabled = true;
+
+function toggleVoice() {
+    voiceEnabled = !voiceEnabled;
+    const voiceBtn = document.getElementById('voiceToggleBtn');
+    
+    if (voiceEnabled) {
+        voiceBtn.textContent = '🔊 Voice On';
+        voiceBtn.classList.remove('btn-secondary');
+        voiceBtn.classList.add('btn-outline');
+        showToast('Voice responses enabled');
+    } else {
+        voiceBtn.textContent = '🔇 Voice Off';
+        voiceBtn.classList.remove('btn-outline');
+        voiceBtn.classList.add('btn-secondary');
+        showToast('Voice responses disabled');
+    }
+    
+    console.log('🎵 Voice toggle:', voiceEnabled ? 'ON' : 'OFF');
+}
