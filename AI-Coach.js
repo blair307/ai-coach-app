@@ -90,12 +90,7 @@ function loadCoachPhotos() {
     }
 }
 
-// Voice recognition variables - ADD THESE AT THE TOP
-let recognition = null;
-let isListening = false;
-let voiceInputEnabled = true;
-let silenceTimer = null;
-let fullTranscript = '';
+
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
@@ -104,9 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
     loadCoachPhotos();
     checkCoachSelection();
     
-    // ADD THESE TWO NEW LINES:
-    initializeVoiceRecognition();
-    setupVoiceInputButton();
+    // Initialize new voice system
+    initVoiceSystem();
     
     setTimeout(setupChat, 1000);
     
@@ -480,20 +474,15 @@ async function callAI(message) {
             console.log('🤖 Response preview:', data.response.substring(0, 100) + '...');
             addMessageToChat(data.response, 'ai');
             
-         // Handle voice response
-            if (data.audio && data.audio.url && voiceEnabled) {
-                console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
-                try {
-                    const audio = new Audio(data.audio.url);
-                    audio.play()
-                        .then(() => console.log('✅ Audio playing successfully'))
-                        .catch(error => console.log('❌ Audio playback failed:', error));
-                } catch (audioError) {
-                    console.log('❌ Audio creation failed:', audioError);
-                }
-            } else if (data.audio && data.audio.url && !voiceEnabled) {
-                console.log('🔇 Voice response received but voice is disabled');
-            }
+    // Handle voice response with interruption support
+if (data.audio && data.audio.url && voiceEnabled) {
+    console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
+    try {
+        playAIAudio(data.audio.url);
+    } catch (audioError) {
+        console.log('❌ Audio creation failed:', audioError);
+    }
+}
             
         } else if (response.status === 401 || response.status === 403) {
          
@@ -1002,126 +991,167 @@ function logout() {
     }
 }
 
-// =================================
-// VOICE INPUT FUNCTIONS - ADD BEFORE FINAL CONSOLE.LOG
-// =================================
+// =================================================================
+// COMPLETE VOICE INPUT SYSTEM - FULL FEATURED FROM SCRATCH
+// This replaces all existing voice functionality
+// =================================================================
 
-// Initialize Web Speech API
-function initializeVoiceRecognition() {
-    // Check if browser supports speech recognition
+// Voice system variables - CLEAN START
+let voiceRecognition = null;
+let isCurrentlyListening = false;
+let voiceSupported = false;
+let voiceTimeout = null;
+let completeTranscript = '';
+let currentAudio = null; // Track AI voice playback for interruption
+
+// Initialize complete voice system
+function initVoiceSystem() {
+    console.log('🎤 Initializing complete voice system...');
+    
+    // Check browser support
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
+        voiceRecognition = new SpeechRecognition();
         
-   // Configure recognition settings
-recognition.continuous = true;  // CHANGED: Keep listening continuously
-recognition.interimResults = true;
-recognition.lang = 'en-US';
-recognition.maxAlternatives = 1;
-
-// Extend silence timeout to 3 seconds
-if (typeof recognition.speechTimeoutLength !== 'undefined') {
-    recognition.speechTimeoutLength = 3000; // 3 seconds of silence
-}
-if (typeof recognition.speechStartTimeout !== 'undefined') {
-    recognition.speechStartTimeout = 8000; // 8 seconds to start speaking
-}
+        // Configure for best results
+        voiceRecognition.continuous = true;
+        voiceRecognition.interimResults = true;
+        voiceRecognition.lang = 'en-US';
+        voiceRecognition.maxAlternatives = 1;
         
- // Handle speech recognition results
-recognition.onresult = function(event) {
-    let newTranscript = '';
+        // Handle speech results
+        voiceRecognition.onresult = handleVoiceResults;
+        voiceRecognition.onerror = handleVoiceError;
+        voiceRecognition.onstart = handleVoiceStart;
+        voiceRecognition.onend = handleVoiceEnd;
+        
+        voiceSupported = true;
+        console.log('✅ Voice recognition system ready');
+    } else {
+        console.log('❌ Voice recognition not supported');
+        voiceSupported = false;
+    }
     
-    // Get only the latest result
+    // Create the voice button
+    createVoiceButton();
+}
+
+// Handle speech recognition results
+function handleVoiceResults(event) {
+    let interimTranscript = '';
+    let finalTranscript = '';
+    
+    // Process all results
     for (let i = event.resultIndex; i < event.results.length; i++) {
-        newTranscript += event.results[i][0].transcript;
+        const transcript = event.results[i][0].transcript;
         
         if (event.results[i].isFinal) {
-            // Add this final part to our full transcript
-            fullTranscript += newTranscript;
-            
-            // Clear any existing timer
-            if (silenceTimer) {
-                clearTimeout(silenceTimer);
-            }
-            
-            // Set 3-second timer to send message
-            silenceTimer = setTimeout(() => {
-                if (fullTranscript.trim().length > 0) {
-                    stopVoiceInput();
-                    sendMessageNow();
-                }
-            }, 3000);
+            finalTranscript += transcript;
+        } else {
+            interimTranscript += transcript;
         }
     }
     
-    // Update input field with full transcript + current interim
+    // Add final results to our complete transcript
+    if (finalTranscript) {
+        completeTranscript += finalTranscript;
+        console.log('🎤 Added final speech:', finalTranscript);
+        
+        // Reset the 3-second auto-send timer
+        resetAutoSendTimer();
+    }
+    
+    // Update input field with complete + interim text
     const inputField = findInputField();
     if (inputField) {
-        inputField.value = fullTranscript + newTranscript;
+        inputField.value = completeTranscript + interimTranscript;
     }
-};
-        
-        // Handle recognition errors
-        recognition.onerror = function(event) {
-            console.error('Speech recognition error:', event.error);
-            stopVoiceInput();
-            
-            let errorMessage = 'Voice input error. Please try again.';
-            switch(event.error) {
-                case 'no-speech':
-                    errorMessage = 'No speech detected. Please try speaking again.';
-                    break;
-                case 'audio-capture':
-                    errorMessage = 'Microphone not available. Please check permissions.';
-                    break;
-                case 'not-allowed':
-                    errorMessage = 'Microphone access denied. Please enable microphone permissions.';
-                    break;
-                case 'network':
-                    errorMessage = 'Network error. Please check your connection.';
-                    break;
-            }
-            
-            showToast(errorMessage);
-        };
-        
-       // Handle recognition end - restart if still supposed to be listening
-recognition.onend = function() {
-    if (isListening) {
+}
+
+// Reset the 3-second auto-send timer
+function resetAutoSendTimer() {
+    // Clear existing timer
+    if (voiceTimeout) {
+        clearTimeout(voiceTimeout);
+        voiceTimeout = null;
+    }
+    
+    // Set new 3-second timer
+    voiceTimeout = setTimeout(() => {
+        console.log('⏰ 3 seconds of silence - auto-sending');
+        finishVoiceInput();
+    }, 3000);
+}
+
+// Handle voice recognition errors
+function handleVoiceError(event) {
+    console.error('🎤 Voice error:', event.error);
+    
+    let errorMessage = 'Voice input error. Please try again.';
+    switch(event.error) {
+        case 'no-speech':
+            errorMessage = 'No speech detected. Please speak louder.';
+            break;
+        case 'audio-capture':
+            errorMessage = 'Microphone not available.';
+            break;
+        case 'not-allowed':
+            errorMessage = 'Microphone permission denied. Please allow microphone access.';
+            break;
+        case 'network':
+            errorMessage = 'Network error. Check your connection.';
+            break;
+    }
+    
+    showToast(errorMessage);
+    stopVoiceInput();
+}
+
+// Handle voice recognition start
+function handleVoiceStart() {
+    console.log('🎤 Voice recognition started');
+    const inputField = findInputField();
+    if (inputField) {
+        inputField.placeholder = '🎤 Listening... speak now!';
+    }
+}
+
+// Handle voice recognition end
+function handleVoiceEnd() {
+    if (isCurrentlyListening) {
         // Restart recognition to keep listening
         try {
             setTimeout(() => {
-                if (isListening) {
-                    recognition.start();
+                if (isCurrentlyListening && voiceRecognition) {
+                    voiceRecognition.start();
                 }
             }, 100);
         } catch (error) {
-            console.log('Could not restart recognition:', error);
+            console.log('Could not restart recognition');
             stopVoiceInput();
         }
     }
-};
-        
-        console.log('✅ Voice recognition initialized successfully');
-        voiceInputEnabled = true;
-    } else {
-        console.log('❌ Speech recognition not supported in this browser');
-        voiceInputEnabled = false;
-    }
 }
 
-// Setup voice input button in chat interface
-function setupVoiceInputButton() {
+// Create the beautiful voice input button
+function createVoiceButton() {
     const inputActions = document.querySelector('.input-actions');
     if (!inputActions) {
-        console.log('❌ Could not find input actions container');
+        console.log('❌ Cannot find input actions container');
         return;
     }
     
-    // Create voice input button
+    // Remove any existing voice button
+    const existingBtn = document.getElementById('voiceInputBtn');
+    if (existingBtn) {
+        existingBtn.remove();
+    }
+    
+    // Create new voice button
     const voiceButton = document.createElement('button');
     voiceButton.id = 'voiceInputBtn';
     voiceButton.className = 'btn btn-outline voice-input-btn';
+    voiceButton.setAttribute('aria-label', 'Voice input');
     voiceButton.innerHTML = `
         <svg class="voice-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
@@ -1135,6 +1165,9 @@ function setupVoiceInputButton() {
     // Add click handler
     voiceButton.onclick = toggleVoiceInput;
     
+    // Add keyboard shortcut hint
+    voiceButton.title = 'Click to speak, or use Ctrl+Space';
+    
     // Insert before send button
     const sendButton = document.getElementById('sendButton');
     if (sendButton) {
@@ -1143,22 +1176,25 @@ function setupVoiceInputButton() {
         inputActions.appendChild(voiceButton);
     }
     
-    // Hide button if voice not supported
-    if (!voiceInputEnabled) {
+    // Hide if not supported
+    if (!voiceSupported) {
         voiceButton.style.display = 'none';
     }
     
-    console.log('✅ Voice input button added');
+    console.log('✅ Voice button created');
 }
 
 // Toggle voice input on/off
 function toggleVoiceInput() {
-    if (!voiceInputEnabled || !recognition) {
+    if (!voiceSupported) {
         showToast('Voice input not available in this browser');
         return;
     }
     
-    if (isListening) {
+    // INTERRUPT AI AUDIO if it's playing
+    stopAIAudio();
+    
+    if (isCurrentlyListening) {
         stopVoiceInput();
     } else {
         startVoiceInput();
@@ -1167,62 +1203,93 @@ function toggleVoiceInput() {
 
 // Start voice input
 function startVoiceInput() {
-    if (!recognition || isListening) return;
+    if (!voiceRecognition || isCurrentlyListening) {
+        return;
+    }
     
     try {
-       // Clear input field and reset transcript
-fullTranscript = '';
-const inputField = findInputField();
-if (inputField) {
-    inputField.value = '';
-    inputField.placeholder = 'Listening... speak now!';
-}
+        // Reset everything
+        completeTranscript = '';
+        clearTimeout(voiceTimeout);
+        voiceTimeout = null;
+        
+        // Clear input field
+        const inputField = findInputField();
+        if (inputField) {
+            inputField.value = '';
+            inputField.placeholder = '🎤 Listening... speak now!';
+            inputField.focus();
+        }
         
         // Start recognition
-        recognition.start();
-        isListening = true;
+        voiceRecognition.start();
+        isCurrentlyListening = true;
         
         // Update button appearance
         updateVoiceButtonState(true);
         
-        console.log('🎤 Started voice input');
-        showToast('Listening... speak now!');
+        console.log('🎤 Voice input started');
+        showToast('🎤 Listening... speak now!');
         
     } catch (error) {
         console.error('Error starting voice input:', error);
-        showToast('Could not start voice input. Please try again.');
+        showToast('Could not start voice input');
         stopVoiceInput();
     }
 }
 
 // Stop voice input
 function stopVoiceInput() {
-    if (!recognition) return;
+    if (!voiceRecognition) return;
     
     try {
-        recognition.stop();
+        voiceRecognition.stop();
     } catch (error) {
         console.log('Recognition already stopped');
     }
     
-    isListening = false;
+    isCurrentlyListening = false;
+    
+    // Clear timeout
+    if (voiceTimeout) {
+        clearTimeout(voiceTimeout);
+        voiceTimeout = null;
+    }
     
     // Update button appearance
     updateVoiceButtonState(false);
-
-// Clear any pending silence timer
-if (silenceTimer) {
-    clearTimeout(silenceTimer);
-    silenceTimer = null;
-}
     
     // Restore placeholder
     const inputField = findInputField();
     if (inputField) {
-        inputField.placeholder = 'Share what\'s on your mind... Ask about stress management, team dynamics, emotional wellness, or any entrepreneurial challenges.';
+        inputField.placeholder = 'Share what\'s on your mind...';
     }
     
-    console.log('🔇 Stopped voice input');
+    console.log('🔇 Voice input stopped');
+}
+
+// Finish voice input and send message
+function finishVoiceInput() {
+    const inputField = findInputField();
+    
+    if (inputField && completeTranscript.trim().length > 0) {
+        // Ensure the input has the final transcript
+        inputField.value = completeTranscript.trim();
+        
+        // Stop voice input
+        stopVoiceInput();
+        
+        // Send the message
+        setTimeout(() => {
+            sendMessageNow();
+        }, 100);
+        
+        console.log('📤 Voice message sent:', completeTranscript.trim());
+    } else {
+        // No text to send, just stop
+        stopVoiceInput();
+        showToast('No speech detected');
+    }
 }
 
 // Update voice button visual state
@@ -1234,19 +1301,122 @@ function updateVoiceButtonState(listening) {
     const text = voiceButton.querySelector('.voice-btn-text');
     
     if (listening) {
+        // Listening state - red and pulsing
         voiceButton.classList.add('listening');
         voiceButton.classList.remove('btn-outline');
         voiceButton.classList.add('btn-primary');
+        voiceButton.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+        voiceButton.style.borderColor = '#ef4444';
+        voiceButton.style.color = 'white';
+        voiceButton.setAttribute('aria-pressed', 'true');
         
         if (text) text.textContent = 'Stop';
+        
+        // Update icon to recording state
+        if (icon) {
+            icon.innerHTML = `
+                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z" stroke="currentColor" fill="none"/>
+            `;
+        }
     } else {
+        // Not listening state - normal
         voiceButton.classList.remove('listening');
         voiceButton.classList.add('btn-outline');
         voiceButton.classList.remove('btn-primary');
+        voiceButton.style.background = '';
+        voiceButton.style.borderColor = '';
+        voiceButton.style.color = '';
+        voiceButton.setAttribute('aria-pressed', 'false');
         
         if (text) text.textContent = 'Speak';
+        
+        // Restore microphone icon
+        if (icon) {
+            icon.innerHTML = `
+                <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4z"/>
+                <path d="M19 10v1a7 7 0 0 1-14 0v-1"/>
+                <line x1="12" y1="19" x2="12" y2="23"/>
+                <line x1="8" y1="23" x2="16" y2="23"/>
+            `;
+        }
     }
 }
+
+// Stop any currently playing AI audio (for interruption)
+function stopAIAudio() {
+    if (currentAudio) {
+        try {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            currentAudio = null;
+            console.log('🔇 Interrupted AI audio playback');
+        } catch (error) {
+            console.log('Could not stop audio:', error);
+        }
+    }
+}
+
+// Enhanced audio playback with tracking (modify your existing callAI function)
+function playAIAudio(audioUrl) {
+    try {
+        // Stop any existing audio first
+        stopAIAudio();
+        
+        // Create and play new audio
+        currentAudio = new Audio(audioUrl);
+        currentAudio.play()
+            .then(() => {
+                console.log('🎵 AI audio playing');
+            })
+            .catch(error => {
+                console.log('❌ Audio playback failed:', error);
+                currentAudio = null;
+            });
+            
+        // Clear reference when done
+        currentAudio.onended = () => {
+            currentAudio = null;
+        };
+        
+    } catch (error) {
+        console.log('❌ Audio creation failed:', error);
+    }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(event) {
+    // Ctrl+Space to toggle voice input
+    if (event.ctrlKey && event.code === 'Space') {
+        event.preventDefault();
+        toggleVoiceInput();
+    }
+    
+    // Escape to stop voice input
+    if (event.code === 'Escape' && isCurrentlyListening) {
+        event.preventDefault();
+        stopVoiceInput();
+    }
+});
+
+// Clean up on page unload
+window.addEventListener('beforeunload', function() {
+    stopVoiceInput();
+    stopAIAudio();
+});
+
+// Initialize the voice system
+console.log('🎤 Voice system module loaded');
+
+// Export for global access
+window.voiceSystem = {
+    start: startVoiceInput,
+    stop: stopVoiceInput,
+    toggle: toggleVoiceInput,
+    isListening: () => isCurrentlyListening,
+    isSupported: () => voiceSupported,
+    stopAudio: stopAIAudio
+};
 
 console.log('✅ AI Coach script loaded with Render backend, token fixes, working settings, and coach selection!');
 
