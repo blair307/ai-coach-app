@@ -537,20 +537,6 @@ function addCoachSelectionToSettings() {
     coachingStyleSection.insertAdjacentHTML('afterbegin', coachSelectionHTML);
 }
 
-// Toggle settings modal
-function toggleSettings() {
-    console.log('⚙️ Opening settings modal...');
-    const modal = document.getElementById('settingsModal');
-    if (modal) {
-        modal.style.display = 'flex';
-        populateSettingsForm();
-        
-        // Add coach selection to settings
-        setTimeout(() => {
-            addCoachSelectionToSettings();
-        }, 100);
-    }
-}
 
 // Save settings
 function saveSettings() {
@@ -922,7 +908,7 @@ function logout() {
         // Redirect to login
         window.location.href = 'login.html';
     }
-
+}
 
 console.log('✅ AI Coach script loaded with Render backend, token fixes, working settings, and coach selection!');
 
