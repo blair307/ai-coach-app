@@ -1026,16 +1026,10 @@ if (typeof recognition.speechStartTimeout !== 'undefined') {
     recognition.speechStartTimeout = 8000; // 8 seconds to start speaking
 }
         
-      // Handle speech recognition results
+   // Handle speech recognition results
 recognition.onresult = function(event) {
     let transcript = '';
     let isFinal = false;
-    
-    // Clear any existing silence timer since we got speech
-    if (silenceTimer) {
-        clearTimeout(silenceTimer);
-        silenceTimer = null;
-    }
     
     // Process recognition results
     for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -1048,20 +1042,22 @@ recognition.onresult = function(event) {
     // Update input field with transcript
     const inputField = findInputField();
     if (inputField) {
-        if (isFinal) {
-            // Final result - clean up and format
-            inputField.value = transcript.trim();
+        inputField.value = transcript;
+        
+        // If we got a final result, set up auto-send timer
+        if (isFinal && transcript.trim().length > 0) {
+            // Clear any existing timer
+            if (silenceTimer) {
+                clearTimeout(silenceTimer);
+            }
             
-            // Set a 3-second timer to auto-send if no more speech
-            if (transcript.trim().length > 0) {
-                silenceTimer = setTimeout(() => {
+            // Set 3-second timer to send message
+            silenceTimer = setTimeout(() => {
+                if (inputField.value.trim().length > 0) {
                     stopVoiceInput();
                     sendMessageNow();
-                }, 3000); // 3 seconds of silence before sending
-            }
-        } else {
-            // Interim result - show what's being spoken
-            inputField.value = transcript;
+                }
+            }, 3000);
         }
     }
 };
