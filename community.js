@@ -624,6 +624,7 @@ function displayMessages(messages) {
     displayThreadedMessages(messages);
 }
 
+
 // ENHANCED: Reply functionality with notification creation
 function replyToMessage(messageId, username, content, originalUserId) {
     currentReplyTo = { 
