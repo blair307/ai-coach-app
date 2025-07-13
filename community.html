@@ -2466,24 +2466,29 @@ function showLikeToast(message) {
         }
 
         // Keyboard shortcuts
-        function handleCommunityKeyPress(event) {
-            if (event.key === 'Enter') {
-                const isMobile = window.innerWidth <= 1024;
-                
-                if (isMobile) {
-                    return; // Allow multi-line on mobile
-                } else {
-                    if (!event.shiftKey) {
-                        event.preventDefault();
-                        sendCommunityMessage();
-                    }
+function handleCommunityKeyPress(event) {
+    if (event.key === 'Enter') {
+        const isMobile = window.innerWidth <= 1024;
+        
+        if (isMobile) {
+            return; // Allow multi-line on mobile
+        } else {
+            if (!event.shiftKey) {
+                event.preventDefault();
+                // Make sure we have a message to send
+                const messageInput = document.getElementById('communityMessageInput');
+                if (messageInput && messageInput.value.trim()) {
+                    sendCommunityMessage();
                 }
-            }
-            
-            if (event.key === 'Escape' && currentReplyTo) {
-                cancelReply();
+                return false; // Prevent any default behavior
             }
         }
+    }
+    
+    if (event.key === 'Escape' && currentReplyTo) {
+        cancelReply();
+    }
+}
 
         // Sidebar toggle functionality
         function toggleSidebar() {
