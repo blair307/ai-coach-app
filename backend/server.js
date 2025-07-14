@@ -1367,6 +1367,9 @@ async function generateVoice(text, voiceId) {
 
 // Send message to AI Assistant with Coach Selection
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
+const startTime = Date.now();
+console.log('🚀 TIMING: Chat request started');
+    
   try {
     if (!openai) {
       return res.json({ 
@@ -1395,6 +1398,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 
     if (!chat || !chat.threadId) {
       const thread = await openai.beta.threads.create();
+        console.log('⏱️ TIMING: Thread created in:', Date.now() - startTime, 'ms');
       threadId = thread.id;
       
       if (chat) {
@@ -1431,6 +1435,7 @@ try {
 }
 
 const run = await openai.beta.threads.runs.create(threadId, {
+    console.log('⏱️ TIMING: Run started in:', Date.now() - startTime, 'ms');
   assistant_id: coach.assistantId
 });
       
@@ -1439,6 +1444,7 @@ const run = await openai.beta.threads.runs.create(threadId, {
     
     let attempts = 0;
     while (runStatus.status !== 'completed' && attempts < 30) {
+      console.log('🔄 TIMING: Poll attempt', attempts, 'status:', runStatus.status, 'elapsed:', Date.now() - startTime, 'ms');
       await new Promise(resolve => setTimeout(resolve, 200));
       runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
       attempts++;
@@ -1495,6 +1501,8 @@ audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
             // Continue without voice - don't fail the whole request
         }
     }
+    
+  console.log('✅ TIMING: TOTAL TIME:', Date.now() - startTime, 'ms');
     
     res.json({ 
       response,
