@@ -116,33 +116,45 @@
     }
 }
 
-/* Fix button text overflow */
+/* Fix button text overflow - UPDATED */
+.form-actions {
+    display: flex !important;
+    gap: 1rem !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+}
+
 #submitButton {
     min-width: 200px !important;
+    flex-shrink: 0 !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
     padding: 0.75rem 1.5rem !important;
 }
 
-#submitButtonText {
-    display: block !important;
-    width: 100% !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+.btn-secondary {
+    min-width: 140px !important;
+    flex-shrink: 0 !important;
     white-space: nowrap !important;
+    padding: 0.75rem 1.25rem !important;
 }
 
 /* Mobile specific button sizing */
 @media (max-width: 480px) {
+    .form-actions {
+        justify-content: space-between !important;
+        gap: 0.75rem !important;
+    }
+    
     #submitButton {
         min-width: 180px !important;
         font-size: 0.85rem !important;
         padding: 0.75rem 1rem !important;
     }
     
-    #submitButtonText {
+    .btn-secondary {
+        min-width: 120px !important;
         font-size: 0.85rem !important;
+        padding: 0.75rem 0.75rem !important;
     }
 }
         
