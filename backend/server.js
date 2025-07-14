@@ -1476,6 +1476,7 @@ const run = await openai.beta.threads.runs.create(threadId, {
     if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
         try {
             console.log('🎤 Generating voice for coach:', selectedCoachId);
+            console.log('🎤 Using voice ID:', VOICE_IDS[selectedCoachId]);
 // Clean the response text for voice synthesis
 const cleanedResponse = response
     .replace(/\*\*/g, '') // Remove ** bold markers
