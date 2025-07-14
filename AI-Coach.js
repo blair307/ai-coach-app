@@ -458,6 +458,12 @@ function findChatContainer() {
 // Call your AI backend with token fix
 async function callAI(message) {
     console.log('🤖 Calling Render backend...');
+
+// ALWAYS unlock mobile audio before AI response
+    if (!window.audioUnlocked && window.unlockMobileAudio) {
+        console.log('📱 Unlocking mobile audio for AI response...');
+        unlockMobileAudio();
+    }
     
     try {
         // Check if coach is selected
