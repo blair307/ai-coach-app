@@ -1346,11 +1346,16 @@ function finishVoiceInput() {
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-        // Send the message THE SAME WAY as clicking send button
+       // Send the message THE SAME WAY as clicking send button
         setTimeout(() => {
             if (inputField.value.trim() === messageToSend) {
-                sendMessageNow();
-                console.log('📤 Voice message sent:', messageToSend);
+                // Force it to use the EXACT same path as Send button
+                const sendBtn = document.getElementById('sendButton');
+                if (sendBtn) {
+                    // Trigger the actual send button click event
+                    sendBtn.dispatchEvent(new Event('click'));
+                }
+                console.log('📤 Voice message sent via send button path');
             }
         }, 200);
         
