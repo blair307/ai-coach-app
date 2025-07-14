@@ -4752,57 +4752,52 @@ body {
 /* Mobile and tablet responsive button layout */
 @media (max-width: 1024px) {
     .input-actions {
-        justify-content: center !important;
-        gap: 1.5rem !important;
-        flex-wrap: wrap !important;
+        justify-content: flex-end !important;
+        gap: 1rem !important;
+        flex-wrap: nowrap !important;
         padding-top: 0.5rem !important;
     }
     
     .input-actions .btn,
     #sendButton,
     .voice-input-btn {
-        min-width: 120px !important;
-        padding: 0.875rem 1.5rem !important;
-        font-size: 0.95rem !important;
+        min-width: 100px !important;
+        padding: 0.875rem 1rem !important;
+        font-size: 0.9rem !important;
         flex: 0 0 auto !important;
     }
 }
 
 @media (max-width: 768px) {
     .input-actions {
-        justify-content: center !important;
-        gap: 1rem !important;
-        margin-top: 0.75rem !important;
-    }
-    
-    .chat-input {
-        flex-direction: column !important;
-        gap: 1rem !important;
+        justify-content: flex-end !important;
+        gap: 0.75rem !important;
+        flex-wrap: nowrap !important;
+        margin-top: 0.5rem !important;
     }
     
     .input-actions .btn,
     #sendButton,
     .voice-input-btn {
-        min-width: 110px !important;
-        padding: 0.875rem 1.25rem !important;
-        font-size: 0.9rem !important;
+        min-width: 90px !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.85rem !important;
     }
 }
 
 @media (max-width: 480px) {
     .input-actions {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-        align-items: stretch !important;
+        justify-content: flex-end !important;
+        gap: 0.5rem !important;
+        flex-wrap: nowrap !important;
     }
     
     .input-actions .btn,
     #sendButton,
     .voice-input-btn {
-        width: 100% !important;
-        min-width: auto !important;
-        max-width: 200px !important;
-        margin: 0 auto !important;
+        min-width: 80px !important;
+        padding: 0.75rem 0.75rem !important;
+        font-size: 0.8rem !important;
     }
 }
 
