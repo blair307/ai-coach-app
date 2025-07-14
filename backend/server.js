@@ -1367,9 +1367,6 @@ async function generateVoice(text, voiceId) {
 
 // Send message to AI Assistant with Coach Selection
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
-const startTime = Date.now();
-console.log('🚀 TIMING: Chat request started');
-    
   try {
     if (!openai) {
       return res.json({ 
@@ -1398,7 +1395,6 @@ console.log('🚀 TIMING: Chat request started');
 
     if (!chat || !chat.threadId) {
       const thread = await openai.beta.threads.create();
-        console.log('⏱️ TIMING: Thread created in:', Date.now() - startTime, 'ms');
       threadId = thread.id;
       
       if (chat) {
@@ -1437,19 +1433,16 @@ try {
 const run = await openai.beta.threads.runs.create(threadId, {
   assistant_id: coach.assistantId
 });
-       console.log('⏱️ TIMING: Run started in:', Date.now() - startTime, 'ms');
-   
+      
 
-const run = await openai.beta.threads.runs.createAndPoll(threadId, {
-  // Poll every 500ms instead of default 1000ms
-  assistant_id: coach.assistantId,
-  pollIntervalMs: 500
-});
-
-
-if (run.status !== 'completed') {
-  throw new Error('Assistant took too long to respond');
-}
+    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+    
+    let attempts = 0;
+    while (runStatus.status !== 'completed' && attempts < 30) {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+      attempts++;
+    }
 
     if (runStatus.status !== 'completed') {
       throw new Error('Assistant took too long to respond');
@@ -1502,8 +1495,6 @@ audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
             // Continue without voice - don't fail the whole request
         }
     }
-    
-  console.log('✅ TIMING: TOTAL TIME:', Date.now() - startTime, 'ms');
     
     res.json({ 
       response,
@@ -4568,4 +4559,3 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
 });
     
 });
-
