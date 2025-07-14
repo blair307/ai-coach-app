@@ -1331,6 +1331,11 @@ function finishVoiceInput() {
         // Stop voice input first
         stopVoiceInput();
         
+        // UNLOCK AUDIO FOR MOBILE AFTER VOICE INPUT
+        if (!window.audioUnlocked) {
+            unlockMobileAudio();
+        }
+        
         // Clear the transcript to prevent double-sending
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
@@ -1346,7 +1351,6 @@ function finishVoiceInput() {
     } else {
         // No text to send, just stop
         stopVoiceInput();
-        showToast('No speech detected');
     }
 }
 
