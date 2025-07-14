@@ -1569,3 +1569,32 @@ function fixVoiceButtonUpdates() {
 
 // Call the fix when page loads
 setTimeout(fixVoiceButtonUpdates, 2000);
+
+// Mobile Audio Fix - Add this to the bottom of ai-coach.js
+let audioUnlocked = false;
+
+function unlockMobileAudio() {
+    if (audioUnlocked) return;
+    
+    // Play silent audio to unlock mobile audio context
+    const silentAudio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+    
+    silentAudio.play().then(() => {
+        console.log('📱 Mobile audio unlocked');
+        audioUnlocked = true;
+    }).catch(e => {
+        console.log('Audio unlock attempt failed:', e);
+    });
+}
+
+// Add event listeners to unlock audio on first user interaction
+document.addEventListener('click', unlockMobileAudio, { once: true });
+document.addEventListener('touchstart', unlockMobileAudio, { once: true });
+
+// Also unlock when send button is clicked
+setTimeout(() => {
+    const sendBtn = document.getElementById('sendButton');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', unlockMobileAudio);
+    }
+}, 1000);
