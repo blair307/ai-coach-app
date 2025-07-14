@@ -1486,6 +1486,13 @@ function createVoiceButton() {
         console.log('❌ Cannot find input actions container');
         return;
     }
+
+      // ADD THIS CHECK AT THE TOP - Hide on mobile devices
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+        console.log('📱 Mobile device detected - hiding voice button');
+        return; // Don't create voice button on mobile
+    }
     
     // Remove any existing voice button
     const existingBtn = document.getElementById('voiceInputBtn');
