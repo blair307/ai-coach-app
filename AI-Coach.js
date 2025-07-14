@@ -57,23 +57,30 @@ function createAudioUnlockButton() {
     button.id = 'audioUnlockBtn';
     button.style.cssText = `
         position: fixed;
-        top: 10px;
+        top: 60px;
         right: 10px;
         z-index: 9999;
         background: #ff6b6b;
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 6px;
-        font-size: 0.8rem;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
         cursor: pointer;
-        display: ${audioUnlocked ? 'none' : 'block'};
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        display: block;
     `;
-    button.textContent = '🔊 Enable Audio';
+    button.textContent = '🔊 Enable Voice Audio';
     button.onclick = () => {
-        unlockAudioContext().then(() => {
-            button.style.display = 'none';
-            showToast('✅ Audio unlocked! Voice responses should now work.');
+        // Triple unlock for stubborn mobile browsers
+        enhancedMobileAudioUnlock().then(() => {
+            button.textContent = '✅ Audio Enabled';
+            button.style.background = '#10b981';
+            setTimeout(() => {
+                button.style.display = 'none';
+            }, 2000);
+            showToast('✅ Mobile audio unlocked! Try voice-to-text now.');
         });
     };
     
@@ -1260,7 +1267,7 @@ function handleVoiceEnd() {
     createVoiceButton();
 }
 
-// Handle speech recognition results
+/ 2. REPLACE your handleVoiceResults function:
 function handleVoiceResults(event) {
     let interimTranscript = '';
     let finalTranscript = '';
@@ -1281,6 +1288,11 @@ function handleVoiceResults(event) {
         completeTranscript = finalTranscript;
         console.log('🎤 Updated complete transcript:', completeTranscript);
         
+        // MOBILE FIX: Unlock audio IMMEDIATELY when we get speech
+        unlockAudioContext().then(() => {
+            console.log('🔓 Audio unlocked from speech recognition');
+        });
+        
         // Reset the 3-second auto-send timer
         resetAutoSendTimer();
     }
@@ -1292,7 +1304,6 @@ function handleVoiceResults(event) {
     }
 }
 
-// Reset the 3-second auto-send timer
 function resetAutoSendTimer() {
     // Clear existing timer
     if (voiceTimeout) {
@@ -1302,9 +1313,39 @@ function resetAutoSendTimer() {
     
     // Set new 3-second timer
     voiceTimeout = setTimeout(() => {
-        console.log('⏰ 3 seconds of silence - auto-sending');
-        finishVoiceInput();
+        console.log('⏰ 3 seconds of silence - force unlocking audio and sending');
+        
+        // MOBILE FIX: Force unlock audio multiple times
+        Promise.all([
+            unlockAudioContext(),
+            unlockMobileAudio()
+        ]).then(() => {
+            console.log('🔓 Double audio unlock complete');
+            finishVoiceInput();
+        });
     }, 3000);
+}
+
+function enhancedMobileAudioUnlock() {
+    console.log('📱 Enhanced mobile audio unlock triggered');
+    
+    return new Promise((resolve) => {
+        // Method 1: Our global unlock
+        unlockAudioContext().then(() => {
+            console.log('✅ Global audio context unlocked');
+            
+            // Method 2: Original silent audio method
+            const silentAudio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+            
+            silentAudio.play().then(() => {
+                console.log('✅ Silent audio played successfully');
+                resolve();
+            }).catch(() => {
+                console.log('⚠️ Silent audio failed but continuing');
+                resolve();
+            });
+        });
+    });
 }
 
 // Handle voice recognition errors
@@ -1393,21 +1434,26 @@ function createVoiceButton() {
     console.log('✅ Voice button created');
 }
 
-// Toggle voice input on/off
 function toggleVoiceInput() {
     if (!voiceSupported) {
         showToast('Voice input not available in this browser');
         return;
     }
     
-    // INTERRUPT AI AUDIO if it's playing
-    stopAIAudio();
-    
-    if (isCurrentlyListening) {
-        stopVoiceInput();
-    } else {
-        startVoiceInput();
-    }
+    // MOBILE FIX: Always unlock audio when user taps voice button
+    console.log('🎤 Voice button tapped - unlocking audio immediately');
+    unlockAudioContext().then(() => {
+        console.log('🔓 Audio unlocked from voice button tap');
+        
+        // INTERRUPT AI AUDIO if it's playing
+        stopAIAudio();
+        
+        if (isCurrentlyListening) {
+            stopVoiceInput();
+        } else {
+            startVoiceInput();
+        }
+    });
 }
 
 // Start voice input
@@ -1482,29 +1528,29 @@ function finishVoiceInput() {
     const inputField = findInputField();
     
     if (inputField && completeTranscript.trim().length > 0) {
-        console.log('🎤 Finishing voice input with audio unlock');
+        console.log('🎤 Finishing voice input with ENHANCED mobile audio unlock');
         
-        // STEP 1: Unlock audio context FIRST
-        unlockAudioContext().then(() => {
-            console.log('🔓 Audio unlocked, proceeding with message');
+        // MOBILE FIX: Use enhanced unlock
+        enhancedMobileAudioUnlock().then(() => {
+            console.log('🔓 Enhanced audio unlock complete, proceeding with message');
             
-            // STEP 2: Set the input value
+            // Set the input value
             inputField.value = completeTranscript.trim();
             
-            // STEP 3: Stop voice input
+            // Stop voice input
             stopVoiceInput();
             
-            // STEP 4: Clear transcript
+            // Clear transcript
             const messageToSend = completeTranscript.trim();
             completeTranscript = '';
             
-            // STEP 5: Send message (audio should now work)
+            // Send message with extra delay for mobile
             setTimeout(() => {
                 if (inputField.value.trim() === messageToSend) {
                     sendMessageNow();
-                    console.log('📤 Voice message sent with unlocked audio');
+                    console.log('📤 Voice message sent with enhanced mobile unlock');
                 }
-            }, 200);
+            }, 500); // Increased delay for mobile
         });
     } else {
         stopVoiceInput();
