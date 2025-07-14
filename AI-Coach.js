@@ -1495,6 +1495,53 @@ window.addEventListener('load', function() {
     }, 500);
 });
 
+// Load chat history when page loads
+async function loadChatHistory() {
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            console.log('❌ No token for chat history');
+            return;
+        }
+        
+        console.log('📜 Loading chat history...');
+        
+        const response = await fetch(`${BACKEND_URL}/api/chat/history`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log(`✅ Loaded ${data.messages?.length || 0} chat messages`);
+            
+            // Display the messages in the chat
+            if (data.messages && data.messages.length > 0) {
+                displayChatHistory(data.messages);
+            }
+        } else {
+            console.log('❌ Failed to load chat history:', response.status);
+        }
+    } catch (error) {
+        console.error('❌ Error loading chat history:', error);
+    }
+}
+
+// Display chat messages
+function displayChatHistory(messages) {
+    const chatContainer = findChatContainer();
+    if (!chatContainer) return;
+    
+    // Keep welcome message, just add history after it
+    messages.forEach(message => {
+        addMessageToChat(message.content, message.role === 'user' ? 'user' : 'ai', false);
+    });
+    
+    console.log('✅ Chat history displayed');
+}
+
 // Voice toggle functionality - ADD THIS HERE
 let voiceEnabled = true;
 
