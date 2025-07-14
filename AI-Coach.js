@@ -1,6 +1,38 @@
 // Complete Fixed AI Coach JavaScript - Backend URL + Token Fix + Working Settings
 
+// Complete Fixed AI Coach JavaScript - Backend URL + Token Fix + Working Settings
+
 console.log('🚀 Starting EEH AI Coach...');
+
+// Mobile Voice Button Fix - ADD THIS SECTION
+const mobileVoiceCSS = `
+/* Hide voice button on mobile */
+@media (max-width: 768px) {
+    #voiceInputBtn,
+    .voice-input-btn {
+        display: none !important;
+    }
+    
+    /* Adjust input actions container for mobile */
+    .input-actions {
+        justify-content: center !important;
+    }
+    
+    /* Make send button full width on mobile when voice is hidden */
+    #sendButton {
+        min-width: 200px !important;
+    }
+}
+`;
+
+// Function to inject mobile CSS
+function injectMobileVoiceCSS() {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'mobile-voice-fix';
+    styleElement.textContent = mobileVoiceCSS;
+    document.head.appendChild(styleElement);
+    console.log('📱 Mobile voice button CSS injected');
+}
 
 // Your Render backend URL
 const BACKEND_URL = 'https://api.eehcommunity.com';
@@ -94,6 +126,10 @@ function loadCoachPhotos() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
+    
+    // Inject mobile CSS first
+    injectMobileVoiceCSS();
+    
     loadSettings();
     loadRecentInsights();
     loadCoachPhotos();
@@ -1063,10 +1099,22 @@ let completeTranscript = '';
 let currentAudio = null; // Track AI voice playback for interruption
 
 // Initialize complete voice system
+// Initialize complete voice system
 function initVoiceSystem() {
-    console.log('Initializing complete voice system...');
+    console.log('Initializing voice system...');
     
-    // Check browser support
+    // Check if we're on mobile
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log('📱 Mobile detected - voice system disabled');
+        voiceSupported = false;
+        // Inject CSS to hide any voice buttons that might appear
+        injectMobileVoiceCSS();
+        return;
+    }
+    
+    // Check browser support (desktop only)
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         voiceRecognition = new SpeechRecognition();
@@ -1084,13 +1132,13 @@ function initVoiceSystem() {
         voiceRecognition.onend = handleVoiceEnd;
         
         voiceSupported = true;
-        console.log('✅ Voice recognition system ready');
+        console.log('✅ Voice recognition system ready (desktop)');
     } else {
         console.log('❌ Voice recognition not supported');
         voiceSupported = false;
     }
     
-    // Create the voice button
+    // Create the voice button (desktop only)
     createVoiceButton();
 }
 
@@ -1191,8 +1239,16 @@ function handleVoiceEnd() {
     }
 }
 
-// Create the beautiful voice input button
+// Create the beautiful voice input button (desktop only)
 function createVoiceButton() {
+    // Check if we're on mobile first
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log('📱 Mobile detected - skipping voice button creation');
+        return; // Don't create voice button on mobile
+    }
+    
     const inputActions = document.querySelector('.input-actions');
     if (!inputActions) {
         console.log('❌ Cannot find input actions container');
@@ -1205,7 +1261,7 @@ function createVoiceButton() {
         existingBtn.remove();
     }
     
-    // Create new voice button
+    // Create new voice button (desktop only)
     const voiceButton = document.createElement('button');
     voiceButton.id = 'voiceInputBtn';
     voiceButton.className = 'btn btn-outline voice-input-btn';
@@ -1224,7 +1280,7 @@ function createVoiceButton() {
     voiceButton.onclick = toggleVoiceInput;
     
     // Add keyboard shortcut hint
-    voiceButton.title = 'Click to speak, or use Ctrl+Space';
+    voiceButton.title = 'Click to speak, or use Ctrl+Space (Desktop only)';
     
     // Insert before send button
     const sendButton = document.getElementById('sendButton');
@@ -1234,16 +1290,20 @@ function createVoiceButton() {
         inputActions.appendChild(voiceButton);
     }
     
-    // Hide if not supported
-    if (!voiceSupported) {
-        voiceButton.style.display = 'none';
-    }
-    
-    console.log('✅ Voice button created');
+    console.log('✅ Voice button created (desktop only)');
 }
 
 // Toggle voice input on/off
 function toggleVoiceInput() {
+    // Double-check mobile detection
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        console.log('📱 Voice input disabled on mobile');
+        showToast('Voice input is not available on mobile devices');
+        return;
+    }
+    
     if (!voiceSupported) {
         showToast('Voice input not available in this browser');
         return;
@@ -1453,14 +1513,22 @@ function playAIAudio(audioUrl) {
 }
 
 // Keyboard shortcuts
+// Keyboard shortcuts
 document.addEventListener('keydown', function(event) {
-    // Ctrl+Space to toggle voice input
+    // Don't handle keyboard shortcuts on mobile
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isMobile) {
+        return; // Skip keyboard shortcuts on mobile
+    }
+    
+    // Ctrl+Space to toggle voice input (desktop only)
     if (event.ctrlKey && event.code === 'Space') {
         event.preventDefault();
         toggleVoiceInput();
     }
     
-    // Escape to stop voice input
+    // Escape to stop voice input (desktop only)
     if (event.code === 'Escape' && isCurrentlyListening) {
         event.preventDefault();
         stopVoiceInput();
