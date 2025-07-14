@@ -1267,7 +1267,6 @@ function handleVoiceEnd() {
     createVoiceButton();
 }
 
-/ 2. REPLACE your handleVoiceResults function:
 function handleVoiceResults(event) {
     let interimTranscript = '';
     let finalTranscript = '';
