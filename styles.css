@@ -1991,8 +1991,8 @@ body {
 }
 
 .form-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    justify-content: flex-end;
     gap: 1rem;
     width: 100%;
     box-sizing: border-box;
@@ -4807,7 +4807,7 @@ body {
     display: flex !important;
     gap: 1.5rem !important;
     align-items: center !important;
-    justify-content: center !important;
+        justify-content: flex-end !important;
     flex-wrap: wrap !important;
     padding-top: 1rem !important;
 }
@@ -4827,7 +4827,7 @@ body {
 @media (max-width: 1024px) {
     .chat-input-container .input-actions,
     .input-actions {
-        justify-content: center !important;
+justify-content: flex-end !important;        
         gap: 2rem !important;
         flex-direction: row !important;
         padding-top: 1.5rem !important;
@@ -4844,10 +4844,11 @@ body {
 @media (max-width: 768px) {
     .chat-input-container .input-actions,
     .input-actions {
-        flex-direction: column !important;
-        gap: 1rem !important;
-        align-items: center !important;
-        padding-top: 1rem !important;
+        lex-direction: row !important;
+    gap: 1rem !important;
+    align-items: center !important;
+    justify-content: flex-end !important;  /* <-- ADD THIS LINE */
+    padding-top: 1rem !important;
     }
     
     #voiceInputBtn,
