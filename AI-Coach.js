@@ -1539,7 +1539,26 @@ function toggleVoiceInput() {
     console.log('🎤 Voice button tapped - CAPTURING user activation immediately');
     
     // CRITICAL: Capture user activation RIGHT NOW while we have it
-    captureUserActivationForAudio();
+    try {
+        // Create a silent audio element that we can use later
+        activationAudio = new Audio();
+        activationAudio.preload = 'auto';
+        activationAudio.volume = 0.01;
+        activationAudio.muted = true;
+        
+        const silentBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAAAQfAAELEAAAAAAABAAAEAAgAQAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAA=';
+        activationAudio.src = silentBase64;
+        activationAudio.load();
+        
+        capturedUserActivation = {
+            timestamp: Date.now(),
+            audio: activationAudio
+        };
+        
+        console.log('✅ User activation captured and reserved');
+    } catch (error) {
+        console.log('⚠️ Could not capture user activation:', error);
+    }
     
     // Unlock audio context
     unlockAudioContext().then(() => {
@@ -1556,36 +1575,6 @@ function toggleVoiceInput() {
     });
 }
 
-function captureUserActivationForAudio() {
-console.log('⚡ Capturing user activation for future audio playback');
-    
-    try {
-        // Create a silent audio element that we can use later
-        // This "uses" the user activation but in a way that preserves it
-        activationAudio = new Audio();
-        activationAudio.preload = 'auto';
-        activationAudio.volume = 0.01; // Almost silent
-        activationAudio.muted = true;  // Start muted
-        
-        // Create a tiny silent audio buffer
-        const silentBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAAAQfAAELEAAAAAAABAAAEAAgAQAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAA=';
-        activationAudio.src = silentBase64;
-        
-        // "Reserve" the user activation by starting to load
-        activationAudio.load();
-        
-        // Mark that we have captured activation
-        capturedUserActivation = {
-            timestamp: Date.now(),
-            audio: activationAudio
-        };
-        
-        console.log('✅ User activation captured and reserved');
-        
-    } catch (error) {
-        console.log('⚠️ Could not capture user activation:', error);
-    }
-}
 
     
 // Start voice input
