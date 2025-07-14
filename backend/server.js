@@ -1434,11 +1434,11 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
         role: 'system',
         content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
+KEEP RESPONSES SHORT - Maximum 2-4 sentences. Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
 
 Current coaching preferences:
 - Tone: ${preferences.tone || 'supportive'}
-- Response length: ${preferences.responseLength || 'moderate'}
+- Response length: ${preferences.responseLength || 'concise'}
 
 Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
       }
@@ -1464,8 +1464,8 @@ Be authentic to your coaching style while addressing the user's entrepreneurial 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Using faster model
       messages: messages,
-      max_tokens: preferences.responseLength === 'detailed' ? 1500 : 
-                  preferences.responseLength === 'concise' ? 500 : 1000,
+max_tokens: preferences.responseLength === 'detailed' ? 800 : 
+            preferences.responseLength === 'concise' ? 200 : 400,
       temperature: 0.7,
       stream: false
     });
