@@ -1439,7 +1439,7 @@ const run = await openai.beta.threads.runs.create(threadId, {
     
     let attempts = 0;
     while (runStatus.status !== 'completed' && attempts < 30) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 200));
       runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
       attempts++;
     }
