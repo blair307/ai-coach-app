@@ -383,16 +383,19 @@ const roomSchema = new mongoose.Schema({
 
 const Room = mongoose.model('Room', roomSchema);
 
-// Chat History Schema with Conversation Memory
+// Updated Chat History Schema - REPLACE THE OLD chatSchema
 const chatSchema = new mongoose.Schema({
-  userId: String,
-  threadId: String,
+  userId: { type: String, required: true, index: true },
+  threadId: String, // Keep for compatibility but not needed for Chat Completion
   messages: [{
-    role: String,
-    content: String,
-    timestamp: { type: Date, default: Date.now }
+    role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    coach: String // Track which coach responded
   }],
-  updatedAt: { type: Date, default: Date.now }
+  selectedCoach: String, // Track current coach for this conversation
+  updatedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Chat = mongoose.model('Chat', chatSchema);
@@ -1317,17 +1320,35 @@ try {
 const COACHES = {
   coach1: {
     name: "Blair Reynolds", 
-    assistantId: "asst_tpShoq1kPGvtcFhMdxb6EmYg", 
-    voiceId: null, // We'll add this after setting up ElevenLabs
-    personality: "Humorous, empathy-oriented coach focused on transformative solutions",
-    description: "Entrepreneurial enthusiasm with a focus on personal and relational health"
+    voiceId: VOICE_IDS.coach1,
+    personality: `You are Blair Reynolds, a transformative emotional health coach for entrepreneurs. 
+
+Your coaching style:
+- Use gentle humor to help clients see new perspectives
+- Combine deep empathy with practical business insights
+- Focus on breaking through emotional barriers that limit success
+- Help entrepreneurs integrate personal growth with business growth
+- Ask thoughtful questions that lead to breakthrough moments
+- Share relatable examples from your entrepreneurial background
+
+Your tone is warm, insightful, and encouraging. You believe that emotional intelligence is the key to sustainable business success. You help entrepreneurs understand that taking care of their mental health isn't weakness - it's strategic advantage.`,
+    description: "Transformative, humor-focused coach with deep empathy. Combines entrepreneurial enthusiasm with personal and relational health expertise."
   },
   coach2: {
     name: "Dave Charlson",
-    assistantId: "asst_azEXcPuwPHRaSXWzv2tPzI4t", // We'll create Dave's assistant next
-    voiceId: null, // We'll add this after setting up ElevenLabs
-    personality: "Warm, strategic coach focused on sustainable growth and well-being",
-    description: "Balanced approach combining business success with personal fulfillment"
+    voiceId: VOICE_IDS.coach2,
+    personality: `You are Dave Charlson, a strategic business coach focused on sustainable growth and work-life integration.
+
+Your coaching style:
+- Provide practical, actionable strategies that entrepreneurs can implement immediately
+- Focus on building systems that support both business growth and personal well-being
+- Help clients create boundaries between work and personal life
+- Emphasize long-term sustainability over short-term burnout
+- Share proven frameworks and methodologies
+- Balance ambition with health and relationships
+
+Your tone is encouraging, systematic, and grounded. You believe that the best entrepreneurs are those who can scale their businesses without sacrificing their health, relationships, or values.`,
+    description: "Strategic, warm coach focused on sustainable growth and well-being. Balanced approach combining business success with personal fulfillment."
   }
 };
 
@@ -1365,8 +1386,11 @@ async function generateVoice(text, voiceId) {
     return `data:audio/mpeg;base64,${audioBase64}`;
 }
 
-// Send message to AI Assistant with Coach Selection
+// FAST Chat Completion API - REPLACE THE OLD /api/chat/send ENDPOINT WITH THIS
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
+  console.log('🚀 FAST CHAT: Request started');
+    
   try {
     if (!openai) {
       return res.json({ 
@@ -1374,7 +1398,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       });
     }
 
-    const { message } = req.body;
+    const { message, preferences = {} } = req.body;
     const userId = req.user.userId;
 
     // Get user's selected coach
@@ -1382,7 +1406,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     const selectedCoach = user?.selectedCoach || 'coach1';
     const coach = COACHES[selectedCoach];
     
-    if (!coach || !coach.assistantId) {
+    if (!coach) {
       return res.status(400).json({ 
         error: 'Selected coach is not available. Please try again.' 
       });
@@ -1390,96 +1414,114 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 
     console.log(`🎯 Using ${coach.name} (${selectedCoach}) for user ${userId}`);
 
+    // Get or create conversation history
     let chat = await Chat.findOne({ userId });
-    let threadId;
-
-    if (!chat || !chat.threadId) {
-      const thread = await openai.beta.threads.create();
-      threadId = thread.id;
-      
-      if (chat) {
-        chat.threadId = threadId;
-        await chat.save();
-      } else {
-        chat = new Chat({
-          userId,
-          threadId,
-          messages: []
-        });
-        await chat.save();
-      }
-    } else {
-      threadId = chat.threadId;
+    if (!chat) {
+      chat = new Chat({
+        userId,
+        threadId: `chat_${userId}_${Date.now()}`, // We don't need real threads anymore
+        messages: []
+      });
+      await chat.save();
     }
 
-    await openai.beta.threads.messages.create(threadId, {
-      role: "user",
+    // Build conversation context (last 10 messages for context)
+    const recentMessages = chat.messages.slice(-10);
+    
+    // Create messages array for OpenAI
+    const messages = [
+      {
+        role: 'system',
+        content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
+
+Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
+
+Current coaching preferences:
+- Tone: ${preferences.tone || 'supportive'}
+- Response length: ${preferences.responseLength || 'moderate'}
+
+Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
+      }
+    ];
+
+    // Add conversation history
+    recentMessages.forEach(msg => {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    });
+
+    // Add current user message
+    messages.push({
+      role: 'user',
       content: message
     });
 
+    console.log('⏱️ TIMING: Context built in:', Date.now() - startTime, 'ms');
 
-console.log('🔄 Switching to Chat Completion API - removing old Assistant code'); 
+    // Make FAST Chat Completion API call
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // Using faster model
+      messages: messages,
+      max_tokens: preferences.responseLength === 'detailed' ? 1500 : 
+                  preferences.responseLength === 'concise' ? 500 : 1000,
+      temperature: 0.7,
+      stream: false
+    });
 
-    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-    
-    let attempts = 0;
-    while (runStatus.status !== 'completed' && attempts < 30) {
-      await new Promise(resolve => setTimeout(resolve, 200));
-      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-      attempts++;
-    }
+    console.log('⏱️ TIMING: OpenAI response in:', Date.now() - startTime, 'ms');
 
-    if (runStatus.status !== 'completed') {
-      throw new Error('Assistant took too long to respond');
-    }
+    const response = completion.choices[0].message.content;
 
-    const messages = await openai.beta.threads.messages.list(threadId);
-    const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
-    
-    if (!assistantMessage) {
-      throw new Error('No response from assistant');
-    }
-
-    const response = assistantMessage.content[0].text.value;
-
+    // Save conversation
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
       { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
     );
+    
+    // Keep only last 50 messages to prevent database bloat
+    if (chat.messages.length > 50) {
+      chat.messages = chat.messages.slice(-50);
+    }
+    
     chat.updatedAt = new Date();
     await chat.save();
 
-    // Generate insights after successful chat
-    if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+    console.log('⏱️ TIMING: Database saved in:', Date.now() - startTime, 'ms');
+
+    // Generate insights after successful chat (async, don't wait)
+    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
 
-// Generate voice if coach voice is enabled
+    // Generate voice if coach voice is enabled
     let audioUrl = null;
-    const selectedCoachId = selectedCoach;
-    
-    if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
-        try {
-            console.log('🎤 Generating voice for coach:', selectedCoachId);
-            console.log('🎤 Using voice ID:', VOICE_IDS[selectedCoachId]);
-// Clean the response text for voice synthesis
-const cleanedResponse = response
-    .replace(/\*\*/g, '') // Remove ** bold markers
-    .replace(/\*/g, '')   // Remove * italic markers
-    .replace(/#{1,6}\s/g, '') // Remove # headers
-    .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
-    .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
-    .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
-    .trim();
+    if (ELEVENLABS_API_KEY && selectedCoach && VOICE_IDS[selectedCoach]) {
+      try {
+        console.log('🎤 Generating voice for coach:', selectedCoach);
+        
+        // Clean the response text for voice synthesis
+        const cleanedResponse = response
+          .replace(/\*\*/g, '') // Remove ** bold markers
+          .replace(/\*/g, '')   // Remove * italic markers
+          .replace(/#{1,6}\s/g, '') // Remove # headers
+          .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
+          .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
+          .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
+          .trim();
 
-audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
-            console.log('✅ Voice generated successfully');
-        } catch (voiceError) {
-            console.error('⚠️ Voice generation failed:', voiceError.message);
-            // Continue without voice - don't fail the whole request
-        }
+        audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoach]);
+        console.log('✅ Voice generated successfully');
+      } catch (voiceError) {
+        console.error('⚠️ Voice generation failed:', voiceError.message);
+        // Continue without voice - don't fail the whole request
+      }
     }
+    
+    const totalTime = Date.now() - startTime;
+    console.log('🎉 TOTAL RESPONSE TIME:', totalTime, 'ms');
     
     res.json({ 
       response,
@@ -1487,11 +1529,12 @@ audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
         name: coach.name,
         id: selectedCoach
       },
-      audio: audioUrl ? { url: audioUrl, enabled: true } : null
+      audio: audioUrl ? { url: audioUrl, enabled: true } : null,
+      responseTime: totalTime
     });
 
   } catch (error) {
-    console.error('Assistant error:', error);
+    console.error('❌ Chat error:', error);
     
     const fallbacks = [
       "I'm experiencing technical difficulties right now. As an entrepreneur, you know that setbacks are temporary. While I get back online, remember that seeking support shows leadership strength, not weakness.",
