@@ -42,7 +42,7 @@ let coachSettings = {
     typingIndicator: true,
     soundNotifications: false,
     coachingTone: 'supportive',
-    responseLength: 'moderate',
+    responseLength: 'concise',
     dataAnalytics: true,
     personalizedInsights: true,
     sessionReminder: 'weekly'
