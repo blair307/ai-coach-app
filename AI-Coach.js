@@ -1337,20 +1337,16 @@ function finishVoiceInput() {
         // Stop voice input first
         stopVoiceInput();
         
-        // UNLOCK AUDIO FOR MOBILE AFTER VOICE INPUT
-        if (!window.audioUnlocked) {
-            unlockMobileAudio();
-        }
-        
         // Clear the transcript to prevent double-sending
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-        // Send the message
+        // AUTO-CLICK SEND BUTTON for mobile audio unlock
         setTimeout(() => {
-            if (inputField.value.trim() === messageToSend) {
-                sendMessageNow();
-                console.log('📤 Voice message sent:', messageToSend);
+            const sendBtn = document.getElementById('sendButton');
+            if (sendBtn && inputField.value.trim() === messageToSend) {
+                console.log('📤 Auto-clicking send button for mobile audio');
+                sendBtn.click(); // This unlocks audio AND sends message
             }
         }, 200);
         
