@@ -1554,3 +1554,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Also run after voice system initializes
 setTimeout(fixButtonSpacing, 2000);
+
+// Fix voice button state updates
+function fixVoiceButtonUpdates() {
+    if (!window.updateVoiceButtonState) return;
+    
+    // Enhanced button update function
+    const originalUpdate = window.updateVoiceButtonState;
+    window.updateVoiceButtonState = function(listening) {
+        originalUpdate(listening);
+        console.log('🎤 Button updated to:', listening ? 'LISTENING' : 'STOPPED');
+    };
+}
+
+// Call the fix when page loads
+setTimeout(fixVoiceButtonUpdates, 2000);
