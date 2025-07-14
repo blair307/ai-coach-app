@@ -1684,3 +1684,20 @@ setTimeout(() => {
         sendBtn.addEventListener('click', unlockMobileAudio);
     }
 }, 1000);
+
+// Fix voice button after audio changes
+setTimeout(() => {
+    if (!document.getElementById('voiceInputBtn')) {
+        console.log('🎤 Voice button missing, recreating...');
+        createVoiceButton();
+        
+        // Re-apply the button fix
+        setTimeout(() => {
+            const voiceBtn = document.getElementById('voiceInputBtn');
+            if (voiceBtn) {
+                voiceBtn.onclick = toggleVoiceInput;
+                console.log('✅ Voice button restored');
+            }
+        }, 500);
+    }
+}, 2000);
