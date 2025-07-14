@@ -362,6 +362,11 @@ function getAuthToken() {
 // Main send message function
 function sendMessageNow() {
     console.log('📤 Sending message...');
+
+ // Unlock mobile audio first
+    if (!window.audioUnlocked && window.unlockMobileAudio) {
+        unlockMobileAudio();
+    }
     
     const inputField = findInputField();
     if (!inputField) {
@@ -1341,12 +1346,11 @@ function finishVoiceInput() {
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-        // AUTO-CLICK SEND BUTTON for mobile audio unlock
+        // Send the message THE SAME WAY as clicking send button
         setTimeout(() => {
-            const sendBtn = document.getElementById('sendButton');
-            if (sendBtn && inputField.value.trim() === messageToSend) {
-                console.log('📤 Auto-clicking send button for mobile audio');
-                sendBtn.click(); // This unlocks audio AND sends message
+            if (inputField.value.trim() === messageToSend) {
+                sendMessageNow();
+                console.log('📤 Voice message sent:', messageToSend);
             }
         }, 200);
         
