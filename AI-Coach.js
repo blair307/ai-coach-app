@@ -169,7 +169,7 @@ function closeCoachSelector() {
 }
 
 // Select a coach
-function selectCoach(coachId) {
+async function selectCoach(coachId) {
     console.log('🎯 Selecting coach:', coachId);
     
     // Remove selected class from all cards
@@ -183,39 +183,19 @@ function selectCoach(coachId) {
         selectedCard.classList.add('selected');
     }
     
-    // Save selection locally
+    // Save selection locally first
     selectedCoach = coachId;
     localStorage.setItem('selectedCoach', coachId);
     
-    // UPDATE THE DATABASE - THIS WAS MISSING!
-    updateCoachInDatabase(coachId);
-    
-    // Update display
-    updateCoachDisplay();
-    
-    // Show confirmation and hide selector after delay
-    setTimeout(() => {
-        hideCoachSelector();
-        showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
-    }, 1000);
-}
-
-// Update coach selection in database
-async function updateCoachInDatabase(coachId) {
+    // UPDATE THE DATABASE - WAIT FOR RESPONSE
     try {
-        const token = getAuthToken();
-        if (!token) {
-            console.log('❌ No token for coach update');
-            return;
-        }
-        
         console.log('📡 Updating coach in database:', coachId);
         
         const response = await fetch(`${BACKEND_URL}/api/coaches/select`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': `Bearer ${getAuthToken()}`
             },
             body: JSON.stringify({
                 coachId: coachId
@@ -224,15 +204,28 @@ async function updateCoachInDatabase(coachId) {
         
         if (response.ok) {
             const data = await response.json();
-            console.log('✅ Coach updated in database:', data);
+            console.log('✅ Coach updated in database successfully:', data);
+            
+            // Update display
+            updateCoachDisplay();
+            
+            // Show confirmation and hide selector after delay
+            setTimeout(() => {
+                hideCoachSelector();
+                showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
+            }, 1000);
+            
         } else {
             console.error('❌ Failed to update coach in database:', response.status);
+            showToast('Error switching coaches. Please try again.');
         }
         
     } catch (error) {
         console.error('❌ Error updating coach in database:', error);
+        showToast('Network error. Please check your connection.');
     }
 }
+
 
 // Update coach display in header
 function updateCoachDisplay() {
