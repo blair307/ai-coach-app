@@ -1435,10 +1435,10 @@ try {
 }
 
 const run = await openai.beta.threads.runs.create(threadId, {
-    console.log('⏱️ TIMING: Run started in:', Date.now() - startTime, 'ms');
   assistant_id: coach.assistantId
 });
-      
+       console.log('⏱️ TIMING: Run started in:', Date.now() - startTime, 'ms');
+   
 
     let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
     
