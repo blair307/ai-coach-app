@@ -1441,9 +1441,11 @@ const run = await openai.beta.threads.runs.create(threadId, {
    
 
 const run = await openai.beta.threads.runs.createAndPoll(threadId, {
+  // Poll every 500ms instead of default 1000ms
   assistant_id: coach.assistantId,
-  pollIntervalMs: 500  // Poll every 500ms instead of default 1000ms
+  pollIntervalMs: 500
 });
+
 
 if (run.status !== 'completed') {
   throw new Error('Assistant took too long to respond');
