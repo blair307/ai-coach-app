@@ -1225,7 +1225,7 @@ function initVoiceSystem() {
         voiceRecognition.onresult = handleVoiceResults;
         voiceRecognition.onerror = handleVoiceError;
         voiceRecognition.onstart = handleVoiceStart;
-        voiceRecognition.onend = ;
+        voiceRecognition.onend = handleVoiceEnd;
         
         voiceSupported = true;
         console.log('✅ Voice recognition system ready');
@@ -1233,6 +1233,28 @@ function initVoiceSystem() {
         console.log('❌ Voice recognition not supported');
         voiceSupported = false;
     }
+
+// Handle voice recognition end - ADD THIS MISSING FUNCTION
+function handleVoiceEnd() {
+    console.log('🎤 Voice recognition ended');
+    
+    if (isCurrentlyListening) {
+        // IMPORTANT: Unlock audio BEFORE restarting recognition
+        unlockAudioContext().then(() => {
+            // Restart recognition to keep listening
+            try {
+                setTimeout(() => {
+                    if (isCurrentlyListening && voiceRecognition) {
+                        voiceRecognition.start();
+                    }
+                }, 100);
+            } catch (error) {
+                console.log('Could not restart recognition');
+                stopVoiceInput();
+            }
+        });
+    }
+}
     
     // Create the voice button
     createVoiceButton();
