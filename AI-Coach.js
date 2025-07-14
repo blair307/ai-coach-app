@@ -1425,48 +1425,15 @@ function stopAIAudio() {
     }
 }
 
-// Enhanced audio playback with mobile fix
+// Enhanced audio playback with tracking (modify your existing callAI function)
 function playAIAudio(audioUrl) {
-    console.log('🎵 Playing AI audio with mobile support...');
-    
     try {
         // Stop any existing audio first
         stopAIAudio();
         
-        // Create completely new audio element for mobile compatibility
-        currentAudio = new Audio();
-        currentAudio.preload = 'auto';
-        currentAudio.volume = 1.0;
-        currentAudio.src = audioUrl;
-        
-        // Mobile-friendly play with promise handling
-        const playPromise = currentAudio.play();
-        
-        if (playPromise !== undefined) {
-            playPromise
-                .then(() => {
-                    console.log('✅ AI audio playing successfully');
-                })
-                .catch(error => {
-                    console.log('❌ Audio play failed, retrying...', error);
-                    // Retry after short delay for mobile
-                    setTimeout(() => {
-                        if (currentAudio) {
-                            currentAudio.play().catch(e => console.log('Retry failed:', e));
-                        }
-                    }, 200);
-                });
-        }
-        
-        // Clear reference when done
-        currentAudio.onended = () => {
-            currentAudio = null;
-        };
-        
-    } catch (error) {
-        console.log('❌ Audio creation failed:', error);
-    }
-}
+        // Create and play new audio
+        currentAudio = new Audio(audioUrl);
+        currentAudio.play()
             .then(() => {
                 console.log('🎵 AI audio playing');
             })
@@ -1684,20 +1651,3 @@ setTimeout(() => {
         sendBtn.addEventListener('click', unlockMobileAudio);
     }
 }, 1000);
-
-// Fix voice button after audio changes
-setTimeout(() => {
-    if (!document.getElementById('voiceInputBtn')) {
-        console.log('🎤 Voice button missing, recreating...');
-        createVoiceButton();
-        
-        // Re-apply the button fix
-        setTimeout(() => {
-            const voiceBtn = document.getElementById('voiceInputBtn');
-            if (voiceBtn) {
-                voiceBtn.onclick = toggleVoiceInput;
-                console.log('✅ Voice button restored');
-            }
-        }, 500);
-    }
-}, 2000);
