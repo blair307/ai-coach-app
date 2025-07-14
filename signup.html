@@ -116,7 +116,36 @@
     }
 }
 
+/* Fix button text overflow */
+#submitButton {
+    min-width: 200px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    padding: 0.75rem 1.5rem !important;
+}
 
+#submitButtonText {
+    display: block !important;
+    width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* Mobile specific button sizing */
+@media (max-width: 480px) {
+    #submitButton {
+        min-width: 180px !important;
+        font-size: 0.85rem !important;
+        padding: 0.75rem 1rem !important;
+    }
+    
+    #submitButtonText {
+        font-size: 0.85rem !important;
+    }
+}
+        
 </style>
 
 </head>
