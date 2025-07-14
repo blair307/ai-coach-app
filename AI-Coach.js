@@ -1645,7 +1645,7 @@ function fixButtonSpacing() {
         // Force styles with JavaScript
         inputActions.style.cssText = `
             display: flex !important;
-            gap: 2rem !important;
+            gap: 1rem !important;
             justify-content: flex-end !important;
             align-items: center !important;
             flex-wrap: wrap !important;
