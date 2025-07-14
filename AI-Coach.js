@@ -7,6 +7,8 @@ console.log('🚀 Starting EEH AI Coach...');
 // Global audio context for unlocking
 let globalAudioContext = null;
 let audioUnlocked = false;
+let capturedUserActivation = null;
+let activationAudio = null;
 
 // Initialize audio context when page loads
 function initializeAudioContext() {
@@ -87,35 +89,102 @@ function createAudioUnlockButton() {
     document.body.appendChild(button);
 }
 
-function actuallyPlayAudio(audioUrl) {
+function playWithReservedActivation(audioUrl) {
+    console.log('⚡🎵 Playing audio with reserved user activation');
+    
     try {
-        // Stop any existing audio first
-        stopAIAudio();
+        if (capturedUserActivation && capturedUserActivation.audio) {
+            // First, "activate" our reserved audio to refresh user activation
+            const reservedAudio = capturedUserActivation.audio;
+            
+            // Unmute and play the silent audio for a split second
+            reservedAudio.muted = false;
+            reservedAudio.volume = 0.01;
+            
+            reservedAudio.play().then(() => {
+                console.log('✅ Reserved activation refreshed');
+                
+                // Immediately pause the silent audio
+                setTimeout(() => {
+                    reservedAudio.pause();
+                    reservedAudio.muted = true;
+                }, 50);
+                
+                // Now play the actual AI response
+                setTimeout(() => {
+                    playActualAIAudio(audioUrl);
+                }, 100);
+                
+            }).catch(error => {
+                console.log('⚠️ Reserved activation failed, trying normal playback:', error);
+                playRegularAudio(audioUrl);
+            });
+            
+            // Clear the captured activation after use
+            capturedUserActivation = null;
+            
+        } else {
+            console.log('⚠️ No reserved activation available, trying normal playback');
+            playRegularAudio(audioUrl);
+        }
         
-        console.log('🎵 Playing AI audio:', audioUrl.substring(0, 50) + '...');
-        
-        // Create and play new audio
+    } catch (error) {
+        console.log('❌ Reserved activation playback failed:', error);
+        playRegularAudio(audioUrl);
+    }
+}
+
+function playActualAIAudio(audioUrl) {
+    console.log('🤖🔊 Playing actual AI audio response');
+    
+    try {
+        // Create and play the AI audio
         currentAudio = new Audio(audioUrl);
-        
-        // Set properties for better mobile compatibility
         currentAudio.preload = 'auto';
         currentAudio.crossOrigin = 'anonymous';
         
         currentAudio.play()
             .then(() => {
-                console.log('✅ AI audio playing successfully');
+                console.log('✅ AI audio playing successfully with reserved activation!');
             })
             .catch(error => {
-                console.log('❌ Audio playback failed:', error);
-                console.log('🔍 This may be because audio context is still locked');
-                
-                // Show a user-friendly message
-                showToast('🔊 Click "Enable Audio" button to hear voice responses');
-                
-                currentAudio = null;
+                console.log('❌ AI audio playback failed even with activation:', error);
+                showToast('🔊 Audio ready - tap anywhere to hear responses');
             });
             
-        // Clear reference when done
+        // Clean up when done
+        currentAudio.onended = () => {
+            console.log('🎵 AI audio playback finished');
+            currentAudio = null;
+        };
+        
+        currentAudio.onerror = (error) => {
+            console.log('❌ AI audio error:', error);
+            currentAudio = null;
+        };
+        
+    } catch (error) {
+        console.log('❌ AI audio creation failed:', error);
+    }
+}
+
+function playRegularAudio(audioUrl) {
+    console.log('🎵 Playing audio with regular method');
+    
+    try {
+        currentAudio = new Audio(audioUrl);
+        currentAudio.preload = 'auto';
+        currentAudio.crossOrigin = 'anonymous';
+        
+        currentAudio.play()
+            .then(() => {
+                console.log('✅ Regular audio playing successfully');
+            })
+            .catch(error => {
+                console.log('❌ Regular audio playback failed:', error);
+                showToast('🔊 Tap screen to enable voice responses');
+            });
+            
         currentAudio.onended = () => {
             console.log('🎵 Audio playback finished');
             currentAudio = null;
@@ -125,6 +194,34 @@ function actuallyPlayAudio(audioUrl) {
             console.log('❌ Audio error:', error);
             currentAudio = null;
         };
+        
+    } catch (error) {
+        console.log('❌ Audio creation failed:', error);
+    }
+}
+
+function actuallyPlayAudio(audioUrl) {
+    try {
+        console.log('🎵 Playing AI audio:', audioUrl.substring(0, 50) + '...');
+        
+        // Stop any existing audio first
+        stopAIAudio();
+        
+        // Check if this is from a voice message with captured activation
+        const hasReservedActivation = window.voiceMessageWithActivation === true;
+        
+        if (hasReservedActivation && capturedUserActivation) {
+            console.log('🎤🔊 Using RESERVED user activation for audio playback');
+            
+            // Reset the flag
+            window.voiceMessageWithActivation = false;
+            
+            // Use the reserved activation to play audio
+            playWithReservedActivation(audioUrl);
+        } else {
+            // Regular audio playback
+            playRegularAudio(audioUrl);
+        }
         
     } catch (error) {
         console.log('❌ Audio creation failed:', error);
@@ -1439,8 +1536,12 @@ function toggleVoiceInput() {
         return;
     }
     
-    // MOBILE FIX: Always unlock audio when user taps voice button
-    console.log('🎤 Voice button tapped - unlocking audio immediately');
+    console.log('🎤 Voice button tapped - CAPTURING user activation immediately');
+    
+    // CRITICAL: Capture user activation RIGHT NOW while we have it
+    captureUserActivationForAudio();
+    
+    // Unlock audio context
     unlockAudioContext().then(() => {
         console.log('🔓 Audio unlocked from voice button tap');
         
@@ -1455,6 +1556,38 @@ function toggleVoiceInput() {
     });
 }
 
+function captureUserActivationForAudio() {
+console.log('⚡ Capturing user activation for future audio playback');
+    
+    try {
+        // Create a silent audio element that we can use later
+        // This "uses" the user activation but in a way that preserves it
+        activationAudio = new Audio();
+        activationAudio.preload = 'auto';
+        activationAudio.volume = 0.01; // Almost silent
+        activationAudio.muted = true;  // Start muted
+        
+        // Create a tiny silent audio buffer
+        const silentBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAAAQfAAELEAAAAAAABAAAEAAgAQAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAA=';
+        activationAudio.src = silentBase64;
+        
+        // "Reserve" the user activation by starting to load
+        activationAudio.load();
+        
+        // Mark that we have captured activation
+        capturedUserActivation = {
+            timestamp: Date.now(),
+            audio: activationAudio
+        };
+        
+        console.log('✅ User activation captured and reserved');
+        
+    } catch (error) {
+        console.log('⚠️ Could not capture user activation:', error);
+    }
+}
+
+    
 // Start voice input
 function startVoiceInput() {
     if (!voiceRecognition || isCurrentlyListening) {
@@ -1527,30 +1660,28 @@ function finishVoiceInput() {
     const inputField = findInputField();
     
     if (inputField && completeTranscript.trim().length > 0) {
-        console.log('🎤 Finishing voice input with ENHANCED mobile audio unlock');
+        console.log('🎤 Finishing voice input with RESERVED user activation');
         
-        // MOBILE FIX: Use enhanced unlock
-        enhancedMobileAudioUnlock().then(() => {
-            console.log('🔓 Enhanced audio unlock complete, proceeding with message');
-            
-            // Set the input value
-            inputField.value = completeTranscript.trim();
-            
-            // Stop voice input
-            stopVoiceInput();
-            
-            // Clear transcript
-            const messageToSend = completeTranscript.trim();
-            completeTranscript = '';
-            
-            // Send message with extra delay for mobile
-            setTimeout(() => {
-                if (inputField.value.trim() === messageToSend) {
-                    sendMessageNow();
-                    console.log('📤 Voice message sent with enhanced mobile unlock');
-                }
-            }, 500); // Increased delay for mobile
-        });
+        // Set the input value
+        inputField.value = completeTranscript.trim();
+        
+        // Stop voice input
+        stopVoiceInput();
+        
+        // Clear transcript
+        const messageToSend = completeTranscript.trim();
+        completeTranscript = '';
+        
+        // CRITICAL: Set flag that this will need audio AND we have activation
+        window.voiceMessageWithActivation = true;
+        
+        // Send message immediately
+        setTimeout(() => {
+            if (inputField.value.trim() === messageToSend) {
+                sendMessageNow();
+                console.log('📤 Voice message sent with reserved activation');
+            }
+        }, 100);
     } else {
         stopVoiceInput();
     }
@@ -1826,3 +1957,13 @@ function unlockMobileAudio() {
         });
     });
 }
+
+window.addEventListener('beforeunload', function() {
+    if (capturedUserActivation && capturedUserActivation.audio) {
+        capturedUserActivation.audio.pause();
+        capturedUserActivation.audio = null;
+    }
+    capturedUserActivation = null;
+});
+
+console.log('⚡ User Activation Capture System loaded!');
