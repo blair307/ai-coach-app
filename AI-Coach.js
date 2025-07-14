@@ -49,46 +49,10 @@ function unlockAudioContext() {
     });
 }
 
-// CRITICAL FIX: Add manual unlock button for troubleshooting
 function createAudioUnlockButton() {
-    // Only show on mobile devices
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (!isMobile) return;
-    
-    const button = document.createElement('button');
-    button.id = 'audioUnlockBtn';
-    button.style.cssText = `
-        position: fixed;
-        top: 60px;
-        right: 10px;
-        z-index: 9999;
-        background: #ff6b6b;
-        color: white;
-        border: none;
-        padding: 0.75rem 1rem;
-        border-radius: 8px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        display: block;
-    `;
-    button.textContent = '🔊 Enable Voice Audio';
-    button.onclick = () => {
-        // Triple unlock for stubborn mobile browsers
-        enhancedMobileAudioUnlock().then(() => {
-            button.textContent = '✅ Audio Enabled';
-            button.style.background = '#10b981';
-            setTimeout(() => {
-                button.style.display = 'none';
-            }, 2000);
-            showToast('✅ Mobile audio unlocked! Try voice-to-text now.');
-        });
-    };
-    
-    document.body.appendChild(button);
+    // Disabled - no longer needed
+    return;
 }
-
 function playWithReservedActivation(audioUrl) {
     console.log('⚡🎵 Playing audio with reserved user activation');
     
@@ -207,21 +171,30 @@ function actuallyPlayAudio(audioUrl) {
         // Stop any existing audio first
         stopAIAudio();
         
-        // Check if this is from a voice message with captured activation
-        const hasReservedActivation = window.voiceMessageWithActivation === true;
+        // Simple direct playback (like it was before)
+        currentAudio = new Audio(audioUrl);
+        currentAudio.preload = 'auto';
+        currentAudio.crossOrigin = 'anonymous';
         
-        if (hasReservedActivation && capturedUserActivation) {
-            console.log('🎤🔊 Using RESERVED user activation for audio playback');
+        currentAudio.play()
+            .then(() => {
+                console.log('✅ AI audio playing successfully');
+            })
+            .catch(error => {
+                console.log('❌ Audio playback failed:', error);
+                showToast('🔊 Tap screen to enable voice responses');
+            });
             
-            // Reset the flag
-            window.voiceMessageWithActivation = false;
-            
-            // Use the reserved activation to play audio
-            playWithReservedActivation(audioUrl);
-        } else {
-            // Regular audio playback
-            playRegularAudio(audioUrl);
-        }
+        // Clean up when done
+        currentAudio.onended = () => {
+            console.log('🎵 Audio playback finished');
+            currentAudio = null;
+        };
+        
+        currentAudio.onerror = (error) => {
+            console.log('❌ Audio error:', error);
+            currentAudio = null;
+        };
         
     } catch (error) {
         console.log('❌ Audio creation failed:', error);
