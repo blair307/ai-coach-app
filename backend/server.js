@@ -1386,6 +1386,29 @@ async function generateVoice(text, voiceId) {
     return `data:audio/mpeg;base64,${audioBase64}`;
 }
 
+// Generate voice asynchronously without blocking response
+async function generateVoiceAsync(text, voiceId, userId, coachId) {
+    try {
+        console.log('🎤 Generating voice in background for:', coachId);
+        
+        const cleanedResponse = text
+            .replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/#{1,6}\s/g, '')
+            .replace(/`{1,3}[^`]*`{1,3}/g, '')
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            .replace(/^\s*[-*+]\s/gm, '')
+            .replace(/^\s*\d+\.\s/gm, '')
+            .trim();
+
+        const audioUrl = await generateVoice(cleanedResponse, voiceId);
+        console.log('✅ Voice generated successfully in background');
+        
+    } catch (voiceError) {
+        console.error('⚠️ Background voice generation failed:', voiceError.message);
+    }
+}
+
 // FAST Chat Completion API - REPLACE THE OLD /api/chat/send ENDPOINT WITH THIS
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   const startTime = Date.now();
@@ -1474,7 +1497,13 @@ max_tokens: preferences.responseLength === 'detailed' ? 800 :
 
     const response = completion.choices[0].message.content;
 
-    // Save conversation
+
+    // Generate insights after successful chat (async, don't wait)
+    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    }
+
+  // Save to database FIRST
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
       { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
@@ -1488,50 +1517,30 @@ max_tokens: preferences.responseLength === 'detailed' ? 800 :
     chat.updatedAt = new Date();
     await chat.save();
 
-    console.log('⏱️ TIMING: Database saved in:', Date.now() - startTime, 'ms');
-
-    // Generate insights after successful chat (async, don't wait)
-    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
-      setTimeout(() => generateInsights(userId, chat.messages), 3000);
-    }
-
-    // Generate voice if coach voice is enabled
-    let audioUrl = null;
-    if (ELEVENLABS_API_KEY && selectedCoach && VOICE_IDS[selectedCoach]) {
-      try {
-        console.log('🎤 Generating voice for coach:', selectedCoach);
-        
-        // Clean the response text for voice synthesis
-        const cleanedResponse = response
-          .replace(/\*\*/g, '') // Remove ** bold markers
-          .replace(/\*/g, '')   // Remove * italic markers
-          .replace(/#{1,6}\s/g, '') // Remove # headers
-          .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
-          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
-          .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
-          .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
-          .trim();
-
-        audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoach]);
-        console.log('✅ Voice generated successfully');
-      } catch (voiceError) {
-        console.error('⚠️ Voice generation failed:', voiceError.message);
-        // Continue without voice - don't fail the whole request
-      }
-    }
-    
     const totalTime = Date.now() - startTime;
-    console.log('🎉 TOTAL RESPONSE TIME:', totalTime, 'ms');
+    console.log('🎉 FAST RESPONSE TIME:', totalTime, 'ms');
     
+    // Send response immediately (no waiting for voice)
     res.json({ 
       response,
       coach: {
         name: coach.name,
         id: selectedCoach
       },
-      audio: audioUrl ? { url: audioUrl, enabled: true } : null,
+      audio: null, // No audio in immediate response
       responseTime: totalTime
     });
+
+    // Generate voice AFTER responding (async - doesn't block)
+    if (ELEVENLABS_API_KEY && selectedCoach && VOICE_IDS[selectedCoach]) {
+        generateVoiceAsync(response, VOICE_IDS[selectedCoach], userId, selectedCoach);
+        console.log('🎤 Voice generation started in background');
+    }
+
+    // Generate insights after successful chat (async)
+    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    }
 
   } catch (error) {
     console.error('❌ Chat error:', error);
