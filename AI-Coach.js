@@ -7,8 +7,7 @@ console.log('🚀 Starting EEH AI Coach...');
 // Global audio context for unlocking
 let globalAudioContext = null;
 let audioUnlocked = false;
-let capturedUserActivation = null;
-let activationAudio = null;
+
 
 // Initialize audio context when page loads
 function initializeAudioContext() {
@@ -53,116 +52,9 @@ function createAudioUnlockButton() {
     // Disabled - no longer needed
     return;
 }
-function playWithReservedActivation(audioUrl) {
-    console.log('⚡🎵 Playing audio with reserved user activation');
-    
-    try {
-        if (capturedUserActivation && capturedUserActivation.audio) {
-            // First, "activate" our reserved audio to refresh user activation
-            const reservedAudio = capturedUserActivation.audio;
-            
-            // Unmute and play the silent audio for a split second
-            reservedAudio.muted = false;
-            reservedAudio.volume = 0.01;
-            
-            reservedAudio.play().then(() => {
-                console.log('✅ Reserved activation refreshed');
-                
-                // Immediately pause the silent audio
-                setTimeout(() => {
-                    reservedAudio.pause();
-                    reservedAudio.muted = true;
-                }, 50);
-                
-                // Now play the actual AI response
-                setTimeout(() => {
-                    playActualAIAudio(audioUrl);
-                }, 100);
-                
-            }).catch(error => {
-                console.log('⚠️ Reserved activation failed, trying normal playback:', error);
-                playRegularAudio(audioUrl);
-            });
-            
-            // Clear the captured activation after use
-            capturedUserActivation = null;
-            
-        } else {
-            console.log('⚠️ No reserved activation available, trying normal playback');
-            playRegularAudio(audioUrl);
-        }
-        
-    } catch (error) {
-        console.log('❌ Reserved activation playback failed:', error);
-        playRegularAudio(audioUrl);
-    }
-}
 
-function playActualAIAudio(audioUrl) {
-    console.log('🤖🔊 Playing actual AI audio response');
-    
-    try {
-        // Create and play the AI audio
-        currentAudio = new Audio(audioUrl);
-        currentAudio.preload = 'auto';
-        currentAudio.crossOrigin = 'anonymous';
-        
-        currentAudio.play()
-            .then(() => {
-                console.log('✅ AI audio playing successfully with reserved activation!');
-            })
-            .catch(error => {
-                console.log('❌ AI audio playback failed even with activation:', error);
-                showToast('🔊 Audio ready - tap anywhere to hear responses');
-            });
-            
-        // Clean up when done
-        currentAudio.onended = () => {
-            console.log('🎵 AI audio playback finished');
-            currentAudio = null;
-        };
-        
-        currentAudio.onerror = (error) => {
-            console.log('❌ AI audio error:', error);
-            currentAudio = null;
-        };
-        
-    } catch (error) {
-        console.log('❌ AI audio creation failed:', error);
-    }
-}
 
-function playRegularAudio(audioUrl) {
-    console.log('🎵 Playing audio with regular method');
-    
-    try {
-        currentAudio = new Audio(audioUrl);
-        currentAudio.preload = 'auto';
-        currentAudio.crossOrigin = 'anonymous';
-        
-        currentAudio.play()
-            .then(() => {
-                console.log('✅ Regular audio playing successfully');
-            })
-            .catch(error => {
-                console.log('❌ Regular audio playback failed:', error);
-                showToast('🔊 Tap screen to enable voice responses');
-            });
-            
-        currentAudio.onended = () => {
-            console.log('🎵 Audio playback finished');
-            currentAudio = null;
-        };
-        
-        currentAudio.onerror = (error) => {
-            console.log('❌ Audio error:', error);
-            currentAudio = null;
-        };
-        
-    } catch (error) {
-        console.log('❌ Audio creation failed:', error);
-    }
-}
+
 
 function actuallyPlayAudio(audioUrl) {
     try {
@@ -1521,26 +1413,7 @@ function toggleVoiceInput() {
     console.log('🎤 Voice button tapped - CAPTURING user activation immediately');
     
     // CRITICAL: Capture user activation RIGHT NOW while we have it
-    try {
-        // Create a silent audio element that we can use later
-        activationAudio = new Audio();
-        activationAudio.preload = 'auto';
-        activationAudio.volume = 0.01;
-        activationAudio.muted = true;
-        
-        const silentBase64 = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAAAQfAAELEAAAAAAABAAAEAAgAQAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAASAAAKBAAAFAAgAAAAAAA=';
-        activationAudio.src = silentBase64;
-        activationAudio.load();
-        
-        capturedUserActivation = {
-            timestamp: Date.now(),
-            audio: activationAudio
-        };
-        
-        console.log('✅ User activation captured and reserved');
-    } catch (error) {
-        console.log('⚠️ Could not capture user activation:', error);
-    }
+  
     
     // Unlock audio context
     unlockAudioContext().then(() => {
@@ -1643,8 +1516,7 @@ function finishVoiceInput() {
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-        // CRITICAL: Set flag that this will need audio AND we have activation
-        window.voiceMessageWithActivation = true;
+
         
         // Send message immediately
         setTimeout(() => {
@@ -1929,12 +1801,5 @@ function unlockMobileAudio() {
     });
 }
 
-window.addEventListener('beforeunload', function() {
-    if (capturedUserActivation && capturedUserActivation.audio) {
-        capturedUserActivation.audio.pause();
-        capturedUserActivation.audio = null;
-    }
-    capturedUserActivation = null;
-});
 
 console.log('⚡ User Activation Capture System loaded!');
