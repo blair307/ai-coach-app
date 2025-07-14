@@ -180,9 +180,12 @@ function selectCoach(coachId) {
         selectedCard.classList.add('selected');
     }
     
-    // Save selection
+    // Save selection locally
     selectedCoach = coachId;
     localStorage.setItem('selectedCoach', coachId);
+    
+    // UPDATE THE DATABASE - THIS WAS MISSING!
+    updateCoachInDatabase(coachId);
     
     // Update display
     updateCoachDisplay();
@@ -192,6 +195,40 @@ function selectCoach(coachId) {
         hideCoachSelector();
         showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
     }, 1000);
+}
+
+// Update coach selection in database
+async function updateCoachInDatabase(coachId) {
+    try {
+        const token = getAuthToken();
+        if (!token) {
+            console.log('❌ No token for coach update');
+            return;
+        }
+        
+        console.log('📡 Updating coach in database:', coachId);
+        
+        const response = await fetch(`${BACKEND_URL}/api/coaches/select`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                coachId: coachId
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            console.log('✅ Coach updated in database:', data);
+        } else {
+            console.error('❌ Failed to update coach in database:', response.status);
+        }
+        
+    } catch (error) {
+        console.error('❌ Error updating coach in database:', error);
+    }
 }
 
 // Update coach display in header
