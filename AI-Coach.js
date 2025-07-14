@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecentInsights();
     loadCoachPhotos();
     checkCoachSelection();
+    loadChatHistory(); // <-- ADD THIS EXACT LINE HERE
     
     // Initialize new voice system
     initVoiceSystem();
