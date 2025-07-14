@@ -2,99 +2,6 @@
 
 console.log('🚀 Starting EEH AI Coach...');
 
-// ========== NEW MOBILE AUDIO FIX CODE - ADD THIS ==========
-
-// Global audio context for unlocking
-let globalAudioContext = null;
-let audioUnlocked = false;
-
-
-// Initialize audio context when page loads
-function initializeAudioContext() {
-    try {
-        globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
-        console.log('🎵 Audio context initialized:', globalAudioContext.state);
-        
-        // Check if it's already unlocked
-        if (globalAudioContext.state === 'running') {
-            audioUnlocked = true;
-            console.log('✅ Audio already unlocked');
-        }
-    } catch (error) {
-        console.error('❌ Failed to create audio context:', error);
-    }
-}
-
-// Unlock audio context with user interaction
-function unlockAudioContext() {
-    if (!globalAudioContext || audioUnlocked) return Promise.resolve();
-    
-    return new Promise((resolve) => {
-        if (globalAudioContext.state === 'suspended') {
-            console.log('🔓 Unlocking audio context...');
-            
-            globalAudioContext.resume().then(() => {
-                audioUnlocked = true;
-                console.log('✅ Audio context unlocked successfully');
-                resolve();
-            }).catch((error) => {
-                console.error('❌ Failed to unlock audio:', error);
-                resolve(); // Continue anyway
-            });
-        } else {
-            audioUnlocked = true;
-            resolve();
-        }
-    });
-}
-
-function createAudioUnlockButton() {
-    // Disabled - no longer needed
-    return;
-}
-
-
-
-
-function actuallyPlayAudio(audioUrl) {
-    try {
-        console.log('🎵 Playing AI audio:', audioUrl.substring(0, 50) + '...');
-        
-        // Stop any existing audio first
-        stopAIAudio();
-        
-        // Simple direct playback (like it was before)
-        currentAudio = new Audio(audioUrl);
-        currentAudio.preload = 'auto';
-        currentAudio.crossOrigin = 'anonymous';
-        
-        currentAudio.play()
-            .then(() => {
-                console.log('✅ AI audio playing successfully');
-            })
-            .catch(error => {
-                console.log('❌ Audio playback failed:', error);
-                showToast('🔊 Tap screen to enable voice responses');
-            });
-            
-        // Clean up when done
-        currentAudio.onended = () => {
-            console.log('🎵 Audio playback finished');
-            currentAudio = null;
-        };
-        
-        currentAudio.onerror = (error) => {
-            console.log('❌ Audio error:', error);
-            currentAudio = null;
-        };
-        
-    } catch (error) {
-        console.log('❌ Audio creation failed:', error);
-    }
-}
-
-// ========== END NEW CODE ==========
-
 // Your Render backend URL
 const BACKEND_URL = 'https://api.eehcommunity.com';
 
@@ -187,23 +94,6 @@ function loadCoachPhotos() {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
-    
-    // Initialize audio context FIRST
-    initializeAudioContext();
-    
-    // Create unlock button for mobile debugging
-    createAudioUnlockButton();
-    
-    // Add event listeners to unlock audio on any interaction
-    const unlockEvents = ['click', 'touchstart', 'touchend', 'mousedown', 'keydown'];
-    unlockEvents.forEach(eventType => {
-        document.addEventListener(eventType, () => {
-            if (!audioUnlocked) {
-                unlockAudioContext();
-            }
-        }, { once: true, passive: true });
-    });
-    
     loadSettings();
     loadRecentInsights();
     loadCoachPhotos();
@@ -469,46 +359,43 @@ function getAuthToken() {
     return null;
 }
 
-// Main send message function - UPDATED WITH AUDIO FIX
+// Main send message function
 function sendMessageNow() {
     console.log('📤 Sending message...');
-
-    // ALWAYS unlock audio before sending any message
-    unlockAudioContext().then(() => {
-        const inputField = findInputField();
-        if (!inputField) {
-            console.error('❌ Cannot find input field');
-            return;
-        }
-        
-        const message = inputField.value.trim();
-        console.log('📝 Message:', message);
-        
-        if (!message) {
-            console.log('⚠️ Empty message');
-            return;
-        }
-        
-        // Track coaching activity for dashboard
-        localStorage.setItem('eeh_pending_coaching', JSON.stringify({
-            timestamp: new Date().toISOString(),
-            sessionLength: 'medium'
-        }));
-        
-        // Clear input
-        inputField.value = '';
-        
-        // Add message to chat
-        addMessageToChat(message, 'user');
-        
-        // Show thinking message if enabled
-        if (coachSettings.typingIndicator) {
-            addMessageToChat('Thinking...', 'ai', true);
-        }
-        
-        // Call AI (audio should now work because context is unlocked)
-        callAI(message);
-    });
+    
+    const inputField = findInputField();
+    if (!inputField) {
+        console.error('❌ Cannot find input field');
+        return;
+    }
+    
+    const message = inputField.value.trim();
+    console.log('📝 Message:', message);
+    
+    if (!message) {
+        console.log('⚠️ Empty message');
+        return;
+    }
+    
+    // Track coaching activity for dashboard
+    localStorage.setItem('eeh_pending_coaching', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        sessionLength: 'medium'
+    }));
+    
+    // Clear input
+    inputField.value = '';
+    
+    // Add message to chat
+    addMessageToChat(message, 'user');
+    
+    // Show thinking message if enabled
+    if (coachSettings.typingIndicator) {
+        addMessageToChat('Thinking...', 'ai', true);
+    }
+    
+    // Call AI
+    callAI(message);
 }
 
 // Add message to chat display
@@ -1202,33 +1089,12 @@ function initVoiceSystem() {
         console.log('❌ Voice recognition not supported');
         voiceSupported = false;
     }
-
-// Handle voice recognition end - ADD THIS MISSING FUNCTION
-function handleVoiceEnd() {
-    console.log('🎤 Voice recognition ended');
-    
-    if (isCurrentlyListening) {
-        // IMPORTANT: Unlock audio BEFORE restarting recognition
-        unlockAudioContext().then(() => {
-            // Restart recognition to keep listening
-            try {
-                setTimeout(() => {
-                    if (isCurrentlyListening && voiceRecognition) {
-                        voiceRecognition.start();
-                    }
-                }, 100);
-            } catch (error) {
-                console.log('Could not restart recognition');
-                stopVoiceInput();
-            }
-        });
-    }
-}
     
     // Create the voice button
     createVoiceButton();
 }
 
+// Handle speech recognition results
 function handleVoiceResults(event) {
     let interimTranscript = '';
     let finalTranscript = '';
@@ -1249,11 +1115,6 @@ function handleVoiceResults(event) {
         completeTranscript = finalTranscript;
         console.log('🎤 Updated complete transcript:', completeTranscript);
         
-        // MOBILE FIX: Unlock audio IMMEDIATELY when we get speech
-        unlockAudioContext().then(() => {
-            console.log('🔓 Audio unlocked from speech recognition');
-        });
-        
         // Reset the 3-second auto-send timer
         resetAutoSendTimer();
     }
@@ -1265,6 +1126,7 @@ function handleVoiceResults(event) {
     }
 }
 
+// Reset the 3-second auto-send timer
 function resetAutoSendTimer() {
     // Clear existing timer
     if (voiceTimeout) {
@@ -1274,39 +1136,9 @@ function resetAutoSendTimer() {
     
     // Set new 3-second timer
     voiceTimeout = setTimeout(() => {
-        console.log('⏰ 3 seconds of silence - force unlocking audio and sending');
-        
-        // MOBILE FIX: Force unlock audio multiple times
-        Promise.all([
-            unlockAudioContext(),
-            unlockMobileAudio()
-        ]).then(() => {
-            console.log('🔓 Double audio unlock complete');
-            finishVoiceInput();
-        });
+        console.log('⏰ 3 seconds of silence - auto-sending');
+        finishVoiceInput();
     }, 3000);
-}
-
-function enhancedMobileAudioUnlock() {
-    console.log('📱 Enhanced mobile audio unlock triggered');
-    
-    return new Promise((resolve) => {
-        // Method 1: Our global unlock
-        unlockAudioContext().then(() => {
-            console.log('✅ Global audio context unlocked');
-            
-            // Method 2: Original silent audio method
-            const silentAudio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
-            
-            silentAudio.play().then(() => {
-                console.log('✅ Silent audio played successfully');
-                resolve();
-            }).catch(() => {
-                console.log('⚠️ Silent audio failed but continuing');
-                resolve();
-            });
-        });
-    });
 }
 
 // Handle voice recognition errors
@@ -1342,7 +1174,22 @@ function handleVoiceStart() {
     }
 }
 
-
+// Handle voice recognition end
+function handleVoiceEnd() {
+    if (isCurrentlyListening) {
+        // Restart recognition to keep listening
+        try {
+            setTimeout(() => {
+                if (isCurrentlyListening && voiceRecognition) {
+                    voiceRecognition.start();
+                }
+            }, 100);
+        } catch (error) {
+            console.log('Could not restart recognition');
+            stopVoiceInput();
+        }
+    }
+}
 
 // Create the beautiful voice input button
 function createVoiceButton() {
@@ -1351,15 +1198,6 @@ function createVoiceButton() {
         console.log('❌ Cannot find input actions container');
         return;
     }
-
-   // ADD THIS CHECK AT THE TOP - Hide on mobile devices
-const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-if (isMobile) {
-    console.log('📱 Mobile device detected - hiding voice button');
-    return; // Don't create voice button on mobile
-}
-    
-
     
     // Remove any existing voice button
     const existingBtn = document.getElementById('voiceInputBtn');
@@ -1404,34 +1242,23 @@ if (isMobile) {
     console.log('✅ Voice button created');
 }
 
+// Toggle voice input on/off
 function toggleVoiceInput() {
     if (!voiceSupported) {
         showToast('Voice input not available in this browser');
         return;
     }
     
-    console.log('🎤 Voice button tapped - CAPTURING user activation immediately');
+    // INTERRUPT AI AUDIO if it's playing
+    stopAIAudio();
     
-    // CRITICAL: Capture user activation RIGHT NOW while we have it
-  
-    
-    // Unlock audio context
-    unlockAudioContext().then(() => {
-        console.log('🔓 Audio unlocked from voice button tap');
-        
-        // INTERRUPT AI AUDIO if it's playing
-        stopAIAudio();
-        
-        if (isCurrentlyListening) {
-            stopVoiceInput();
-        } else {
-            startVoiceInput();
-        }
-    });
+    if (isCurrentlyListening) {
+        stopVoiceInput();
+    } else {
+        startVoiceInput();
+    }
 }
 
-
-    
 // Start voice input
 function startVoiceInput() {
     if (!voiceRecognition || isCurrentlyListening) {
@@ -1499,33 +1326,36 @@ function stopVoiceInput() {
     console.log('🔇 Voice input stopped');
 }
 
-// Finish voice input and send message - UPDATED WITH AUDIO FIX
+// Finish voice input and send message
 function finishVoiceInput() {
     const inputField = findInputField();
     
     if (inputField && completeTranscript.trim().length > 0) {
-        console.log('🎤 Finishing voice input with RESERVED user activation');
-        
-        // Set the input value
+        // Ensure the input has the final transcript
         inputField.value = completeTranscript.trim();
         
-        // Stop voice input
+        // Stop voice input first
         stopVoiceInput();
         
-        // Clear transcript
+        // UNLOCK AUDIO FOR MOBILE AFTER VOICE INPUT
+        if (!window.audioUnlocked) {
+            unlockMobileAudio();
+        }
+        
+        // Clear the transcript to prevent double-sending
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-
-        
-        // Send message immediately
+        // Send the message
         setTimeout(() => {
             if (inputField.value.trim() === messageToSend) {
                 sendMessageNow();
-                console.log('📤 Voice message sent with reserved activation');
+                console.log('📤 Voice message sent:', messageToSend);
             }
-        }, 100);
+        }, 200);
+        
     } else {
+        // No text to send, just stop
         stopVoiceInput();
     }
 }
@@ -1595,21 +1425,30 @@ function stopAIAudio() {
     }
 }
 
-// Enhanced audio playback with unlock check - UPDATED
+// Enhanced audio playback with tracking (modify your existing callAI function)
 function playAIAudio(audioUrl) {
-    console.log('🎵 Attempting to play AI audio...');
-    console.log('🔓 Audio unlocked:', audioUnlocked);
-    console.log('🎵 Audio context state:', globalAudioContext?.state);
-    
-    // Ensure audio is unlocked before playing
-    if (!audioUnlocked && globalAudioContext?.state === 'suspended') {
-        console.log('🚫 Audio not unlocked, attempting to unlock now...');
-        unlockAudioContext().then(() => {
-            // Retry playing after unlock
-            actuallyPlayAudio(audioUrl);
-        });
-    } else {
-        actuallyPlayAudio(audioUrl);
+    try {
+        // Stop any existing audio first
+        stopAIAudio();
+        
+        // Create and play new audio
+        currentAudio = new Audio(audioUrl);
+        currentAudio.play()
+            .then(() => {
+                console.log('🎵 AI audio playing');
+            })
+            .catch(error => {
+                console.log('❌ Audio playback failed:', error);
+                currentAudio = null;
+            });
+            
+        // Clear reference when done
+        currentAudio.onended = () => {
+            currentAudio = null;
+        };
+        
+    } catch (error) {
+        console.log('❌ Audio creation failed:', error);
     }
 }
 
@@ -1784,22 +1623,31 @@ function fixVoiceButtonUpdates() {
 // Call the fix when page loads
 setTimeout(fixVoiceButtonUpdates, 2000);
 
-// UPDATED Mobile Audio Fix
+// Mobile Audio Fix - Add this to the bottom of ai-coach.js
+let audioUnlocked = false;
+
 function unlockMobileAudio() {
-    console.log('📱 Attempting to unlock mobile audio...');
+    if (audioUnlocked) return;
     
-    // Use our global unlock function
-    unlockAudioContext().then(() => {
-        // Also try the original method as backup
-        const silentAudio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
-        
-        silentAudio.play().then(() => {
-            console.log('📱 Silent audio played successfully');
-        }).catch(e => {
-            console.log('Silent audio failed (expected on some devices):', e);
-        });
+    // Play silent audio to unlock mobile audio context
+    const silentAudio = new Audio('data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV');
+    
+    silentAudio.play().then(() => {
+        console.log('📱 Mobile audio unlocked');
+        audioUnlocked = true;
+    }).catch(e => {
+        console.log('Audio unlock attempt failed:', e);
     });
 }
 
+// Add event listeners to unlock audio on first user interaction
+document.addEventListener('click', unlockMobileAudio, { once: true });
+document.addEventListener('touchstart', unlockMobileAudio, { once: true });
 
-console.log('⚡ User Activation Capture System loaded!');
+// Also unlock when send button is clicked
+setTimeout(() => {
+    const sendBtn = document.getElementById('sendButton');
+    if (sendBtn) {
+        sendBtn.addEventListener('click', unlockMobileAudio);
+    }
+}, 1000);
