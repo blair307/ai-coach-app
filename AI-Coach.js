@@ -98,12 +98,14 @@ document.addEventListener('DOMContentLoaded', function() {
     loadRecentInsights();
     loadCoachPhotos();
     checkCoachSelection();
-    loadChatHistory(); // <-- ADD THIS EXACT LINE HERE
     
     // Initialize new voice system
     initVoiceSystem();
     
     setTimeout(setupChat, 1000);
+    
+    // Load chat history AFTER everything else is set up
+    setTimeout(loadChatHistory, 2000);
     
     // Refresh insights every 3 minutes
     setInterval(loadRecentInsights, 180000);
