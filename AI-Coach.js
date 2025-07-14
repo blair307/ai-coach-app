@@ -1425,15 +1425,48 @@ function stopAIAudio() {
     }
 }
 
-// Enhanced audio playback with tracking (modify your existing callAI function)
+// Enhanced audio playback with mobile fix
 function playAIAudio(audioUrl) {
+    console.log('🎵 Playing AI audio with mobile support...');
+    
     try {
         // Stop any existing audio first
         stopAIAudio();
         
-        // Create and play new audio
-        currentAudio = new Audio(audioUrl);
-        currentAudio.play()
+        // Create completely new audio element for mobile compatibility
+        currentAudio = new Audio();
+        currentAudio.preload = 'auto';
+        currentAudio.volume = 1.0;
+        currentAudio.src = audioUrl;
+        
+        // Mobile-friendly play with promise handling
+        const playPromise = currentAudio.play();
+        
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    console.log('✅ AI audio playing successfully');
+                })
+                .catch(error => {
+                    console.log('❌ Audio play failed, retrying...', error);
+                    // Retry after short delay for mobile
+                    setTimeout(() => {
+                        if (currentAudio) {
+                            currentAudio.play().catch(e => console.log('Retry failed:', e));
+                        }
+                    }, 200);
+                });
+        }
+        
+        // Clear reference when done
+        currentAudio.onended = () => {
+            currentAudio = null;
+        };
+        
+    } catch (error) {
+        console.log('❌ Audio creation failed:', error);
+    }
+}
             .then(() => {
                 console.log('🎵 AI audio playing');
             })
