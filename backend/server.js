@@ -1440,15 +1440,14 @@ const run = await openai.beta.threads.runs.create(threadId, {
        console.log('⏱️ TIMING: Run started in:', Date.now() - startTime, 'ms');
    
 
-    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-    
-    let attempts = 0;
-    while (runStatus.status !== 'completed' && attempts < 30) {
-      console.log('🔄 TIMING: Poll attempt', attempts, 'status:', runStatus.status, 'elapsed:', Date.now() - startTime, 'ms');
-      await new Promise(resolve => setTimeout(resolve, 200));
-      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-      attempts++;
-    }
+const run = await openai.beta.threads.runs.createAndPoll(threadId, {
+  assistant_id: coach.assistantId,
+  pollIntervalMs: 500  // Poll every 500ms instead of default 1000ms
+});
+
+if (run.status !== 'completed') {
+  throw new Error('Assistant took too long to respond');
+}
 
     if (runStatus.status !== 'completed') {
       throw new Error('Assistant took too long to respond');
