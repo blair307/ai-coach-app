@@ -1346,11 +1346,11 @@ function finishVoiceInput() {
         const messageToSend = completeTranscript.trim();
         completeTranscript = '';
         
-     // Send the message THE SAME WAY as clicking send button
+        // Use the EXACT SAME function as Send Message button
         setTimeout(() => {
             if (inputField.value.trim() === messageToSend) {
-                sendMessageNow();
-                console.log('📤 Voice message sent:', messageToSend);
+                sendMessageNow(); // Same function Send Message uses
+                console.log('📤 Voice message sent via sendMessageNow');
             }
         }, 200);
         
