@@ -4454,7 +4454,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
+console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
