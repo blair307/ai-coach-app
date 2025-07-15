@@ -448,6 +448,9 @@ function sendMessageNow() {
     if (coachSettings.typingIndicator) {
         addMessageToChat('Thinking...', 'ai', true);
     }
+
+    // Show stop button
+showStopButton();
     
     // Call AI
     callAI(message);
@@ -570,6 +573,9 @@ async function callAI(message) {
         
         // Remove thinking message
         removeThinkingMessage();
+
+        // Hide stop button
+hideStopButton();
         
      if (response.ok) {
             const data = await response.json();
@@ -1486,6 +1492,63 @@ function updateVoiceButtonState(listening) {
     }
 }
 
+// Create stop button when AI starts responding
+function showStopButton() {
+    const inputActions = document.querySelector('.input-actions');
+    if (!inputActions) return;
+    
+    // Remove existing stop button
+    const existingStop = document.getElementById('stopAIBtn');
+    if (existingStop) existingStop.remove();
+    
+    // Create stop button
+    const stopButton = document.createElement('button');
+    stopButton.id = 'stopAIBtn';
+    stopButton.className = 'btn btn-secondary';
+    stopButton.innerHTML = '⏹️ Stop AI';
+    stopButton.onclick = stopAIResponse;
+    stopButton.style.cssText = `
+        background: #ef4444 !important;
+        color: white !important;
+        border-color: #ef4444 !important;
+        animation: pulse 1.5s infinite;
+        margin-left: 0.5rem;
+    `;
+    
+    inputActions.appendChild(stopButton);
+}
+
+// Hide stop button
+function hideStopButton() {
+    const stopButton = document.getElementById('stopAIBtn');
+    if (stopButton) {
+        stopButton.remove();
+    }
+}
+
+// Stop AI response function
+function stopAIResponse() {
+    console.log('🛑 Stopping AI response...');
+    
+    // Stop any playing audio
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+    
+    // Remove thinking message
+    removeThinkingMessage();
+    
+    // Hide stop button
+    hideStopButton();
+    
+    // Add interrupted message
+    addMessageToChat('Response stopped by user.', 'ai');
+    
+    showToast('AI response stopped');
+}
+
 // Stop any currently playing AI audio (for interruption)
 function stopAIAudio() {
     if (currentAudio) {
@@ -1581,11 +1644,15 @@ document.addEventListener('keydown', function(event) {
         toggleVoiceInput();
     }
     
-    // Escape to stop voice input (desktop only)
-    if (event.code === 'Escape' && isCurrentlyListening) {
-        event.preventDefault();
+// Escape to stop voice input OR AI response (desktop only)
+if (event.code === 'Escape') {
+    event.preventDefault();
+    if (isCurrentlyListening) {
         stopVoiceInput();
+    } else {
+        stopAIResponse();
     }
+}
 });
 
 // Clean up on page unload
