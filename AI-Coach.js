@@ -1504,7 +1504,7 @@ function showStopButton() {
     const stopButton = document.createElement('button');
     stopButton.id = 'stopAIBtn';
     stopButton.className = 'btn btn-secondary';
-    stopButton.innerHTML = '⏹️ Stop AI';
+    stopButton.innerHTML = 'Stop Coach';
     stopButton.onclick = stopAIResponse;
     stopButton.style.cssText = `
         background: #ef4444 !important;
