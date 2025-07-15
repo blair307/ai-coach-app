@@ -259,27 +259,144 @@
     margin-top: 2rem;
 }
 
-/* Mobile responsive */
+/* Enhanced Mobile responsive */
 @media (max-width: 768px) {
-    .coaches-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
+    /* Make modal take full screen */
+    .coach-selector-container {
+        padding: 1rem !important;
+        height: 100vh !important;
+        overflow-y: auto !important;
     }
     
+    /* Inner content container */
+    .coach-selector-container > div[style*="display: flex"] > div[style*="background: white"] {
+        max-height: none !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Content padding */
+    .coach-selector-container > div[style*="display: flex"] > div[style*="background: white"] > div[style*="padding: 3rem"] {
+        padding: 2rem 1.5rem !important;
+        height: 100% !important;
+        overflow-y: auto !important;
+    }
+    
+    /* Single column grid with more space */
+    .coaches-grid {
+        grid-template-columns: 1fr !important;
+        gap: 2.5rem !important;
+        margin-bottom: 2rem !important;
+    }
+    
+    /* Larger coach cards */
     .coach-card {
-        padding: 2rem;
-        min-height: 400px;
+        padding: 2.5rem 2rem !important;
+        min-height: 480px !important;
+        border-radius: 16px !important;
+    }
+    
+    /* Bigger avatars */
+    .coach-avatar-large {
+        width: 130px !important;
+        height: 130px !important;
+        font-size: 3rem !important;
+        margin-bottom: 2rem !important;
+        border-width: 4px !important;
+    }
+    
+    /* More spacious text */
+    .coach-card h3 {
+        font-size: 1.75rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .coach-description {
+        font-size: 1.1rem !important;
+        line-height: 1.7 !important;
+        margin-bottom: 2.5rem !important;
+    }
+    
+    /* Feature tags with more spacing */
+    .coach-features {
+        gap: 1rem !important;
+        margin-bottom: 2.5rem !important;
+        justify-content: center !important;
+    }
+    
+    .feature-tag {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.9rem !important;
+        border-radius: 8px !important;
+    }
+    
+    /* Larger select buttons */
+    .coach-select-btn {
+        padding: 1.25rem 2.5rem !important;
+        font-size: 1.1rem !important;
+        border-radius: 12px !important;
+        min-height: 56px !important;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    
+    /* Header spacing */
+    .coach-selector-header {
+        margin-bottom: 2.5rem !important;
+        text-align: center !important;
+    }
+    
+    .coach-selector-header h2 {
+        font-size: 1.75rem !important;
+        margin-bottom: 1.5rem !important;
+    }
+    
+    .coach-selector-header p {
+        font-size: 1.1rem !important;
+        line-height: 1.6 !important;
+    }
+    
+    /* Close button positioning */
+    .coach-selector-container button[onclick="closeCoachSelector()"] {
+        top: 1.5rem !important;
+        right: 1.5rem !important;
+        width: 48px !important;
+        height: 48px !important;
+        font-size: 1.75rem !important;
+        z-index: 10001 !important;
+    }
+    
+    /* Footer spacing */
+    .coach-selector-footer {
+        margin-top: 2.5rem !important;
+        padding-bottom: 2rem !important;
+    }
+    
+    .coach-selector-footer p {
+        font-size: 1rem !important;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .coach-card {
+        padding: 2rem 1.5rem !important;
+        min-height: 450px !important;
     }
     
     .coach-avatar-large {
-        width: 120px;
-        height: 120px;
-        font-size: 2.5rem;
-        margin-bottom: 1.5rem;
+        width: 110px !important;
+        height: 110px !important;
+        font-size: 2.75rem !important;
     }
     
-    .coach-selector-container {
-        padding: 2rem;
+    .coach-selector-header h2 {
+        font-size: 1.5rem !important;
+    }
+    
+    .coach-description {
+        font-size: 1rem !important;
     }
 }
 
