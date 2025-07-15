@@ -1647,12 +1647,17 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
   try {
     const { text, coachId } = req.body;
     
+    console.log('🎤 Voice endpoint hit - coachId:', coachId, 'textLength:', text?.length);
+    console.log('🔍 Available voice IDs:', Object.keys(VOICE_IDS));
+    console.log('🎯 Voice ID for this coach:', VOICE_IDS[coachId]);
+    
     if (!text || !coachId) {
       return res.status(400).json({ error: 'Text and coachId required' });
     }
     
-    if (!ELEVENLABS_API_KEY || !VOICE_IDS[coachId]) {
-      return res.status(400).json({ error: 'Voice generation not available' });
+    if (!VOICE_IDS[coachId]) {
+      console.error('❌ No voice ID found for coach:', coachId);
+      return res.status(400).json({ error: 'Voice not available for this coach' });
     }
     
     console.log('🎤 Generating voice on demand for:', coachId);
@@ -1668,16 +1673,24 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
       .replace(/^\s*\d+\.\s/gm, '')
       .trim();
 
+    const startTime = Date.now();
     const audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[coachId]);
+    const duration = Date.now() - startTime;
+    
+    console.log(`✅ Voice generated in ${duration}ms`);
     
     res.json({ 
       audio: { url: audioUrl, enabled: true },
-      success: true
+      success: true,
+      generationTime: duration
     });
     
   } catch (error) {
-    console.error('Voice generation error:', error);
-    res.status(500).json({ error: 'Voice generation failed' });
+    console.error('❌ Voice generation error:', error);
+    res.status(500).json({ 
+      error: 'Voice generation failed',
+      details: error.message 
+    });
   }
 });
 
