@@ -1485,8 +1485,10 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       await chat.save();
     }
 
-    // Build conversation context (last 10 messages for context)
-    const recentMessages = chat.messages.slice(-50);
+
+    // Build conversation context (last 50 messages for context)
+const recentMessages = chat.messages.slice(-50);
+console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
     
     // Create messages array for OpenAI
     const messages = [
@@ -1546,10 +1548,10 @@ max_tokens: preferences.responseLength === 'detailed' ? 600 :
       { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
     );
     
-    // Keep only last 50 messages to prevent database bloat
-    if (chat.messages.length > 50) {
-      chat.messages = chat.messages.slice(-50);
-    }
+   // Keep only last 100 messages to prevent database bloat
+if (chat.messages.length > 100) {
+  chat.messages = chat.messages.slice(-100);
+}
     
     chat.updatedAt = new Date();
     await chat.save();
