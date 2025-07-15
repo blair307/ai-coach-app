@@ -1457,7 +1457,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
         role: 'system',
         content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-KEEP RESPONSES SHORT - Maximum 2-4 sentences. Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
+KEEP RESPONSES VERY SHORT - Maximum 2-3 sentences. Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
 
 Current coaching preferences:
 - Tone: ${preferences.tone || 'supportive'}
