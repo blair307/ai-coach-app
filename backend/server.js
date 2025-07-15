@@ -1486,7 +1486,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     }
 
     // Build conversation context (last 10 messages for context)
-    const recentMessages = chat.messages.slice(-10);
+    const recentMessages = chat.messages.slice(-50);
     
     // Create messages array for OpenAI
     const messages = [
