@@ -552,10 +552,10 @@ function addMessageToChat(message, type, isTemporary = false) {
         saveConversationToStorage();
     }
 
-    // Refresh insights after AI responses
-    if (type === 'ai' && !isTemporary) {
-        setTimeout(loadRecentInsights, 5000);
-    }
+// Refresh insights after AI responses - BUT NOT during history loading
+if (type === 'ai' && !isTemporary && !window.loadingChatHistory) {
+    setTimeout(loadRecentInsights, 5000);
+}
     
     // Play sound notification if enabled
     if (coachSettings.soundNotifications && type === 'ai' && !isTemporary) {
@@ -1785,9 +1785,12 @@ window.addEventListener('load', function() {
 // Load chat history when page loads
 async function loadChatHistory() {
     try {
+        window.loadingChatHistory = true; // Prevent insights spam during history load
+        
         const token = getAuthToken();
         if (!token) {
             console.log('❌ No token for chat history');
+            window.loadingChatHistory = false;
             return;
         }
         
@@ -1811,7 +1814,11 @@ async function loadChatHistory() {
         } else {
             console.log('❌ Failed to load chat history:', response.status);
         }
+        
+        window.loadingChatHistory = false; // Re-enable insights for new messages
+        
     } catch (error) {
+        window.loadingChatHistory = false; // Re-enable insights even on error
         console.error('❌ Error loading chat history:', error);
     }
 }
