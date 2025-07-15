@@ -1675,20 +1675,26 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
   try {
     const { text, coachId } = req.body;
     
-    console.log('🎤 Voice endpoint hit - coachId:', coachId, 'textLength:', text?.length);
-    console.log('🔍 Available voice IDs:', Object.keys(VOICE_IDS));
-    console.log('🎯 Voice ID for this coach:', VOICE_IDS[coachId]);
+    console.log('🎤 Voice endpoint hit:', {
+      coachId,
+      textLength: text?.length,
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      hasElevenLabsKey: !!ELEVENLABS_API_KEY
+    });
     
     if (!text || !coachId) {
+      console.error('❌ Missing required fields:', { text: !!text, coachId: !!coachId });
       return res.status(400).json({ error: 'Text and coachId required' });
     }
     
     if (!VOICE_IDS[coachId]) {
       console.error('❌ No voice ID found for coach:', coachId);
-      return res.status(400).json({ error: 'Voice not available for this coach' });
+      console.log('🔍 Available voice IDs:', Object.keys(VOICE_IDS));
+      return res.status(400).json({ error: `Voice not available for coach: ${coachId}` });
     }
     
-    console.log('🎤 Generating voice on demand for:', coachId);
+    const voiceId = VOICE_IDS[coachId];
+    console.log('🎯 Using voice ID:', voiceId, 'for coach:', coachId);
     
     // Clean the response text for voice synthesis
     const cleanedResponse = text
@@ -1701,23 +1707,63 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
       .replace(/^\s*\d+\.\s/gm, '')
       .trim();
 
+    if (cleanedResponse.length === 0) {
+      console.error('❌ No text remaining after cleaning');
+      return res.status(400).json({ error: 'No valid text for voice generation' });
+    }
+
+    console.log('📝 Cleaned text for voice generation:', cleanedResponse.substring(0, 100) + '...');
+
     const startTime = Date.now();
-    const audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[coachId]);
-    const duration = Date.now() - startTime;
     
-    console.log(`✅ Voice generated in ${duration}ms`);
-    
-    res.json({ 
-      audio: { url: audioUrl, enabled: true },
-      success: true,
-      generationTime: duration
-    });
+    try {
+      const audioUrl = await generateVoice(cleanedResponse, voiceId);
+      const duration = Date.now() - startTime;
+      
+      console.log(`✅ Voice generated successfully in ${duration}ms`);
+      
+      res.json({ 
+        audio: { 
+          url: audioUrl, 
+          enabled: true,
+          voiceId: voiceId,
+          provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
+        },
+        success: true,
+        generationTime: duration,
+        textLength: cleanedResponse.length
+      });
+      
+    } catch (voiceError) {
+      console.error('❌ Voice generation failed:', {
+        error: voiceError.message,
+        voiceId,
+        provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
+      });
+      
+      // Return specific error messages
+      let errorMessage = 'Voice generation failed';
+      if (voiceError.message.includes('OpenAI API key')) {
+        errorMessage = 'OpenAI API key not configured';
+      } else if (voiceError.message.includes('ElevenLabs')) {
+        errorMessage = 'ElevenLabs API error';
+      } else if (voiceError.message.includes('Invalid OpenAI voice')) {
+        errorMessage = `Invalid voice configuration for coach ${coachId}`;
+      }
+      
+      res.status(500).json({ 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? voiceError.message : undefined,
+        voiceId,
+        coachId
+      });
+    }
     
   } catch (error) {
-    console.error('❌ Voice generation error:', error);
+    console.error('❌ Voice endpoint error:', error);
     res.status(500).json({ 
-      error: 'Voice generation failed',
-      details: error.message 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
