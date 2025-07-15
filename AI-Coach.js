@@ -36,6 +36,9 @@ function injectMobileVoiceCSS() {
 // Your Render backend URL
 const BACKEND_URL = 'https://api.eehcommunity.com';
 
+// Add this variable at the top of the file (around line 140)
+let insightsInterval = null;
+
 // Settings object
 let coachSettings = {
     autoSave: true,
@@ -205,6 +208,7 @@ function loadCoachPhotos() {
 }
 
 
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ Page loaded, setting up chat...');
     
@@ -224,8 +228,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load chat history AFTER everything else is set up
     setTimeout(loadChatHistory, 2000);
     
-    // Refresh insights every 3 minutes
-    setInterval(loadRecentInsights, 180000);
+    // Clear any existing interval and set new one
+    if (insightsInterval) {
+        clearInterval(insightsInterval);
+    }
+    insightsInterval = setInterval(loadRecentInsights, 300000); // 5 minutes instead of 3
 });
 
 // Check if user has selected a coach
