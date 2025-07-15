@@ -94,6 +94,24 @@ Your tone is encouraging, systematic, and grounded. You believe that the best en
         photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/dave.png",
         hasPhoto: true
     }
+ coach3: {
+        name: "Alex Stone",
+        personality: "Direct, confrontational executive coach focused on breakthrough results",
+        description: "Tough love approach that challenges limitations and drives transformation",
+        avatar: "AS",
+        status: "Ready",
+        photoUrl: null,
+        hasPhoto: false
+    },
+    coach4: {
+        name: "Sam Heart",
+        personality: "Extraordinarily compassionate coach offering unconditional support",
+        description: "Gentle, loving approach that meets people exactly where they are",
+        avatar: "SH",
+        status: "Ready", 
+        photoUrl: null,
+        hasPhoto: false
+    }
 };
 
 // Current selected coach
