@@ -392,7 +392,36 @@
                                     </div>
                                     <button class="btn btn-outline coach-select-btn">Select Dave</button>
                                 </div>
-                            </div>
+                            <!-- Alex Stone -->
+    <div class="coach-card" data-coach="coach3" onclick="selectCoach('coach3')">
+        <div class="coach-avatar-large" id="alexAvatar">
+            <span id="alexInitials">AS</span>
+        </div>
+        <h3>Alex Stone</h3>
+        <p class="coach-description">Direct, confrontational executive coach focused on breakthrough results. Uses tough love to push you beyond limitations and create massive transformation.</p>
+        <div class="coach-features">
+            <div class="feature-tag">Executive Power</div>
+            <div class="feature-tag">Breakthrough Results</div>
+            <div class="feature-tag">Tough Love</div>
+        </div>
+        <button class="btn btn-outline coach-select-btn">Select Alex</button>
+    </div>
+    
+    <!-- Sam Heart -->
+    <div class="coach-card" data-coach="coach4" onclick="selectCoach('coach4')">
+        <div class="coach-avatar-large" id="samAvatar">
+            <span id="samInitials">SH</span>
+        </div>
+        <h3>Sam Heart</h3>
+        <p class="coach-description">Extraordinarily compassionate coach offering unconditional support. Meets you exactly where you are with infinite patience and understanding.</p>
+        <div class="coach-features">
+            <div class="feature-tag">Unconditional Love</div>
+            <div class="feature-tag">Deep Compassion</div>
+            <div class="feature-tag">Gentle Support</div>
+        </div>
+        <button class="btn btn-outline coach-select-btn">Select Sam</button>
+    </div>
+</div>
                             
                             <div class="coach-selector-footer">
                                 <p>You can change coaches anytime in your settings</p>
@@ -663,6 +692,44 @@
         input[type="checkbox"]:checked::after {
             transform: translateX(20px);
         }
+
+        /* Alex's Feature Colors - Power/Executive theme */
+.coach-card[data-coach="coach3"] .feature-tag:nth-child(1) {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: white;
+    border-color: #dc2626;
+}
+
+.coach-card[data-coach="coach3"] .feature-tag:nth-child(2) {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    color: white;
+    border-color: #1f2937;
+}
+
+.coach-card[data-coach="coach3"] .feature-tag:nth-child(3) {
+    background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%);
+    color: white;
+    border-color: #b91c1c;
+}
+
+/* Sam's Feature Colors - Compassion/Heart theme */
+.coach-card[data-coach="coach4"] .feature-tag:nth-child(1) {
+    background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+    color: white;
+    border-color: #f472b6;
+}
+
+.coach-card[data-coach="coach4"] .feature-tag:nth-child(2) {
+    background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+    color: white;
+    border-color: #a78bfa;
+}
+
+.coach-card[data-coach="coach4"] .feature-tag:nth-child(3) {
+    background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+    color: white;
+    border-color: #fb7185;
+}
     </style>
 
     <!-- Typing Indicator (Hidden by default) -->
