@@ -1565,9 +1565,9 @@ console.log(`📊 Using ${recentMessages.length} messages for context (~${recent
         content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
 KEEP RESPONSES VERY SHORT - 
-CRITICAL: Keep responses to MAXIMUM 1-2 sentences. Never exceed 30 words total.
+CRITICAL: Keep responses to MAXIMUM 1-4 sentences. Never exceed 60 words total. Regularly include action items so they can activate suggestions. 
 
-Be helpful but extremely brief. No long explanations. No lists. No examples.
+Be helpful but brief. No long explanations. 
 Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
 
 Current coaching preferences:
@@ -1598,8 +1598,8 @@ Be authentic to your coaching style while addressing the user's entrepreneurial 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Using faster model
       messages: messages,
-max_tokens: preferences.responseLength === 'detailed' ? 150 : 
-            preferences.responseLength === 'concise' ? 50 : 100,
+max_tokens: preferences.responseLength === 'detailed' ? 350 : 
+            preferences.responseLength === 'concise' ? 100 : 150,
       temperature: 0.7,
       stream: false
     });
