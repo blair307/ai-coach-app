@@ -1526,8 +1526,8 @@ Be authentic to your coaching style while addressing the user's entrepreneurial 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Using faster model
       messages: messages,
-max_tokens: preferences.responseLength === 'detailed' ? 600 : 
-            preferences.responseLength === 'concise' ? 150 : 300,
+max_tokens: preferences.responseLength === 'detailed' ? 150 : 
+            preferences.responseLength === 'concise' ? 50 : 100,
       temperature: 0.7,
       stream: false
     });
