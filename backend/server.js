@@ -1390,12 +1390,17 @@ Your tone is warm, gentle, and infinitely patient. You believe that everyone is 
 };
 
 // Hybrid voice generation function
+
 async function generateVoice(text, voiceId) {
+    console.log('🎵 Generating voice - Coach voice ID:', voiceId);
+    
     // Check if this is an OpenAI voice
-    if (voiceId.startsWith('openai-')) {
+    if (voiceId && voiceId.startsWith('openai-')) {
         return await generateVoiceOpenAI(text, voiceId);
-    } else {
+    } else if (voiceId && ELEVENLABS_API_KEY) {
         return await generateVoiceElevenLabs(text, voiceId);
+    } else {
+        throw new Error(`Voice generation not available - Voice ID: ${voiceId}, ElevenLabs Key: ${!!ELEVENLABS_API_KEY}`);
     }
 }
 
@@ -1405,29 +1410,52 @@ async function generateVoiceOpenAI(text, voiceId) {
         throw new Error('OpenAI API key not configured');
     }
     
-    // Map our coach voices to OpenAI voices
-    const openAIVoice = voiceId.replace('openai-', ''); // 'openai-echo' → 'echo'
+    console.log('🎤 OpenAI TTS - Voice ID:', voiceId, 'Text length:', text.length);
     
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'tts-1',
-            input: text,
-            voice: openAIVoice
-        })
-    });
-    
-    if (!response.ok) {
-        throw new Error(`OpenAI TTS error: ${response.status}`);
+    // Map our coach voices to OpenAI voices - FIXED MAPPING
+    let openAIVoice;
+    if (voiceId === 'openai-echo') {
+        openAIVoice = 'echo';
+    } else if (voiceId === 'openai-nova') {
+        openAIVoice = 'nova';
+    } else {
+        throw new Error(`Invalid OpenAI voice ID: ${voiceId}`);
     }
     
-    const audioBuffer = await response.arrayBuffer();
-    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
-    return `data:audio/mpeg;base64,${audioBase64}`;
+    console.log('🔄 Using OpenAI voice:', openAIVoice);
+    
+    try {
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'tts-1',
+                input: text.substring(0, 4096), // OpenAI has a 4096 character limit
+                voice: openAIVoice,
+                response_format: 'mp3'
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ OpenAI TTS error response:', response.status, errorText);
+            throw new Error(`OpenAI TTS error: ${response.status} - ${errorText}`);
+        }
+        
+        const audioBuffer = await response.arrayBuffer();
+        const audioBase64 = Buffer.from(audioBuffer).toString('base64');
+        const dataUrl = `data:audio/mpeg;base64,${audioBase64}`;
+        
+        console.log('✅ OpenAI voice generated successfully, size:', audioBuffer.byteLength, 'bytes');
+        return dataUrl;
+        
+    } catch (error) {
+        console.error('❌ OpenAI voice generation failed:', error);
+        throw error;
+    }
 }
 
 // ElevenLabs voice generation
