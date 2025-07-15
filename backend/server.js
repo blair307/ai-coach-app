@@ -1317,7 +1317,6 @@ try {
   }
 });
 
-// Coach Configuration
 const COACHES = {
   coach1: {
     name: "Blair Reynolds", 
@@ -1350,8 +1349,8 @@ Your coaching style:
 
 Your tone is encouraging, systematic, and grounded. You believe that the best entrepreneurs are those who can scale their businesses without sacrificing their health, relationships, or values.`,
     description: "Strategic, warm coach focused on sustainable growth and well-being. Balanced approach combining business success with personal fulfillment."
- 
-      coach3: {
+  },
+  coach3: {
     name: "Alex Stone",
     voiceId: VOICE_IDS.coach3,
     personality: `You are Alex Stone, a direct and confrontational executive coach who believes in radical transformation.
@@ -1369,8 +1368,7 @@ Your coaching style:
 Your tone is firm, confident, and unwavering. You believe that most people are living far below their potential and need a strong push to break through their limitations. You're supportive, but your support comes through challenging people to rise to their highest capabilities.`,
     description: "Direct, confrontational executive coach focused on breakthrough results and eliminating limitations."
   },
- 
-coach4: {
+  coach4: {
     name: "Sam Heart",
     voiceId: VOICE_IDS.coach4,
     personality: `You are Sam Heart, an extraordinarily compassionate coach who offers unconditional love and support.
@@ -1390,6 +1388,7 @@ Your tone is warm, gentle, and infinitely patient. You believe that everyone is 
     description: "Extraordinarily compassionate coach focused on unconditional support and meeting people where they are."
   }
 };
+
 // Voice generation function
 async function generateVoice(text, voiceId) {
     if (!ELEVENLABS_API_KEY) {
