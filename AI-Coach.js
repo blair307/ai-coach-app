@@ -644,10 +644,10 @@ const cleanedDisplayResponse = data.response
 addMessageToChat(cleanedDisplayResponse, 'ai');
          
 // Generate voice AFTER text response (new system)
-//if (voiceEnabled && selectedCoach) {
-//    console.log('🎵 Requesting voice generation for coach:', selectedCoach);
-//    generateVoiceForMessage(cleanedDisplayResponse, selectedCoach);
-//}
+if (voiceEnabled && selectedCoach) {
+   console.log('🎵 Requesting voice generation for coach:', selectedCoach);
+    generateVoiceForMessage(cleanedDisplayResponse, selectedCoach);
+}
             
         } else if (response.status === 401 || response.status === 403) {
          
