@@ -574,8 +574,7 @@ async function callAI(message) {
         // Remove thinking message
         removeThinkingMessage();
 
-        // Hide stop button
-hideStopButton();
+
         
      if (response.ok) {
             const data = await response.json();
@@ -1535,6 +1534,7 @@ function stopAIResponse() {
         currentAudio.pause();
         currentAudio.currentTime = 0;
         currentAudio = null;
+        console.log('🔇 Audio stopped by user');
     }
     
     // Remove thinking message
@@ -1543,8 +1543,11 @@ function stopAIResponse() {
     // Hide stop button
     hideStopButton();
     
-    // Add interrupted message
-    addMessageToChat('Response stopped by user.', 'ai');
+    // Only add interrupted message if we actually interrupted something
+    const thinkingMsg = document.getElementById('thinking-message');
+    if (thinkingMsg || currentAudio) {
+        addMessageToChat('Response stopped by user.', 'ai');
+    }
     
     showToast('AI response stopped');
 }
@@ -1574,19 +1577,24 @@ function playAIAudio(audioUrl) {
         currentAudio.play()
             .then(() => {
                 console.log('🎵 AI audio playing');
+                // Keep stop button visible during playback
             })
             .catch(error => {
                 console.log('❌ Audio playback failed:', error);
                 currentAudio = null;
+                hideStopButton(); // Hide if audio fails
             });
             
-        // Clear reference when done
+        // Clear reference when done and hide stop button
         currentAudio.onended = () => {
             currentAudio = null;
+            hideStopButton(); // Hide when audio finishes
+            console.log('🎵 Audio finished, stop button hidden');
         };
         
     } catch (error) {
         console.log('❌ Audio creation failed:', error);
+        hideStopButton(); // Hide on error
     }
 }
 
@@ -1599,6 +1607,7 @@ async function generateVoiceForMessage(text, coachId) {
         const token = getAuthToken();
         if (!token) {
             console.log('❌ No token for voice generation');
+            hideStopButton(); // Hide if no token
             return;
         }
         
@@ -1619,13 +1628,17 @@ async function generateVoiceForMessage(text, coachId) {
             if (data.audio && data.audio.url) {
                 console.log('✅ Voice generated, playing audio');
                 playAIAudio(data.audio.url);
+            } else {
+                hideStopButton(); // Hide if no audio
             }
         } else {
             console.log('❌ Voice generation failed:', response.status);
+            hideStopButton(); // Hide on failure
         }
         
     } catch (error) {
         console.error('❌ Voice generation error:', error);
+        hideStopButton(); // Hide on error
     }
 }
 
