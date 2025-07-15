@@ -157,8 +157,41 @@ function loadCoachPhotos() {
             if (daveInitials) daveInitials.style.display = 'flex';
         };
     }
+    
+    // Load Alex's photo (NEW)
+    const alexPhoto = document.getElementById('alexPhoto');
+    const alexInitials = document.getElementById('alexInitials');
+    if (COACHES.coach3.hasPhoto && COACHES.coach3.photoUrl && alexPhoto) {
+        alexPhoto.src = COACHES.coach3.photoUrl;
+        alexPhoto.onload = function() {
+            alexPhoto.style.display = 'block';
+            if (alexInitials) alexInitials.style.display = 'none';
+            console.log('✅ Alex photo loaded');
+        };
+        alexPhoto.onerror = function() {
+            console.log('⚠️ Alex photo failed to load, using initials');
+            alexPhoto.style.display = 'none';
+            if (alexInitials) alexInitials.style.display = 'flex';
+        };
+    }
+    
+    // Load Sam's photo (NEW)
+    const samPhoto = document.getElementById('samPhoto');
+    const samInitials = document.getElementById('samInitials');
+    if (COACHES.coach4.hasPhoto && COACHES.coach4.photoUrl && samPhoto) {
+        samPhoto.src = COACHES.coach4.photoUrl;
+        samPhoto.onload = function() {
+            samPhoto.style.display = 'block';
+            if (samInitials) samInitials.style.display = 'none';
+            console.log('✅ Sam photo loaded');
+        };
+        samPhoto.onerror = function() {
+            console.log('⚠️ Sam photo failed to load, using initials');
+            samPhoto.style.display = 'none';
+            if (samInitials) samInitials.style.display = 'flex';
+        };
+    }
 }
-
 
 
 document.addEventListener('DOMContentLoaded', function() {
