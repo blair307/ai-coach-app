@@ -114,6 +114,17 @@ Your tone is encouraging, systematic, and grounded. You believe that the best en
     }
 };
 
+// Voice ID mappings for text-to-speech
+const VOICE_IDS = {
+    coach1: 'your-blair-voice-id', // Replace with actual ElevenLabs voice ID
+    coach2: 'your-dave-voice-id',  // Replace with actual ElevenLabs voice ID  
+    coach3: 'openai-echo',         // OpenAI voice
+    coach4: 'openai-nova'          // OpenAI voice
+};
+
+// Make it globally available
+window.VOICE_IDS = VOICE_IDS;
+
 // Current selected coach
 let selectedCoach = localStorage.getItem('selectedCoach') || null;
 
@@ -1649,16 +1660,23 @@ function playAIAudio(audioUrl) {
     }
 }
 
-
 // NEW: Generate voice for a message using the separate endpoint
 async function generateVoiceForMessage(text, coachId) {
     try {
-        console.log('🎤 Requesting voice generation...');
+        console.log('🎤 Requesting voice generation for coach:', coachId);
+        console.log('🔍 Voice ID lookup:', VOICE_IDS[coachId]);
         
         const token = getAuthToken();
         if (!token) {
             console.log('❌ No token for voice generation');
-            hideStopButton(); // Hide if no token
+            hideStopButton();
+            return;
+        }
+        
+        // Check if voice ID exists
+        if (!VOICE_IDS[coachId]) {
+            console.error('❌ No voice ID found for coach:', coachId);
+            hideStopButton();
             return;
         }
         
@@ -1670,9 +1688,12 @@ async function generateVoiceForMessage(text, coachId) {
             },
             body: JSON.stringify({
                 text: text,
-                coachId: coachId
+                coachId: coachId,
+                voiceId: VOICE_IDS[coachId] // Send the voice ID explicitly
             })
         });
+        
+        console.log('📡 Voice API response status:', response.status);
         
         if (response.ok) {
             const data = await response.json();
@@ -1680,19 +1701,23 @@ async function generateVoiceForMessage(text, coachId) {
                 console.log('✅ Voice generated, playing audio');
                 playAIAudio(data.audio.url);
             } else {
-                hideStopButton(); // Hide if no audio
+                console.log('⚠️ No audio URL in response:', data);
+                hideStopButton();
             }
         } else {
             console.log('❌ Voice generation failed:', response.status);
-            hideStopButton(); // Hide on failure
+            const errorText = await response.text();
+            console.log('❌ Error details:', errorText);
+            hideStopButton();
         }
         
     } catch (error) {
         console.error('❌ Voice generation error:', error);
-        hideStopButton(); // Hide on error
+        hideStopButton();
     }
 }
 
+        
 // Keyboard shortcuts
 document.addEventListener('keydown', function(event) {
     // Don't handle keyboard shortcuts on mobile
