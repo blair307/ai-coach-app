@@ -587,14 +587,10 @@ const cleanedDisplayResponse = data.response
 
 addMessageToChat(cleanedDisplayResponse, 'ai');
          
-    // Handle voice response with interruption support
-if (data.audio && data.audio.url && voiceEnabled) {
-    console.log('🎵 Playing voice response from:', data.audio.url.substring(0, 50) + '...');
-    try {
-        playAIAudio(data.audio.url);
-    } catch (audioError) {
-        console.log('❌ Audio creation failed:', audioError);
-    }
+// Generate voice AFTER text response (new system)
+if (voiceEnabled && selectedCoach) {
+    console.log('🎵 Requesting voice generation for coach:', selectedCoach);
+    generateVoiceForMessage(cleanedDisplayResponse, selectedCoach);
 }
             
         } else if (response.status === 401 || response.status === 403) {
@@ -1531,7 +1527,45 @@ function playAIAudio(audioUrl) {
     }
 }
 
-// Keyboard shortcuts
+
+// NEW: Generate voice for a message using the separate endpoint
+async function generateVoiceForMessage(text, coachId) {
+    try {
+        console.log('🎤 Requesting voice generation...');
+        
+        const token = getAuthToken();
+        if (!token) {
+            console.log('❌ No token for voice generation');
+            return;
+        }
+        
+        const response = await fetch(`${BACKEND_URL}/api/chat/voice`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                text: text,
+                coachId: coachId
+            })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.audio && data.audio.url) {
+                console.log('✅ Voice generated, playing audio');
+                playAIAudio(data.audio.url);
+            }
+        } else {
+            console.log('❌ Voice generation failed:', response.status);
+        }
+        
+    } catch (error) {
+        console.error('❌ Voice generation error:', error);
+    }
+}
+
 // Keyboard shortcuts
 document.addEventListener('keydown', function(event) {
     // Don't handle keyboard shortcuts on mobile
