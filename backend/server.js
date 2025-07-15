@@ -1559,6 +1559,45 @@ max_tokens: preferences.responseLength === 'detailed' ? 800 :
   }
 });
 
+// Get voice for a message (called separately by frontend)
+app.post('/api/chat/voice', authenticateToken, async (req, res) => {
+  try {
+    const { text, coachId } = req.body;
+    
+    if (!text || !coachId) {
+      return res.status(400).json({ error: 'Text and coachId required' });
+    }
+    
+    if (!ELEVENLABS_API_KEY || !VOICE_IDS[coachId]) {
+      return res.status(400).json({ error: 'Voice generation not available' });
+    }
+    
+    console.log('🎤 Generating voice on demand for:', coachId);
+    
+    // Clean the response text for voice synthesis
+    const cleanedResponse = text
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/`{1,3}[^`]*`{1,3}/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^\s*[-*+]\s/gm, '')
+      .replace(/^\s*\d+\.\s/gm, '')
+      .trim();
+
+    const audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[coachId]);
+    
+    res.json({ 
+      audio: { url: audioUrl, enabled: true },
+      success: true
+    });
+    
+  } catch (error) {
+    console.error('Voice generation error:', error);
+    res.status(500).json({ error: 'Voice generation failed' });
+  }
+});
+
 // Save chat history
 app.post('/api/chat/save', authenticateToken, async (req, res) => {
   try {
