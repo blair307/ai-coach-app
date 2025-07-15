@@ -93,7 +93,7 @@ Your tone is encouraging, systematic, and grounded. You believe that the best en
         status: "Ready",
         photoUrl: "https://raw.githubusercontent.com/blair307/ai-coach-app/main/images/dave.png",
         hasPhoto: true
-    }
+    },
  coach3: {
         name: "Alex Stone",
         personality: "Direct, confrontational executive coach focused on breakthrough results",
