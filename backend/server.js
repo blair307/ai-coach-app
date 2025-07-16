@@ -4533,12 +4533,25 @@ console.log('✅ Enhanced admin coupon management routes loaded successfully');
 // Search course materials for relevant content
 async function searchCourseMaterials(userId, query, limit = 3) {
   try {
+    console.log('🔍 SEARCHING COURSE MATERIALS:', { userId, query, limit });
+    
+    // Handle admin userId
+    let queryUserId;
+    if (userId === 'admin') {
+      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    } else {
+      queryUserId = userId;
+    }
+    
     const materials = await CourseMaterial.find({ 
-      userId: userId, 
+      userId: queryUserId, 
       isActive: true 
     });
     
+    console.log('📚 Found materials count:', materials.length);
+    
     if (materials.length === 0) {
+      console.log('❌ No materials found for user');
       return [];
     }
     
