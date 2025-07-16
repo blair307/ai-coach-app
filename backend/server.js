@@ -4580,17 +4580,28 @@ async function searchCourseMaterials(userId, query, limit = 3) {
       limit 
     });
     
-    // FIXED: Allow all users to search admin materials
-    const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
-    let searchQuery = { 
-      isActive: true,
-      userId: { 
-        $in: [
-          userId, // User's own materials
-          adminObjectId // Admin materials (available to all users)
-        ]
-      }
-    };
+  // FIXED: Allow all users to search admin materials
+const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+
+if (userId === 'admin' || userId.toString() === 'admin') {
+  // Admin searching - only search admin materials  
+  var searchQuery = {
+    isActive: true,
+    userId: adminObjectId
+  };
+} else {
+  // Regular user - search their materials + admin materials
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  var searchQuery = {
+    isActive: true,
+    userId: {
+      $in: [
+        userObjectId, // User's own materials
+        adminObjectId // Admin materials (available to all users)
+      ]
+    }
+  };
+}
     
     console.log('📋 Search query:', searchQuery);
     
