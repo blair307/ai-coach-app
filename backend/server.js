@@ -757,10 +757,18 @@ const authenticateToken = async (req, res, next) => {
     }
     
     try {
-      const userRecord = await User.findById(user.userId);
-      if (!userRecord) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+     let userRecord = null;
+try {
+  if (user.userId !== 'admin') {
+    userRecord = await User.findById(user.userId);
+  }
+} catch (error) {
+  console.log('⚠️ User lookup error for admin:', error.message);
+}
+
+if (!userRecord && user.userId !== 'admin') {
+  return res.status(404).json({ message: 'User not found' });
+}
       
       // SIMPLIFIED SUBSCRIPTION CHECK - Allow all users for now
       req.user = user;
