@@ -492,6 +492,28 @@ const insightSchema = new mongoose.Schema({
 
 const Insight = mongoose.model('Insight', insightSchema);
 
+// Course Materials Schema - NEW
+const courseMaterialSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  content: { type: String, required: true }, // Extracted text content
+  originalFileName: { type: String },
+  fileType: { type: String, enum: ['pdf', 'docx', 'txt', 'md'], required: true },
+  tags: [String],
+  isActive: { type: Boolean, default: true },
+  uploadedAt: { type: Date, default: Date.now },
+  lastUpdated: { type: Date, default: Date.now },
+  // For search optimization
+  chunks: [{
+    text: String,
+    index: Number,
+    keywords: [String]
+  }]
+});
+
+const CourseMaterial = mongoose.model('CourseMaterial', courseMaterialSchema);
+
 // Daily Progress Schema - NEW
 const dailyProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
