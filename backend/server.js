@@ -4597,6 +4597,17 @@ async function searchCourseMaterials(userId, query, limit = 3) {
     const materials = await CourseMaterial.find(searchQuery);
     
     console.log('📚 Found materials:', materials.length);
+
+          // ADD THIS DEBUG - Log the first material's chunks
+    if (materials.length > 0) {
+      console.log('🔍 First material chunks:', materials[0].chunks.length);
+      console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
+    }
+    
+    if (materials.length === 0) {
+      console.log('❌ No materials found');
+      return [];
+    }
     
     if (materials.length === 0) {
       console.log('❌ No materials found');
