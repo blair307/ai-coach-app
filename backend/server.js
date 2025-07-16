@@ -1595,16 +1595,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 const recentMessages = chat.messages.slice(-50);
 console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
     
-// Extract better search terms from the user's message
-const searchTerms = message.toLowerCase()
-  .replace(/[^\w\s]/g, ' ') // Remove punctuation
-  .split(/\s+/)
-  .filter(word => word.length > 2)
-  .slice(0, 8) // Take first 8 meaningful words
-  .join(' ');
 
-console.log('🔍 Searching for:', searchTerms);
-// Extract better search terms from the user's message
 const stopWords = ['what', 'are', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'how', 'can', 'you', 'tell', 'me', 'about', 'i', 'want', 'know'];
 
 const searchTerms = message.toLowerCase()
