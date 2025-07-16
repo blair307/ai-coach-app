@@ -1595,8 +1595,16 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 const recentMessages = chat.messages.slice(-50);
 console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
     
-// Search for relevant course materials
-    const relevantMaterials = await searchCourseMaterials(userId, message, 2);
+// Extract better search terms from the user's message
+const searchTerms = message.toLowerCase()
+  .replace(/[^\w\s]/g, ' ') // Remove punctuation
+  .split(/\s+/)
+  .filter(word => word.length > 2)
+  .slice(0, 8) // Take first 8 meaningful words
+  .join(' ');
+
+console.log('🔍 Searching for:', searchTerms);
+const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5); // Get 5 results instead of 2
     
 // Build course materials context
 let courseMaterialsContext = '';
@@ -1604,7 +1612,7 @@ if (relevantMaterials.length > 0) {
   console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
   courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
   relevantMaterials.forEach((material, index) => {
-    courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 800)}"\n(Source: ${material.materialTitle})\n`;
+    courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 1500)}"\n(Source: ${material.materialTitle})\n`;
   });
   courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
 } else {
