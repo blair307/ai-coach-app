@@ -269,6 +269,26 @@ if (process.env.OPENAI_API_KEY) {
   console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
 }
 
+// File upload configuration - NEW
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, DOCX, and TXT files are allowed.'));
+    }
+  }
+});
+
 // Email configuration - FIXED VERSION
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -1580,6 +1600,19 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 const recentMessages = chat.messages.slice(-50);
 console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
     
+   // Search for relevant course materials
+    const relevantMaterials = await searchCourseMaterials(userId, message, 2);
+    
+    // Build course materials context
+    let courseMaterialsContext = '';
+    if (relevantMaterials.length > 0) {
+      courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
+      relevantMaterials.forEach((material, index) => {
+        courseMaterialsContext += `\nMaterial ${index + 1} (from "${material.materialTitle}"):\n${material.text}\n`;
+      });
+      courseMaterialsContext += '\nYou can reference these materials in your coaching response when relevant.\n';
+    }
+
     // Create messages array for OpenAI
     const messages = [
       {
@@ -1587,16 +1620,16 @@ console.log(`📊 Using ${recentMessages.length} messages for context (~${recent
         content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
 KEEP RESPONSES VERY SHORT - 
-CRITICAL: Keep responses to MAXIMUM 1-4 sentences. Never exceed 60 words total. Regularly include action items so they can activate suggestions. 
+CRITICAL: Keep responses to MAXIMUM 1-2 sentences. Never exceed 30 words total.
 
-Be helpful but brief. No long explanations. 
+Be helpful but extremely brief. No long explanations. No lists. No examples.
 Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
 
 Current coaching preferences:
 - Tone: ${preferences.tone || 'supportive'}
 - Response length: ${preferences.responseLength || 'concise'}
 
-Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
+Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.${courseMaterialsContext}`
       }
     ];
 
@@ -4493,6 +4526,120 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+// ==========================================
+// COURSE MATERIALS HELPER FUNCTIONS
+// ==========================================
+
+// Search course materials for relevant content
+async function searchCourseMaterials(userId, query, limit = 3) {
+  try {
+    const materials = await CourseMaterial.find({ 
+      userId: userId, 
+      isActive: true 
+    });
+    
+    if (materials.length === 0) {
+      return [];
+    }
+    
+    const queryWords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+    const relevantChunks = [];
+    
+    // Search through all chunks in all materials
+    materials.forEach(material => {
+      material.chunks.forEach(chunk => {
+        let score = 0;
+        const chunkText = chunk.text.toLowerCase();
+        
+        // Calculate relevance score
+        queryWords.forEach(word => {
+          const wordCount = (chunkText.match(new RegExp(word, 'g')) || []).length;
+          score += wordCount;
+          
+          // Bonus for keyword matches
+          if (chunk.keywords.includes(word)) {
+            score += 2;
+          }
+        });
+        
+        if (score > 0) {
+          relevantChunks.push({
+            text: chunk.text,
+            score: score,
+            materialTitle: material.title,
+            materialId: material._id
+          });
+        }
+      });
+    });
+    
+    // Sort by relevance and return top results
+    return relevantChunks
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+      
+  } catch (error) {
+    console.error('❌ Error searching course materials:', error);
+    return [];
+  }
+}
+
+function createTextChunks(text, chunkSize = 1000, overlap = 200) {
+  const chunks = [];
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  
+  let currentChunk = '';
+  let chunkIndex = 0;
+  
+  for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i].trim() + '.';
+    
+    // If adding this sentence would exceed chunk size, save current chunk
+    if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
+      chunks.push({
+        text: currentChunk.trim(),
+        index: chunkIndex++,
+        keywords: extractKeywords(currentChunk)
+      });
+      
+      // Start new chunk with overlap
+      const words = currentChunk.split(' ');
+      const overlapWords = words.slice(-Math.floor(overlap / 5));
+      currentChunk = overlapWords.join(' ') + ' ' + sentence;
+    } else {
+      currentChunk += ' ' + sentence;
+    }
+  }
+  
+  // Add the last chunk
+  if (currentChunk.trim().length > 0) {
+    chunks.push({
+      text: currentChunk.trim(),
+      index: chunkIndex,
+      keywords: extractKeywords(currentChunk)
+    });
+  }
+  
+  return chunks;
+}
+
+// Simple keyword extraction
+function extractKeywords(text) {
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 3);
+  
+  const wordCount = {};
+  words.forEach(word => {
+    wordCount[word] = (wordCount[word] || 0) + 1;
+  });
+  
+  return Object.keys(wordCount)
+    .sort((a, b) => wordCount[b] - wordCount[a])
+    .slice(0, 10);
+}
+
 // Clean up old images (optional - run manually or via cron)
 app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
   try {
@@ -4646,6 +4793,127 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
       error: 'Failed to get analytics',
       message: error.message 
     });
+  }
+});
+}
+
+// ==========================================
+// COURSE MATERIALS API ROUTES
+// ==========================================
+
+// Upload course material endpoint
+app.post('/api/course-materials/upload', authenticateToken, upload.single('file'), async (req, res) => {
+  try {
+    const { title, description, tags } = req.body;
+    const file = req.file;
+    
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    console.log('📄 Processing uploaded file:', file.originalname);
+    
+    let extractedText = '';
+    let fileType = '';
+    
+    // Extract text based on file type
+    if (file.mimetype === 'application/pdf') {
+      const pdfData = await pdfParse(file.buffer);
+      extractedText = pdfData.text;
+      fileType = 'pdf';
+    } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const docxData = await mammoth.extractRawText({ buffer: file.buffer });
+      extractedText = docxData.value;
+      fileType = 'docx';
+    } else if (file.mimetype === 'text/plain') {
+      extractedText = file.buffer.toString('utf-8');
+      fileType = 'txt';
+    }
+    
+    if (!extractedText || extractedText.trim().length === 0) {
+      return res.status(400).json({ error: 'Could not extract text from file' });
+    }
+    
+    // Break content into searchable chunks
+    const chunks = createTextChunks(extractedText);
+    
+    // Create course material record
+    const courseMaterial = new CourseMaterial({
+      userId: req.user.userId,
+      title: title || file.originalname,
+      description: description || '',
+      content: extractedText,
+      originalFileName: file.originalname,
+      fileType: fileType,
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      chunks: chunks
+    });
+    
+    await courseMaterial.save();
+    
+    console.log('✅ Course material saved:', courseMaterial.title);
+    
+    res.json({
+      message: 'Course material uploaded successfully',
+      material: {
+        id: courseMaterial._id,
+        title: courseMaterial.title,
+        description: courseMaterial.description,
+        fileType: courseMaterial.fileType,
+        uploadedAt: courseMaterial.uploadedAt,
+        chunkCount: chunks.length,
+        contentLength: extractedText.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Course material upload error:', error);
+    res.status(500).json({ 
+      error: 'Failed to upload course material',
+      details: error.message 
+    });
+  }
+});
+
+  }
+});
+
+// Get all course materials for a user
+app.get('/api/course-materials', authenticateToken, async (req, res) => {
+  try {
+    const materials = await CourseMaterial.find({ 
+      userId: req.user.userId,
+      isActive: true 
+    }).sort({ uploadedAt: -1 });
+    
+    res.json(materials.map(material => ({
+      id: material._id,
+      title: material.title,
+      description: material.description,
+      fileType: material.fileType,
+      originalFileName: material.originalFileName,
+      tags: material.tags,
+      uploadedAt: material.uploadedAt,
+      chunkCount: material.chunks.length,
+      contentLength: material.content.length
+    })));
+  } catch (error) {
+    console.error('❌ Get course materials error:', error);
+    res.status(500).json({ error: 'Failed to get course materials' });
+  }
+});
+
+// Delete a course material
+app.delete('/api/course-materials/:id', authenticateToken, async (req, res) => {
+  try {
+    await CourseMaterial.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.userId },
+      { isActive: false }
+    );
+    res.json({ message: 'Course material deleted successfully' });
+  } catch (error) {
+    console.error('❌ Delete course material error:', error);
+    res.status(500).json({ error: 'Failed to delete course material' });
   }
 });
 
