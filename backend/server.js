@@ -1604,8 +1604,19 @@ const searchTerms = message.toLowerCase()
   .join(' ');
 
 console.log('🔍 Searching for:', searchTerms);
-const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5); // Get 5 results instead of 2
-    
+// Extract better search terms from the user's message
+const stopWords = ['what', 'are', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'how', 'can', 'you', 'tell', 'me', 'about', 'i', 'want', 'know'];
+
+const searchTerms = message.toLowerCase()
+  .replace(/[^\w\s]/g, ' ') // Remove punctuation
+  .split(/\s+/)
+  .filter(word => word.length > 2 && !stopWords.includes(word)) // Remove stop words
+  .slice(0, 5) // Take only most important words
+  .join(' ');
+
+console.log('🔍 Searching for:', searchTerms);
+const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5);
+      
 // Build course materials context
 let courseMaterialsContext = '';
 if (relevantMaterials.length > 0) {
@@ -4645,16 +4656,35 @@ if (userId === 'admin' || userId.toString() === 'admin') {
     
    // Find this part in your searchCourseMaterials function (around line 2150)
 materials.forEach(material => {
+  // Bonus points if the query matches the material title
+  let titleBonus = 0;
+  queryWords.forEach(word => {
+    if (material.title.toLowerCase().includes(word.toLowerCase())) {
+      titleBonus += 10; // Big bonus for title matches
+    }
+  });
+  
   material.chunks.forEach((chunk, chunkIndex) => {
-    let score = 0;
+    let score = titleBonus; // Start with title bonus
     const chunkText = chunk.text.toLowerCase();
     
-    // SIMPLIFIED SEARCH - just check if any query words exist in the chunk
     queryWords.forEach(word => {
       if (chunkText.includes(word.toLowerCase())) {
         score += 1;
       }
     });
+    
+    if (score > 0) {
+      relevantChunks.push({
+        text: chunk.text,
+        score: score,
+        materialTitle: material.title,
+        materialId: material._id,
+        chunkIndex: chunkIndex
+      });
+    }
+  });
+});
     
     // Add to results if any words found
     if (score > 0) {
