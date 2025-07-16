@@ -742,21 +742,24 @@
             
             currentTab = tabName;
             
-            // Load data for the tab
-            switch(tabName) {
-                case 'overview':
-                    loadOverview();
-                    break;
-                case 'users':
-                    loadUsers();
-                    break;
-                case 'coupons':
-                    loadCoupons();
-                    break;
-                case 'analytics':
-                    loadAnalytics();
-                    break;
-            }
+// Load data for the tab
+switch(tabName) {
+    case 'overview':
+        loadOverview();
+        break;
+    case 'users':
+        loadUsers();
+        break;
+    case 'coupons':
+        loadCoupons();
+        break;
+    case 'materials':
+        loadCourseMaterials();
+        break;
+    case 'analytics':
+        loadAnalytics();
+        break;
+}
         }
 
         // Overview Tab Functions
@@ -1304,6 +1307,96 @@ async function loadCoupons() {
             }
         }
 
+// Course Materials Tab Functions
+async function loadCourseMaterials() {
+    try {
+        const response = await makeAdminRequest('/api/course-materials');
+        const materials = await response.json();
+        
+        renderMaterialsTable(materials);
+    } catch (error) {
+        console.error('Error loading course materials:', error);
+        document.getElementById('materialsTableContainer').innerHTML = '<div class="error">Failed to load course materials</div>';
+    }
+}
+
+function renderMaterialsTable(materials) {
+    const container = document.getElementById('materialsTableContainer');
+    
+    if (materials.length === 0) {
+        container.innerHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">No course materials uploaded yet</div>';
+        return;
+    }
+    
+    let tableHTML = `
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Size</th>
+                    <th>Sections</th>
+                    <th>Uploaded</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    
+    materials.forEach(material => {
+        const uploadedDate = new Date(material.uploadedAt).toLocaleDateString();
+        const sizeKB = Math.round(material.contentLength / 1000);
+        
+        tableHTML += `
+            <tr>
+                <td>
+                    <div style="font-weight: 600;">${material.title}</div>
+                    ${material.description ? `<div style="font-size: 0.875rem; color: #6b7280;">${material.description}</div>` : ''}
+                    ${material.tags && material.tags.length > 0 ? `
+                        <div style="margin-top: 0.5rem;">
+                            ${material.tags.map(tag => `<span class="badge badge-info" style="margin-right: 0.25rem;">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                </td>
+                <td><span class="badge badge-info">${material.fileType.toUpperCase()}</span></td>
+                <td>${sizeKB}k chars</td>
+                <td>${material.chunkCount} sections</td>
+                <td>${uploadedDate}</td>
+                <td>
+                    <button class="btn btn-danger btn-small" onclick="deleteCourseMaterial('${material.id}', '${material.title}')">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    tableHTML += '</tbody></table>';
+    container.innerHTML = tableHTML;
+}
+
+async function deleteCourseMaterial(materialId, materialTitle) {
+    if (!confirm(`Are you sure you want to delete "${materialTitle}"?\n\nThis will remove it from all AI coach responses.`)) {
+        return;
+    }
+    
+    try {
+        const response = await makeAdminRequest(`/api/course-materials/${materialId}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            showNotification('Course material deleted successfully', 'success');
+            loadCourseMaterials();
+        } else {
+            showNotification('Failed to delete course material', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting course material:', error);
+        showNotification('Failed to delete course material', 'error');
+    }
+}
+        
         function renderAnalytics(data) {
             const container = document.getElementById('analyticsGrid');
             
@@ -1470,6 +1563,63 @@ async function loadCoupons() {
                 });
             }
         });
+
+        // Course Materials Upload Handler
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadForm = document.getElementById('uploadForm');
+    
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const tags = document.getElementById('tags').value;
+            const file = document.getElementById('file').files[0];
+            
+            if (!file) {
+                showNotification('Please select a file', 'error');
+                return;
+            }
+            
+            formData.append('file', file);
+            formData.append('title', title);
+            formData.append('description', description);
+            formData.append('tags', tags);
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/course-materials/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('adminToken')}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showNotification('Course material uploaded successfully!', 'success');
+                    uploadForm.reset();
+                    loadCourseMaterials(); // Refresh the list
+                } else {
+                    showNotification(data.error || 'Upload failed', 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showNotification('Network error. Please try again.', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Material';
+            }
+        });
+    }
+});
     </script>
 </body>
 </html>
