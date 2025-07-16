@@ -4872,13 +4872,16 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
     
-   // Create course material record  
+  // Create course material record  
 let validUserId;
 if (req.user.userId === 'admin') {
     validUserId = new mongoose.Types.ObjectId('000000000000000000000000'); // Use a dummy ObjectId for admin
 } else {
-    validUserId = req.user.userId;
+    validUserId = new mongoose.Types.ObjectId(req.user.userId);
 }
+
+const courseMaterial = new CourseMaterial({
+    userId: validUserId,
 
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
