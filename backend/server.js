@@ -4535,6 +4535,39 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
+  try {
+    const materialId = req.params.materialId;
+    const material = await CourseMaterial.findById(materialId);
+    
+    if (!material) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+    
+    console.log('🔍 DEBUG - Material chunks:', material.chunks.length);
+    
+    // Return first few chunks for debugging
+    const debugChunks = material.chunks.slice(0, 5).map((chunk, index) => ({
+      index,
+      textPreview: chunk.text.substring(0, 200),
+      keywords: chunk.keywords,
+      textLength: chunk.text.length
+    }));
+    
+    res.json({
+      title: material.title,
+      totalChunks: material.chunks.length,
+      contentLength: material.content.length,
+      sampleChunks: debugChunks,
+      firstChunkFull: material.chunks[0]?.text.substring(0, 500)
+    });
+    
+  } catch (error) {
+    console.error('Debug chunks error:', error);
+    res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS HELPER FUNCTIONS
 // ==========================================
