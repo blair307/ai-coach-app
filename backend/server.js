@@ -743,7 +743,6 @@ async function createDefaultRooms() {
   }
 }
 
-// JWT Middleware with subscription check
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -757,31 +756,19 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: 'Invalid token' });
     }
     
-    // Check subscription status
     try {
       const userRecord = await User.findById(user.userId);
       if (!userRecord) {
         return res.status(404).json({ message: 'User not found' });
       }
       
-      // Allow access for free accounts or active subscriptions
-      const subscription = userRecord.subscription;
-      const now = new Date();
+      // SIMPLIFIED SUBSCRIPTION CHECK - Allow all users for now
+      req.user = user;
+      req.userRecord = userRecord; // Add the full user record for course materials
+      next();
       
-      if (subscription.plan === 'free' || 
-          subscription.status === 'active' ||
-          (subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now)) {
-        req.user = user;
-        next();
-      } else {
-        return res.status(402).json({ 
-          message: 'Subscription expired. Please renew to continue.',
-          subscriptionStatus: subscription.status,
-          expired: true
-        });
-      }
     } catch (error) {
-      console.error('Subscription check error:', error);
+      console.error('Auth error:', error);
       req.user = user; // Allow access on error
       next();
     }
@@ -4533,7 +4520,6 @@ console.log('✅ Enhanced admin coupon management routes loaded successfully');
 // COURSE MATERIALS HELPER FUNCTIONS
 // ==========================================
 
-// Search for relevant course materials
 async function searchCourseMaterials(userId, query, limit = 3) {
   try {
     console.log('🔍 SEARCHING COURSE MATERIALS:', { 
@@ -4542,22 +4528,17 @@ async function searchCourseMaterials(userId, query, limit = 3) {
       limit 
     });
     
-    // Build query - search for materials uploaded by this user OR by admin
-    let searchQuery = { isActive: true };
-    
-    // If it's a regular user, search their materials + admin materials
-    if (userId !== 'admin') {
-      const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
-      searchQuery.userId = { 
+    // FIXED: Allow all users to search admin materials
+    const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+    let searchQuery = { 
+      isActive: true,
+      userId: { 
         $in: [
           userId, // User's own materials
           adminObjectId // Admin materials (available to all users)
         ]
-      };
-    } else {
-      // If admin is searching, only search admin materials
-      searchQuery.userId = new mongoose.Types.ObjectId('000000000000000000000000');
-    }
+      }
+    };
     
     console.log('📋 Search query:', searchQuery);
     
@@ -4570,43 +4551,33 @@ async function searchCourseMaterials(userId, query, limit = 3) {
       return [];
     }
     
-    // Log material details for debugging
-    materials.forEach((material, index) => {
-      console.log(`📖 Material ${index + 1}: "${material.title}" (${material.chunks.length} chunks)`);
-    });
-    
+    // Rest of the function stays the same...
     const queryWords = query.toLowerCase()
       .split(/\s+/)
       .filter(word => word.length > 2)
-      .slice(0, 10); // Limit query words for performance
+      .slice(0, 10);
     
     console.log('🔤 Search words:', queryWords);
     
     const relevantChunks = [];
     
-    // Search through all chunks in all materials
     materials.forEach(material => {
       material.chunks.forEach((chunk, chunkIndex) => {
         let score = 0;
         const chunkText = chunk.text.toLowerCase();
         
-        // Calculate relevance score based on word frequency
         queryWords.forEach(word => {
-          // Count exact word matches
           const exactMatches = (chunkText.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length;
           score += exactMatches * 3;
           
-          // Count partial matches
           const partialMatches = (chunkText.match(new RegExp(word, 'g')) || []).length;
           score += partialMatches;
           
-          // Bonus for keyword matches
           if (chunk.keywords && chunk.keywords.includes(word)) {
             score += 5;
           }
         });
         
-        // Add to results if relevant
         if (score > 0) {
           relevantChunks.push({
             text: chunk.text,
@@ -4621,12 +4592,10 @@ async function searchCourseMaterials(userId, query, limit = 3) {
     
     console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
     
-    // Sort by relevance and return top results
     const topChunks = relevantChunks
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
     
-    // Log what we're returning
     topChunks.forEach((chunk, index) => {
       console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
     });
