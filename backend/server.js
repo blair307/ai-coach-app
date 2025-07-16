@@ -4883,7 +4883,6 @@ if (req.user.userId === 'admin') {
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
 
-const courseMaterial = new CourseMaterial({
     userId: validUserId,
       title: title || file.originalname,
       description: description || '',
