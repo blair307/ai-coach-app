@@ -1590,27 +1590,38 @@ console.log(`📊 Using ${recentMessages.length} messages for context (~${recent
 // Search for relevant course materials
     const relevantMaterials = await searchCourseMaterials(userId, message, 2);
     
-    // Build course materials context
-    let courseMaterialsContext = '';
-    if (relevantMaterials.length > 0) {
-      console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
-      courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
-      relevantMaterials.forEach((material, index) => {
-        courseMaterialsContext += `\nMaterial ${index + 1} (from "${material.materialTitle}"):\n${material.text.substring(0, 500)}...\n`;
-      });
-      courseMaterialsContext += '\nUse this information to provide more specific and helpful coaching advice when relevant.\n';
-    } else {
-      console.log('ℹ️ No relevant course materials found for this query');
-    }
+// Build course materials context
+let courseMaterialsContext = '';
+if (relevantMaterials.length > 0) {
+  console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
+  courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
+  relevantMaterials.forEach((material, index) => {
+    courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 800)}"\n(Source: ${material.materialTitle})\n`;
+  });
+  courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
+} else {
+  console.log('ℹ️ No relevant course materials found for this query');
+}
+      
+// Create messages array for OpenAI
+const messages = [
+  {
+    role: 'system',
+    content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-    // Create messages array for OpenAI
-    const messages = [
-      {
-        role: 'system',
-        content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
+CRITICAL: Keep responses to MAXIMUM 1-4 sentences. Never exceed 60 words total.
 
-KEEP RESPONSES VERY SHORT - 
-CRITICAL: Keep responses to MAXIMUM 1-2 sentences. Never exceed 30 words total.
+${courseMaterialsContext ? `
+MANDATORY: You have access to specific course materials below. You MUST use this information to answer questions. Do NOT make up information when you have real course content available.
+
+${courseMaterialsContext}
+
+INSTRUCTIONS:
+- ALWAYS prioritize information from the course materials above
+- If the user's question relates to the course content, reference it directly
+- Use phrases like "From the course..." or "The training material shows..."
+- Only provide general advice if the course materials don't contain relevant information
+` : ''}
 
 Be helpful but extremely brief. No long explanations. No lists. No examples.
 Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
@@ -1619,9 +1630,9 @@ Current coaching preferences:
 - Tone: ${preferences.tone || 'supportive'}
 - Response length: ${preferences.responseLength || 'concise'}
 
-Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.${courseMaterialsContext}`
-      }
-    ];
+Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
+  }
+];
 
     // Add conversation history
     recentMessages.forEach(msg => {
