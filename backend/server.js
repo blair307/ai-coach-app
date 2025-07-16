@@ -4580,34 +4580,31 @@ async function searchCourseMaterials(userId, query, limit = 3) {
     
     const relevantChunks = [];
     
-    materials.forEach(material => {
-      material.chunks.forEach((chunk, chunkIndex) => {
-        let score = 0;
-        const chunkText = chunk.text.toLowerCase();
-        
-        queryWords.forEach(word => {
-          const exactMatches = (chunkText.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length;
-          score += exactMatches * 3;
-          
-          const partialMatches = (chunkText.match(new RegExp(word, 'g')) || []).length;
-          score += partialMatches;
-          
-          if (chunk.keywords && chunk.keywords.includes(word)) {
-            score += 5;
-          }
-        });
-        
-        if (score > 0) {
-          relevantChunks.push({
-            text: chunk.text,
-            score: score,
-            materialTitle: material.title,
-            materialId: material._id,
-            chunkIndex: chunkIndex
-          });
-        }
-      });
+   // Find this part in your searchCourseMaterials function (around line 2150)
+materials.forEach(material => {
+  material.chunks.forEach((chunk, chunkIndex) => {
+    let score = 0;
+    const chunkText = chunk.text.toLowerCase();
+    
+    // SIMPLIFIED SEARCH - just check if any query words exist in the chunk
+    queryWords.forEach(word => {
+      if (chunkText.includes(word.toLowerCase())) {
+        score += 1;
+      }
     });
+    
+    // Add to results if any words found
+    if (score > 0) {
+      relevantChunks.push({
+        text: chunk.text,
+        score: score,
+        materialTitle: material.title,
+        materialId: material._id,
+        chunkIndex: chunkIndex
+      });
+    }
+  });
+});
     
     console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
     
