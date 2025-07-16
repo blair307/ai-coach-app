@@ -4837,9 +4837,9 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
     
-    // Create course material record
-    const courseMaterial = new CourseMaterial({
-      userId: req.user.userId,
+    // Create course material record  
+const courseMaterial = new CourseMaterial({
+    userId: mongoose.Types.ObjectId.isValid(req.user.userId) ? req.user.userId : new mongoose.Types.ObjectId(),
       title: title || file.originalname,
       description: description || '',
       content: extractedText,
