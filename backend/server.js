@@ -4795,7 +4795,7 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
     });
   }
 });
-}
+
 
 // ==========================================
 // COURSE MATERIALS API ROUTES
