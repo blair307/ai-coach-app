@@ -4687,7 +4687,6 @@ materials.forEach(material => {
         chunkIndex: chunkIndex
       });
     }
-  });
 });
     
     console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
