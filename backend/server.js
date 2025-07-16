@@ -1600,17 +1600,20 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 const recentMessages = chat.messages.slice(-50);
 console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
     
-   // Search for relevant course materials
+// Search for relevant course materials
     const relevantMaterials = await searchCourseMaterials(userId, message, 2);
     
     // Build course materials context
     let courseMaterialsContext = '';
     if (relevantMaterials.length > 0) {
+      console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
       courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
       relevantMaterials.forEach((material, index) => {
-        courseMaterialsContext += `\nMaterial ${index + 1} (from "${material.materialTitle}"):\n${material.text}\n`;
+        courseMaterialsContext += `\nMaterial ${index + 1} (from "${material.materialTitle}"):\n${material.text.substring(0, 500)}...\n`;
       });
-      courseMaterialsContext += '\nYou can reference these materials in your coaching response when relevant.\n';
+      courseMaterialsContext += '\nUse this information to provide more specific and helpful coaching advice when relevant.\n';
+    } else {
+      console.log('ℹ️ No relevant course materials found for this query');
     }
 
     // Create messages array for OpenAI
@@ -4530,66 +4533,105 @@ console.log('✅ Enhanced admin coupon management routes loaded successfully');
 // COURSE MATERIALS HELPER FUNCTIONS
 // ==========================================
 
-// Search course materials for relevant content
+// Search for relevant course materials
 async function searchCourseMaterials(userId, query, limit = 3) {
   try {
-    console.log('🔍 SEARCHING COURSE MATERIALS:', { userId, query, limit });
-    
-    // Handle admin userId
-    let queryUserId;
-    if (userId === 'admin') {
-      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
-    } else {
-      queryUserId = userId;
-    }
-    
-    const materials = await CourseMaterial.find({ 
-      userId: queryUserId, 
-      isActive: true 
+    console.log('🔍 SEARCHING COURSE MATERIALS:', { 
+      userId: userId.toString(), 
+      query: query.substring(0, 50) + '...', 
+      limit 
     });
     
-    console.log('📚 Found materials count:', materials.length);
+    // Build query - search for materials uploaded by this user OR by admin
+    let searchQuery = { isActive: true };
+    
+    // If it's a regular user, search their materials + admin materials
+    if (userId !== 'admin') {
+      const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+      searchQuery.userId = { 
+        $in: [
+          userId, // User's own materials
+          adminObjectId // Admin materials (available to all users)
+        ]
+      };
+    } else {
+      // If admin is searching, only search admin materials
+      searchQuery.userId = new mongoose.Types.ObjectId('000000000000000000000000');
+    }
+    
+    console.log('📋 Search query:', searchQuery);
+    
+    const materials = await CourseMaterial.find(searchQuery);
+    
+    console.log('📚 Found materials:', materials.length);
     
     if (materials.length === 0) {
-      console.log('❌ No materials found for user');
+      console.log('❌ No materials found');
       return [];
     }
     
-    const queryWords = query.toLowerCase().split(' ').filter(word => word.length > 2);
+    // Log material details for debugging
+    materials.forEach((material, index) => {
+      console.log(`📖 Material ${index + 1}: "${material.title}" (${material.chunks.length} chunks)`);
+    });
+    
+    const queryWords = query.toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 2)
+      .slice(0, 10); // Limit query words for performance
+    
+    console.log('🔤 Search words:', queryWords);
+    
     const relevantChunks = [];
     
     // Search through all chunks in all materials
     materials.forEach(material => {
-      material.chunks.forEach(chunk => {
+      material.chunks.forEach((chunk, chunkIndex) => {
         let score = 0;
         const chunkText = chunk.text.toLowerCase();
         
-        // Calculate relevance score
+        // Calculate relevance score based on word frequency
         queryWords.forEach(word => {
-          const wordCount = (chunkText.match(new RegExp(word, 'g')) || []).length;
-          score += wordCount;
+          // Count exact word matches
+          const exactMatches = (chunkText.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length;
+          score += exactMatches * 3;
+          
+          // Count partial matches
+          const partialMatches = (chunkText.match(new RegExp(word, 'g')) || []).length;
+          score += partialMatches;
           
           // Bonus for keyword matches
-          if (chunk.keywords.includes(word)) {
-            score += 2;
+          if (chunk.keywords && chunk.keywords.includes(word)) {
+            score += 5;
           }
         });
         
+        // Add to results if relevant
         if (score > 0) {
           relevantChunks.push({
             text: chunk.text,
             score: score,
             materialTitle: material.title,
-            materialId: material._id
+            materialId: material._id,
+            chunkIndex: chunkIndex
           });
         }
       });
     });
     
+    console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
+    
     // Sort by relevance and return top results
-    return relevantChunks
+    const topChunks = relevantChunks
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
+    
+    // Log what we're returning
+    topChunks.forEach((chunk, index) => {
+      console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
+    });
+    
+    return topChunks;
       
   } catch (error) {
     console.error('❌ Error searching course materials:', error);
@@ -4955,9 +4997,45 @@ console.log('✅ Admin analytics route loaded successfully');
 
 // ENHANCED ADMIN DASHBOARD HTML
 // Replace your existing admin-dashboard.html with this enhanced version:
-
-// ENHANCED ADMIN DASHBOARD HTML
-// Replace your existing admin-dashboard.html with this enhanced version:
+// Test course materials search endpoint
+app.post('/api/admin/test-course-materials-search', authenticateToken, async (req, res) => {
+  try {
+    const { query, userId: testUserId } = req.body;
+    const searchUserId = testUserId || req.user.userId;
+    
+    console.log('🧪 TESTING COURSE MATERIALS SEARCH');
+    console.log('Query:', query);
+    console.log('User ID:', searchUserId);
+    
+    // First, show what materials exist
+    const allMaterials = await CourseMaterial.find({ isActive: true });
+    console.log(`📚 Total active materials in database: ${allMaterials.length}`);
+    
+    allMaterials.forEach(material => {
+      console.log(`- "${material.title}" by user ${material.userId} (${material.chunks.length} chunks)`);
+    });
+    
+    // Now test the search
+    const results = await searchCourseMaterials(searchUserId, query, 5);
+    
+    res.json({
+      query,
+      searchUserId,
+      totalMaterials: allMaterials.length,
+      materialsFound: allMaterials.map(m => ({
+        title: m.title,
+        userId: m.userId,
+        chunks: m.chunks.length
+      })),
+      searchResults: results,
+      resultsCount: results.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Test search error:', error);
+    res.status(500).json({ error: 'Search test failed', details: error.message });
+  }
+});
 
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
