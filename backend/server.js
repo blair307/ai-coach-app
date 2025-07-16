@@ -4875,8 +4875,6 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
   }
 });
 
-  }
-});
 
 // Get all course materials for a user
 app.get('/api/course-materials', authenticateToken, async (req, res) => {
