@@ -4886,8 +4886,16 @@ const courseMaterial = new CourseMaterial({
 // Get all course materials for a user
 app.get('/api/course-materials', authenticateToken, async (req, res) => {
   try {
+    // Handle admin userId
+    let queryUserId;
+    if (req.user.userId === 'admin') {
+      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    } else {
+      queryUserId = req.user.userId;
+    }
+    
     const materials = await CourseMaterial.find({ 
-      userId: req.user.userId,
+      userId: queryUserId,
       isActive: true 
     }).sort({ uploadedAt: -1 });
     
@@ -4911,8 +4919,16 @@ app.get('/api/course-materials', authenticateToken, async (req, res) => {
 // Delete a course material
 app.delete('/api/course-materials/:id', authenticateToken, async (req, res) => {
   try {
+    // Handle admin userId
+    let queryUserId;
+    if (req.user.userId === 'admin') {
+      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    } else {
+      queryUserId = req.user.userId;
+    }
+    
     await CourseMaterial.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user.userId },
+      { _id: req.params.id, userId: queryUserId },
       { isActive: false }
     );
     res.json({ message: 'Course material deleted successfully' });
