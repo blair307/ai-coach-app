@@ -669,32 +669,47 @@ async function loadGoalsFromBackend() {
             }
         });
 
-        if (response.ok) {
-            allGoals = await response.json();
-            console.log('📋 Loaded goals from API:', allGoals.length);
-        } else {
-            console.log('API not available, using localStorage fallback');
-            const stored = localStorage.getItem('lifeGoals');
-            if (stored) {
-                const storedGoals = JSON.parse(stored);
-                allGoals = [];
-                Object.values(storedGoals).forEach(areaGoals => {
-                    allGoals.push(...areaGoals);
-                });
-            } else {
-                allGoals = [];
+      if (response.ok) {
+    const progressRecords = await response.json();
+    
+    // Convert server data to our local format
+    dailyProgress = {};
+    
+    // Handle null/empty server response safely
+    if (progressRecords && Array.isArray(progressRecords) && progressRecords.length > 0) {
+        progressRecords.forEach(record => {
+            if (record && record.date && record.goalProgress) {
+                dailyProgress[record.date] = {};
+                
+                // Safely handle goalProgress array
+                if (Array.isArray(record.goalProgress)) {
+                    record.goalProgress.forEach(gp => {
+                        if (gp && gp.goalId !== undefined) {
+                            const goalIdStr = gp.goalId.toString();
+                            dailyProgress[record.date][goalIdStr] = gp.completed;
+                        }
+                    });
+                }
             }
-        }
-        
-    } catch (error) {
-        console.error('Error loading goals from backend:', error);
-        allGoals = [];
+        });
+    } else {
+        console.log('📊 Server returned empty/null data, starting fresh');
     }
-}
-
-        function loadDailyProgress() {
-    dailyProgress = loadDailyProgressFromStorage();
-    console.log('📈 Loaded daily progress data from localStorage:', Object.keys(dailyProgress).length, 'days');
+    
+    // Always merge with localStorage to preserve any local data
+    const localData = loadDailyProgressFromStorage();
+    Object.keys(localData).forEach(date => {
+        if (!dailyProgress[date]) {
+            dailyProgress[date] = {};
+        }
+        Object.assign(dailyProgress[date], localData[date]);
+    });
+    
+    console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
+    console.log('📊 Today\'s progress:', dailyProgress[getTodayKey()] || 'No data for today');
+} else {
+    console.log('Server progress not available, using localStorage');
+    loadDailyProgress();
 }
 
        function saveDailyProgress() {
@@ -833,13 +848,16 @@ if (newCompleted) {
     // Don't update lastCompletedDate when uncompleting - keep the actual last completion
 }
 
-    // Save to server (don't wait for it to complete)
-saveProgressToServer(goalId, newCompleted, goal.area, today).catch(error => {
-    console.log('Server save failed, but localStorage backup is working:', error.message);
-});
-
-    // Save locally as backup
+// Save locally first (immediate backup)
     saveDailyProgress();
+    
+    // Save to server for long-term storage
+    const serverSaved = await saveProgressToServer(goalId, newCompleted, goal.area, today);
+    if (serverSaved) {
+        console.log('✅ Progress saved to long-term server storage');
+    } else {
+        console.log('⚠️ Server save failed, but data is safe in localStorage');
+    }
 
     // Update UI
     updateTaskUI(goalId);
@@ -848,14 +866,16 @@ saveProgressToServer(goalId, newCompleted, goal.area, today).catch(error => {
 
     console.log(`📝 Task ${goalId} ${newCompleted ? 'completed' : 'uncompleted'}`);
 }
-       // Save progress to server - NEW
-async function saveProgressToServer(goalId, completed, area, date) {
+
+        async function saveProgressToServer(goalId, completed, area, date) {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
-            console.log('No auth token, saving locally only');
-            return;
+            console.log('❌ No auth token, cannot save to server');
+            return false;
         }
+
+        console.log('💾 Saving to server:', { goalId, completed, area, date });
 
         const response = await fetch(`${API_BASE_URL}/api/daily-progress`, {
             method: 'POST',
@@ -872,15 +892,20 @@ async function saveProgressToServer(goalId, completed, area, date) {
         });
 
         if (response.ok) {
-            console.log('✅ Progress saved to server');
+            const result = await response.json();
+            console.log('✅ Progress saved to server successfully');
+            return true;
         } else {
-            console.log('❌ Failed to save to server, using localStorage backup');
+            const errorText = await response.text();
+            console.log('❌ Server save failed:', response.status, errorText);
+            return false;
         }
 
     } catch (error) {
-        console.error('Error saving progress to server:', error);
+        console.error('❌ Error saving progress to server:', error);
+        return false;
     }
-} 
+}
         
         // Update task UI after toggle
         function updateTaskUI(goalId) {
