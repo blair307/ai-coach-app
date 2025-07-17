@@ -391,10 +391,10 @@
             margin-bottom: 3rem;
         }
 
-     .testimonials-wrapper {
+    .testimonials-wrapper {
     position: relative;
     overflow: hidden;
-    max-width: 996px; /* Exactly 3 cards + 2 gaps: (300*3) + (32*2) */
+    max-width: 996px; /* Exactly 3 cards + 2 gaps */
     margin: 0 auto;
 }
 
@@ -410,11 +410,16 @@
     border-radius: var(--radius-xl);
     padding: 2rem;
     color: var(--text-primary);
-    box-shadow: var(--shadow-xl);
+    /* REMOVED: box-shadow: var(--shadow-xl); */
     transition: all 0.3s ease;
     text-align: center;
     width: 300px;
     flex-shrink: 0;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    /* REMOVED: box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2); */
 }
 
         .testimonial-card:hover {
@@ -742,34 +747,49 @@
     const cardWidth = 300;
     const gap = 32;
     
+    // Duplicate the testimonials for infinite effect
+    document.addEventListener('DOMContentLoaded', function() {
+        const grid = document.getElementById('testimonialsGrid');
+        const cards = grid.children;
+        
+        // Clone all cards and append them for seamless looping
+        for (let i = 0; i < cards.length; i++) {
+            const clone = cards[i].cloneNode(true);
+            grid.appendChild(clone);
+        }
+    });
+    
     function slideTestimonials(direction) {
         const grid = document.getElementById('testimonialsGrid');
         
         if (direction === 'next') {
             currentSlide++;
-            if (currentSlide >= totalSlides) {
-                currentSlide = 0; // Loop back to start
-            }
         } else if (direction === 'prev') {
             currentSlide--;
-            if (currentSlide < 0) {
-                currentSlide = totalSlides - 1; // Loop to end
-            }
         }
 
-        // Move by one card width + gap
         const translateX = currentSlide * (cardWidth + gap);
         grid.style.transform = `translateX(-${translateX}px)`;
+        
+        // Reset position seamlessly when we reach the end/beginning
+        setTimeout(() => {
+            if (currentSlide >= totalSlides) {
+                grid.style.transition = 'none';
+                currentSlide = 0;
+                grid.style.transform = `translateX(0px)`;
+                setTimeout(() => {
+                    grid.style.transition = 'transform 0.5s ease';
+                }, 50);
+            } else if (currentSlide < 0) {
+                grid.style.transition = 'none';
+                currentSlide = totalSlides - 1;
+                grid.style.transform = `translateX(-${(currentSlide * (cardWidth + gap))}px)`;
+                setTimeout(() => {
+                    grid.style.transition = 'transform 0.5s ease';
+                }, 50);
+            }
+        }, 500);
     }
-
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        // Remove disabled states since we're looping
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        prevBtn.disabled = false;
-        nextBtn.disabled = false;
-    });
 </script>
 </body>
 </html>
