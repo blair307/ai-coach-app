@@ -651,8 +651,7 @@ function loadDailyProgressFromStorage() {
     }
 }
         
-      // Load goals from backend API - UPDATED to use life-goals endpoint
-async function loadGoalsFromBackend() {
+    async function loadGoalsFromBackend() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         
@@ -669,49 +668,35 @@ async function loadGoalsFromBackend() {
             }
         });
 
-      if (response.ok) {
-    const progressRecords = await response.json();
-    
-    // Convert server data to our local format
-    dailyProgress = {};
-    
-    // Handle null/empty server response safely
-    if (progressRecords && Array.isArray(progressRecords) && progressRecords.length > 0) {
-        progressRecords.forEach(record => {
-            if (record && record.date && record.goalProgress) {
-                dailyProgress[record.date] = {};
-                
-                // Safely handle goalProgress array
-                if (Array.isArray(record.goalProgress)) {
-                    record.goalProgress.forEach(gp => {
-                        if (gp && gp.goalId !== undefined) {
-                            const goalIdStr = gp.goalId.toString();
-                            dailyProgress[record.date][goalIdStr] = gp.completed;
-                        }
-                    });
-                }
+        if (response.ok) {
+            allGoals = await response.json();
+            console.log('📋 Loaded goals from API:', allGoals.length);
+        } else {
+            console.log('API not available, using localStorage fallback');
+            const stored = localStorage.getItem('lifeGoals');
+            if (stored) {
+                const storedGoals = JSON.parse(stored);
+                allGoals = [];
+                Object.values(storedGoals).forEach(areaGoals => {
+                    allGoals.push(...areaGoals);
+                });
+            } else {
+                allGoals = [];
             }
-        });
-    } else {
-        console.log('📊 Server returned empty/null data, starting fresh');
-    }
-    
-    // Always merge with localStorage to preserve any local data
-    const localData = loadDailyProgressFromStorage();
-    Object.keys(localData).forEach(date => {
-        if (!dailyProgress[date]) {
-            dailyProgress[date] = {};
         }
-        Object.assign(dailyProgress[date], localData[date]);
-    });
-    
-    console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
-    console.log('📊 Today\'s progress:', dailyProgress[getTodayKey()] || 'No data for today');
-} else {
-    console.log('Server progress not available, using localStorage');
-    loadDailyProgress();
+        
+    } catch (error) {
+        console.error('Error loading goals from backend:', error);
+        allGoals = [];
+    }
 }
 
+// Load daily progress from localStorage
+function loadDailyProgress() {
+    dailyProgress = loadDailyProgressFromStorage();
+    console.log('📈 Loaded daily progress data from localStorage:', Object.keys(dailyProgress).length, 'days');
+}
+        
        function saveDailyProgress() {
     try {
         localStorage.setItem('eeh_daily_progress', JSON.stringify(dailyProgress));
