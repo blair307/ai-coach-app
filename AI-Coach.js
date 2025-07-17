@@ -333,11 +333,19 @@ async function selectCoach(coachId) {
             // Update display
             updateCoachDisplay();
             
-            // Show confirmation and hide selector after delay
-            setTimeout(() => {
-                hideCoachSelector();
-                showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
-            }, 1000);
+        // IMMEDIATE hide for mobile, delayed for desktop
+const isMobile = window.innerWidth <= 768;
+if (isMobile) {
+    // Hide immediately on mobile
+    hideCoachSelector();
+    showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
+} else {
+    // Keep the nice animation delay on desktop
+    setTimeout(() => {
+        hideCoachSelector();
+        showToast(`Great choice! You're now chatting with ${COACHES[coachId].name}`);
+    }, 1000);
+}
             
         } else {
             console.error('❌ Failed to update coach in database:', response.status);
