@@ -1267,6 +1267,24 @@
     gap: 2rem;
 }
 
+.coach-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    overflow: hidden;
+    width: 300px;
+    flex-shrink: 0;
+    min-height: 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 .coach-nav {
     display: flex;
     justify-content: center;
@@ -1385,45 +1403,53 @@
                     <p>Select from 4 unique coaching personalities, each designed to help you succeed in your own way</p>
                 </div>
                 
-               <div class="coaches-wrapper">
+             <div class="coaches-wrapper">
     <div class="coaches-grid" id="coachesGrid">
         <div class="coach-card">
-            <div class="coach-avatar blair">
-                <img src="images/blair.png" alt="Blair Reynolds" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            <div>
+                <div class="coach-avatar blair">
+                    <img src="images/blair_reynolds.jpg" alt="Blair Reynolds" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <h3>Blair Reynolds</h3>
+                <div class="coach-specialty">Transformational Coach</div>
+                <p class="coach-description">Combines deep empathy with humor to help you break through emotional barriers.</p>
             </div>
-            <h3>Blair Reynolds</h3>
-            <div class="coach-specialty">Transformational Coach</div>
-            <p class="coach-description">Combines deep empathy with humor to help you break through emotional barriers and integrate personal growth with business success.</p>
             <a href="signup.html" class="coach-btn">Meet Blair</a>
         </div>
         
         <div class="coach-card">
-            <div class="coach-avatar dave">
-                <img src="images/dave.png" alt="Dave Charlson" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            <div>
+                <div class="coach-avatar dave">
+                    <img src="images/dave_charlson.jpg" alt="Dave Charlson" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <h3>Dave Charlson</h3>
+                <div class="coach-specialty">Strategic Growth Coach</div>
+                <p class="coach-description">Focuses on sustainable growth and work-life integration with practical strategies.</p>
             </div>
-            <h3>Dave Charlson</h3>
-            <div class="coach-specialty">Strategic Growth Coach</div>
-            <p class="coach-description">Focuses on sustainable growth and work-life integration with practical strategies you can implement immediately.</p>
             <a href="signup.html" class="coach-btn">Meet Dave</a>
         </div>
         
         <div class="coach-card">
-            <div class="coach-avatar alex">
-                <img src="images/alex.png" alt="Alex Stone" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            <div>
+                <div class="coach-avatar alex">
+                    <img src="images/alex_stone.jpg" alt="Alex Stone" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <h3>Alex Stone</h3>
+                <div class="coach-specialty">Executive Performance Coach</div>
+                <p class="coach-description">Direct and confrontational approach that challenges your limitations and drives breakthrough results.</p>
             </div>
-            <h3>Alex Stone</h3>
-            <div class="coach-specialty">Executive Performance Coach</div>
-            <p class="coach-description">Direct and confrontational approach that challenges your limitations and drives breakthrough results through tough love.</p>
             <a href="signup.html" class="coach-btn">Meet Alex</a>
         </div>
         
         <div class="coach-card">
-            <div class="coach-avatar sam">
-                <img src="images/sam.png" alt="Sam Heart" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+            <div>
+                <div class="coach-avatar sam">
+                    <img src="images/sam_heart.jpg" alt="Sam Heart" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                </div>
+                <h3>Sam Heart</h3>
+                <div class="coach-specialty">Compassionate Support Coach</div>
+                <p class="coach-description">Offers unconditional support and meets you exactly where you are with infinite patience.</p>
             </div>
-            <h3>Sam Heart</h3>
-            <div class="coach-specialty">Compassionate Support Coach</div>
-            <p class="coach-description">Offers unconditional support and meets you exactly where you are with infinite patience and understanding.</p>
             <a href="signup.html" class="coach-btn">Meet Sam</a>
         </div>
     </div>
