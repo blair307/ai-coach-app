@@ -568,7 +568,6 @@ async function loadGoalsAndProgress() {
     }
 }
 
-// Load progress data from server - ENHANCED
 async function loadProgressFromServer() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
@@ -596,14 +595,38 @@ async function loadProgressFromServer() {
             
             // Convert server data to our local format
             dailyProgress = {};
-            progressRecords.forEach(record => {
-                dailyProgress[record.date] = {};
-                record.goalProgress.forEach(gp => {
-                    // Use string IDs to match what's in allGoals
-                    const goalIdStr = gp.goalId.toString();
-                    dailyProgress[record.date][goalIdStr] = gp.completed;
+            
+            // Handle both array and null responses safely
+            if (progressRecords && Array.isArray(progressRecords)) {
+                progressRecords.forEach(record => {
+                    if (record && record.date && record.goalProgress) {
+                        dailyProgress[record.date] = {};
+                        
+                        // Safely handle goalProgress array
+                        if (Array.isArray(record.goalProgress)) {
+                            record.goalProgress.forEach(gp => {
+                                if (gp && gp.goalId !== undefined) {
+                                    const goalIdStr = gp.goalId.toString();
+                                    dailyProgress[record.date][goalIdStr] = gp.completed;
+                                }
+                            });
+                        }
+                    }
                 });
-            });
+            }
+            
+            // Always merge with localStorage data
+            const localProgress = loadDailyProgressFromStorage();
+            if (localProgress && Object.keys(localProgress).length > 0) {
+                console.log('📊 Merging server data with local storage...');
+                // Merge local data with server data (local takes precedence for conflicts)
+                Object.keys(localProgress).forEach(date => {
+                    if (!dailyProgress[date]) {
+                        dailyProgress[date] = {};
+                    }
+                    Object.assign(dailyProgress[date], localProgress[date]);
+                });
+            }
             
             console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
             console.log('📊 Today\'s progress:', dailyProgress[getTodayKey()] || 'No data for today');
@@ -618,7 +641,17 @@ async function loadProgressFromServer() {
     }
 }
         
-
+// Load daily progress from localStorage (separate function for better control)
+function loadDailyProgressFromStorage() {
+    try {
+        const stored = localStorage.getItem('eeh_daily_progress');
+        return stored ? JSON.parse(stored) : {};
+    } catch (error) {
+        console.error('Error loading daily progress from localStorage:', error);
+        return {};
+    }
+}
+        
       // Load goals from backend API - UPDATED to use life-goals endpoint
 async function loadGoalsFromBackend() {
     try {
@@ -660,27 +693,27 @@ async function loadGoalsFromBackend() {
     }
 }
 
-        // Load daily progress from localStorage
         function loadDailyProgress() {
-            try {
-                const stored = localStorage.getItem('eeh_daily_progress');
-                dailyProgress = stored ? JSON.parse(stored) : {};
-                console.log('📈 Loaded daily progress data');
-            } catch (error) {
-                console.error('Error loading daily progress:', error);
-                dailyProgress = {};
-            }
-        }
+    dailyProgress = loadDailyProgressFromStorage();
+    console.log('📈 Loaded daily progress data from localStorage:', Object.keys(dailyProgress).length, 'days');
+}
 
-        // Save daily progress to localStorage
-        function saveDailyProgress() {
-            try {
-                localStorage.setItem('eeh_daily_progress', JSON.stringify(dailyProgress));
-                console.log('💾 Daily progress saved');
-            } catch (error) {
-                console.error('Error saving daily progress:', error);
-            }
-        }
+       function saveDailyProgress() {
+    try {
+        localStorage.setItem('eeh_daily_progress', JSON.stringify(dailyProgress));
+        console.log('💾 Daily progress saved to localStorage:', Object.keys(dailyProgress).length, 'days');
+        
+        // Also save a backup with timestamp
+        const backup = {
+            data: dailyProgress,
+            timestamp: new Date().toISOString(),
+            version: '1.0'
+        };
+        localStorage.setItem('eeh_daily_progress_backup', JSON.stringify(backup));
+    } catch (error) {
+        console.error('Error saving daily progress:', error);
+    }
+}
 
         // Generate tracker cards for each life area
         function generateTrackerCards() {
