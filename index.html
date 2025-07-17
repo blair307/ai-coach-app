@@ -394,7 +394,7 @@
 .testimonials-wrapper {
     position: relative;
     overflow: hidden;
-    max-width: 996px;
+    max-width: 996px; /* Exactly 3 cards + 2 gaps */
     margin: 0 auto;
 }
 
@@ -410,6 +410,7 @@
     border-radius: var(--radius-xl);
     padding: 2rem;
     color: var(--text-primary);
+    /* REMOVED: box-shadow: var(--shadow-xl); */
     transition: all 0.3s ease;
     text-align: center;
     width: 300px;
@@ -418,6 +419,7 @@
 
 .testimonial-card:hover {
     transform: translateY(-5px);
+    /* REMOVED: box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2); */
 }
 
 .testimonial-avatar {
