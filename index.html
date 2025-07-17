@@ -735,35 +735,38 @@
     </footer>
 
     <script>
-        let currentSlide = 0;
-        const totalSlides = 6; // Total number of testimonials
-        const slidesToShow = 3; // Show 3 cards at once
-        const maxSlide = totalSlides - slidesToShow;
+ <script>
+    let currentSlide = 0;
+    const totalSlides = 6; // Total number of testimonials
+    const maxSlide = totalSlides - 3; // Can scroll 3 times (positions 0,1,2,3)
 
-        function slideTestimonials(direction) {
-            const grid = document.getElementById('testimonialsGrid');
-            const prevBtn = document.getElementById('prevBtn');
-            const nextBtn = document.getElementById('nextBtn');
+    function slideTestimonials(direction) {
+        const grid = document.getElementById('testimonialsGrid');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
 
-            if (direction === 'next' && currentSlide < maxSlide) {
-                currentSlide++;
-            } else if (direction === 'prev' && currentSlide > 0) {
-                currentSlide--;
-            }
-
-            // Calculate the translate percentage
-            const translateX = -(currentSlide * (100 / slidesToShow));
-            grid.style.transform = `translateX(${translateX}%)`;
-
-            // Update button states
-            prevBtn.disabled = currentSlide === 0;
-            nextBtn.disabled = currentSlide === maxSlide;
+        if (direction === 'next' && currentSlide < maxSlide) {
+            currentSlide++;
+        } else if (direction === 'prev' && currentSlide > 0) {
+            currentSlide--;
         }
 
-        // Initialize button states on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            slideTestimonials(''); // Initialize button states
-        });
+        // Each slide moves one card width (33.333% + gap)
+        const slideWidth = 33.333 + (2 / 3); // Card width + proportional gap
+        const translateX = -(currentSlide * slideWidth);
+        grid.style.transform = `translateX(${translateX}%)`;
+
+        // Update button states
+        prevBtn.disabled = currentSlide === 0;
+        nextBtn.disabled = currentSlide === maxSlide;
+    }
+
+    // Initialize button states on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const prevBtn = document.getElementById('prevBtn');
+        prevBtn.disabled = true; // Start with prev disabled
+    });
+</script>
     </script>
 </body>
 </html>
