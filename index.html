@@ -396,24 +396,25 @@
             overflow: hidden;
         }
 
-        .testimonials-grid {
-            display: flex;
-            transition: transform 0.5s ease;
-            gap: 2rem;
-        }
+     .testimonials-grid {
+    display: flex;
+    transition: transform 0.5s ease;
+    gap: 2rem;
+}
 
-        .testimonial-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
-            padding: 2.5rem;
-            color: var(--text-primary);
-            box-shadow: var(--shadow-xl);
-            transition: all 0.3s ease;
-            text-align: center;
-            min-width: calc(33.333% - 1.333rem);
-            flex-shrink: 0;
-        }
+.testimonial-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-xl);
+    padding: 2rem;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-xl);
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 300px;
+    max-width: 300px;
+    flex-shrink: 0;
+}
 
         .testimonial-card:hover {
             transform: translateY(-5px);
@@ -735,38 +736,40 @@
     </footer>
 
     <script>
- <script>
-    let currentSlide = 0;
-    const totalSlides = 6; // Total number of testimonials
-    const maxSlide = totalSlides - 3; // Can scroll 3 times (positions 0,1,2,3)
 
+    let currentSlide = 0;
+    const totalSlides = 6;
+    const cardWidth = 300; // Fixed card width
+    const gap = 32; // 2rem = 32px
+    const containerWidth = 1200; // Max container width
+    const visibleWidth = containerWidth - 64; // Account for padding
+    
     function slideTestimonials(direction) {
         const grid = document.getElementById('testimonialsGrid');
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
 
-        if (direction === 'next' && currentSlide < maxSlide) {
+        if (direction === 'next' && currentSlide < 3) {
             currentSlide++;
         } else if (direction === 'prev' && currentSlide > 0) {
             currentSlide--;
         }
 
-        // Each slide moves one card width (33.333% + gap)
-        const slideWidth = 33.333 + (2 / 3); // Card width + proportional gap
-        const translateX = -(currentSlide * slideWidth);
-        grid.style.transform = `translateX(${translateX}%)`;
+        // Move by one card width + gap
+        const translateX = currentSlide * (cardWidth + gap);
+        grid.style.transform = `translateX(-${translateX}px)`;
 
         // Update button states
         prevBtn.disabled = currentSlide === 0;
-        nextBtn.disabled = currentSlide === maxSlide;
+        nextBtn.disabled = currentSlide === 3;
     }
 
-    // Initialize button states on page load
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        const prevBtn = document.getElementById('prevBtn');
-        prevBtn.disabled = true; // Start with prev disabled
+        slideTestimonials('');
     });
-</script>
+
+
     </script>
 </body>
 </html>
