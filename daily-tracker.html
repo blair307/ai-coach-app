@@ -569,15 +569,18 @@ async function loadGoalsAndProgress() {
 }
 
 async function loadProgressFromServer() {
+    // Always start with localStorage data first
+    loadDailyProgress();
+    
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
         if (!token) {
-            console.log('No auth token, using localStorage fallback');
-            loadDailyProgress();
+            console.log('No auth token, using localStorage only');
             return;
         }
 
-        // Get last 30 days of progress
+        console.log('📡 Attempting to load progress from server...');
+
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const startDate = thirtyDaysAgo.toISOString().split('T')[0];
@@ -590,54 +593,50 @@ async function loadProgressFromServer() {
             }
         });
 
-        if (response.ok) {
-            const progressRecords = await response.json();
-            
-            // Convert server data to our local format
-            dailyProgress = {};
-            
-            // Handle both array and null responses safely
-            if (progressRecords && Array.isArray(progressRecords)) {
-                progressRecords.forEach(record => {
-                    if (record && record.date && record.goalProgress) {
-                        dailyProgress[record.date] = {};
-                        
-                        // Safely handle goalProgress array
-                        if (Array.isArray(record.goalProgress)) {
-                            record.goalProgress.forEach(gp => {
-                                if (gp && gp.goalId !== undefined) {
-                                    const goalIdStr = gp.goalId.toString();
-                                    dailyProgress[record.date][goalIdStr] = gp.completed;
-                                }
-                            });
-                        }
-                    }
-                });
-            }
-            
-            // Always merge with localStorage data
-            const localProgress = loadDailyProgressFromStorage();
-            if (localProgress && Object.keys(localProgress).length > 0) {
-                console.log('📊 Merging server data with local storage...');
-                // Merge local data with server data (local takes precedence for conflicts)
-                Object.keys(localProgress).forEach(date => {
-                    if (!dailyProgress[date]) {
-                        dailyProgress[date] = {};
-                    }
-                    Object.assign(dailyProgress[date], localProgress[date]);
-                });
-            }
-            
-            console.log('📈 Loaded progress from server:', Object.keys(dailyProgress).length, 'days');
-            console.log('📊 Today\'s progress:', dailyProgress[getTodayKey()] || 'No data for today');
-        } else {
-            console.log('Server progress not available, using localStorage');
-            loadDailyProgress();
+        if (!response.ok) {
+            console.log('❌ Server response not OK, using localStorage only');
+            return;
         }
 
+        const data = await response.json();
+        
+        // If server returns null, empty, or invalid data, just skip it
+        if (!data || !Array.isArray(data) || data.length === 0) {
+            console.log('📊 Server returned no progress data, using localStorage only');
+            return;
+        }
+
+        // Safely process server data
+        console.log('✅ Server returned valid data, merging with localStorage...');
+        
+        data.forEach(record => {
+            // Skip any invalid records
+            if (!record || !record.date || !record.goalProgress || !Array.isArray(record.goalProgress)) {
+                return;
+            }
+            
+            // Initialize date if not exists
+            if (!dailyProgress[record.date]) {
+                dailyProgress[record.date] = {};
+            }
+            
+            // Safely process each goal progress
+            record.goalProgress.forEach(gp => {
+                if (gp && gp.goalId != null && typeof gp.completed === 'boolean') {
+                    const goalIdStr = String(gp.goalId);
+                    dailyProgress[record.date][goalIdStr] = gp.completed;
+                }
+            });
+        });
+        
+        // Save the merged data back to localStorage
+        saveDailyProgress();
+        
+        console.log('✅ Progress successfully merged from server');
+        
     } catch (error) {
-        console.error('Error loading progress from server:', error);
-        loadDailyProgress();
+        console.log('❌ Error loading from server, using localStorage only:', error.message);
+        // Don't throw - just continue with localStorage data
     }
 }
         
@@ -834,8 +833,10 @@ if (newCompleted) {
     // Don't update lastCompletedDate when uncompleting - keep the actual last completion
 }
 
-    // Save to server
-    await saveProgressToServer(goalId, newCompleted, goal.area, today);
+    // Save to server (don't wait for it to complete)
+saveProgressToServer(goalId, newCompleted, goal.area, today).catch(error => {
+    console.log('Server save failed, but localStorage backup is working:', error.message);
+});
 
     // Save locally as backup
     saveDailyProgress();
