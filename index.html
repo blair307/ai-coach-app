@@ -391,12 +391,14 @@
             margin-bottom: 3rem;
         }
 
-        .testimonials-wrapper {
-            position: relative;
-            overflow: hidden;
-        }
+     .testimonials-wrapper {
+    position: relative;
+    overflow: hidden;
+    max-width: 996px; /* Exactly 3 cards + 2 gaps: (300*3) + (32*2) */
+    margin: 0 auto;
+}
 
-     .testimonials-grid {
+.testimonials-grid {
     display: flex;
     transition: transform 0.5s ease;
     gap: 2rem;
@@ -411,8 +413,7 @@
     box-shadow: var(--shadow-xl);
     transition: all 0.3s ease;
     text-align: center;
-    min-width: 300px;
-    max-width: 300px;
+    width: 300px;
     flex-shrink: 0;
 }
 
@@ -735,41 +736,40 @@
         <p>&copy; 2025 Entrepreneur Emotional Health. All rights reserved.</p>
     </footer>
 
-    <script>
-
+<script>
     let currentSlide = 0;
     const totalSlides = 6;
-    const cardWidth = 300; // Fixed card width
-    const gap = 32; // 2rem = 32px
-    const containerWidth = 1200; // Max container width
-    const visibleWidth = containerWidth - 64; // Account for padding
+    const cardWidth = 300;
+    const gap = 32;
     
     function slideTestimonials(direction) {
         const grid = document.getElementById('testimonialsGrid');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        if (direction === 'next' && currentSlide < 3) {
+        
+        if (direction === 'next') {
             currentSlide++;
-        } else if (direction === 'prev' && currentSlide > 0) {
+            if (currentSlide >= totalSlides) {
+                currentSlide = 0; // Loop back to start
+            }
+        } else if (direction === 'prev') {
             currentSlide--;
+            if (currentSlide < 0) {
+                currentSlide = totalSlides - 1; // Loop to end
+            }
         }
 
         // Move by one card width + gap
         const translateX = currentSlide * (cardWidth + gap);
         grid.style.transform = `translateX(-${translateX}px)`;
-
-        // Update button states
-        prevBtn.disabled = currentSlide === 0;
-        nextBtn.disabled = currentSlide === 3;
     }
 
     // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
-        slideTestimonials('');
+        // Remove disabled states since we're looping
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        prevBtn.disabled = false;
+        nextBtn.disabled = false;
     });
-
-
-    </script>
+</script>
 </body>
 </html>
