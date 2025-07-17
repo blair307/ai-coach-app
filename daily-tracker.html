@@ -201,24 +201,25 @@
             font-weight: 500;
         }
 
-        .month-bar-container {
-            height: 100px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
+       .month-bar-container {
+    height: 100px;
+    background: rgba(38, 150, 254, 0.2);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
 
-        .month-progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            transition: height 0.5s ease;
-            border-radius: 0 0 var(--radius) var(--radius);
-        }
+.month-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: height 0.8s ease;
+    border-radius: 0 0 8px 8px;
+    animation: fillUp 2s ease-in-out infinite alternate;
+}
 
         .month-bar-percentage {
             position: absolute;
@@ -238,35 +239,59 @@
             margin-bottom: 2rem;
         }
 
-        .week-bar {
-            text-align: center;
-        }
+       .week-bar, .month-bar {
+    text-align: center;
+}
 
-        .week-day {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
+.week-day, .month-day {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
 
-        .bar-container {
-            height: 120px;
-            background: var(--surface);
-            border-radius: var(--radius);
-            position: relative;
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
+.weekly-bars {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
 
-        .progress-bar {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            transition: height 0.5s ease;
-            border-radius: 0 0 var(--radius) var(--radius);
-        }
+.monthly-bars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+       .bar-container {
+    height: 120px;
+    background: rgba(38, 150, 254, 0.2);
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+    border: none;
+}
+
+.progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: height 0.8s ease;
+    border-radius: 0 0 8px 8px;
+    animation: fillUp 2s ease-in-out infinite alternate;
+}
+
+@keyframes fillUp {
+    0% { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    100% { 
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+}
 
         .bar-percentage {
             position: absolute;
