@@ -578,6 +578,665 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Coach Section Styles */
+        .coaches-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .coach-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .coach-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .coach-card:hover::before {
+            left: 100%;
+        }
+
+        .coach-card:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .coach-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem auto;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .coach-avatar.blair {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .coach-avatar.dave {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .coach-avatar.alex {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+        }
+
+        .coach-avatar.sam {
+            background: linear-gradient(135deg, #f472b6 0%, #ec4899 100%);
+        }
+
+        .coach-specialty {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .coach-description {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .coach-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .coach-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Community Section Styles */
+        .community-section {
+            background: white;
+            padding: 6rem 2rem;
+        }
+
+        .community-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .community-features {
+            list-style: none;
+            margin: 2rem 0;
+        }
+
+        .community-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            color: #64748b;
+            font-size: 1.1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .community-features li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(38, 150, 254, 0.4);
+        }
+
+        .community-preview {
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 0;
+            border: 2px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .chat-interface {
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+            background: white;
+        }
+
+        .chat-header-preview {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-header-preview h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .online-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .chat-messages-preview {
+            flex: 1;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(248,250,252,0.9) 100%);
+        }
+
+        .message-bubble {
+            display: flex;
+            margin-bottom: 1.5rem;
+            animation: messageSlideIn 0.3s ease;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .message-avatar.sarah { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .message-avatar.mike { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .message-avatar.alex { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+        .message-content {
+            flex: 1;
+            background: white;
+            padding: 1rem 1.25rem;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            position: relative;
+        }
+
+        .message-content::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 16px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid white;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .message-username {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .message-text {
+            color: #374151;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .message-content:hover .message-actions {
+            opacity: 1;
+        }
+
+        .action-btn-preview {
+            background: none;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn-preview:hover {
+            background: #f1f5f9;
+            color: #2696FE;
+            border-color: #2696FE;
+        }
+
+        .chat-input-preview {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            padding: 0.75rem 1rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-container:focus-within {
+            border-color: #2696FE;
+        }
+
+        .mock-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            color: #94a3b8;
+            background: transparent;
+        }
+
+        .send-btn-preview {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .send-btn-preview:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(38, 150, 254, 0.4);
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #f1f5f9;
+            border-radius: 20px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: typingPulse 1.4s ease-in-out infinite both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes typingPulse {
+            0%, 80%, 100% { 
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Features Showcase Styles */
+        .features-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .feature-visual {
+            width: 100%;
+            height: 200px;
+            border-radius: 16px;
+            background: rgba(38, 150, 254, 0.1);
+            border: 2px solid rgba(38, 150, 254, 0.2);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .goals-visual {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+        }
+
+        .goal-area-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border-left: 4px solid #8b5cf6;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+
+        .goal-area-card.body {
+            border-left-color: #10b981;
+        }
+
+        .goal-area-card.work {
+            border-left-color: #f59e0b;
+        }
+
+        .goal-progress {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .tracker-visual {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .tracker-week {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            justify-content: center;
+        }
+
+        .tracker-day {
+            width: 25px;
+            height: 40px;
+            background: rgba(38, 150, 254, 0.2);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tracker-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 0 0 4px 4px;
+            animation: fillUp 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes fillUp {
+            0% { height: 20%; }
+            100% { height: 90%; }
+        }
+
+        .tracker-day:nth-child(1) .tracker-fill { animation-delay: 0s; height: 80%; }
+        .tracker-day:nth-child(2) .tracker-fill { animation-delay: 0.2s; height: 60%; }
+        .tracker-day:nth-child(3) .tracker-fill { animation-delay: 0.4s; height: 95%; }
+        .tracker-day:nth-child(4) .tracker-fill { animation-delay: 0.6s; height: 40%; }
+        .tracker-day:nth-child(5) .tracker-fill { animation-delay: 0.8s; height: 85%; }
+        .tracker-day:nth-child(6) .tracker-fill { animation-delay: 1s; height: 70%; }
+        .tracker-day:nth-child(7) .tracker-fill { animation-delay: 1.2s; height: 90%; }
+
+        .tracker-stats {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+            color: #64748b;
+        }
+
+        .tracker-stat {
+            text-align: center;
+        }
+
+        .tracker-stat-number {
+            font-weight: 700;
+            color: #2696FE;
+            font-size: 0.9rem;
+        }
+
+        .prompt-visual {
+            width: 100%;
+            height: 100%;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .prompt-card-preview {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            border-left: 4px solid #2696FE;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .prompt-header-preview {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+            color: white;
+            padding: 0.75rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+      .prompt-question-preview {
+           font-size: 0.75rem;
+           color: #1e293b;
+           font-weight: 500;
+           line-height: 1.4;
+           margin-bottom: 0.5rem;
+           font-style: italic;
+       }
+
+       .prompt-textarea-preview {
+           width: 100%;
+           height: 30px;
+           border: 2px solid #e2e8f0;
+           border-radius: 6px;
+           background: #f8fafc;
+           font-size: 0.7rem;
+           padding: 0.5rem;
+           color: #64748b;
+           resize: none;
+       }
+
+       .prompt-stats {
+           display: flex;
+           justify-content: space-between;
+           margin-top: 0.5rem;
+           font-size: 0.65rem;
+           color: #10b981;
+           font-weight: 600;
+       }
+
+       /* Section headers */
+       .section {
+           padding: 6rem 2rem;
+       }
+
+       .container {
+           max-width: 1200px;
+           margin: 0 auto;
+       }
+
+       .section-header {
+           text-align: center;
+           margin-bottom: 2rem;
+       }
+
+       .section-header h2 {
+           font-size: 3rem;
+           font-weight: 800;
+           margin-bottom: 1rem;
+       }
+
+       .gradient-bg .section-header h2 {
+           color: white;
+       }
+
+       .section-header p {
+           font-size: 1.2rem;
+           max-width: 600px;
+           margin: 0 auto;
+           opacity: 0.9;
+       }
+
+       /* CTA Button */
+       .cta-btn {
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+           color: white;
+           padding: 1rem 2rem;
+           border: none;
+           border-radius: 12px;
+           font-weight: 600;
+           font-size: 1.1rem;
+           cursor: pointer;
+           transition: all 0.3s ease;
+           text-decoration: none;
+           display: inline-block;
+           margin-top: 1rem;
+       }
+
+       .cta-btn:hover {
+           transform: translateY(-3px);
+           box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+       }
+
+       /* Responsive Design */
+       @media (max-width: 768px) {
+           .community-content {
+               grid-template-columns: 1fr;
+               gap: 2rem;
+           }
+
+           .section-header h2 {
+               font-size: 2rem;
+           }
+
+           .coaches-grid {
+               grid-template-columns: 1fr;
+           }
+
+           .features-showcase {
+               grid-template-columns: 1fr;
+           }
+
+           .chat-interface {
+               height: 400px;
+           }
+
+           .chat-messages-preview {
+               padding: 1rem;
+           }
+       }
     </style>
 </head>
 <body>
@@ -661,6 +1320,228 @@
             </div>
         </section>
 
+        <!-- Section: Choose Your Coach (with gradient background) -->
+        <section class="section gradient-bg">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Choose Your AI Coach</h2>
+                    <p>Select from 4 unique coaching personalities, each designed to help you succeed in your own way</p>
+                </div>
+                
+                <div class="coaches-grid">
+                    <div class="coach-card">
+                        <div class="coach-avatar blair">BR</div>
+                        <h3>Blair Reynolds</h3>
+                        <div class="coach-specialty">Transformational Coach</div>
+                        <p class="coach-description">Combines deep empathy with humor to help you break through emotional barriers and integrate personal growth with business success.</p>
+                        <a href="#" class="coach-btn">Meet Blair</a>
+                    </div>
+                    
+                    <div class="coach-card">
+                        <div class="coach-avatar dave">DC</div>
+                        <h3>Dave Charlson</h3>
+                        <div class="coach-specialty">Strategic Growth Coach</div>
+                        <p class="coach-description">Focuses on sustainable growth and work-life integration with practical strategies you can implement immediately.</p>
+                        <a href="#" class="coach-btn">Meet Dave</a>
+                    </div>
+                    
+                    <div class="coach-card">
+                        <div class="coach-avatar alex">AS</div>
+                        <h3>Alex Stone</h3>
+                        <div class="coach-specialty">Executive Performance Coach</div>
+                        <p class="coach-description">Direct and confrontational approach that challenges your limitations and drives breakthrough results through tough love.</p>
+                        <a href="#" class="coach-btn">Meet Alex</a>
+                    </div>
+                    
+                    <div class="coach-card">
+                        <div class="coach-avatar sam">SH</div>
+                        <h3>Sam Heart</h3>
+                        <div class="coach-specialty">Compassionate Support Coach</div>
+                        <p class="coach-description">Offers unconditional support and meets you exactly where you are with infinite patience and understanding.</p>
+                        <a href="#" class="coach-btn">Meet Sam</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Entrepreneur Community (white background) -->
+        <section class="community-section">
+            <div class="container">
+                <div class="community-content">
+                    <div class="community-text">
+                        <h2>Join a Thriving Entrepreneur Community</h2>
+                        <p style="font-size: 1.1rem; color: #64748b; margin-bottom: 2rem;">Connect with like-minded entrepreneurs who understand your journey. Share experiences, get support, and build meaningful relationships in real-time conversations.</p>
+                        
+                        <ul class="community-features">
+                            <li>Real-time chat rooms for every aspect of entrepreneurship</li>
+                            <li>24/7 peer support from fellow business owners</li>
+                            <li>Share wins, challenges, and breakthrough moments</li>
+                            <li>Expert discussions on scaling, leadership, and innovation</li>
+                            <li>Safe space to be vulnerable about entrepreneur struggles</li>
+                            <li>Interactive features: likes, replies, image sharing</li>
+                        </ul>
+                        
+                        <a href="#" class="cta-btn">Join the Community</a>
+                    </div>
+                    
+                    <div class="community-preview">
+                        <div class="chat-interface">
+                            <div class="chat-header-preview">
+                                <h4>Business Growth</h4>
+                                <div class="online-count">247 online</div>
+                            </div>
+                            
+                            <div class="chat-messages-preview">
+                                <div class="message-bubble">
+                                    <div class="message-avatar sarah">SM</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-username">Sarah M.</span>
+                                            <span class="message-time">2m ago</span>
+                                        </div>
+                                        <p class="message-text">Just hit my first $100K month! The mindset work from our group calls really paid off 🎉</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn-preview">♥ 12</button>
+                                            <button class="action-btn-preview">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="message-bubble">
+                                    <div class="message-avatar mike">MK</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-username">Mike K.</span>
+                                            <span class="message-time">5m ago</span>
+                                        </div>
+                                        <p class="message-text">Struggling with team delegation. Any tips for letting go of control? Feel like I'm micromanaging everything.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn-preview">♥ 3</button>
+                                            <button class="action-btn-preview">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="message-bubble">
+                                    <div class="message-avatar alex">AL</div>
+                                    <div class="message-content">
+                                        <div class="message-header">
+                                            <span class="message-username">Alex L.</span>
+                                            <span class="message-time">6m ago</span>
+                                        </div>
+                                        <p class="message-text">@Mike K. Start small - delegate one task you hate doing first! I began with email management and worked up from there.</p>
+                                        <div class="message-actions">
+                                            <button class="action-btn-preview">♥ 8</button>
+                                            <button class="action-btn-preview">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="typing-indicator">
+                                    <span>Jessica is typing</span>
+                                    <div class="typing-dots">
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                        <div class="typing-dot"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input-preview">
+                                <div class="input-container">
+                                    <input type="text" class="mock-input" placeholder="Share your thoughts..." readonly>
+                                    <button class="send-btn-preview">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Goals, Tracking & Daily Prompts (with gradient background) -->
+        <section class="section gradient-bg">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Transform Your Life with Powerful Tools</h2>
+                    <p>Set meaningful goals, track daily progress, and develop deep self-awareness through reflection</p>
+                </div>
+                
+                <div class="features-showcase">
+                    <div class="feature-card">
+                        <div class="feature-visual">
+                            <div class="goals-visual">
+                                <div class="goal-area-card">
+                                    <span style="font-weight: 600; color: #8b5cf6;">Mind Goals</span>
+                                    <div class="goal-progress">2/3</div>
+                                </div>
+                                <div class="goal-area-card body">
+                                    <span style="font-weight: 600; color: #10b981;">Body Goals</span>
+                                    <div class="goal-progress">1/2</div>
+                                </div>
+                                <div class="goal-area-card work">
+                                    <span style="font-weight: 600; color: #f59e0b;">Work Goals</span>
+                                    <div class="goal-progress">3/4</div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3>Life Goals</h3>
+                        <p>Set meaningful goals across all 7 areas of life - Mind, Spirit, Body, Work, Relationships, Fun, and Finances. Create big visions and daily actions that actually move the needle.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-visual">
+                            <div class="tracker-visual">
+                                <div class="tracker-week">
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                    <div class="tracker-day"><div class="tracker-fill"></div></div>
+                                </div>
+                                <div class="tracker-stats">
+                                    <div class="tracker-stat">
+                                        <div class="tracker-stat-number">23</div>
+                                        <div>Streak</div>
+                                    </div>
+                                    <div class="tracker-stat">
+                                        <div class="tracker-stat-number">85%</div>
+                                        <div>This Week</div>
+                                    </div>
+                                    <div class="tracker-stat">
+                                        <div class="tracker-stat-number">7</div>
+                                        <div>Areas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3>Daily Tracking</h3>
+                        <p>Build lasting habits with simple daily check-ins. See your progress visualized beautifully and maintain momentum with streak tracking and progress insights.</p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-visual">
+                            <div class="prompt-visual">
+                                <div class="prompt-card-preview">
+                                    <div class="prompt-header-preview">Today's Reflection</div>
+                                    <div class="prompt-question-preview">"What's one decision you made today that you're proud of, and why?"</div>
+                                    <textarea class="prompt-textarea-preview" placeholder="Take your time to reflect and share your thoughts..." readonly></textarea>
+                                    <div class="prompt-stats">
+                                        <span>47 day streak</span>
+                                        <span>156 responses</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3>Daily Prompts</h3>
+                        <p>Develop deep self-awareness with curated daily reflection prompts designed specifically for entrepreneurs. Track your growth and emotional patterns over time.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <!-- Testimonials Section -->
         <section class="testimonials">
             <div class="testimonials-container">
