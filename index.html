@@ -109,6 +109,13 @@
             overflow: hidden;
         }
 
+        .gradient-bg {
+    background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+    color: white;
+}
+        
         @keyframes gradient {
             0% {
                 background-position: 0% 50%;
@@ -414,10 +421,12 @@
     text-align: center;
     width: 300px;
     flex-shrink: 0;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
 }
 
 .testimonial-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px);
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.4);
 }
 
 .testimonial-avatar {
@@ -453,8 +462,8 @@
 }
 
 .nav-arrow {
-    background: rgba(255, 255, 255, 0.2);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    background: #374151;
+    border: 2px solid #4b5563;
     color: white;
     width: 50px;
     height: 50px;
@@ -1545,8 +1554,8 @@
         <!-- Testimonials Section -->
 <section class="testimonials" style="background: #f8fafc;">
     <div class="testimonials-container">
-                <h2>What Our Members Are Saying</h2>
-                <div class="testimonials-wrapper">
+<h2 style="color: #374151;">What Our Members Are Saying</h2>
+        <div class="testimonials-wrapper">
                     <div class="testimonials-grid" id="testimonialsGrid">
                         <div class="testimonial-card">
                             <img src="images/sabrina_yoder.png" alt="Sabrina Yoder" class="testimonial-avatar">
@@ -1588,7 +1597,7 @@
         </section>
 
         <!-- CTA Section -->
-<section class="cta-section" style="background: #f8fafc;">
+<section class="cta-section gradient-bg">
     <div class="cta-content">
                 <h2>Ready to Transform Your Journey?</h2>
                 <p>Join thousands of entrepreneurs who are already using EEH to unlock their potential, build resilience, and create lasting success.</p>
