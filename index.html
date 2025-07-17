@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+.feature-card:hover {
+            transform: translateY(-8px);
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -16,7 +18,7 @@
             --primary-dark: #1e7ed8;
             --secondary: #667eea;
             --accent: #764ba2;
-            --text-primary: #1e293b;
+            --text-primary: #374151;
             --text-secondary: #64748b;
             --text-muted: #94a3b8;
             --background: #ffffff;
@@ -99,13 +101,29 @@
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             color: white;
             padding: 6rem 2rem;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
+
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+
 
         .hero::before {
             content: '';
@@ -288,10 +306,58 @@
             transition: opacity 0.3s ease;
         }
 
-        .feature-card:hover {
-            transform: translateY(-8px);
+        .feature-card:nth-child(1)::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card:nth-child(2)::before {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+        }
+
+        .feature-card:nth-child(3)::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .feature-card:nth-child(4)::before {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .feature-card:nth-child(5)::before {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .feature-card:nth-child(6)::before {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .feature-card:nth-child(1):hover {
             box-shadow: 0 25px 50px rgba(102, 126, 234, 0.15);
             border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-card:nth-child(2):hover {
+            box-shadow: 0 25px 50px rgba(38, 150, 254, 0.15);
+            border-color: rgba(38, 150, 254, 0.2);
+        }
+
+        .feature-card:nth-child(3):hover {
+            box-shadow: 0 25px 50px rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .feature-card:nth-child(4):hover {
+            box-shadow: 0 25px 50px rgba(245, 158, 11, 0.15);
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .feature-card:nth-child(5):hover {
+            box-shadow: 0 25px 50px rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .feature-card:nth-child(6):hover {
+            box-shadow: 0 25px 50px rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.2);
         }
 
         .feature-card:hover::before {
@@ -301,9 +367,32 @@
         .feature-accent {
             width: 100%;
             height: 4px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             border-radius: 2px;
             margin-bottom: 1.5rem;
+        }
+
+        .feature-card:nth-child(1) .feature-accent {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card:nth-child(2) .feature-accent {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+        }
+
+        .feature-card:nth-child(3) .feature-accent {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .feature-card:nth-child(4) .feature-accent {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .feature-card:nth-child(5) .feature-accent {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .feature-card:nth-child(6) .feature-accent {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         }
 
         .feature-card h3 {
@@ -321,7 +410,9 @@
         /* Testimonials Section */
         .testimonials {
             padding: 6rem 2rem;
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
             color: white;
         }
 
@@ -388,8 +479,8 @@
         /* CTA Section */
         .cta-section {
             padding: 6rem 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            color: var(--text-primary);
             text-align: center;
         }
 
@@ -407,7 +498,7 @@
         .cta-content p {
             font-size: 1.25rem;
             margin-bottom: 2rem;
-            opacity: 0.9;
+            opacity: 0.8;
         }
 
         /* Footer */
@@ -491,7 +582,7 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="hero-content">
-                <h1>Your Complete Emotional Health Platform</h1>
+                <h1>Entrepreneur Coaching and Community</h1>
                 <p>Transform your entrepreneurial journey with our exclusive EEH-trained AI coach, supportive community, and powerful personal development tools.</p>
                 <div class="pricing-cards">
                     <div class="pricing-card">
@@ -561,33 +652,33 @@
                 <h2>What Our Members Are Saying</h2>
                 <div class="testimonials-grid">
                     <div class="testimonial-card">
-                        <img src="placeholder-avatar-1.jpg" alt="Sally Edwards" class="testimonial-avatar">
-                        <div class="testimonial-quote">INVALUABLE! I LEARNED INDISPENSABLE LESSONS ABOUT EMOTIONAL HEALTH.</div>
-                        <div class="testimonial-author">Sally Edwards, Life Coach</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="placeholder-avatar-2.jpg" alt="Founder, DJM Design" class="testimonial-avatar">
-                        <div class="testimonial-quote">REVOLUTIONARY CONCEPTS! I SAW RESULTS RIGHT AWAY BOTH MENTALLY AND SPIRITUALLY.</div>
-                        <div class="testimonial-author">Founder, DJM Design</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="placeholder-avatar-3.jpg" alt="Sabrina Yoder" class="testimonial-avatar">
-                        <div class="testimonial-quote">HUMOROUS WIT AND PROFOUND WISDOM, WITH A ROADMAP TO WALK IT OUT!</div>
+                        <img src="images/sabrina-yoder.png" alt="Sabrina Yoder" class="testimonial-avatar">
+                        <div class="testimonial-quote">Humorous wit and profound wisdom, with a roadmap to walk it out!</div>
                         <div class="testimonial-author">Sabrina Yoder, Nurse Practitioner</div>
                     </div>
                     <div class="testimonial-card">
-                        <img src="placeholder-avatar-4.jpg" alt="Aaron Smith" class="testimonial-avatar">
-                        <div class="testimonial-quote">MY WORK WITH DAVE HAS BEEN NOTHING SHORT OF LIFE-SAVING. I HIGHLY RECOMMEND!</div>
+                        <img src="images/aaron-smith.png" alt="Aaron Smith" class="testimonial-avatar">
+                        <div class="testimonial-quote">My work with Dave has been nothing short of life-saving. I highly recommend!</div>
                         <div class="testimonial-author">Aaron Smith, CEO, B2BActivate</div>
                     </div>
                     <div class="testimonial-card">
-                        <img src="placeholder-avatar-5.jpg" alt="Paul Perez" class="testimonial-avatar">
-                        <div class="testimonial-quote">THIS TRAINING IS A MUST FOR ANYONE WANTING TO UNEARTH THEIR BEST SELVES!</div>
+                        <img src="images/paul-perez.png" alt="Paul Perez" class="testimonial-avatar">
+                        <div class="testimonial-quote">This training is a must for anyone wanting to unearth their best selves!</div>
                         <div class="testimonial-author">Paul Perez, Executive Coach</div>
                     </div>
                     <div class="testimonial-card">
-                        <img src="placeholder-avatar-6.jpg" alt="Amy Brooten" class="testimonial-avatar">
-                        <div class="testimonial-quote">WORKING WITH BLAIR HAS BEEN INSPIRING, ENCOURAGING, JOYFUL, AND FREEING.</div>
+                        <img src="images/Daniel_James_VDB.png" alt="Founder, DJM Design" class="testimonial-avatar">
+                        <div class="testimonial-quote">Revolutionary concepts! I saw results right away both mentally and spiritually.</div>
+                        <div class="testimonial-author">Founder, DJM Design</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <img src="images/sally-edwards.png" alt="Sally Edwards" class="testimonial-avatar">
+                        <div class="testimonial-quote">Invaluable! I learned indispensable lessons about emotional health.</div>
+                        <div class="testimonial-author">Sally Edwards, Life Coach</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <img src="images/amy-brooten.png" alt="Amy Brooten" class="testimonial-avatar">
+                        <div class="testimonial-quote">Working with Blair has been inspiring, encouraging, joyful, and freeing.</div>
                         <div class="testimonial-author">Amy Brooten, Professional Counselor</div>
                     </div>
                 </div>
