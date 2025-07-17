@@ -394,7 +394,7 @@
 .testimonials-wrapper {
     position: relative;
     overflow: hidden;
-    max-width: 996px; /* Exactly 3 cards + 2 gaps */
+    max-width: 996px;
     margin: 0 auto;
 }
 
@@ -410,7 +410,6 @@
     border-radius: var(--radius-xl);
     padding: 2rem;
     color: var(--text-primary);
-    /* REMOVED: box-shadow: var(--shadow-xl); */
     transition: all 0.3s ease;
     text-align: center;
     width: 300px;
@@ -419,7 +418,6 @@
 
 .testimonial-card:hover {
     transform: translateY(-5px);
-    /* REMOVED: box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2); */
 }
 
 .testimonial-avatar {
@@ -476,7 +474,6 @@
     transform: scale(1.1);
 }
 
-/* Mobile testimonials stay the same */
 @media (max-width: 768px) {
     .testimonials-wrapper {
         overflow: visible;
@@ -490,7 +487,6 @@
     }
 
     .testimonial-card {
-        min-width: auto;
         width: auto;
     }
 
@@ -725,54 +721,21 @@
     </footer>
 
 <script>
-    let currentSlide = 0;
-    const totalSlides = 6;
-    const cardWidth = 300;
-    const gap = 32;
-    
-    // Duplicate the testimonials for infinite effect
-    document.addEventListener('DOMContentLoaded', function() {
-        const grid = document.getElementById('testimonialsGrid');
-        const cards = grid.children;
-        
-        // Clone all cards and append them for seamless looping
-        for (let i = 0; i < cards.length; i++) {
-            const clone = cards[i].cloneNode(true);
-            grid.appendChild(clone);
-        }
-    });
-    
-    function slideTestimonials(direction) {
-        const grid = document.getElementById('testimonialsGrid');
-        
-        if (direction === 'next') {
-            currentSlide++;
-        } else if (direction === 'prev') {
-            currentSlide--;
-        }
+let currentSlide = 0;
+const totalSlides = 6;
 
-        const translateX = currentSlide * (cardWidth + gap);
-        grid.style.transform = `translateX(-${translateX}px)`;
-        
-        // Reset position seamlessly when we reach the end/beginning
-        setTimeout(() => {
-            if (currentSlide >= totalSlides) {
-                grid.style.transition = 'none';
-                currentSlide = 0;
-                grid.style.transform = `translateX(0px)`;
-                setTimeout(() => {
-                    grid.style.transition = 'transform 0.5s ease';
-                }, 50);
-            } else if (currentSlide < 0) {
-                grid.style.transition = 'none';
-                currentSlide = totalSlides - 1;
-                grid.style.transform = `translateX(-${(currentSlide * (cardWidth + gap))}px)`;
-                setTimeout(() => {
-                    grid.style.transition = 'transform 0.5s ease';
-                }, 50);
-            }
-        }, 500);
+function slideTestimonials(direction) {
+    const grid = document.getElementById('testimonialsGrid');
+    
+    if (direction === 'next') {
+        currentSlide = (currentSlide + 1) % totalSlides;
+    } else if (direction === 'prev') {
+        currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
     }
+    
+    const translateX = currentSlide * 332; // 300px card + 32px gap
+    grid.style.transform = `translateX(-${translateX}px)`;
+}
 </script>
 </body>
 </html>
