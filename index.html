@@ -121,19 +121,6 @@
             }
         }
 
-
-
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
         .hero-content {
             max-width: 1200px;
             margin: 0 auto;
@@ -303,63 +290,13 @@
             left: 0;
             right: 0;
             height: 6px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
 
-        .feature-card:nth-child(1)::before {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .feature-card:nth-child(2)::before {
-            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
-        }
-
-        .feature-card:nth-child(3)::before {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-
-        .feature-card:nth-child(4)::before {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
-
-        .feature-card:nth-child(5)::before {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-
-        .feature-card:nth-child(6)::before {
-            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-        }
-
-        .feature-card:nth-child(1):hover {
-            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.15);
-            border-color: rgba(102, 126, 234, 0.2);
-        }
-
-        .feature-card:nth-child(2):hover {
-            box-shadow: 0 25px 50px rgba(38, 150, 254, 0.15);
-            border-color: rgba(38, 150, 254, 0.2);
-        }
-
-        .feature-card:nth-child(3):hover {
-            box-shadow: 0 25px 50px rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.2);
-        }
-
-        .feature-card:nth-child(4):hover {
-            box-shadow: 0 25px 50px rgba(245, 158, 11, 0.15);
-            border-color: rgba(245, 158, 11, 0.2);
-        }
-
-        .feature-card:nth-child(5):hover {
-            box-shadow: 0 25px 50px rgba(239, 68, 68, 0.15);
-            border-color: rgba(239, 68, 68, 0.2);
-        }
-
-        .feature-card:nth-child(6):hover {
-            box-shadow: 0 25px 50px rgba(139, 92, 246, 0.15);
-            border-color: rgba(139, 92, 246, 0.2);
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
 
         .feature-card:hover::before {
@@ -397,6 +334,30 @@
             background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
         }
 
+        .feature-card:nth-child(1)::before {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .feature-card:nth-child(2)::before {
+            background: linear-gradient(135deg, #2696FE 0%, #1e7ed8 100%);
+        }
+
+        .feature-card:nth-child(3)::before {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .feature-card:nth-child(4)::before {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .feature-card:nth-child(5)::before {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .feature-card:nth-child(6)::before {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
         .feature-card h3 {
             font-size: 1.5rem;
             font-weight: 700;
@@ -430,9 +391,14 @@
             margin-bottom: 3rem;
         }
 
+        .testimonials-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
         .testimonials-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            display: flex;
+            transition: transform 0.5s ease;
             gap: 2rem;
         }
 
@@ -445,6 +411,8 @@
             box-shadow: var(--shadow-xl);
             transition: all 0.3s ease;
             text-align: center;
+            min-width: calc(33.333% - 1.333rem);
+            flex-shrink: 0;
         }
 
         .testimonial-card:hover {
@@ -476,6 +444,69 @@
             font-size: 0.9rem;
             color: var(--text-secondary);
             font-weight: 500;
+        }
+
+        .testimonial-nav {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .nav-arrow {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-arrow:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .nav-arrow:disabled:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: none;
+        }
+
+        /* Mobile testimonials stay the same */
+        @media (max-width: 768px) {
+            .testimonials-wrapper {
+                overflow: visible;
+            }
+
+            .testimonials-grid {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                transform: none !important;
+            }
+
+            .testimonial-card {
+                min-width: auto;
+            }
+
+            .testimonial-nav {
+                display: none;
+            }
         }
 
         /* CTA Section */
@@ -553,10 +584,6 @@
                 gap: 1.5rem;
             }
 
-            .pricing-card.featured {
-                transform: none;
-            }
-
             .features-grid {
                 grid-template-columns: 1fr;
             }
@@ -564,9 +591,6 @@
             .testimonials-grid {
                 grid-template-columns: 1fr;
             }
-        }
-                .feature-card:hover {
-            transform: translateY(-8px);
         }
     </style>
 </head>
@@ -655,36 +679,42 @@
         <section class="testimonials">
             <div class="testimonials-container">
                 <h2>What Our Members Are Saying</h2>
-                <div class="testimonials-grid">
-                    <div class="testimonial-card">
-                        <img src="images/sabrina_yoder.png" alt="Sabrina Yoder" class="testimonial-avatar">
-                        <div class="testimonial-quote">Humorous wit and profound wisdom, with a roadmap to walk it out!</div>
-                        <div class="testimonial-author">Sabrina Yoder, Nurse Practitioner</div>
+                <div class="testimonials-wrapper">
+                    <div class="testimonials-grid" id="testimonialsGrid">
+                        <div class="testimonial-card">
+                            <img src="images/sabrina_yoder.png" alt="Sabrina Yoder" class="testimonial-avatar">
+                            <div class="testimonial-quote">Humorous wit and profound wisdom, with a roadmap to walk it out!</div>
+                            <div class="testimonial-author">Sabrina Yoder, Nurse Practitioner</div>
+                        </div>
+                        <div class="testimonial-card">
+                            <img src="images/aaron_smith.png" alt="Aaron Smith" class="testimonial-avatar">
+                            <div class="testimonial-quote">My work with Dave has been nothing short of life-saving. I highly recommend!</div>
+                            <div class="testimonial-author">Aaron Smith, CEO, B2BActivate</div>
+                        </div>
+                        <div class="testimonial-card">
+                            <img src="images/paul_perez.png" alt="Paul Perez" class="testimonial-avatar">
+                            <div class="testimonial-quote">This training is a must for anyone wanting to unearth their best selves!</div>
+                            <div class="testimonial-author">Paul Perez, Executive Coach</div>
+                        </div>
+                        <div class="testimonial-card">
+                            <img src="images/djm_founder.png" alt="Founder, DJM Design" class="testimonial-avatar">
+                            <div class="testimonial-quote">Revolutionary concepts! I saw results right away both mentally and spiritually.</div>
+                            <div class="testimonial-author">Founder, DJM Design</div>
+                        </div>
+                        <div class="testimonial-card">
+                            <img src="images/sally_edwards.png" alt="Sally Edwards" class="testimonial-avatar">
+                            <div class="testimonial-quote">Invaluable! I learned indispensable lessons about emotional health.</div>
+                            <div class="testimonial-author">Sally Edwards, Life Coach</div>
+                        </div>
+                        <div class="testimonial-card">
+                            <img src="images/amy_brooten.png" alt="Amy Brooten" class="testimonial-avatar">
+                            <div class="testimonial-quote">Working with Blair has been inspiring, encouraging, joyful, and freeing.</div>
+                            <div class="testimonial-author">Amy Brooten, Professional Counselor</div>
+                        </div>
                     </div>
-                    <div class="testimonial-card">
-                        <img src="images/aaron_smith.png" alt="Aaron Smith" class="testimonial-avatar">
-                        <div class="testimonial-quote">My work with Dave has been nothing short of life-saving. I highly recommend!</div>
-                        <div class="testimonial-author">Aaron Smith, CEO, B2BActivate</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="images/paul_perez.png" alt="Paul Perez" class="testimonial-avatar">
-                        <div class="testimonial-quote">This training is a must for anyone wanting to unearth their best selves!</div>
-                        <div class="testimonial-author">Paul Perez, Executive Coach</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="images/Daniel_James_VDB.png" alt="Founder, DJM Design" class="testimonial-avatar">
-                        <div class="testimonial-quote">Revolutionary concepts! I saw results right away both mentally and spiritually.</div>
-                        <div class="testimonial-author">Founder, DJM Design</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="images/sally_edwards.png" alt="Sally Edwards" class="testimonial-avatar">
-                        <div class="testimonial-quote">Invaluable! I learned indispensable lessons about emotional health.</div>
-                        <div class="testimonial-author">Sally Edwards, Life Coach</div>
-                    </div>
-                    <div class="testimonial-card">
-                        <img src="images/amy_brooten.png" alt="Amy Brooten" class="testimonial-avatar">
-                        <div class="testimonial-quote">Working with Blair has been inspiring, encouraging, joyful, and freeing.</div>
-                        <div class="testimonial-author">Amy Brooten, Professional Counselor</div>
+                    <div class="testimonial-nav">
+                        <button class="nav-arrow" id="prevBtn" onclick="slideTestimonials('prev')">‹</button>
+                        <button class="nav-arrow" id="nextBtn" onclick="slideTestimonials('next')">›</button>
                     </div>
                 </div>
             </div>
@@ -703,5 +733,37 @@
     <footer class="footer">
         <p>&copy; 2025 Entrepreneur Emotional Health. All rights reserved.</p>
     </footer>
+
+    <script>
+        let currentSlide = 0;
+        const totalSlides = 6; // Total number of testimonials
+        const slidesToShow = 3; // Show 3 cards at once
+        const maxSlide = totalSlides - slidesToShow;
+
+        function slideTestimonials(direction) {
+            const grid = document.getElementById('testimonialsGrid');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            if (direction === 'next' && currentSlide < maxSlide) {
+                currentSlide++;
+            } else if (direction === 'prev' && currentSlide > 0) {
+                currentSlide--;
+            }
+
+            // Calculate the translate percentage
+            const translateX = -(currentSlide * (100 / slidesToShow));
+            grid.style.transform = `translateX(${translateX}%)`;
+
+            // Update button states
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === maxSlide;
+        }
+
+        // Initialize button states on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            slideTestimonials(''); // Initialize button states
+        });
+    </script>
 </body>
 </html>
