@@ -3641,22 +3641,23 @@ app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
 // DAILY PROGRESS API ROUTES - NEW
 // ==========================================
 
-// Get daily progress for a specific date or date range
 app.get('/api/daily-progress', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { date, startDate, endDate } = req.query;
 
+    // Get current valid goal IDs first
+    const currentGoals = await LifeGoal.find({ userId }).select('_id');
+    const validGoalIds = currentGoals.map(goal => goal._id.toString());
+    console.log('🎯 Valid goal IDs for user:', validGoalIds);
+
     let query = { userId };
 
     if (date) {
-      // Single date
       query.date = date;
     } else if (startDate && endDate) {
-      // Date range
       query.date = { $gte: startDate, $lte: endDate };
     } else {
-      // Default to last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
@@ -3668,7 +3669,25 @@ app.get('/api/daily-progress', authenticateToken, async (req, res) => {
       .populate('goalProgress.goalId', 'area bigGoal dailyAction')
       .sort({ date: -1 });
 
-    res.json(progressRecords);
+    // Filter out progress for deleted goals
+    const filteredRecords = progressRecords.map(record => {
+      const filteredGoalProgress = record.goalProgress.filter(gp => {
+        const goalIdStr = gp.goalId ? gp.goalId.toString() : null;
+        const isValid = validGoalIds.includes(goalIdStr);
+        if (!isValid) {
+          console.log('🗑️ Filtering out progress for deleted goal:', goalIdStr);
+        }
+        return isValid;
+      });
+      
+      return {
+        ...record.toObject(),
+        goalProgress: filteredGoalProgress
+      };
+    });
+
+    console.log('📊 Returning filtered progress records:', filteredRecords.length);
+    res.json(filteredRecords);
 
   } catch (error) {
     console.error('Get daily progress error:', error);
