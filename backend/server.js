@@ -5283,6 +5283,11 @@ app.delete('/api/course-materials/:id', authenticateToken, async (req, res) => {
 
 console.log('✅ Admin analytics route loaded successfully');
 
+// SIMPLE TEST ENDPOINT
+app.get('/test-simple', (req, res) => {
+  res.json({ message: 'Server is working!' });
+});
+
 // ENHANCED ADMIN DASHBOARD HTML
 // Replace your existing admin-dashboard.html with this enhanced version:
 // Test course materials search endpoint
