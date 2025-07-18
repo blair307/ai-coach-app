@@ -2863,6 +2863,23 @@ const personalityTestSchema = new mongoose.Schema({
 
 const PersonalityTest = mongoose.model('PersonalityTest', personalityTestSchema);
 
+// Get personality test results
+app.get('/api/personality-test/results', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const test = await PersonalityTest.findOne({ userId });
+    
+    if (!test) {
+      return res.status(404).json({ error: 'No personality test results found' });
+    }
+    
+    res.json(test);
+  } catch (error) {
+    console.error('Get personality test results error:', error);
+    res.status(500).json({ error: 'Failed to get results' });
+  }
+});
+
 // Save personality test results
 app.post('/api/personality-test/results', authenticateToken, async (req, res) => {
   try {
