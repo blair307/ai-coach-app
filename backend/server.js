@@ -19,10 +19,10 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 
 const VOICE_IDS = {
-coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
+    coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
     coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id',
-    coach3: 'openai-echo',
-    coach4: 'openai-nova'
+    coach3: process.env.ALEX_VOICE_ID || 'placeholder-alex-id',
+    coach4: process.env.SAM_VOICE_ID || 'placeholder-sam-id'
 };
 
 // Make sure all important settings are configured
@@ -269,26 +269,6 @@ if (process.env.OPENAI_API_KEY) {
   console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
 }
 
-// File upload configuration - NEW
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
-
-// Configure multer for file uploads
-const storage = multer.memoryStorage();
-const upload = multer({ 
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Only PDF, DOCX, and TXT files are allowed.'));
-    }
-  }
-});
-
 // Email configuration - FIXED VERSION
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -512,28 +492,6 @@ const insightSchema = new mongoose.Schema({
 
 const Insight = mongoose.model('Insight', insightSchema);
 
-// Course Materials Schema - NEW
-const courseMaterialSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  title: { type: String, required: true },
-  description: { type: String },
-  content: { type: String, required: true }, // Extracted text content
-  originalFileName: { type: String },
-  fileType: { type: String, enum: ['pdf', 'docx', 'txt', 'md'], required: true },
-  tags: [String],
-  isActive: { type: Boolean, default: true },
-  uploadedAt: { type: Date, default: Date.now },
-  lastUpdated: { type: Date, default: Date.now },
-  // For search optimization
-  chunks: [{
-    text: String,
-    index: Number,
-    keywords: [String]
-  }]
-});
-
-const CourseMaterial = mongoose.model('CourseMaterial', courseMaterialSchema);
-
 // Daily Progress Schema - NEW
 const dailyProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -743,6 +701,7 @@ async function createDefaultRooms() {
   }
 }
 
+// JWT Middleware with subscription check
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -756,27 +715,31 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: 'Invalid token' });
     }
     
+    // Check subscription status
     try {
-     let userRecord = null;
-try {
-  if (user.userId !== 'admin') {
-    userRecord = await User.findById(user.userId);
-  }
-} catch (error) {
-  console.log('⚠️ User lookup error for admin:', error.message);
-}
-
-if (!userRecord && user.userId !== 'admin') {
-  return res.status(404).json({ message: 'User not found' });
-}
+      const userRecord = await User.findById(user.userId);
+      if (!userRecord) {
+        return res.status(404).json({ message: 'User not found' });
+      }
       
-      // SIMPLIFIED SUBSCRIPTION CHECK - Allow all users for now
-      req.user = user;
-      req.userRecord = userRecord; // Add the full user record for course materials
-      next();
+      // Allow access for free accounts or active subscriptions
+      const subscription = userRecord.subscription;
+      const now = new Date();
       
+      if (subscription.plan === 'free' || 
+          subscription.status === 'active' ||
+          (subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now)) {
+        req.user = user;
+        next();
+      } else {
+        return res.status(402).json({ 
+          message: 'Subscription expired. Please renew to continue.',
+          subscriptionStatus: subscription.status,
+          expired: true
+        });
+      }
     } catch (error) {
-      console.error('Auth error:', error);
+      console.error('Subscription check error:', error);
       req.user = user; // Allow access on error
       next();
     }
@@ -1426,77 +1389,8 @@ Your tone is warm, gentle, and infinitely patient. You believe that everyone is 
   }
 };
 
-// Hybrid voice generation function
-
+// Voice generation function
 async function generateVoice(text, voiceId) {
-    console.log('🎵 Generating voice - Coach voice ID:', voiceId);
-    
-    // Check if this is an OpenAI voice
-    if (voiceId && voiceId.startsWith('openai-')) {
-        return await generateVoiceOpenAI(text, voiceId);
-    } else if (voiceId && ELEVENLABS_API_KEY) {
-        return await generateVoiceElevenLabs(text, voiceId);
-    } else {
-        throw new Error(`Voice generation not available - Voice ID: ${voiceId}, ElevenLabs Key: ${!!ELEVENLABS_API_KEY}`);
-    }
-}
-
-// OpenAI voice generation
-async function generateVoiceOpenAI(text, voiceId) {
-    if (!process.env.OPENAI_API_KEY) {
-        throw new Error('OpenAI API key not configured');
-    }
-    
-    console.log('🎤 OpenAI TTS - Voice ID:', voiceId, 'Text length:', text.length);
-    
-    // Map our coach voices to OpenAI voices - FIXED MAPPING
-    let openAIVoice;
-    if (voiceId === 'openai-echo') {
-        openAIVoice = 'echo';
-    } else if (voiceId === 'openai-nova') {
-        openAIVoice = 'nova';
-    } else {
-        throw new Error(`Invalid OpenAI voice ID: ${voiceId}`);
-    }
-    
-    console.log('🔄 Using OpenAI voice:', openAIVoice);
-    
-    try {
-        const response = await fetch('https://api.openai.com/v1/audio/speech', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'tts-1',
-                input: text.substring(0, 4096), // OpenAI has a 4096 character limit
-                voice: openAIVoice,
-                response_format: 'mp3'
-            })
-        });
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('❌ OpenAI TTS error response:', response.status, errorText);
-            throw new Error(`OpenAI TTS error: ${response.status} - ${errorText}`);
-        }
-        
-        const audioBuffer = await response.arrayBuffer();
-        const audioBase64 = Buffer.from(audioBuffer).toString('base64');
-        const dataUrl = `data:audio/mpeg;base64,${audioBase64}`;
-        
-        console.log('✅ OpenAI voice generated successfully, size:', audioBuffer.byteLength, 'bytes');
-        return dataUrl;
-        
-    } catch (error) {
-        console.error('❌ OpenAI voice generation failed:', error);
-        throw error;
-    }
-}
-
-// ElevenLabs voice generation
-async function generateVoiceElevenLabs(text, voiceId) {
     if (!ELEVENLABS_API_KEY) {
         throw new Error('ElevenLabs API key not configured');
     }
@@ -1510,7 +1404,7 @@ async function generateVoiceElevenLabs(text, voiceId) {
         },
         body: JSON.stringify({
             text: text,
-            model_id: 'eleven_turbo_v2_5',
+            model_id: 'eleven_monolingual_v1',
             voice_settings: {
                 stability: 0.5,
                 similarity_boost: 0.5
@@ -1523,6 +1417,7 @@ async function generateVoiceElevenLabs(text, voiceId) {
         throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
     }
     
+    // Convert audio response to base64 for frontend
     const audioBuffer = await response.arrayBuffer();
     const audioBase64 = Buffer.from(audioBuffer).toString('base64');
     return `data:audio/mpeg;base64,${audioBase64}`;
@@ -1590,67 +1485,24 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       await chat.save();
     }
 
-
-    // Build conversation context (last 50 messages for context)
-const recentMessages = chat.messages.slice(-50);
-console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
+    // Build conversation context (last 10 messages for context)
+    const recentMessages = chat.messages.slice(-10);
     
+    // Create messages array for OpenAI
+    const messages = [
+      {
+        role: 'system',
+        content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-const stopWords = ['what', 'are', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'how', 'can', 'you', 'tell', 'me', 'about', 'i', 'want', 'know'];
-
-const searchTerms = message.toLowerCase()
-  .replace(/[^\w\s]/g, ' ') // Remove punctuation
-  .split(/\s+/)
-  .filter(word => word.length > 2 && !stopWords.includes(word)) // Remove stop words
-  .slice(0, 5) // Take only most important words
-  .join(' ');
-
-console.log('🔍 Searching for:', searchTerms);
-const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5);
-      
-// Build course materials context
-let courseMaterialsContext = '';
-if (relevantMaterials.length > 0) {
-  console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
-  courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
-  relevantMaterials.forEach((material, index) => {
-    courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 1500)}"\n(Source: ${material.materialTitle})\n`;
-  });
-  courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
-} else {
-  console.log('ℹ️ No relevant course materials found for this query');
-}
-      
-// Create messages array for OpenAI
-const messages = [
-  {
-    role: 'system',
-    content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
-
-CRITICAL: Keep responses to MAXIMUM 1-4 sentences. Never exceed 60 words total.
-
-${courseMaterialsContext ? `
-MANDATORY: You have access to specific course materials below. You MUST use this information to answer questions. Do NOT make up information when you have real course content available.
-
-${courseMaterialsContext}
-
-INSTRUCTIONS:
-- ALWAYS prioritize information from the course materials above
-- If the user's question relates to the course content, reference it directly
-- Use phrases like "From the course..." or "The training material shows..."
-- Only provide general advice if the course materials don't contain relevant information
-` : ''}
-
-Be helpful but extremely brief. No long explanations. No lists. No examples.
-Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
+KEEP RESPONSES VERY SHORT - Maximum 2-3 sentences. Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
 
 Current coaching preferences:
 - Tone: ${preferences.tone || 'supportive'}
 - Response length: ${preferences.responseLength || 'concise'}
 
 Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
-  }
-];
+      }
+    ];
 
     // Add conversation history
     recentMessages.forEach(msg => {
@@ -1672,8 +1524,8 @@ Be authentic to your coaching style while addressing the user's entrepreneurial 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Using faster model
       messages: messages,
-max_tokens: preferences.responseLength === 'detailed' ? 350 : 
-            preferences.responseLength === 'concise' ? 100 : 150,
+max_tokens: preferences.responseLength === 'detailed' ? 600 : 
+            preferences.responseLength === 'concise' ? 150 : 300,
       temperature: 0.7,
       stream: false
     });
@@ -1694,10 +1546,10 @@ max_tokens: preferences.responseLength === 'detailed' ? 350 :
       { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
     );
     
-   // Keep only last 100 messages to prevent database bloat
-if (chat.messages.length > 100) {
-  chat.messages = chat.messages.slice(-100);
-}
+    // Keep only last 50 messages to prevent database bloat
+    if (chat.messages.length > 50) {
+      chat.messages = chat.messages.slice(-50);
+    }
     
     chat.updatedAt = new Date();
     await chat.save();
@@ -1749,26 +1601,15 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
   try {
     const { text, coachId } = req.body;
     
-    console.log('🎤 Voice endpoint hit:', {
-      coachId,
-      textLength: text?.length,
-      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
-      hasElevenLabsKey: !!ELEVENLABS_API_KEY
-    });
-    
     if (!text || !coachId) {
-      console.error('❌ Missing required fields:', { text: !!text, coachId: !!coachId });
       return res.status(400).json({ error: 'Text and coachId required' });
     }
     
-    if (!VOICE_IDS[coachId]) {
-      console.error('❌ No voice ID found for coach:', coachId);
-      console.log('🔍 Available voice IDs:', Object.keys(VOICE_IDS));
-      return res.status(400).json({ error: `Voice not available for coach: ${coachId}` });
+    if (!ELEVENLABS_API_KEY || !VOICE_IDS[coachId]) {
+      return res.status(400).json({ error: 'Voice generation not available' });
     }
     
-    const voiceId = VOICE_IDS[coachId];
-    console.log('🎯 Using voice ID:', voiceId, 'for coach:', coachId);
+    console.log('🎤 Generating voice on demand for:', coachId);
     
     // Clean the response text for voice synthesis
     const cleanedResponse = text
@@ -1781,64 +1622,16 @@ app.post('/api/chat/voice', authenticateToken, async (req, res) => {
       .replace(/^\s*\d+\.\s/gm, '')
       .trim();
 
-    if (cleanedResponse.length === 0) {
-      console.error('❌ No text remaining after cleaning');
-      return res.status(400).json({ error: 'No valid text for voice generation' });
-    }
-
-    console.log('📝 Cleaned text for voice generation:', cleanedResponse.substring(0, 100) + '...');
-
-    const startTime = Date.now();
+    const audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[coachId]);
     
-    try {
-      const audioUrl = await generateVoice(cleanedResponse, voiceId);
-      const duration = Date.now() - startTime;
-      
-      console.log(`✅ Voice generated successfully in ${duration}ms`);
-      
-      res.json({ 
-        audio: { 
-          url: audioUrl, 
-          enabled: true,
-          voiceId: voiceId,
-          provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
-        },
-        success: true,
-        generationTime: duration,
-        textLength: cleanedResponse.length
-      });
-      
-    } catch (voiceError) {
-      console.error('❌ Voice generation failed:', {
-        error: voiceError.message,
-        voiceId,
-        provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
-      });
-      
-      // Return specific error messages
-      let errorMessage = 'Voice generation failed';
-      if (voiceError.message.includes('OpenAI API key')) {
-        errorMessage = 'OpenAI API key not configured';
-      } else if (voiceError.message.includes('ElevenLabs')) {
-        errorMessage = 'ElevenLabs API error';
-      } else if (voiceError.message.includes('Invalid OpenAI voice')) {
-        errorMessage = `Invalid voice configuration for coach ${coachId}`;
-      }
-      
-      res.status(500).json({ 
-        error: errorMessage,
-        details: process.env.NODE_ENV === 'development' ? voiceError.message : undefined,
-        voiceId,
-        coachId
-      });
-    }
+    res.json({ 
+      audio: { url: audioUrl, enabled: true },
+      success: true
+    });
     
   } catch (error) {
-    console.error('❌ Voice endpoint error:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
+    console.error('Voice generation error:', error);
+    res.status(500).json({ error: 'Voice generation failed' });
   }
 });
 
@@ -2863,23 +2656,6 @@ const personalityTestSchema = new mongoose.Schema({
 
 const PersonalityTest = mongoose.model('PersonalityTest', personalityTestSchema);
 
-// Get personality test results
-app.get('/api/personality-test/results', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const test = await PersonalityTest.findOne({ userId });
-    
-    if (!test) {
-      return res.status(404).json({ error: 'No personality test results found' });
-    }
-    
-    res.json(test);
-  } catch (error) {
-    console.error('Get personality test results error:', error);
-    res.status(500).json({ error: 'Failed to get results' });
-  }
-});
-
 // Save personality test results
 app.post('/api/personality-test/results', authenticateToken, async (req, res) => {
   try {
@@ -2943,6 +2719,22 @@ app.post('/api/personality-test/results', authenticateToken, async (req, res) =>
   }
 });
 
+// Get personality test results
+app.get('/api/personality-test/results', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const test = await PersonalityTest.findOne({ userId });
+    
+    if (!test) {
+      return res.status(404).json({ error: 'No personality test results found' });
+    }
+    
+    res.json(test);
+  } catch (error) {
+    console.error('Get personality test results error:', error);
+    res.status(500).json({ error: 'Failed to get results' });
+  }
+});
 
 // Delete personality test results (for retaking)
 app.delete('/api/personality-test/results', authenticateToken, async (req, res) => {
@@ -3905,182 +3697,6 @@ app.delete('/api/life-goals/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// ==========================================
-// DAILY PROGRESS API ROUTES - NEW
-// ==========================================
-
-// Get daily progress for a specific date or date range
-app.get('/api/daily-progress', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { date, startDate, endDate } = req.query;
-
-    let query = { userId };
-
-    if (date) {
-      // Single date
-      query.date = date;
-    } else if (startDate && endDate) {
-      // Date range
-      query.date = { $gte: startDate, $lte: endDate };
-    } else {
-      // Default to last 30 days
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
-      const endDateStr = new Date().toISOString().split('T')[0];
-      query.date = { $gte: startDateStr, $lte: endDateStr };
-    }
-
-    const progressRecords = await DailyProgress.find(query)
-      .populate('goalProgress.goalId', 'area bigGoal dailyAction')
-      .sort({ date: -1 });
-
-    res.json(progressRecords);
-
-  } catch (error) {
-    console.error('Get daily progress error:', error);
-    res.status(500).json({ error: 'Failed to get daily progress' });
-  }
-});
-
-// Save/Update daily progress
-app.post('/api/daily-progress', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { date, goalId, completed, area } = req.body;
-
-    if (!date || !goalId || completed === undefined || !area) {
-      return res.status(400).json({ error: 'Date, goalId, completed status, and area are required' });
-    }
-
-    // Find or create daily progress record
-    let dailyProgress = await DailyProgress.findOne({ userId, date });
-
-    if (!dailyProgress) {
-      // Create new daily progress record
-      dailyProgress = new DailyProgress({
-        userId,
-        date,
-        goalProgress: [],
-        totalGoals: 0,
-        completedGoals: 0,
-        completionPercentage: 0
-      });
-    }
-
-    // Find existing goal progress or create new
-    let goalProgressIndex = dailyProgress.goalProgress.findIndex(
-      gp => gp.goalId.toString() === goalId
-    );
-
-    if (goalProgressIndex === -1) {
-      // Add new goal progress
-      dailyProgress.goalProgress.push({
-        goalId,
-        completed,
-        completedAt: completed ? new Date() : null,
-        area
-      });
-    } else {
-      // Update existing goal progress
-      dailyProgress.goalProgress[goalProgressIndex].completed = completed;
-      dailyProgress.goalProgress[goalProgressIndex].completedAt = completed ? new Date() : null;
-    }
-
-    // Recalculate totals
-    const completedCount = dailyProgress.goalProgress.filter(gp => gp.completed).length;
-    const totalCount = dailyProgress.goalProgress.length;
-
-    dailyProgress.completedGoals = completedCount;
-    dailyProgress.totalGoals = totalCount;
-    dailyProgress.completionPercentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-    dailyProgress.updatedAt = new Date();
-
-    await dailyProgress.save();
-
-    // Also update the goal's streak in the life-goals collection
-    try {
-      const goal = await LifeGoal.findById(goalId);
-      if (goal) {
-        if (completed) {
-          // Task completed - increment streak
-          goal.streak = (goal.streak || 0) + 1;
-          goal.lastCompletedDate = new Date();
-        } else {
-          // Task uncompleted - decrement streak
-          goal.streak = Math.max(0, (goal.streak || 0) - 1);
-        }
-        await goal.save();
-      }
-    } catch (goalError) {
-      console.error('Error updating goal streak:', goalError);
-    }
-
-    res.json({
-      message: 'Daily progress updated successfully',
-      progress: dailyProgress
-    });
-
-  } catch (error) {
-    console.error('Save daily progress error:', error);
-    res.status(500).json({ error: 'Failed to save daily progress' });
-  }
-});
-
-// Get progress summary for dashboard
-app.get('/api/daily-progress/summary', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const today = new Date().toISOString().split('T')[0];
-
-    // Get today's progress
-    const todayProgress = await DailyProgress.findOne({ userId, date: today });
-
-    // Get last 7 days for weekly streak calculation
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const startDate = sevenDaysAgo.toISOString().split('T')[0];
-
-    const weeklyProgress = await DailyProgress.find({
-      userId,
-      date: { $gte: startDate, $lte: today }
-    }).sort({ date: -1 });
-
-    // Calculate weekly streak (consecutive days with at least one completed task)
-    let weeklyStreak = 0;
-    for (const dayProgress of weeklyProgress) {
-      if (dayProgress.completedGoals > 0) {
-        weeklyStreak++;
-      } else {
-        break;
-      }
-    }
-
-    // Get total goals count
-    const totalGoals = await LifeGoal.countDocuments({ userId });
-
-    res.json({
-      today: {
-        totalTasks: todayProgress?.totalGoals || 0,
-        completed: todayProgress?.completedGoals || 0,
-        percentage: todayProgress?.completionPercentage || 0
-      },
-      weeklyStreak,
-      totalGoals,
-      weeklyProgress: weeklyProgress.map(wp => ({
-        date: wp.date,
-        completed: wp.completedGoals,
-        total: wp.totalGoals,
-        percentage: wp.completionPercentage
-      }))
-    });
-
-  } catch (error) {
-    console.error('Get progress summary error:', error);
-    res.status(500).json({ error: 'Failed to get progress summary' });
-  }
-});
 
 // ==========================================
 // BILLING MANAGEMENT ENDPOINTS
@@ -4722,265 +4338,6 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
-// Temporary database cleanup endpoint for testing
-app.post('/api/admin/reset-test-db', async (req, res) => {
-  try {
-    console.log('🧹 RESETTING TEST DATABASE...');
-    
-    // Delete all data
-    await User.deleteMany({});
-    await LifeGoal.deleteMany({});
-    await Chat.deleteMany({});
-    await Notification.deleteMany({});
-    await Message.deleteMany({});
-    await DailyPromptResponse.deleteMany({});
-    await DailyProgress.deleteMany({});
-    await Insight.deleteMany({});
-    
-    console.log('✅ All test data deleted');
-    
-    res.json({ 
-      message: 'Test database reset successfully',
-      warning: 'All test data has been deleted'
-    });
-    
-  } catch (error) {
-    console.error('❌ Reset error:', error);
-    res.status(500).json({ error: 'Failed to reset database' });
-  }
-});
-
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
-  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
-  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
-  console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
-  console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
-  console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
-});
-
-app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
-  try {
-    const materialId = req.params.materialId;
-    const material = await CourseMaterial.findById(materialId);
-    
-    if (!material) {
-      return res.status(404).json({ error: 'Material not found' });
-    }
-    
-    console.log('🔍 DEBUG - Material chunks:', material.chunks.length);
-    
-    // Return first few chunks for debugging
-    const debugChunks = material.chunks.slice(0, 5).map((chunk, index) => ({
-      index,
-      textPreview: chunk.text.substring(0, 200),
-      keywords: chunk.keywords,
-      textLength: chunk.text.length
-    }));
-    
-    res.json({
-      title: material.title,
-      totalChunks: material.chunks.length,
-      contentLength: material.content.length,
-      sampleChunks: debugChunks,
-      firstChunkFull: material.chunks[0]?.text.substring(0, 500)
-    });
-    
-  } catch (error) {
-    console.error('Debug chunks error:', error);
-    res.status(500).json({ error: 'Debug failed' });
-  }
-});
-
-// ==========================================
-// COURSE MATERIALS HELPER FUNCTIONS
-// ==========================================
-
-async function searchCourseMaterials(userId, query, limit = 3) {
-  try {
-    console.log('🔍 SEARCHING COURSE MATERIALS:', { 
-      userId: userId.toString(), 
-      query: query.substring(0, 50) + '...', 
-      limit 
-    });
-    
-  // FIXED: Allow all users to search admin materials
-const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
-
-if (userId === 'admin' || userId.toString() === 'admin') {
-  // Admin searching - only search admin materials  
-  var searchQuery = {
-    isActive: true,
-    userId: adminObjectId
-  };
-} else {
-  // Regular user - search their materials + admin materials
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-  var searchQuery = {
-    isActive: true,
-    userId: {
-      $in: [
-        userObjectId, // User's own materials
-        adminObjectId // Admin materials (available to all users)
-      ]
-    }
-  };
-}
-    
-    console.log('📋 Search query:', searchQuery);
-    
-    const materials = await CourseMaterial.find(searchQuery);
-    
-    console.log('📚 Found materials:', materials.length);
-
-          // ADD THIS DEBUG - Log the first material's chunks
-    if (materials.length > 0) {
-      console.log('🔍 First material chunks:', materials[0].chunks.length);
-      console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
-    }
-    
-    if (materials.length === 0) {
-      console.log('❌ No materials found');
-      return [];
-    }
-    
-    if (materials.length === 0) {
-      console.log('❌ No materials found');
-      return [];
-    }
-    
-    // Rest of the function stays the same...
-    const queryWords = query.toLowerCase()
-      .split(/\s+/)
-      .filter(word => word.length > 2)
-      .slice(0, 10);
-    
-    console.log('🔤 Search words:', queryWords);
-    
-    const relevantChunks = [];
-    
-   // Find this part in your searchCourseMaterials function (around line 2150)
-materials.forEach(material => {
-  // Bonus points if the query matches the material title
-  let titleBonus = 0;
-  queryWords.forEach(word => {
-    if (material.title.toLowerCase().includes(word.toLowerCase())) {
-      titleBonus += 10; // Big bonus for title matches
-    }
-  });
-  
-  material.chunks.forEach((chunk, chunkIndex) => {
-    let score = titleBonus; // Start with title bonus
-    const chunkText = chunk.text.toLowerCase();
-    
-    queryWords.forEach(word => {
-      if (chunkText.includes(word.toLowerCase())) {
-        score += 1;
-      }
-    });
-    
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
-  });
-});
-    
-    // Add to results if any words found
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
-
-    console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
-    
-    const topChunks = relevantChunks
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
-    
-    topChunks.forEach((chunk, index) => {
-      console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
-    });
-    
-    return topChunks;
-      
-  } catch (error) {
-    console.error('❌ Error searching course materials:', error);
-    return [];
-  }
-}
-
-function createTextChunks(text, chunkSize = 1000, overlap = 200) {
-  const chunks = [];
-  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  
-  let currentChunk = '';
-  let chunkIndex = 0;
-  
-  for (let i = 0; i < sentences.length; i++) {
-    const sentence = sentences[i].trim() + '.';
-    
-    // If adding this sentence would exceed chunk size, save current chunk
-    if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
-      chunks.push({
-        text: currentChunk.trim(),
-        index: chunkIndex++,
-        keywords: extractKeywords(currentChunk)
-      });
-      
-      // Start new chunk with overlap
-      const words = currentChunk.split(' ');
-      const overlapWords = words.slice(-Math.floor(overlap / 5));
-      currentChunk = overlapWords.join(' ') + ' ' + sentence;
-    } else {
-      currentChunk += ' ' + sentence;
-    }
-  }
-  
-  // Add the last chunk
-  if (currentChunk.trim().length > 0) {
-    chunks.push({
-      text: currentChunk.trim(),
-      index: chunkIndex,
-      keywords: extractKeywords(currentChunk)
-    });
-  }
-  
-  return chunks;
-}
-
-// Simple keyword extraction
-function extractKeywords(text) {
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(word => word.length > 3);
-  
-  const wordCount = {};
-  words.forEach(word => {
-    wordCount[word] = (wordCount[word] || 0) + 1;
-  });
-  
-  return Object.keys(wordCount)
-    .sort((a, b) => wordCount[b] - wordCount[a])
-    .slice(0, 10);
-}
-
 // Clean up old images (optional - run manually or via cron)
 app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
   try {
@@ -5137,198 +4494,13 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
   }
 });
 
-
-// ==========================================
-// COURSE MATERIALS API ROUTES
-// ==========================================
-
-// Upload course material endpoint
-app.post('/api/course-materials/upload', authenticateToken, upload.single('file'), async (req, res) => {
-  try {
-    const { title, description, tags } = req.body;
-    const file = req.file;
-    
-    if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
-    }
-    
-    console.log('📄 Processing uploaded file:', file.originalname);
-    
-    let extractedText = '';
-    let fileType = '';
-    
-    // Extract text based on file type
-    if (file.mimetype === 'application/pdf') {
-      const pdfData = await pdfParse(file.buffer);
-      extractedText = pdfData.text;
-      fileType = 'pdf';
-    } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      const docxData = await mammoth.extractRawText({ buffer: file.buffer });
-      extractedText = docxData.value;
-      fileType = 'docx';
-    } else if (file.mimetype === 'text/plain') {
-      extractedText = file.buffer.toString('utf-8');
-      fileType = 'txt';
-    }
-    
-    if (!extractedText || extractedText.trim().length === 0) {
-      return res.status(400).json({ error: 'Could not extract text from file' });
-    }
-    
-    // Break content into searchable chunks
-    const chunks = createTextChunks(extractedText);
-    
-  // Create course material record  
-let validUserId;
-if (req.user.userId === 'admin') {
-    validUserId = new mongoose.Types.ObjectId('000000000000000000000000'); // Use a dummy ObjectId for admin
-} else {
-    validUserId = new mongoose.Types.ObjectId(req.user.userId);
-}
-
-const courseMaterial = new CourseMaterial({
-    userId: validUserId,
-
-    userId: validUserId,
-      title: title || file.originalname,
-      description: description || '',
-      content: extractedText,
-      originalFileName: file.originalname,
-      fileType: fileType,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      chunks: chunks
-    });
-    
-    await courseMaterial.save();
-    
-    console.log('✅ Course material saved:', courseMaterial.title);
-    
-    res.json({
-      message: 'Course material uploaded successfully',
-      material: {
-        id: courseMaterial._id,
-        title: courseMaterial.title,
-        description: courseMaterial.description,
-        fileType: courseMaterial.fileType,
-        uploadedAt: courseMaterial.uploadedAt,
-        chunkCount: chunks.length,
-        contentLength: extractedText.length
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Course material upload error:', error);
-    res.status(500).json({ 
-      error: 'Failed to upload course material',
-      details: error.message 
-    });
-  }
-});
-
-
-// Get all course materials for a user
-app.get('/api/course-materials', authenticateToken, async (req, res) => {
-  try {
-    // Handle admin userId
-    let queryUserId;
-    if (req.user.userId === 'admin') {
-      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
-    } else {
-      queryUserId = req.user.userId;
-    }
-    
-    const materials = await CourseMaterial.find({ 
-      userId: queryUserId,
-      isActive: true 
-    }).sort({ uploadedAt: -1 });
-    
-    res.json(materials.map(material => ({
-      id: material._id,
-      title: material.title,
-      description: material.description,
-      fileType: material.fileType,
-      originalFileName: material.originalFileName,
-      tags: material.tags,
-      uploadedAt: material.uploadedAt,
-      chunkCount: material.chunks.length,
-      contentLength: material.content.length
-    })));
-  } catch (error) {
-    console.error('❌ Get course materials error:', error);
-    res.status(500).json({ error: 'Failed to get course materials' });
-  }
-});
-
-// Delete a course material
-app.delete('/api/course-materials/:id', authenticateToken, async (req, res) => {
-  try {
-    // Handle admin userId
-    let queryUserId;
-    if (req.user.userId === 'admin') {
-      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
-    } else {
-      queryUserId = req.user.userId;
-    }
-    
-    await CourseMaterial.findOneAndUpdate(
-      { _id: req.params.id, userId: queryUserId },
-      { isActive: false }
-    );
-    res.json({ message: 'Course material deleted successfully' });
-  } catch (error) {
-    console.error('❌ Delete course material error:', error);
-    res.status(500).json({ error: 'Failed to delete course material' });
-  }
-});
-
 console.log('✅ Admin analytics route loaded successfully');
-
-// SIMPLE TEST ENDPOINT
-app.get('/test-simple', (req, res) => {
-  res.json({ message: 'Server is working!' });
-});
 
 // ENHANCED ADMIN DASHBOARD HTML
 // Replace your existing admin-dashboard.html with this enhanced version:
-// Test course materials search endpoint
-app.post('/api/admin/test-course-materials-search', authenticateToken, async (req, res) => {
-  try {
-    const { query, userId: testUserId } = req.body;
-    const searchUserId = testUserId || req.user.userId;
-    
-    console.log('🧪 TESTING COURSE MATERIALS SEARCH');
-    console.log('Query:', query);
-    console.log('User ID:', searchUserId);
-    
-    // First, show what materials exist
-    const allMaterials = await CourseMaterial.find({ isActive: true });
-    console.log(`📚 Total active materials in database: ${allMaterials.length}`);
-    
-    allMaterials.forEach(material => {
-      console.log(`- "${material.title}" by user ${material.userId} (${material.chunks.length} chunks)`);
-    });
-    
-    // Now test the search
-    const results = await searchCourseMaterials(searchUserId, query, 5);
-    
-    res.json({
-      query,
-      searchUserId,
-      totalMaterials: allMaterials.length,
-      materialsFound: allMaterials.map(m => ({
-        title: m.title,
-        userId: m.userId,
-        chunks: m.chunks.length
-      })),
-      searchResults: results,
-      resultsCount: results.length
-    });
-    
-  } catch (error) {
-    console.error('❌ Test search error:', error);
-    res.status(500).json({ error: 'Search test failed', details: error.message });
-  }
-});
+
+// ENHANCED ADMIN DASHBOARD HTML
+// Replace your existing admin-dashboard.html with this enhanced version:
 
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
@@ -5362,4 +4534,46 @@ app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   }
 });
 
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
+console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
+  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
+  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
+  console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
+  console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
+  console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
+});
 
+
+// Temporary database cleanup endpoint for testing
+app.post('/api/admin/reset-test-db', async (req, res) => {
+  try {
+    console.log('🧹 RESETTING TEST DATABASE...');
+    
+    // Delete all data
+    await User.deleteMany({});
+    await LifeGoal.deleteMany({});
+    await Chat.deleteMany({});
+    await Notification.deleteMany({});
+    await Message.deleteMany({});
+    await DailyPromptResponse.deleteMany({});
+    await DailyProgress.deleteMany({});
+    await Insight.deleteMany({});
+    
+    console.log('✅ All test data deleted');
+    
+    res.json({ 
+      message: 'Test database reset successfully',
+      warning: 'All test data has been deleted'
+    });
+    
+  } catch (error) {
+    console.error('❌ Reset error:', error);
+    res.status(500).json({ error: 'Failed to reset database' });
+  }
+
+    });
