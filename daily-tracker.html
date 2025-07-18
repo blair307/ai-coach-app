@@ -600,11 +600,17 @@ async function loadProgressFromServer() {
 
         const data = await response.json();
         
-        // If server returns null, empty, or invalid data, just skip it
-        if (!data || !Array.isArray(data) || data.length === 0) {
-            console.log('📊 Server returned no progress data, using localStorage only');
-            return;
-        }
+       // Only skip if the response is truly invalid, not just empty
+if (!data || !Array.isArray(data)) {
+    console.log('📊 Server returned invalid data format, using localStorage only');
+    return;
+}
+
+// Empty array is valid - it just means no progress yet
+if (data.length === 0) {
+    console.log('📊 No previous progress found on server (this is normal for new users)');
+    // Continue - don't return here so server saving still works
+}
 
         // Safely process server data
         console.log('✅ Server returned valid data, merging with localStorage...');
