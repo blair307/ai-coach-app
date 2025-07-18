@@ -39,9 +39,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors()); // Allow all origins for testing
-app.use(express.json());
-app.use(express.static(__dirname));
-
 
 // ==========================================
 // STRIPE WEBHOOKS - MUST BE BEFORE express.json()
@@ -365,7 +362,7 @@ const userSchema = new mongoose.Schema({
 profilePhoto: { type: String },
   createdAt: { type: Date, default: Date.now }
 }, {
-
+  id: false  // ADD THIS LINE - disables the virtual id field
 });
 
 const User = mongoose.model('User', userSchema);
@@ -3644,23 +3641,22 @@ app.get('/api/daily-prompt/stats', authenticateToken, async (req, res) => {
 // DAILY PROGRESS API ROUTES - NEW
 // ==========================================
 
+// Get daily progress for a specific date or date range
 app.get('/api/daily-progress', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
     const { date, startDate, endDate } = req.query;
 
-    // Get current valid goal IDs first
-    const currentGoals = await LifeGoal.find({ userId }).select('_id');
-    const validGoalIds = currentGoals.map(goal => goal._id.toString());
-    console.log('🎯 Valid goal IDs for user:', validGoalIds);
-
     let query = { userId };
 
     if (date) {
+      // Single date
       query.date = date;
     } else if (startDate && endDate) {
+      // Date range
       query.date = { $gte: startDate, $lte: endDate };
     } else {
+      // Default to last 30 days
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const startDateStr = thirtyDaysAgo.toISOString().split('T')[0];
@@ -3672,25 +3668,7 @@ app.get('/api/daily-progress', authenticateToken, async (req, res) => {
       .populate('goalProgress.goalId', 'area bigGoal dailyAction')
       .sort({ date: -1 });
 
-    // Filter out progress for deleted goals
-    const filteredRecords = progressRecords.map(record => {
-      const filteredGoalProgress = record.goalProgress.filter(gp => {
-        const goalIdStr = gp.goalId ? gp.goalId.toString() : null;
-        const isValid = validGoalIds.includes(goalIdStr);
-        if (!isValid) {
-          console.log('🗑️ Filtering out progress for deleted goal:', goalIdStr);
-        }
-        return isValid;
-      });
-      
-      return {
-        ...record.toObject(),
-        goalProgress: filteredGoalProgress
-      };
-    });
-
-    console.log('📊 Returning filtered progress records:', filteredRecords.length);
-    res.json(filteredRecords);
+    res.json(progressRecords);
 
   } catch (error) {
     console.error('Get daily progress error:', error);
@@ -3843,11 +3821,7 @@ app.get('/api/daily-progress/summary', authenticateToken, async (req, res) => {
 app.get('/api/life-goals', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
-    console.log('🎯 Loading goals for user:', userId);
-    
     const goals = await LifeGoal.find({ userId }).sort({ createdAt: -1 });
-    console.log('🎯 Found goals:', goals.map(g => ({ id: g._id, title: g.bigGoal })));
-    
     res.json(goals);
   } catch (error) {
     console.error('Get life goals error:', error);
@@ -4985,15 +4959,12 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
     
-// Handle userId properly
+  // Create course material record  
 let validUserId;
 if (req.user.userId === 'admin') {
-    validUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    validUserId = new mongoose.Types.ObjectId('000000000000000000000000'); // Use a dummy ObjectId for admin
 } else {
-    // Don't create new ObjectId if it's already valid
-    validUserId = mongoose.Types.ObjectId.isValid(req.user.userId) 
-        ? new mongoose.Types.ObjectId(req.user.userId)
-        : req.user.userId;
+    validUserId = new mongoose.Types.ObjectId(req.user.userId);
 }
 
 const courseMaterial = new CourseMaterial({
@@ -5166,82 +5137,6 @@ app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
     res.status(500).json({ error: 'Failed to fix indexes' });
   }
 });
-
-// === Daily Progress Routes ===
-app.get('/api/daily-progress', authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const date = req.query.date;
-
-  try {
-    const progress = await DailyProgress.findOne({ userId, date });
-    if (!progress) {
-      return res.status(404).json({ message: 'No progress found for today' });
-    }
-    res.json(progress);
-  } catch (err) {
-    console.error('Error fetching daily progress:', err);
-    res.status(500).json({ message: 'Failed to fetch daily progress' });
-  }
-});
-
-app.post('/api/daily-progress', authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const { date, goalProgress } = req.body;
-
-  try {
-    let progress = await DailyProgress.findOneAndUpdate(
-      { userId, date },
-      { $set: { goalProgress, updatedAt: new Date() } },
-      { upsert: true, new: true }
-    );
-
-    res.json({ message: 'Progress saved successfully', progress });
-  } catch (err) {
-    console.error('Error saving daily progress:', err);
-    res.status(500).json({ message: 'Failed to save progress' });
-  }
-});
-
-// === Daily Progress Routes ===
-app.get('/api/daily-progress', authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const date = req.query.date;
-
-  try {
-    const progress = await DailyProgress.findOne({ userId, date });
-    if (!progress) {
-      return res.status(404).json({ message: 'No progress found for today' });
-    }
-    res.json(progress);
-  } catch (err) {
-    console.error('Error fetching daily progress:', err);
-    res.status(500).json({ message: 'Failed to fetch daily progress' });
-  }
-});
-
-app.post('/api/daily-progress', authenticateToken, async (req, res) => {
-  const userId = req.user.userId;
-  const { date, goalProgress } = req.body;
-
-  try {
-    const updated = await DailyProgress.findOneAndUpdate(
-      { userId, date },
-      {
-        $set: {
-          goalProgress,
-          updatedAt: new Date()
-        }
-      },
-      { upsert: true, new: true }
-    );
-
-    res.json({ message: 'Progress saved successfully', progress: updated });
-  } catch (err) {
-    console.error('Error saving daily progress:', err);
-    res.status(500).json({ message: 'Failed to save progress' });
-  }
-});
-
 
 // Start server
 app.listen(PORT, () => {
