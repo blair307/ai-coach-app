@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchProgress() {
     try {
-      const res = await fetch(`/api/daily-progress?date=${today}`, {
+      const res = await fetch(`/api/daily_progress?date=${today}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function saveProgress(goalProgress) {
     try {
-      await fetch("/api/daily-progress", {
+      await fetch("/api/daily_progress", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
