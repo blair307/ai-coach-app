@@ -3707,13 +3707,13 @@ app.post('/api/daily-progress', authenticateToken, async (req, res) => {
     );
 
     if (goalProgressIndex === -1) {
-      // Add new goal progress
-      dailyProgress.goalProgress.push({
-        goalId,
-        completed,
-        completedAt: completed ? new Date() : null,
-        area
-      });
+    // Change it to:
+dailyProgress.goalProgress.push({
+    goalId: new mongoose.Types.ObjectId(goalId),    // ← ADD THIS CONVERSION
+    completed,
+    completedAt: completed ? new Date() : null,
+    area
+});
     } else {
       // Update existing goal progress
       dailyProgress.goalProgress[goalProgressIndex].completed = completed;
