@@ -5199,6 +5199,46 @@ app.post('/api/daily-progress', authenticateToken, async (req, res) => {
   }
 });
 
+// === Daily Progress Routes ===
+app.get('/api/daily-progress', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+  const date = req.query.date;
+
+  try {
+    const progress = await DailyProgress.findOne({ userId, date });
+    if (!progress) {
+      return res.status(404).json({ message: 'No progress found for today' });
+    }
+    res.json(progress);
+  } catch (err) {
+    console.error('Error fetching daily progress:', err);
+    res.status(500).json({ message: 'Failed to fetch daily progress' });
+  }
+});
+
+app.post('/api/daily-progress', authenticateToken, async (req, res) => {
+  const userId = req.user.userId;
+  const { date, goalProgress } = req.body;
+
+  try {
+    const updated = await DailyProgress.findOneAndUpdate(
+      { userId, date },
+      {
+        $set: {
+          goalProgress,
+          updatedAt: new Date()
+        }
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: 'Progress saved successfully', progress: updated });
+  } catch (err) {
+    console.error('Error saving daily progress:', err);
+    res.status(500).json({ message: 'Failed to save progress' });
+  }
+});
+
 
 // Start server
 app.listen(PORT, () => {
