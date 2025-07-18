@@ -362,7 +362,7 @@ const userSchema = new mongoose.Schema({
 profilePhoto: { type: String },
   createdAt: { type: Date, default: Date.now }
 }, {
-  id: false  // ADD THIS LINE - disables the virtual id field
+
 });
 
 const User = mongoose.model('User', userSchema);
@@ -3821,7 +3821,11 @@ app.get('/api/daily-progress/summary', authenticateToken, async (req, res) => {
 app.get('/api/life-goals', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log('🎯 Loading goals for user:', userId);
+    
     const goals = await LifeGoal.find({ userId }).sort({ createdAt: -1 });
+    console.log('🎯 Found goals:', goals.map(g => ({ id: g._id, title: g.bigGoal })));
+    
     res.json(goals);
   } catch (error) {
     console.error('Get life goals error:', error);
@@ -4959,12 +4963,15 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
     
-  // Create course material record  
+// Handle userId properly
 let validUserId;
 if (req.user.userId === 'admin') {
-    validUserId = new mongoose.Types.ObjectId('000000000000000000000000'); // Use a dummy ObjectId for admin
+    validUserId = new mongoose.Types.ObjectId('000000000000000000000000');
 } else {
-    validUserId = new mongoose.Types.ObjectId(req.user.userId);
+    // Don't create new ObjectId if it's already valid
+    validUserId = mongoose.Types.ObjectId.isValid(req.user.userId) 
+        ? new mongoose.Types.ObjectId(req.user.userId)
+        : req.user.userId;
 }
 
 const courseMaterial = new CourseMaterial({
