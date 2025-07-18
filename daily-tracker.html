@@ -773,7 +773,7 @@ function loadDailyProgress() {
         }
         
         // Try to load from backup
-        const backup = localStorage.getItem('eeh_daily_progress_backup');
+        const backup = localStorage.getItem('eeh_daily-progress_backup');
         if (backup) {
             const backupData = JSON.parse(backup);
             if (backupData.data) {
@@ -786,7 +786,7 @@ function loadDailyProgress() {
         }
         
         // Try to load minimal fallback
-        const minimal = localStorage.getItem('eeh_daily_progress_minimal');
+        const minimal = localStorage.getItem('eeh_daily-progress_minimal');
         if (minimal) {
             const minimalData = JSON.parse(minimal);
             dailyProgress = { [getTodayKey()]: minimalData.today || {} };
@@ -813,8 +813,8 @@ function loadDailyProgress() {
             goalCount: allGoals.length
         };
         
-        localStorage.setItem('eeh_daily_progress', JSON.stringify(dailyProgress));
-        localStorage.setItem('eeh_daily_progress_meta', JSON.stringify(dataToSave));
+        localStorage.setItem('eeh_daily-progress', JSON.stringify(dailyProgress));
+        localStorage.setItem('eeh_daily-progress_meta', JSON.stringify(dataToSave));
         
         console.log('💾 Daily progress saved to localStorage:', Object.keys(dailyProgress).length, 'days');
         
@@ -825,14 +825,14 @@ function loadDailyProgress() {
             version: '1.1',
             goalIds: allGoals.map(g => g._id || g.id)
         };
-        localStorage.setItem('eeh_daily_progress_backup', JSON.stringify(backup));
+        localStorage.setItem('eeh_daily-progress_backup', JSON.stringify(backup));
         
     } catch (error) {
         console.error('❌ Error saving daily progress:', error);
         
         // Try to save a minimal version if full save fails
         try {
-            localStorage.setItem('eeh_daily_progress_minimal', JSON.stringify({
+            localStorage.setItem('eeh_daily-progress_minimal', JSON.stringify({
                 today: dailyProgress[getTodayKey()] || {},
                 timestamp: new Date().toISOString()
             }));
