@@ -569,8 +569,8 @@ async function loadGoalsAndProgress() {
 }
 
 async function loadProgressFromServer() {
-    // Always start with localStorage data first - this preserves local changes
-    loadDailyProgress();
+   // Always start with localStorage data first - this preserves local changes
+// loadDailyProgress(); // Don't call this here - it wipes out data
     const localProgressBackup = { ...dailyProgress }; // Create backup of local data
     
     try {
