@@ -623,7 +623,7 @@ async function loadProgressFromServer() {
             // Safely process each goal progress
             record.goalProgress.forEach(gp => {
                 if (gp && gp.goalId != null && typeof gp.completed === 'boolean') {
-                    const goalIdStr = String(gp.goalId);
+                   const goalIdStr = gp.goalId._id || gp.goalId.toString() || String(gp.goalId);
                     dailyProgress[record.date][goalIdStr] = gp.completed;
                 }
             });
