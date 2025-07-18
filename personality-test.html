@@ -1187,52 +1187,62 @@ function logout() {
             checkForExistingResults();
         });
 
-        // NEW: Check if user already has results
-        async function checkForExistingResults() {
-            try {
-                // Check if this is a retake (user clicked "Retake Assessment")
-                const allowRetake = localStorage.getItem('allowRetake');
-                if (allowRetake === 'true') {
-                    localStorage.removeItem('allowRetake'); // Clear the flag
-                    console.log('Retake allowed, user can take test');
-                    return;
+       // REPLACE the entire checkForExistingResults function with this:
+
+async function checkForExistingResults() {
+    try {
+        // Check if this is a retake (user clicked "Retake Assessment")
+        const allowRetake = localStorage.getItem('allowRetake');
+        if (allowRetake === 'true') {
+            localStorage.removeItem('allowRetake'); // Clear the flag
+            console.log('🔄 Retake allowed, user can take test');
+            return;
+        }
+        
+        // FIRST: Check localStorage
+        const localResults = localStorage.getItem('personalityTestResults');
+        if (localResults) {
+            console.log('✅ Found results in localStorage, redirecting to results page...');
+            window.location.href = 'personality-results.html';
+            return;
+        }
+        
+        // SECOND: Check server if user is logged in
+        const token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        if (token) {
+            console.log('🔍 Checking server for existing results...');
+            
+            const response = await fetch('/api/personality-test/results', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('✅ Found results on server! Saving locally and redirecting...');
                 
-                // Check localStorage first
-                const localResults = localStorage.getItem('personalityTestResults');
+                // Save to localStorage so we don't need to check server again
+                localStorage.setItem('personalityTestResults', JSON.stringify(data.results));
                 
-                if (localResults) {
-                    console.log('Found existing results, redirecting...');
-                    window.location.href = 'personality-results.html';
-                    return;
-                }
-                
-                // Also check server if user is logged in
-                const token = localStorage.getItem('authToken') || localStorage.getItem('token');
-                if (token) {
-                    const response = await fetch('/api/personality-test/results', {
-                        method: 'GET',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        console.log('Found results on server, redirecting...');
-                        window.location.href = 'personality-results.html';
-                        return;
-                    }
-                }
-                
-                // No existing results found, user can take the test
-                console.log('No existing results found, user can take test');
-                
-            } catch (error) {
-                console.error('Error checking for existing results:', error);
-                // If there's an error, let them take the test
+                // Redirect to results page
+                window.location.href = 'personality-results.html';
+                return;
+            } else if (response.status === 404) {
+                console.log('ℹ️ No results found on server - user can take the test');
             }
         }
+        
+        // If we get here, no results found anywhere
+        console.log('📝 No existing results found, user can take the test');
+        
+    } catch (error) {
+        console.error('❌ Error checking for results:', error);
+        console.log('📝 Error occurred, letting user take the test anyway');
+    }
+}
     </script>
 </body>
 </html>
