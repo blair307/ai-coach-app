@@ -612,28 +612,30 @@ if (data.length === 0) {
     // Continue - don't return here so server saving still works
 }
 
-        // Safely process server data
-        console.log('✅ Server returned valid data, merging with localStorage...');
-        
-        data.forEach(record => {
-            // Skip any invalid records
-            if (!record || !record.date || !record.goalProgress || !Array.isArray(record.goalProgress)) {
-                return;
-            }
-            
-            // Initialize date if not exists
-            if (!dailyProgress[record.date]) {
-                dailyProgress[record.date] = {};
-            }
-            
-            // Safely process each goal progress
-            record.goalProgress.forEach(gp => {
-                if (gp && gp.goalId != null && typeof gp.completed === 'boolean') {
-                    const goalIdStr = String(gp.goalId);
-                    dailyProgress[record.date][goalIdStr] = gp.completed;
-                }
-            });
-        });
+     // Safely process server data
+console.log('✅ Server returned valid data, merging with localStorage...');
+
+data.forEach(record => {
+    // Skip any invalid records
+    if (!record || !record.date || !record.goalProgress || !Array.isArray(record.goalProgress)) {
+        return;
+    }
+    
+    // Initialize date if not exists
+    if (!dailyProgress[record.date]) {
+        dailyProgress[record.date] = {};
+    }
+    
+    // Safely process each goal progress
+    record.goalProgress.forEach(gp => {
+        if (gp && gp.goalId != null && typeof gp.completed === 'boolean') {
+            // Try multiple ways to get the goal ID
+            const goalIdStr = String(gp.goalId._id || gp.goalId);
+            dailyProgress[record.date][goalIdStr] = gp.completed;
+            console.log(`📥 Loaded: ${record.date} - Goal ${goalIdStr} = ${gp.completed}`);
+        }
+    });
+});
         
         // Save the merged data back to localStorage
         saveDailyProgress();
