@@ -4722,6 +4722,48 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+// Temporary database cleanup endpoint for testing
+app.post('/api/admin/reset-test-db', async (req, res) => {
+  try {
+    console.log('🧹 RESETTING TEST DATABASE...');
+    
+    // Delete all data
+    await User.deleteMany({});
+    await LifeGoal.deleteMany({});
+    await Chat.deleteMany({});
+    await Notification.deleteMany({});
+    await Message.deleteMany({});
+    await DailyPromptResponse.deleteMany({});
+    await DailyProgress.deleteMany({});
+    await Insight.deleteMany({});
+    
+    console.log('✅ All test data deleted');
+    
+    res.json({ 
+      message: 'Test database reset successfully',
+      warning: 'All test data has been deleted'
+    });
+    
+  } catch (error) {
+    console.error('❌ Reset error:', error);
+    res.status(500).json({ error: 'Failed to reset database' });
+  }
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
+console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
+  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
+  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
+  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
+  console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
+  console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
+  console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
+});
+
 app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
   try {
     const materialId = req.params.materialId;
@@ -5315,46 +5357,4 @@ app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
-  console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
-  console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
-  console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
-  console.log(`💬 Enhanced Reply System: ENABLED with Notifications ✅`);
-  console.log(`🗑️ Message Deletion: ENABLED with Permanent Server Deletion ✅`);
-  console.log(`🌱 Manual Seed Endpoint: /api/manual-seed-prompts ✅`);
-});
 
-
-// Temporary database cleanup endpoint for testing
-app.post('/api/admin/reset-test-db', async (req, res) => {
-  try {
-    console.log('🧹 RESETTING TEST DATABASE...');
-    
-    // Delete all data
-    await User.deleteMany({});
-    await LifeGoal.deleteMany({});
-    await Chat.deleteMany({});
-    await Notification.deleteMany({});
-    await Message.deleteMany({});
-    await DailyPromptResponse.deleteMany({});
-    await DailyProgress.deleteMany({});
-    await Insight.deleteMany({});
-    
-    console.log('✅ All test data deleted');
-    
-    res.json({ 
-      message: 'Test database reset successfully',
-      warning: 'All test data has been deleted'
-    });
-    
-  } catch (error) {
-    console.error('❌ Reset error:', error);
-    res.status(500).json({ error: 'Failed to reset database' });
-  }
-
-    });
