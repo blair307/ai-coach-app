@@ -633,14 +633,26 @@ if (data.length === 0) {
             // Safely process each goal progress
             record.goalProgress.forEach(gp => {
                 console.log('🔍 Processing goal progress:', gp);
-                if (gp && gp.goalId != null && typeof gp.completed === 'boolean') {
-                    // Try multiple ways to get the goal ID
-                    const goalIdStr = String(gp.goalId._id || gp.goalId);
-                    dailyProgress[record.date][goalIdStr] = gp.completed;
-                    console.log(`📥 LOADED: ${record.date} - Goal ${goalIdStr} = ${gp.completed}`);
-                } else {
-                    console.log('⚠️ Invalid goal progress data:', gp);
-                }
+              if (gp && typeof gp.completed === 'boolean') {
+    // Try multiple ways to get the goal ID
+    let goalIdStr = null;
+    if (gp.goalId && gp.goalId._id) {
+        goalIdStr = String(gp.goalId._id);
+    } else if (gp.goalId) {
+        goalIdStr = String(gp.goalId);
+    } else if (gp._id) {
+        goalIdStr = String(gp._id);
+    }
+    
+    if (goalIdStr && goalIdStr !== 'null') {
+        dailyProgress[record.date][goalIdStr] = gp.completed;
+        console.log(`📥 LOADED: ${record.date} - Goal ${goalIdStr} = ${gp.completed}`);
+    } else {
+        console.log('⚠️ Could not find valid goal ID in:', gp);
+    }
+} else {
+    console.log('⚠️ Invalid goal progress data:', gp);
+}
             });
         });
         
