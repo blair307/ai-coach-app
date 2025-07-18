@@ -612,7 +612,7 @@ async function loadProgressFromServer() {
             console.log('📊 No previous progress found on server (keeping localStorage data)');
             // DON'T return here - we want to preserve localStorage data
             saveDailyProgress(); // Save current localStorage data to ensure it persists
-            return;
+// Keep processing to preserve localStorage data
         }
 
         console.log('✅ Server returned valid data, merging with localStorage...');
