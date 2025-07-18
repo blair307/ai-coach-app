@@ -714,7 +714,7 @@ function debugDailyProgress() {
 // Load daily progress from localStorage (separate function for better control)
 function loadDailyProgressFromStorage() {
     try {
-        const stored = localStorage.getItem('eeh_daily_progress');
+        const stored = localStorage.getItem('eeh_daily-progress');
         return stored ? JSON.parse(stored) : {};
     } catch (error) {
         console.error('Error loading daily progress from localStorage:', error);
@@ -765,7 +765,7 @@ function loadDailyProgressFromStorage() {
 function loadDailyProgress() {
     try {
         // Try to load main progress data
-        const stored = localStorage.getItem('eeh_daily_progress');
+        const stored = localStorage.getItem('eeh_daily-progress');
         if (stored) {
             dailyProgress = JSON.parse(stored);
             console.log('📈 Loaded daily progress from localStorage:', Object.keys(dailyProgress).length, 'days');
