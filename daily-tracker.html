@@ -656,10 +656,30 @@ if (data.length === 0) {
             });
         });
         
-        // Save the merged data back to localStorage
+     // Clean up data to only keep current goal IDs
+        const currentGoalIds = allGoals.map(g => (g._id || g.id).toString());
+        console.log('🧹 Cleaning progress data. Current goal IDs:', currentGoalIds);
+        
+        Object.keys(dailyProgress).forEach(date => {
+            const progressForDate = dailyProgress[date];
+            const cleanedProgress = {};
+            
+            Object.keys(progressForDate).forEach(goalId => {
+                if (currentGoalIds.includes(goalId)) {
+                    cleanedProgress[goalId] = progressForDate[goalId];
+                    console.log(`✅ Keeping: ${date} - ${goalId} = ${progressForDate[goalId]}`);
+                } else {
+                    console.log(`🗑️ Removing old goal: ${date} - ${goalId}`);
+                }
+            });
+            
+            dailyProgress[date] = cleanedProgress;
+        });
+        
+        // Save the cleaned data back to localStorage
         saveDailyProgress();
         
-        console.log('✅ Progress successfully merged from server');
+        console.log('✅ Progress successfully merged and cleaned from server');
         
     } catch (error) {
         console.log('❌ Error loading from server, using localStorage only:', error.message);
