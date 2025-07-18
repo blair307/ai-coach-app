@@ -11,19 +11,6 @@ const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 require('dotenv').config();
 
-// Add this after your other require statements
-const fetch = require('node-fetch'); // You may need to install this: npm install node-fetch
-
-// ElevenLabs configuration
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
-
-// Voice IDs (we'll update these when your voice clones are ready)
-const VOICE_IDS = {
-    coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
-    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id'
-};
-
 // Make sure all important settings are configured
 const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
 const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
@@ -312,15 +299,6 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   stripeCustomerId: String,
-    selectedCoach: {
-    type: String,
-    enum: ['coach1', 'coach2'],
-    default: 'coach1'
-  },
-  coachPreferences: {
-    voiceEnabled: { type: Boolean, default: true },
-    lastCoachSwitch: { type: Date, default: null }
-  },
  subscription: {
     plan: String,
     status: String,
@@ -427,10 +405,6 @@ const messageSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
   }],
   likeCount: { type: Number, default: 0 },
-     // Image upload fields
-  image: { type: String }, // Base64 image data
-  imageName: { type: String }, // Original filename
-  imageSize: { type: Number }, // File size in bytes
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -1038,36 +1012,25 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     
     console.log('Creating subscription with coupon:', couponCode);
     
-   // Only validate coupon if one is provided
-if (couponCode) {
-  try {
-    // First try to validate directly with Stripe
-    try {
-      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
-      if (!stripeCoupon.valid) {
-        return res.status(400).json({ 
-          error: 'This coupon has expired or reached its usage limit' 
-        });
-      }
-      console.log('✅ Stripe coupon validated:', stripeCoupon.id);
-    } catch (stripeCouponError) {
-      // If coupon doesn't exist in Stripe, check local list
-      console.log('⚠️ Coupon not found in Stripe, checking local list:', couponCode);
-      
-      const validCoupons = {
-        'EEHCLIENT': { type: 'forever_free' },
-        'FREEMONTH': { type: 'first_month_free' },
-        'EEHCLIENT6': { type: 'six_months_free' },
-        'CRAZYDISCOUNT': { type: 'test_discount' }
-      };
+    // Only validate coupon if one is provided
+    if (couponCode) {
+      try {
+        // First check our local validation
+        const validCoupons = {
+          'EEHCLIENT': { type: 'forever_free' },
+          'FREEMONTH': { type: 'first_month_free' },
+          'EEHCLIENT6': { type: 'six_months_free' },
+              'CRAZYDISCOUNT': { type: 'test_discount' }
 
-      const localCoupon = validCoupons[couponCode.toUpperCase()];
-      if (!localCoupon) {
-        return res.status(400).json({ 
-          error: 'Invalid coupon code. Please check and try again.' 
-        });
-      }
-    }
+        };
+
+        const localCoupon = validCoupons[couponCode.toUpperCase()];
+        if (!localCoupon) {
+          return res.status(400).json({ 
+            error: 'Invalid coupon code. Please check and try again.' 
+          });
+        }
+
         // Then verify with Stripe (only if it exists in Stripe)
         try {
           const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
@@ -1109,7 +1072,7 @@ if (couponCode) {
     // Price IDs - Make sure these match your actual Stripe Price IDs
     const priceIds = {
       monthly: 'price_1Rhv3uIjRmg2uv1cnnt5X12z', 
-      yearly: 'price_1Rk5FYIjRmg2uv1caGouvbFc'   
+      yearly: 'price_1Rhv3aIjRmg2uv1cXZIIDG6M'   
     };
 
     const priceId = priceIds[plan];
@@ -1222,65 +1185,38 @@ app.post('/api/payments/validate-coupon', async (req, res) => {
       return res.status(400).json({ error: 'Coupon code is required' });
     }
 
-   // First try to validate with Stripe directly
-try {
-  const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
-  if (!stripeCoupon.valid) {
-    return res.status(400).json({ 
-      valid: false, 
-      error: 'Coupon has expired or reached its usage limit' 
-    });
+    // Validate against your predefined coupons
+    const validCoupons = {
+      'EEHCLIENT': {
+        type: 'forever_free',
+        description: 'Completely free account',
+        discount: '100% off forever'
+      },
+      'FREEMONTH': {
+        type: 'first_month_free',
+        description: 'First month free',
+        discount: '100% off first month'
+      },
+      'EEHCLIENT6': {
+        type: 'six_months_free',
+        description: 'Six months free',
+        discount: '100% off for 6 months'
+      },
+        'CRAZYDISCOUNT': {
+    type: 'test_discount',
+    description: 'Test discount - $1 payment',
+    discount: 'Reduces to $1 for testing'
   }
-  
-  // If Stripe coupon exists and is valid, create response
-  let couponType = 'standard_discount';
-  let description = 'Discount applied';
-  
-  if (stripeCoupon.percent_off === 100) {
-    couponType = stripeCoupon.duration === 'forever' ? 'forever_free' : 'first_month_free';
-    description = `${stripeCoupon.percent_off}% off ${stripeCoupon.duration === 'forever' ? 'forever' : 'for ' + (stripeCoupon.duration_in_months || 1) + ' month(s)'}`;
-  } else if (stripeCoupon.percent_off) {
-    description = `${stripeCoupon.percent_off}% off`;
-  } else if (stripeCoupon.amount_off) {
-    description = `$${(stripeCoupon.amount_off / 100).toFixed(2)} off`;
-  }
-  
-  return res.json({
-    valid: true,
-    coupon: {
-      code: couponCode.toUpperCase(),
-      type: couponType,
-      description: description,
-      discount: description
-    }
-  });
-  
-} catch (stripeError) {
-  console.log('Coupon not found in Stripe, checking local list...');
-  
-  // Fallback to local validation for special coupons
-  const validCoupons = {
-    'EEHCLIENT': {
-      type: 'forever_free',
-      description: 'Completely free account',
-      discount: '100% off forever'
-    },
-      'FREETOOME': {
-    type: 'forever_free',
-    description: '100% off',
-    discount: '100% off'
-  }
-  };
+    };
 
-  const coupon = validCoupons[couponCode.toUpperCase()];
-  
-  if (!coupon) {
-    return res.status(400).json({ 
-      valid: false, 
-      error: 'Invalid coupon code' 
-    });
-  }
-}
+    const coupon = validCoupons[couponCode.toUpperCase()];
+    
+    if (!coupon) {
+      return res.status(400).json({ 
+        valid: false, 
+        error: 'Invalid coupon code' 
+      });
+    }
 
     // Optionally check with Stripe to ensure coupon is still active
     try {
@@ -1313,59 +1249,7 @@ try {
   }
 });
 
-// Coach Configuration
-const COACHES = {
-  coach1: {
-    name: "Blair Reynolds", 
-    assistantId: "asst_tpShoq1kPGvtcFhMdxb6EmYg", 
-    voiceId: null, // We'll add this after setting up ElevenLabs
-    personality: "Humorous, empathy-oriented coach focused on transformative solutions",
-    description: "Entrepreneurial enthusiasm with a focus on personal and relational health"
-  },
-  coach2: {
-    name: "Dave Charlson",
-    assistantId: "asst_azEXcPuwPHRaSXWzv2tPzI4t", // We'll create Dave's assistant next
-    voiceId: null, // We'll add this after setting up ElevenLabs
-    personality: "Warm, strategic coach focused on sustainable growth and well-being",
-    description: "Balanced approach combining business success with personal fulfillment"
-  }
-};
-
-// Voice generation function
-async function generateVoice(text, voiceId) {
-    if (!ELEVENLABS_API_KEY) {
-        throw new Error('ElevenLabs API key not configured');
-    }
-    
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}`, {
-        method: 'POST',
-        headers: {
-            'Accept': 'audio/mpeg',
-            'Content-Type': 'application/json',
-            'xi-api-key': ELEVENLABS_API_KEY
-        },
-        body: JSON.stringify({
-            text: text,
-            model_id: 'eleven_monolingual_v1',
-            voice_settings: {
-                stability: 0.5,
-                similarity_boost: 0.5
-            }
-        })
-    });
-    
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
-    }
-    
-    // Convert audio response to base64 for frontend
-    const audioBuffer = await response.arrayBuffer();
-    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
-    return `data:audio/mpeg;base64,${audioBase64}`;
-}
-
-// Send message to AI Assistant with Coach Selection
+// Send message to AI Assistant with Conversation Memory
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
   try {
     if (!openai) {
@@ -1377,18 +1261,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     const { message } = req.body;
     const userId = req.user.userId;
 
-    // Get user's selected coach
-    const user = await User.findById(userId).select('selectedCoach');
-    const selectedCoach = user?.selectedCoach || 'coach1';
-    const coach = COACHES[selectedCoach];
-    
-    if (!coach || !coach.assistantId) {
-      return res.status(400).json({ 
-        error: 'Selected coach is not available. Please try again.' 
-      });
-    }
-
-    console.log(`🎯 Using ${coach.name} (${selectedCoach}) for user ${userId}`);
+    const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
 
     let chat = await Chat.findOne({ userId });
     let threadId;
@@ -1417,23 +1290,9 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       content: message
     });
 
-// Check for active runs and cancel them
-try {
-  const activeRuns = await openai.beta.threads.runs.list(threadId, { limit: 5 });
-  for (const existingRun of activeRuns.data) {
-    if (existingRun.status === 'in_progress' || existingRun.status === 'queued') {
-      console.log('⏳ Canceling existing run:', existingRun.id);
-      await openai.beta.threads.runs.cancel(threadId, existingRun.id);
-    }
-  }
-} catch (cancelError) {
-  console.log('⚠️ Could not cancel existing runs:', cancelError.message);
-}
-
-const run = await openai.beta.threads.runs.create(threadId, {
-  assistant_id: coach.assistantId
-});
-      
+    const run = await openai.beta.threads.runs.create(threadId, {
+      assistant_id: ASSISTANT_ID
+    });
 
     let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
     
@@ -1459,51 +1318,17 @@ const run = await openai.beta.threads.runs.create(threadId, {
 
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
-      { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
+      { role: 'assistant', content: response, timestamp: new Date() }
     );
     chat.updatedAt = new Date();
     await chat.save();
 
-    // Generate insights after successful chat
+// Generate insights after successful chat - NEW
     if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
 
-// Generate voice if coach voice is enabled
-    let audioUrl = null;
-    const selectedCoachId = selectedCoach;
-    
-    if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
-        try {
-            console.log('🎤 Generating voice for coach:', selectedCoachId);
-            console.log('🎤 Using voice ID:', VOICE_IDS[selectedCoachId]);
-// Clean the response text for voice synthesis
-const cleanedResponse = response
-    .replace(/\*\*/g, '') // Remove ** bold markers
-    .replace(/\*/g, '')   // Remove * italic markers
-    .replace(/#{1,6}\s/g, '') // Remove # headers
-    .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
-    .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
-    .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
-    .trim();
-
-audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
-            console.log('✅ Voice generated successfully');
-        } catch (voiceError) {
-            console.error('⚠️ Voice generation failed:', voiceError.message);
-            // Continue without voice - don't fail the whole request
-        }
-    }
-    
-    res.json({ 
-      response,
-      coach: {
-        name: coach.name,
-        id: selectedCoach
-      },
-      audio: audioUrl ? { url: audioUrl, enabled: true } : null
-    });
+    res.json({ response });
 
   } catch (error) {
     console.error('Assistant error:', error);
@@ -1551,92 +1376,6 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get chat history error:', error);
     res.status(500).json({ message: 'Failed to get chat history' });
-  }
-});
-
-// ==========================================
-// COACH SELECTION API ROUTES
-// ==========================================
-
-// Get available coaches
-app.get('/api/coaches', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const user = await User.findById(userId).select('selectedCoach');
-    
-    const availableCoaches = Object.keys(COACHES).map(coachId => ({
-      id: coachId,
-      name: COACHES[coachId].name,
-      personality: COACHES[coachId].personality,
-      description: COACHES[coachId].description,
-      isSelected: user.selectedCoach === coachId
-    }));
-    
-    res.json({
-      coaches: availableCoaches,
-      currentCoach: user.selectedCoach || 'coach1'
-    });
-  } catch (error) {
-    console.error('Get coaches error:', error);
-    res.status(500).json({ error: 'Failed to get coaches' });
-  }
-});
-
-// Switch coach
-app.post('/api/coaches/select', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const { coachId } = req.body;
-    
-    if (!coachId || !COACHES[coachId]) {
-      return res.status(400).json({ error: 'Invalid coach selection' });
-    }
-    
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { 
-        selectedCoach: coachId,
-        'coachPreferences.lastCoachSwitch': new Date()
-      },
-      { new: true }
-    );
-    
-    const selectedCoach = COACHES[coachId];
-    
-    console.log(`👥 User ${userId} switched to ${selectedCoach.name} (${coachId})`);
-    
-    res.json({
-      success: true,
-      message: `Switched to ${selectedCoach.name}`,
-      coach: {
-        id: coachId,
-        name: selectedCoach.name,
-        personality: selectedCoach.personality
-      }
-    });
-  } catch (error) {
-    console.error('Switch coach error:', error);
-    res.status(500).json({ error: 'Failed to switch coach' });
-  }
-});
-
-// Get current coach info
-app.get('/api/coaches/current', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const user = await User.findById(userId).select('selectedCoach');
-    const coachId = user.selectedCoach || 'coach1';
-    const coach = COACHES[coachId];
-    
-    res.json({
-      id: coachId,
-      name: coach.name,
-      personality: coach.personality,
-      description: coach.description
-    });
-  } catch (error) {
-    console.error('Get current coach error:', error);
-    res.status(500).json({ error: 'Failed to get current coach' });
   }
 });
 
@@ -2202,37 +1941,6 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       profilePhoto: user?.profilePhoto || null
     };
 
-    // Handle image upload
-    if (req.body.image) {
-      console.log('📷 Processing image upload for message');
-      
-      // Validate image data
-      if (!req.body.image.startsWith('data:image/')) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Invalid image format' 
-        });
-      }
-      
-      // Check image size (approximate - base64 is ~33% larger than original)
-      const imageSizeBytes = (req.body.image.length * 0.75);
-      if (imageSizeBytes > 5 * 1024 * 1024) { // 5MB limit
-        return res.status(400).json({ 
-          success: false, 
-          error: 'Image too large. Please use an image under 5MB.' 
-        });
-      }
-      
-      // Add image data to message
-      messageData.image = req.body.image;
-      messageData.imageName = req.body.imageName || 'image.jpg';
-      messageData.imageSize = req.body.imageSize || imageSizeBytes;
-      
-      console.log('✅ Image data added to message:', {
-        name: messageData.imageName,
-        size: Math.round(imageSizeBytes / 1024) + 'KB'
-      });
-    }
     if (req.body.replyTo) {
       messageData.replyTo = {
         messageId: req.body.replyTo.messageId,
@@ -3979,416 +3687,6 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
 
 console.log('✅ Admin routes loaded successfully');
 
-// ==========================================
-// ENHANCED ADMIN COUPON MANAGEMENT ROUTES - ADD TO server.js
-// ==========================================
-
-// Get all coupons from Stripe
-app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
-  try {
-    console.log('🎫 Fetching all coupons from Stripe...');
-    
-    // Get coupons from Stripe
-    const stripeCoupons = await stripe.coupons.list({
-      limit: 100
-    });
-    
-    // Get local coupon usage stats
-    const localCouponStats = await User.aggregate([
-      {
-        $match: {
-          'subscription.couponUsed': { $exists: true, $ne: null }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.couponUsed',
-          usageCount: { $sum: 1 },
-          users: {
-            $push: {
-              name: { $concat: ['$firstName', ' ', '$lastName'] },
-              email: '$email',
-              createdAt: '$createdAt'
-            }
-          }
-        }
-      }
-    ]);
-    
-    // Combine Stripe data with local usage
-    const enhancedCoupons = stripeCoupons.data.map(stripeCoupon => {
-      const localStats = localCouponStats.find(stat => stat._id === stripeCoupon.id) || {};
-      
-      return {
-        id: stripeCoupon.id,
-        name: stripeCoupon.name || stripeCoupon.id,
-        percentOff: stripeCoupon.percent_off,
-        amountOff: stripeCoupon.amount_off,
-        currency: stripeCoupon.currency,
-        duration: stripeCoupon.duration,
-        durationInMonths: stripeCoupon.duration_in_months,
-        maxRedemptions: stripeCoupon.max_redemptions,
-        timesRedeemed: stripeCoupon.times_redeemed,
-        valid: stripeCoupon.valid,
-        created: new Date(stripeCoupon.created * 1000),
-        redeemBy: stripeCoupon.redeem_by ? new Date(stripeCoupon.redeem_by * 1000) : null,
-        localUsage: localStats.usageCount || 0,
-        localUsers: localStats.users || []
-      };
-    });
-    
-    console.log(`✅ Found ${enhancedCoupons.length} coupons`);
-    
-    res.json({
-      coupons: enhancedCoupons,
-      total: enhancedCoupons.length
-    });
-    
-  } catch (error) {
-    console.error('❌ Error fetching coupons:', error);
-    res.status(500).json({ 
-      error: 'Failed to fetch coupons',
-      message: error.message 
-    });
-  }
-});
-
-// Create new coupon
-app.post('/api/admin/coupons', authenticateAdmin, async (req, res) => {
-  try {
-    const {
-      id,
-      name,
-      percentOff,
-      amountOff,
-      currency,
-      duration,
-      durationInMonths,
-      maxRedemptions,
-      redeemBy
-    } = req.body;
-    
-    console.log('🎫 Creating new coupon:', { id, name, percentOff, amountOff });
-    
-    if (!id) {
-      return res.status(400).json({ error: 'Coupon ID is required' });
-    }
-    
-    if (!percentOff && !amountOff) {
-      return res.status(400).json({ error: 'Either percent_off or amount_off is required' });
-    }
-    
-    // Prepare coupon data for Stripe
-    const couponData = {
-      id: id.toUpperCase(),
-      name: name || id,
-      duration: duration || 'once'
-    };
-    
-    // Add discount type
-    if (percentOff) {
-      couponData.percent_off = parseInt(percentOff);
-    } else if (amountOff) {
-      couponData.amount_off = parseInt(amountOff * 100); // Convert to cents
-      couponData.currency = currency || 'usd';
-    }
-    
-    // Add optional fields
-    if (durationInMonths && duration === 'repeating') {
-      couponData.duration_in_months = parseInt(durationInMonths);
-    }
-    
-    if (maxRedemptions) {
-      couponData.max_redemptions = parseInt(maxRedemptions);
-    }
-    
-    if (redeemBy) {
-      couponData.redeem_by = Math.floor(new Date(redeemBy).getTime() / 1000);
-    }
-    
-    // Create coupon in Stripe
-    const stripeCoupon = await stripe.coupons.create(couponData);
-    
-    console.log('✅ Coupon created successfully:', stripeCoupon.id);
-    
-    res.json({
-      message: 'Coupon created successfully',
-      coupon: {
-        id: stripeCoupon.id,
-        name: stripeCoupon.name,
-        percentOff: stripeCoupon.percent_off,
-        amountOff: stripeCoupon.amount_off,
-        currency: stripeCoupon.currency,
-        duration: stripeCoupon.duration,
-        durationInMonths: stripeCoupon.duration_in_months,
-        maxRedemptions: stripeCoupon.max_redemptions,
-        valid: stripeCoupon.valid,
-        created: new Date(stripeCoupon.created * 1000)
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Error creating coupon:', error);
-    
-    if (error.type === 'StripeInvalidRequestError') {
-      res.status(400).json({ 
-        error: 'Invalid coupon data',
-        message: error.message 
-      });
-    } else {
-      res.status(500).json({ 
-        error: 'Failed to create coupon',
-        message: error.message 
-      });
-    }
-  }
-});
-
-// Delete coupon
-app.delete('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
-  try {
-    const couponId = req.params.id;
-    
-    console.log('🗑️ Deleting coupon:', couponId);
-    
-    const deletedCoupon = await stripe.coupons.del(couponId);
-    
-    console.log('✅ Coupon deleted successfully');
-    
-    res.json({
-      message: 'Coupon deleted successfully',
-      couponId: couponId,
-      deleted: deletedCoupon.deleted
-    });
-    
-  } catch (error) {
-    console.error('❌ Error deleting coupon:', error);
-    res.status(500).json({ 
-      error: 'Failed to delete coupon',
-      message: error.message 
-    });
-  }
-});
-
-// Get coupon usage analytics
-app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) => {
-  try {
-    const couponId = req.params.id;
-    
-    console.log('📊 Getting analytics for coupon:', couponId);
-    
-    // Get Stripe coupon data
-    const stripeCoupon = await stripe.coupons.retrieve(couponId);
-    
-    // Get local usage data
-    const usageData = await User.find({
-      'subscription.couponUsed': couponId
-    }).select('firstName lastName email subscription.plan subscription.status createdAt');
-    
-    // Calculate analytics
-    const analytics = {
-      stripeData: {
-        timesRedeemed: stripeCoupon.times_redeemed,
-        maxRedemptions: stripeCoupon.max_redemptions,
-        valid: stripeCoupon.valid
-      },
-      localUsage: {
-        totalUsers: usageData.length,
-        usersByPlan: usageData.reduce((acc, user) => {
-          const plan = user.subscription?.plan || 'free';
-          acc[plan] = (acc[plan] || 0) + 1;
-          return acc;
-        }, {}),
-        recentUsers: usageData
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-          .slice(0, 10)
-          .map(user => ({
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            plan: user.subscription?.plan || 'free',
-            status: user.subscription?.status || 'inactive',
-            signupDate: user.createdAt
-          }))
-      }
-    };
-    
-    res.json(analytics);
-    
-  } catch (error) {
-    console.error('❌ Error getting coupon analytics:', error);
-    res.status(500).json({ 
-      error: 'Failed to get analytics',
-      message: error.message 
-    });
-  }
-});
-
-console.log('✅ Enhanced admin coupon management routes loaded successfully');
-
-// Clean up old images (optional - run manually or via cron)
-app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
-  try {
-    const { daysOld = 30 } = req.body;
-    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
-    
-    console.log(`🧹 Cleaning up images older than ${daysOld} days`);
-    
-    // Find messages with images older than cutoff date
-    const oldMessages = await Message.find({
-      image: { $exists: true },
-      createdAt: { $lt: cutoffDate },
-      deleted: true
-    });
-    
-    console.log(`📊 Found ${oldMessages.length} old deleted messages with images`);
-    
-    // Remove image data from old deleted messages
-    const result = await Message.updateMany(
-      {
-        image: { $exists: true },
-        createdAt: { $lt: cutoffDate },
-        deleted: true
-      },
-      {
-        $unset: { 
-          image: 1, 
-          imageName: 1, 
-          imageSize: 1 
-        }
-      }
-    );
-    
-    res.json({
-      success: true,
-      message: `Cleaned up ${result.modifiedCount} old images`,
-      messagesProcessed: oldMessages.length
-    });
-    
-  } catch (error) {
-    console.error('❌ Error cleaning up images:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to cleanup images' 
-    });
-  }
-});
-
-// ADD THIS ROUTE TO YOUR server.js file after the other admin routes
-// (around line 2200, after the other admin coupon routes)
-
-// Get overall admin analytics
-app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
-  try {
-    console.log('📊 Getting overall admin analytics...');
-    
-    // User stats
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({
-      'streakData.lastLoginDate': { 
-        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) 
-      }
-    });
-    
-    // Subscription stats
-    const subscriptionStats = await User.aggregate([
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 },
-          activeCount: {
-            $sum: {
-              $cond: [
-                { $eq: ['$subscription.status', 'active'] },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-    
-    // Coupon usage stats
-    const couponStats = await User.aggregate([
-      {
-        $match: {
-          'subscription.couponUsed': { $exists: true, $ne: null }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.couponUsed',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]);
-    
-    // Recent signups
-    const recentSignups = await User.find()
-      .sort({ createdAt: -1 })
-      .limit(10)
-      .select('firstName lastName email subscription createdAt');
-    
-    // Revenue estimation (based on active subscriptions)
-    const revenueData = await User.aggregate([
-      {
-        $match: {
-          'subscription.status': 'active',
-          'subscription.plan': { $in: ['monthly', 'yearly'] }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 }
-        }
-      }
-    ]);
-    
-    const monthlyRevenue = (revenueData.find(r => r._id === 'monthly')?.count || 0) * 247;
-    const yearlyRevenue = (revenueData.find(r => r._id === 'yearly')?.count || 0) * 2497;
-    const estimatedMonthlyRevenue = monthlyRevenue + (yearlyRevenue / 12);
-    
-    res.json({
-      users: {
-        total: totalUsers,
-        active: activeUsers,
-        recentSignups: recentSignups.map(user => ({
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          plan: user.subscription?.plan || 'free',
-          signupDate: user.createdAt
-        }))
-      },
-      subscriptions: subscriptionStats,
-      coupons: couponStats,
-      revenue: {
-        estimatedMonthlyRevenue,
-        monthlySubscriptions: revenueData.find(r => r._id === 'monthly')?.count || 0,
-        yearlySubscriptions: revenueData.find(r => r._id === 'yearly')?.count || 0
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ Error getting admin analytics:', error);
-    res.status(500).json({ 
-      error: 'Failed to get analytics',
-      message: error.message 
-    });
-  }
-});
-
-console.log('✅ Admin analytics route loaded successfully');
-
-// ENHANCED ADMIN DASHBOARD HTML
-// Replace your existing admin-dashboard.html with this enhanced version:
-
-// ENHANCED ADMIN DASHBOARD HTML
-// Replace your existing admin-dashboard.html with this enhanced version:
-
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   try {
@@ -4462,100 +3760,4 @@ app.post('/api/admin/reset-test-db', async (req, res) => {
     console.error('❌ Reset error:', error);
     res.status(500).json({ error: 'Failed to reset database' });
   }
-// Admin analytics endpoint - ADD THIS NEW SECTION
-app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
-  try {
-    console.log('📊 Loading admin analytics...');
-    
-    // Get user statistics
-    const totalUsers = await User.countDocuments();
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const activeUsers = await User.countDocuments({
-      'streakData.lastLoginDate': { $gte: thirtyDaysAgo }
-    });
-    
-    // Get recent signups
-    const recentSignups = await User.find({
-      createdAt: { $gte: thirtyDaysAgo }
-    })
-    .select('firstName lastName email subscription.plan createdAt')
-    .sort({ createdAt: -1 })
-    .limit(10);
-    
-    // Get subscription breakdown
-    const subscriptionStats = await User.aggregate([
-      {
-        $group: {
-          _id: '$subscription.plan',
-          count: { $sum: 1 },
-          activeCount: {
-            $sum: {
-              $cond: [
-                { $eq: ['$subscription.status', 'active'] },
-                1,
-                0
-              ]
-            }
-          }
-        }
-      }
-    ]);
-    
-    // Get coupon usage stats
-    const couponStats = await User.aggregate([
-      {
-        $match: {
-          'subscription.couponUsed': { $exists: true, $ne: null }
-        }
-      },
-      {
-        $group: {
-          _id: '$subscription.couponUsed',
-          count: { $sum: 1 }
-        }
-      },
-      {
-        $sort: { count: -1 }
-      }
-    ]);
-    
-    // Calculate revenue estimates
-    const monthlyUsers = subscriptionStats.find(s => s._id === 'monthly')?.activeCount || 0;
-    const yearlyUsers = subscriptionStats.find(s => s._id === 'yearly')?.activeCount || 0;
-    
-    // Assuming monthly = $29, yearly = $249 (adjust to your actual prices)
-    const monthlyRevenue = (monthlyUsers * 29) + (yearlyUsers * 249 / 12);
-    
-    const analytics = {
-      users: {
-        total: totalUsers,
-        active: activeUsers,
-        recentSignups: recentSignups.map(user => ({
-          name: `${user.firstName} ${user.lastName}`,
-          email: user.email,
-          plan: user.subscription?.plan || 'free',
-          signupDate: user.createdAt
-        }))
-      },
-      subscriptions: subscriptionStats,
-      coupons: couponStats,
-      revenue: {
-        monthlySubscriptions: monthlyUsers,
-        yearlySubscriptions: yearlyUsers,
-        estimatedMonthlyRevenue: monthlyRevenue
-      }
-    };
-    
-    console.log('✅ Analytics loaded successfully');
-    res.json(analytics);
-    
-  } catch (error) {
-    console.error('❌ Error loading analytics:', error);
-    res.status(500).json({ 
-      error: 'Failed to load analytics',
-      message: error.message 
-    });
-  }
-});
-    
 });
