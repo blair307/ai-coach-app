@@ -15,6 +15,9 @@
 
     
 <style>
+
+    const API_BASE_URL = 'https://api.eehcommunity.com';
+
 .results-container {
     max-width: 1200px;
     margin: 0 auto;
@@ -453,7 +456,7 @@ async function loadResults() {
         }
 
         // Try to load from your server
-        const response = await fetch('/api/personality-test/results', {
+        const response = await fetch(`${API_BASE_URL}/api/personality-test/results`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -525,7 +528,7 @@ async function saveResultsToServer(resultsData) {
             return false;
         }
 
-        const response = await fetch('/api/personality-test/results', {
+        const response = await fetch(`${API_BASE_URL}/api/personality-test/results`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -557,7 +560,7 @@ async function retakeAssessment() {
             const token = localStorage.getItem('authToken') || localStorage.getItem('token');
             
             if (token) {
-                await fetch('/api/personality-test/results', {
+                await fetch(`${API_BASE_URL}/api/personality-test/results`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`,
