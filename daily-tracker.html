@@ -943,6 +943,13 @@ async function toggleTask(goalId) {
     const wasCompleted = dailyProgress[today][goalId] || false;
     const newCompleted = !wasCompleted;
     dailyProgress[today][goalId] = newCompleted;
+    console.log('🔍 AFTER TOGGLE SET:', {
+    today,
+    goalId, 
+    newCompleted,
+    todayData: dailyProgress[today],
+    fullData: dailyProgress
+});
 
    // Update goal streak locally
 if (newCompleted) {
