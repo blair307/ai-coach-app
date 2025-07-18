@@ -11,6 +11,20 @@ const nodemailer = require('nodemailer');
 const cron = require('node-cron');
 require('dotenv').config();
 
+// Add this after your other require statements
+const fetch = require('node-fetch'); // You may need to install this: npm install node-fetch
+
+// ElevenLabs configuration
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
+
+const VOICE_IDS = {
+coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
+    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id',
+    coach3: 'openai-echo',
+    coach4: 'openai-nova'
+};
+
 // Make sure all important settings are configured
 const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
 const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
@@ -255,6 +269,26 @@ if (process.env.OPENAI_API_KEY) {
   console.log("⚠️ OpenAI API key not found - AI chat will be disabled");
 }
 
+// File upload configuration - NEW
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+
+// Configure multer for file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, DOCX, and TXT files are allowed.'));
+    }
+  }
+});
+
 // Email configuration - FIXED VERSION
 let transporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
@@ -299,6 +333,15 @@ const userSchema = new mongoose.Schema({
   email: { type: String, unique: true },
   password: String,
   stripeCustomerId: String,
+    selectedCoach: {
+    type: String,
+    enum: ['coach1', 'coach2'],
+    default: 'coach1'
+  },
+  coachPreferences: {
+    voiceEnabled: { type: Boolean, default: true },
+    lastCoachSwitch: { type: Date, default: null }
+  },
  subscription: {
     plan: String,
     status: String,
@@ -361,16 +404,19 @@ const roomSchema = new mongoose.Schema({
 
 const Room = mongoose.model('Room', roomSchema);
 
-// Chat History Schema with Conversation Memory
+// Updated Chat History Schema - REPLACE THE OLD chatSchema
 const chatSchema = new mongoose.Schema({
-  userId: String,
-  threadId: String,
+  userId: { type: String, required: true, index: true },
+  threadId: String, // Keep for compatibility but not needed for Chat Completion
   messages: [{
-    role: String,
-    content: String,
-    timestamp: { type: Date, default: Date.now }
+    role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
+    content: { type: String, required: true },
+    timestamp: { type: Date, default: Date.now },
+    coach: String // Track which coach responded
   }],
-  updatedAt: { type: Date, default: Date.now }
+  selectedCoach: String, // Track current coach for this conversation
+  updatedAt: { type: Date, default: Date.now },
+  createdAt: { type: Date, default: Date.now }
 });
 
 const Chat = mongoose.model('Chat', chatSchema);
@@ -405,6 +451,10 @@ const messageSchema = new mongoose.Schema({
     timestamp: { type: Date, default: Date.now }
   }],
   likeCount: { type: Number, default: 0 },
+     // Image upload fields
+  image: { type: String }, // Base64 image data
+  imageName: { type: String }, // Original filename
+  imageSize: { type: Number }, // File size in bytes
   createdAt: { type: Date, default: Date.now }
 });
 
@@ -461,6 +511,28 @@ const insightSchema = new mongoose.Schema({
 });
 
 const Insight = mongoose.model('Insight', insightSchema);
+
+// Course Materials Schema - NEW
+const courseMaterialSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  content: { type: String, required: true }, // Extracted text content
+  originalFileName: { type: String },
+  fileType: { type: String, enum: ['pdf', 'docx', 'txt', 'md'], required: true },
+  tags: [String],
+  isActive: { type: Boolean, default: true },
+  uploadedAt: { type: Date, default: Date.now },
+  lastUpdated: { type: Date, default: Date.now },
+  // For search optimization
+  chunks: [{
+    text: String,
+    index: Number,
+    keywords: [String]
+  }]
+});
+
+const CourseMaterial = mongoose.model('CourseMaterial', courseMaterialSchema);
 
 // Daily Progress Schema - NEW
 const dailyProgressSchema = new mongoose.Schema({
@@ -671,7 +743,6 @@ async function createDefaultRooms() {
   }
 }
 
-// JWT Middleware with subscription check
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -685,31 +756,27 @@ const authenticateToken = async (req, res, next) => {
       return res.status(403).json({ message: 'Invalid token' });
     }
     
-    // Check subscription status
     try {
-      const userRecord = await User.findById(user.userId);
-      if (!userRecord) {
-        return res.status(404).json({ message: 'User not found' });
-      }
+     let userRecord = null;
+try {
+  if (user.userId !== 'admin') {
+    userRecord = await User.findById(user.userId);
+  }
+} catch (error) {
+  console.log('⚠️ User lookup error for admin:', error.message);
+}
+
+if (!userRecord && user.userId !== 'admin') {
+  return res.status(404).json({ message: 'User not found' });
+}
       
-      // Allow access for free accounts or active subscriptions
-      const subscription = userRecord.subscription;
-      const now = new Date();
+      // SIMPLIFIED SUBSCRIPTION CHECK - Allow all users for now
+      req.user = user;
+      req.userRecord = userRecord; // Add the full user record for course materials
+      next();
       
-      if (subscription.plan === 'free' || 
-          subscription.status === 'active' ||
-          (subscription.currentPeriodEnd && new Date(subscription.currentPeriodEnd) > now)) {
-        req.user = user;
-        next();
-      } else {
-        return res.status(402).json({ 
-          message: 'Subscription expired. Please renew to continue.',
-          subscriptionStatus: subscription.status,
-          expired: true
-        });
-      }
     } catch (error) {
-      console.error('Subscription check error:', error);
+      console.error('Auth error:', error);
       req.user = user; // Allow access on error
       next();
     }
@@ -1012,25 +1079,36 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     
     console.log('Creating subscription with coupon:', couponCode);
     
-    // Only validate coupon if one is provided
-    if (couponCode) {
-      try {
-        // First check our local validation
-        const validCoupons = {
-          'EEHCLIENT': { type: 'forever_free' },
-          'FREEMONTH': { type: 'first_month_free' },
-          'EEHCLIENT6': { type: 'six_months_free' },
-              'CRAZYDISCOUNT': { type: 'test_discount' }
+   // Only validate coupon if one is provided
+if (couponCode) {
+  try {
+    // First try to validate directly with Stripe
+    try {
+      const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+      if (!stripeCoupon.valid) {
+        return res.status(400).json({ 
+          error: 'This coupon has expired or reached its usage limit' 
+        });
+      }
+      console.log('✅ Stripe coupon validated:', stripeCoupon.id);
+    } catch (stripeCouponError) {
+      // If coupon doesn't exist in Stripe, check local list
+      console.log('⚠️ Coupon not found in Stripe, checking local list:', couponCode);
+      
+      const validCoupons = {
+        'EEHCLIENT': { type: 'forever_free' },
+        'FREEMONTH': { type: 'first_month_free' },
+        'EEHCLIENT6': { type: 'six_months_free' },
+        'CRAZYDISCOUNT': { type: 'test_discount' }
+      };
 
-        };
-
-        const localCoupon = validCoupons[couponCode.toUpperCase()];
-        if (!localCoupon) {
-          return res.status(400).json({ 
-            error: 'Invalid coupon code. Please check and try again.' 
-          });
-        }
-
+      const localCoupon = validCoupons[couponCode.toUpperCase()];
+      if (!localCoupon) {
+        return res.status(400).json({ 
+          error: 'Invalid coupon code. Please check and try again.' 
+        });
+      }
+    }
         // Then verify with Stripe (only if it exists in Stripe)
         try {
           const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
@@ -1072,7 +1150,7 @@ app.post('/api/payments/create-subscription', async (req, res) => {
     // Price IDs - Make sure these match your actual Stripe Price IDs
     const priceIds = {
       monthly: 'price_1Rhv3uIjRmg2uv1cnnt5X12z', 
-      yearly: 'price_1Rhv3aIjRmg2uv1cXZIIDG6M'   
+      yearly: 'price_1Rk5FYIjRmg2uv1caGouvbFc'   
     };
 
     const priceId = priceIds[plan];
@@ -1185,38 +1263,65 @@ app.post('/api/payments/validate-coupon', async (req, res) => {
       return res.status(400).json({ error: 'Coupon code is required' });
     }
 
-    // Validate against your predefined coupons
-    const validCoupons = {
-      'EEHCLIENT': {
-        type: 'forever_free',
-        description: 'Completely free account',
-        discount: '100% off forever'
-      },
-      'FREEMONTH': {
-        type: 'first_month_free',
-        description: 'First month free',
-        discount: '100% off first month'
-      },
-      'EEHCLIENT6': {
-        type: 'six_months_free',
-        description: 'Six months free',
-        discount: '100% off for 6 months'
-      },
-        'CRAZYDISCOUNT': {
-    type: 'test_discount',
-    description: 'Test discount - $1 payment',
-    discount: 'Reduces to $1 for testing'
+   // First try to validate with Stripe directly
+try {
+  const stripeCoupon = await stripe.coupons.retrieve(couponCode.toUpperCase());
+  if (!stripeCoupon.valid) {
+    return res.status(400).json({ 
+      valid: false, 
+      error: 'Coupon has expired or reached its usage limit' 
+    });
   }
-    };
-
-    const coupon = validCoupons[couponCode.toUpperCase()];
-    
-    if (!coupon) {
-      return res.status(400).json({ 
-        valid: false, 
-        error: 'Invalid coupon code' 
-      });
+  
+  // If Stripe coupon exists and is valid, create response
+  let couponType = 'standard_discount';
+  let description = 'Discount applied';
+  
+  if (stripeCoupon.percent_off === 100) {
+    couponType = stripeCoupon.duration === 'forever' ? 'forever_free' : 'first_month_free';
+    description = `${stripeCoupon.percent_off}% off ${stripeCoupon.duration === 'forever' ? 'forever' : 'for ' + (stripeCoupon.duration_in_months || 1) + ' month(s)'}`;
+  } else if (stripeCoupon.percent_off) {
+    description = `${stripeCoupon.percent_off}% off`;
+  } else if (stripeCoupon.amount_off) {
+    description = `$${(stripeCoupon.amount_off / 100).toFixed(2)} off`;
+  }
+  
+  return res.json({
+    valid: true,
+    coupon: {
+      code: couponCode.toUpperCase(),
+      type: couponType,
+      description: description,
+      discount: description
     }
+  });
+  
+} catch (stripeError) {
+  console.log('Coupon not found in Stripe, checking local list...');
+  
+  // Fallback to local validation for special coupons
+  const validCoupons = {
+    'EEHCLIENT': {
+      type: 'forever_free',
+      description: 'Completely free account',
+      discount: '100% off forever'
+    },
+      'FREETOOME': {
+    type: 'forever_free',
+    description: '100% off',
+    discount: '100% off'
+  }
+  };
+
+  const coupon = validCoupons[couponCode.toUpperCase()];
+  
+  if (!coupon) {
+    return res.status(400).json({ 
+      valid: false, 
+      error: 'Invalid coupon code' 
+    });
+  }
+}
 
     // Optionally check with Stripe to ensure coupon is still active
     try {
@@ -1249,8 +1354,208 @@ app.post('/api/payments/validate-coupon', async (req, res) => {
   }
 });
 
-// Send message to AI Assistant with Conversation Memory
+const COACHES = {
+  coach1: {
+    name: "Blair Reynolds", 
+    voiceId: VOICE_IDS.coach1,
+    personality: `You are Blair Reynolds, a transformative emotional health coach for entrepreneurs. 
+
+Your coaching style:
+- Use gentle humor to help clients see new perspectives
+- Combine deep empathy with practical business insights
+- Focus on breaking through emotional barriers that limit success
+- Help entrepreneurs integrate personal growth with business growth
+- Ask thoughtful questions that lead to breakthrough moments
+- Share relatable examples from your entrepreneurial background
+
+Your tone is warm, insightful, and encouraging. You believe that emotional intelligence is the key to sustainable business success. You help entrepreneurs understand that taking care of their mental health isn't weakness - it's strategic advantage.`,
+    description: "Transformative, humor-focused coach with deep empathy. Combines entrepreneurial enthusiasm with personal and relational health expertise."
+  },
+  coach2: {
+    name: "Dave Charlson",
+    voiceId: VOICE_IDS.coach2,
+    personality: `You are Dave Charlson, a strategic business coach focused on sustainable growth and work-life integration.
+
+Your coaching style:
+- Provide practical, actionable strategies that entrepreneurs can implement immediately
+- Focus on building systems that support both business growth and personal well-being
+- Help clients create boundaries between work and personal life
+- Emphasize long-term sustainability over short-term burnout
+- Share proven frameworks and methodologies
+- Balance ambition with health and relationships
+
+Your tone is encouraging, systematic, and grounded. You believe that the best entrepreneurs are those who can scale their businesses without sacrificing their health, relationships, or values.`,
+    description: "Strategic, warm coach focused on sustainable growth and well-being. Balanced approach combining business success with personal fulfillment."
+  },
+  coach3: {
+    name: "Alex Stone",
+    voiceId: VOICE_IDS.coach3,
+    personality: `You are Alex Stone, a direct and confrontational executive coach who believes in radical transformation.
+
+Your coaching style:
+- Be extremely direct and honest, even if it's uncomfortable
+- Challenge limiting beliefs and excuses immediately
+- Use tough love to push people beyond their comfort zones
+- Focus on accountability and measurable results
+- Confront self-sabotaging behaviors head-on
+- Believe that significant change requires significant discomfort
+- Push entrepreneurs to think bigger and act bolder
+- Don't coddle - respect people enough to tell them hard truths
+
+Your tone is firm, confident, and unwavering. You believe that most people are living far below their potential and need a strong push to break through their limitations. You're supportive, but your support comes through challenging people to rise to their highest capabilities.`,
+    description: "Direct, confrontational executive coach focused on breakthrough results and eliminating limitations."
+  },
+  coach4: {
+    name: "Sam Heart",
+    voiceId: VOICE_IDS.coach4,
+    personality: `You are Sam Heart, an extraordinarily compassionate coach who offers unconditional love and support.
+
+Your coaching style:
+- Meet people exactly where they are without judgment
+- Offer unlimited compassion and understanding
+- Focus on self-acceptance before self-improvement
+- Validate feelings and experiences completely
+- Help people feel valued and worthy as they are right now
+- Use gentle encouragement rather than pressure
+- Believe that healing happens through love, not force
+- Help people discover their own inner wisdom and strength
+- Create a safe space for vulnerability and growth
+
+Your tone is warm, gentle, and infinitely patient. You believe that everyone is doing their best with the resources they have, and that true transformation happens when people feel completely accepted and loved. You never push - you invite and encourage.`,
+    description: "Extraordinarily compassionate coach focused on unconditional support and meeting people where they are."
+  }
+};
+
+// Hybrid voice generation function
+
+async function generateVoice(text, voiceId) {
+    console.log('🎵 Generating voice - Coach voice ID:', voiceId);
+    
+    // Check if this is an OpenAI voice
+    if (voiceId && voiceId.startsWith('openai-')) {
+        return await generateVoiceOpenAI(text, voiceId);
+    } else if (voiceId && ELEVENLABS_API_KEY) {
+        return await generateVoiceElevenLabs(text, voiceId);
+    } else {
+        throw new Error(`Voice generation not available - Voice ID: ${voiceId}, ElevenLabs Key: ${!!ELEVENLABS_API_KEY}`);
+    }
+}
+
+// OpenAI voice generation
+async function generateVoiceOpenAI(text, voiceId) {
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not configured');
+    }
+    
+    console.log('🎤 OpenAI TTS - Voice ID:', voiceId, 'Text length:', text.length);
+    
+    // Map our coach voices to OpenAI voices - FIXED MAPPING
+    let openAIVoice;
+    if (voiceId === 'openai-echo') {
+        openAIVoice = 'echo';
+    } else if (voiceId === 'openai-nova') {
+        openAIVoice = 'nova';
+    } else {
+        throw new Error(`Invalid OpenAI voice ID: ${voiceId}`);
+    }
+    
+    console.log('🔄 Using OpenAI voice:', openAIVoice);
+    
+    try {
+        const response = await fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'tts-1',
+                input: text.substring(0, 4096), // OpenAI has a 4096 character limit
+                voice: openAIVoice,
+                response_format: 'mp3'
+            })
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ OpenAI TTS error response:', response.status, errorText);
+            throw new Error(`OpenAI TTS error: ${response.status} - ${errorText}`);
+        }
+        
+        const audioBuffer = await response.arrayBuffer();
+        const audioBase64 = Buffer.from(audioBuffer).toString('base64');
+        const dataUrl = `data:audio/mpeg;base64,${audioBase64}`;
+        
+        console.log('✅ OpenAI voice generated successfully, size:', audioBuffer.byteLength, 'bytes');
+        return dataUrl;
+        
+    } catch (error) {
+        console.error('❌ OpenAI voice generation failed:', error);
+        throw error;
+    }
+}
+
+// ElevenLabs voice generation
+async function generateVoiceElevenLabs(text, voiceId) {
+    if (!ELEVENLABS_API_KEY) {
+        throw new Error('ElevenLabs API key not configured');
+    }
+    
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'audio/mpeg',
+            'Content-Type': 'application/json',
+            'xi-api-key': ELEVENLABS_API_KEY
+        },
+        body: JSON.stringify({
+            text: text,
+            model_id: 'eleven_turbo_v2_5',
+            voice_settings: {
+                stability: 0.5,
+                similarity_boost: 0.5
+            }
+        })
+    });
+    
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`ElevenLabs API error: ${response.status} - ${errorText}`);
+    }
+    
+    const audioBuffer = await response.arrayBuffer();
+    const audioBase64 = Buffer.from(audioBuffer).toString('base64');
+    return `data:audio/mpeg;base64,${audioBase64}`;
+}
+
+// Generate voice asynchronously without blocking response
+async function generateVoiceAsync(text, voiceId, userId, coachId) {
+    try {
+        console.log('🎤 Generating voice in background for:', coachId);
+        
+        const cleanedResponse = text
+            .replace(/\*\*/g, '')
+            .replace(/\*/g, '')
+            .replace(/#{1,6}\s/g, '')
+            .replace(/`{1,3}[^`]*`{1,3}/g, '')
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+            .replace(/^\s*[-*+]\s/gm, '')
+            .replace(/^\s*\d+\.\s/gm, '')
+            .trim();
+
+        const audioUrl = await generateVoice(cleanedResponse, voiceId);
+        console.log('✅ Voice generated successfully in background');
+        
+    } catch (voiceError) {
+        console.error('⚠️ Background voice generation failed:', voiceError.message);
+    }
+}
+
+// FAST Chat Completion API - REPLACE THE OLD /api/chat/send ENDPOINT WITH THIS
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
+  const startTime = Date.now();
+  console.log('🚀 FAST CHAT: Request started');
+    
   try {
     if (!openai) {
       return res.json({ 
@@ -1258,80 +1563,172 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       });
     }
 
-    const { message } = req.body;
+    const { message, preferences = {} } = req.body;
     const userId = req.user.userId;
 
-    const ASSISTANT_ID = "asst_tpShoq1kPGvtcFhMdxb6EmYg";
-
-    let chat = await Chat.findOne({ userId });
-    let threadId;
-
-    if (!chat || !chat.threadId) {
-      const thread = await openai.beta.threads.create();
-      threadId = thread.id;
-      
-      if (chat) {
-        chat.threadId = threadId;
-        await chat.save();
-      } else {
-        chat = new Chat({
-          userId,
-          threadId,
-          messages: []
-        });
-        await chat.save();
-      }
-    } else {
-      threadId = chat.threadId;
+    // Get user's selected coach
+    const user = await User.findById(userId).select('selectedCoach');
+    const selectedCoach = user?.selectedCoach || 'coach1';
+    const coach = COACHES[selectedCoach];
+    
+    if (!coach) {
+      return res.status(400).json({ 
+        error: 'Selected coach is not available. Please try again.' 
+      });
     }
 
-    await openai.beta.threads.messages.create(threadId, {
-      role: "user",
+    console.log(`🎯 Using ${coach.name} (${selectedCoach}) for user ${userId}`);
+
+    // Get or create conversation history
+    let chat = await Chat.findOne({ userId });
+    if (!chat) {
+      chat = new Chat({
+        userId,
+        threadId: `chat_${userId}_${Date.now()}`, // We don't need real threads anymore
+        messages: []
+      });
+      await chat.save();
+    }
+
+
+    // Build conversation context (last 50 messages for context)
+const recentMessages = chat.messages.slice(-50);
+console.log(`📊 Using ${recentMessages.length} messages for context (~${recentMessages.length * 60} tokens)`);
+    
+
+const stopWords = ['what', 'are', 'is', 'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'how', 'can', 'you', 'tell', 'me', 'about', 'i', 'want', 'know'];
+
+const searchTerms = message.toLowerCase()
+  .replace(/[^\w\s]/g, ' ') // Remove punctuation
+  .split(/\s+/)
+  .filter(word => word.length > 2 && !stopWords.includes(word)) // Remove stop words
+  .slice(0, 5) // Take only most important words
+  .join(' ');
+
+console.log('🔍 Searching for:', searchTerms);
+const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5);
+      
+// Build course materials context
+let courseMaterialsContext = '';
+if (relevantMaterials.length > 0) {
+  console.log(`💡 Using ${relevantMaterials.length} course materials in response`);
+  courseMaterialsContext = '\n\nRELEVANT COURSE MATERIALS:\n';
+  relevantMaterials.forEach((material, index) => {
+    courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 1500)}"\n(Source: ${material.materialTitle})\n`;
+  });
+  courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
+} else {
+  console.log('ℹ️ No relevant course materials found for this query');
+}
+      
+// Create messages array for OpenAI
+const messages = [
+  {
+    role: 'system',
+    content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
+
+CRITICAL: Keep responses to MAXIMUM 1-4 sentences. Never exceed 60 words total.
+
+${courseMaterialsContext ? `
+MANDATORY: You have access to specific course materials below. You MUST use this information to answer questions. Do NOT make up information when you have real course content available.
+
+${courseMaterialsContext}
+
+INSTRUCTIONS:
+- ALWAYS prioritize information from the course materials above
+- If the user's question relates to the course content, reference it directly
+- Use phrases like "From the course..." or "The training material shows..."
+- Only provide general advice if the course materials don't contain relevant information
+` : ''}
+
+Be helpful but extremely brief. No long explanations. No lists. No examples.
+Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
+
+Current coaching preferences:
+- Tone: ${preferences.tone || 'supportive'}
+- Response length: ${preferences.responseLength || 'concise'}
+
+Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
+  }
+];
+
+    // Add conversation history
+    recentMessages.forEach(msg => {
+      messages.push({
+        role: msg.role,
+        content: msg.content
+      });
+    });
+
+    // Add current user message
+    messages.push({
+      role: 'user',
       content: message
     });
 
-    const run = await openai.beta.threads.runs.create(threadId, {
-      assistant_id: ASSISTANT_ID
+    console.log('⏱️ TIMING: Context built in:', Date.now() - startTime, 'ms');
+
+    // Make FAST Chat Completion API call
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // Using faster model
+      messages: messages,
+max_tokens: preferences.responseLength === 'detailed' ? 350 : 
+            preferences.responseLength === 'concise' ? 100 : 150,
+      temperature: 0.7,
+      stream: false
     });
 
-    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-    
-    let attempts = 0;
-    while (runStatus.status !== 'completed' && attempts < 30) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
-      attempts++;
-    }
+    console.log('⏱️ TIMING: OpenAI response in:', Date.now() - startTime, 'ms');
 
-    if (runStatus.status !== 'completed') {
-      throw new Error('Assistant took too long to respond');
-    }
+    const response = completion.choices[0].message.content;
 
-    const messages = await openai.beta.threads.messages.list(threadId);
-    const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
-    
-    if (!assistantMessage) {
-      throw new Error('No response from assistant');
-    }
 
-    const response = assistantMessage.content[0].text.value;
-
-    chat.messages.push(
-      { role: 'user', content: message, timestamp: new Date() },
-      { role: 'assistant', content: response, timestamp: new Date() }
-    );
-    chat.updatedAt = new Date();
-    await chat.save();
-
-// Generate insights after successful chat - NEW
-    if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+    // Generate insights after successful chat (async, don't wait)
+    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
       setTimeout(() => generateInsights(userId, chat.messages), 3000);
     }
 
-    res.json({ response });
+  // Save to database FIRST
+    chat.messages.push(
+      { role: 'user', content: message, timestamp: new Date() },
+      { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
+    );
+    
+   // Keep only last 100 messages to prevent database bloat
+if (chat.messages.length > 100) {
+  chat.messages = chat.messages.slice(-100);
+}
+    
+    chat.updatedAt = new Date();
+    await chat.save();
+
+    const totalTime = Date.now() - startTime;
+    console.log('🎉 FAST RESPONSE TIME:', totalTime, 'ms');
+    
+    // Send response immediately (no waiting for voice)
+    res.json({ 
+      response,
+      coach: {
+        name: coach.name,
+        id: selectedCoach
+      },
+      audio: null, // No audio in immediate response
+      responseTime: totalTime
+    });
+
+    // Generate voice AFTER responding (async - doesn't block)
+    if (ELEVENLABS_API_KEY && selectedCoach && VOICE_IDS[selectedCoach]) {
+        generateVoiceAsync(response, VOICE_IDS[selectedCoach], userId, selectedCoach);
+        console.log('🎤 Voice generation started in background');
+    }
+
+    // Generate insights after successful chat (async)
+    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    }
 
   } catch (error) {
-    console.error('Assistant error:', error);
+    console.error('❌ Chat error:', error);
     
     const fallbacks = [
       "I'm experiencing technical difficulties right now. As an entrepreneur, you know that setbacks are temporary. While I get back online, remember that seeking support shows leadership strength, not weakness.",
@@ -1343,6 +1740,104 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       message: 'Failed to get AI response', 
       error: error.message,
       response: fallbacks[Math.floor(Math.random() * fallbacks.length)]
+    });
+  }
+});
+
+// Get voice for a message (called separately by frontend)
+app.post('/api/chat/voice', authenticateToken, async (req, res) => {
+  try {
+    const { text, coachId } = req.body;
+    
+    console.log('🎤 Voice endpoint hit:', {
+      coachId,
+      textLength: text?.length,
+      hasOpenAIKey: !!process.env.OPENAI_API_KEY,
+      hasElevenLabsKey: !!ELEVENLABS_API_KEY
+    });
+    
+    if (!text || !coachId) {
+      console.error('❌ Missing required fields:', { text: !!text, coachId: !!coachId });
+      return res.status(400).json({ error: 'Text and coachId required' });
+    }
+    
+    if (!VOICE_IDS[coachId]) {
+      console.error('❌ No voice ID found for coach:', coachId);
+      console.log('🔍 Available voice IDs:', Object.keys(VOICE_IDS));
+      return res.status(400).json({ error: `Voice not available for coach: ${coachId}` });
+    }
+    
+    const voiceId = VOICE_IDS[coachId];
+    console.log('🎯 Using voice ID:', voiceId, 'for coach:', coachId);
+    
+    // Clean the response text for voice synthesis
+    const cleanedResponse = text
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/`{1,3}[^`]*`{1,3}/g, '')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^\s*[-*+]\s/gm, '')
+      .replace(/^\s*\d+\.\s/gm, '')
+      .trim();
+
+    if (cleanedResponse.length === 0) {
+      console.error('❌ No text remaining after cleaning');
+      return res.status(400).json({ error: 'No valid text for voice generation' });
+    }
+
+    console.log('📝 Cleaned text for voice generation:', cleanedResponse.substring(0, 100) + '...');
+
+    const startTime = Date.now();
+    
+    try {
+      const audioUrl = await generateVoice(cleanedResponse, voiceId);
+      const duration = Date.now() - startTime;
+      
+      console.log(`✅ Voice generated successfully in ${duration}ms`);
+      
+      res.json({ 
+        audio: { 
+          url: audioUrl, 
+          enabled: true,
+          voiceId: voiceId,
+          provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
+        },
+        success: true,
+        generationTime: duration,
+        textLength: cleanedResponse.length
+      });
+      
+    } catch (voiceError) {
+      console.error('❌ Voice generation failed:', {
+        error: voiceError.message,
+        voiceId,
+        provider: voiceId.startsWith('openai-') ? 'OpenAI' : 'ElevenLabs'
+      });
+      
+      // Return specific error messages
+      let errorMessage = 'Voice generation failed';
+      if (voiceError.message.includes('OpenAI API key')) {
+        errorMessage = 'OpenAI API key not configured';
+      } else if (voiceError.message.includes('ElevenLabs')) {
+        errorMessage = 'ElevenLabs API error';
+      } else if (voiceError.message.includes('Invalid OpenAI voice')) {
+        errorMessage = `Invalid voice configuration for coach ${coachId}`;
+      }
+      
+      res.status(500).json({ 
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? voiceError.message : undefined,
+        voiceId,
+        coachId
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Voice endpoint error:', error);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -1376,6 +1871,92 @@ app.get('/api/chat/history', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get chat history error:', error);
     res.status(500).json({ message: 'Failed to get chat history' });
+  }
+});
+
+// ==========================================
+// COACH SELECTION API ROUTES
+// ==========================================
+
+// Get available coaches
+app.get('/api/coaches', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('selectedCoach');
+    
+    const availableCoaches = Object.keys(COACHES).map(coachId => ({
+      id: coachId,
+      name: COACHES[coachId].name,
+      personality: COACHES[coachId].personality,
+      description: COACHES[coachId].description,
+      isSelected: user.selectedCoach === coachId
+    }));
+    
+    res.json({
+      coaches: availableCoaches,
+      currentCoach: user.selectedCoach || 'coach1'
+    });
+  } catch (error) {
+    console.error('Get coaches error:', error);
+    res.status(500).json({ error: 'Failed to get coaches' });
+  }
+});
+
+// Switch coach
+app.post('/api/coaches/select', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { coachId } = req.body;
+    
+    if (!coachId || !COACHES[coachId]) {
+      return res.status(400).json({ error: 'Invalid coach selection' });
+    }
+    
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { 
+        selectedCoach: coachId,
+        'coachPreferences.lastCoachSwitch': new Date()
+      },
+      { new: true }
+    );
+    
+    const selectedCoach = COACHES[coachId];
+    
+    console.log(`👥 User ${userId} switched to ${selectedCoach.name} (${coachId})`);
+    
+    res.json({
+      success: true,
+      message: `Switched to ${selectedCoach.name}`,
+      coach: {
+        id: coachId,
+        name: selectedCoach.name,
+        personality: selectedCoach.personality
+      }
+    });
+  } catch (error) {
+    console.error('Switch coach error:', error);
+    res.status(500).json({ error: 'Failed to switch coach' });
+  }
+});
+
+// Get current coach info
+app.get('/api/coaches/current', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId).select('selectedCoach');
+    const coachId = user.selectedCoach || 'coach1';
+    const coach = COACHES[coachId];
+    
+    res.json({
+      id: coachId,
+      name: coach.name,
+      personality: coach.personality,
+      description: coach.description
+    });
+  } catch (error) {
+    console.error('Get current coach error:', error);
+    res.status(500).json({ error: 'Failed to get current coach' });
   }
 });
 
@@ -1941,6 +2522,37 @@ app.post('/api/rooms/:id/messages', authenticateToken, async (req, res) => {
       profilePhoto: user?.profilePhoto || null
     };
 
+    // Handle image upload
+    if (req.body.image) {
+      console.log('📷 Processing image upload for message');
+      
+      // Validate image data
+      if (!req.body.image.startsWith('data:image/')) {
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Invalid image format' 
+        });
+      }
+      
+      // Check image size (approximate - base64 is ~33% larger than original)
+      const imageSizeBytes = (req.body.image.length * 0.75);
+      if (imageSizeBytes > 5 * 1024 * 1024) { // 5MB limit
+        return res.status(400).json({ 
+          success: false, 
+          error: 'Image too large. Please use an image under 5MB.' 
+        });
+      }
+      
+      // Add image data to message
+      messageData.image = req.body.image;
+      messageData.imageName = req.body.imageName || 'image.jpg';
+      messageData.imageSize = req.body.imageSize || imageSizeBytes;
+      
+      console.log('✅ Image data added to message:', {
+        name: messageData.imageName,
+        size: Math.round(imageSizeBytes / 1024) + 'KB'
+      });
+    }
     if (req.body.replyTo) {
       messageData.replyTo = {
         messageId: req.body.replyTo.messageId,
@@ -3687,6 +4299,813 @@ app.delete('/api/admin/users/:id', authenticateAdmin, async (req, res) => {
 
 console.log('✅ Admin routes loaded successfully');
 
+// ==========================================
+// ENHANCED ADMIN COUPON MANAGEMENT ROUTES - ADD TO server.js
+// ==========================================
+
+// Get all coupons from Stripe
+app.get('/api/admin/coupons', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('🎫 Fetching all coupons from Stripe...');
+    
+    // Get coupons from Stripe
+    const stripeCoupons = await stripe.coupons.list({
+      limit: 100
+    });
+    
+    // Get local coupon usage stats
+    const localCouponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          usageCount: { $sum: 1 },
+          users: {
+            $push: {
+              name: { $concat: ['$firstName', ' ', '$lastName'] },
+              email: '$email',
+              createdAt: '$createdAt'
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Combine Stripe data with local usage
+    const enhancedCoupons = stripeCoupons.data.map(stripeCoupon => {
+      const localStats = localCouponStats.find(stat => stat._id === stripeCoupon.id) || {};
+      
+      return {
+        id: stripeCoupon.id,
+        name: stripeCoupon.name || stripeCoupon.id,
+        percentOff: stripeCoupon.percent_off,
+        amountOff: stripeCoupon.amount_off,
+        currency: stripeCoupon.currency,
+        duration: stripeCoupon.duration,
+        durationInMonths: stripeCoupon.duration_in_months,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        timesRedeemed: stripeCoupon.times_redeemed,
+        valid: stripeCoupon.valid,
+        created: new Date(stripeCoupon.created * 1000),
+        redeemBy: stripeCoupon.redeem_by ? new Date(stripeCoupon.redeem_by * 1000) : null,
+        localUsage: localStats.usageCount || 0,
+        localUsers: localStats.users || []
+      };
+    });
+    
+    console.log(`✅ Found ${enhancedCoupons.length} coupons`);
+    
+    res.json({
+      coupons: enhancedCoupons,
+      total: enhancedCoupons.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error fetching coupons:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch coupons',
+      message: error.message 
+    });
+  }
+});
+
+// Create new coupon
+app.post('/api/admin/coupons', authenticateAdmin, async (req, res) => {
+  try {
+    const {
+      id,
+      name,
+      percentOff,
+      amountOff,
+      currency,
+      duration,
+      durationInMonths,
+      maxRedemptions,
+      redeemBy
+    } = req.body;
+    
+    console.log('🎫 Creating new coupon:', { id, name, percentOff, amountOff });
+    
+    if (!id) {
+      return res.status(400).json({ error: 'Coupon ID is required' });
+    }
+    
+    if (!percentOff && !amountOff) {
+      return res.status(400).json({ error: 'Either percent_off or amount_off is required' });
+    }
+    
+    // Prepare coupon data for Stripe
+    const couponData = {
+      id: id.toUpperCase(),
+      name: name || id,
+      duration: duration || 'once'
+    };
+    
+    // Add discount type
+    if (percentOff) {
+      couponData.percent_off = parseInt(percentOff);
+    } else if (amountOff) {
+      couponData.amount_off = parseInt(amountOff * 100); // Convert to cents
+      couponData.currency = currency || 'usd';
+    }
+    
+    // Add optional fields
+    if (durationInMonths && duration === 'repeating') {
+      couponData.duration_in_months = parseInt(durationInMonths);
+    }
+    
+    if (maxRedemptions) {
+      couponData.max_redemptions = parseInt(maxRedemptions);
+    }
+    
+    if (redeemBy) {
+      couponData.redeem_by = Math.floor(new Date(redeemBy).getTime() / 1000);
+    }
+    
+    // Create coupon in Stripe
+    const stripeCoupon = await stripe.coupons.create(couponData);
+    
+    console.log('✅ Coupon created successfully:', stripeCoupon.id);
+    
+    res.json({
+      message: 'Coupon created successfully',
+      coupon: {
+        id: stripeCoupon.id,
+        name: stripeCoupon.name,
+        percentOff: stripeCoupon.percent_off,
+        amountOff: stripeCoupon.amount_off,
+        currency: stripeCoupon.currency,
+        duration: stripeCoupon.duration,
+        durationInMonths: stripeCoupon.duration_in_months,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        valid: stripeCoupon.valid,
+        created: new Date(stripeCoupon.created * 1000)
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error creating coupon:', error);
+    
+    if (error.type === 'StripeInvalidRequestError') {
+      res.status(400).json({ 
+        error: 'Invalid coupon data',
+        message: error.message 
+      });
+    } else {
+      res.status(500).json({ 
+        error: 'Failed to create coupon',
+        message: error.message 
+      });
+    }
+  }
+});
+
+// Delete coupon
+app.delete('/api/admin/coupons/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    
+    console.log('🗑️ Deleting coupon:', couponId);
+    
+    const deletedCoupon = await stripe.coupons.del(couponId);
+    
+    console.log('✅ Coupon deleted successfully');
+    
+    res.json({
+      message: 'Coupon deleted successfully',
+      couponId: couponId,
+      deleted: deletedCoupon.deleted
+    });
+    
+  } catch (error) {
+    console.error('❌ Error deleting coupon:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete coupon',
+      message: error.message 
+    });
+  }
+});
+
+// Get coupon usage analytics
+app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    const couponId = req.params.id;
+    
+    console.log('📊 Getting analytics for coupon:', couponId);
+    
+    // Get Stripe coupon data
+    const stripeCoupon = await stripe.coupons.retrieve(couponId);
+    
+    // Get local usage data
+    const usageData = await User.find({
+      'subscription.couponUsed': couponId
+    }).select('firstName lastName email subscription.plan subscription.status createdAt');
+    
+    // Calculate analytics
+    const analytics = {
+      stripeData: {
+        timesRedeemed: stripeCoupon.times_redeemed,
+        maxRedemptions: stripeCoupon.max_redemptions,
+        valid: stripeCoupon.valid
+      },
+      localUsage: {
+        totalUsers: usageData.length,
+        usersByPlan: usageData.reduce((acc, user) => {
+          const plan = user.subscription?.plan || 'free';
+          acc[plan] = (acc[plan] || 0) + 1;
+          return acc;
+        }, {}),
+        recentUsers: usageData
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 10)
+          .map(user => ({
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            plan: user.subscription?.plan || 'free',
+            status: user.subscription?.status || 'inactive',
+            signupDate: user.createdAt
+          }))
+      }
+    };
+    
+    res.json(analytics);
+    
+  } catch (error) {
+    console.error('❌ Error getting coupon analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to get analytics',
+      message: error.message 
+    });
+  }
+});
+
+console.log('✅ Enhanced admin coupon management routes loaded successfully');
+
+app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
+  try {
+    const materialId = req.params.materialId;
+    const material = await CourseMaterial.findById(materialId);
+    
+    if (!material) {
+      return res.status(404).json({ error: 'Material not found' });
+    }
+    
+    console.log('🔍 DEBUG - Material chunks:', material.chunks.length);
+    
+    // Return first few chunks for debugging
+    const debugChunks = material.chunks.slice(0, 5).map((chunk, index) => ({
+      index,
+      textPreview: chunk.text.substring(0, 200),
+      keywords: chunk.keywords,
+      textLength: chunk.text.length
+    }));
+    
+    res.json({
+      title: material.title,
+      totalChunks: material.chunks.length,
+      contentLength: material.content.length,
+      sampleChunks: debugChunks,
+      firstChunkFull: material.chunks[0]?.text.substring(0, 500)
+    });
+    
+  } catch (error) {
+    console.error('Debug chunks error:', error);
+    res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
+// ==========================================
+// COURSE MATERIALS HELPER FUNCTIONS
+// ==========================================
+
+async function searchCourseMaterials(userId, query, limit = 3) {
+  try {
+    console.log('🔍 SEARCHING COURSE MATERIALS:', { 
+      userId: userId.toString(), 
+      query: query.substring(0, 50) + '...', 
+      limit 
+    });
+    
+  // FIXED: Allow all users to search admin materials
+const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+
+if (userId === 'admin' || userId.toString() === 'admin') {
+  // Admin searching - only search admin materials  
+  var searchQuery = {
+    isActive: true,
+    userId: adminObjectId
+  };
+} else {
+  // Regular user - search their materials + admin materials
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  var searchQuery = {
+    isActive: true,
+    userId: {
+      $in: [
+        userObjectId, // User's own materials
+        adminObjectId // Admin materials (available to all users)
+      ]
+    }
+  };
+}
+    
+    console.log('📋 Search query:', searchQuery);
+    
+    const materials = await CourseMaterial.find(searchQuery);
+    
+    console.log('📚 Found materials:', materials.length);
+
+          // ADD THIS DEBUG - Log the first material's chunks
+    if (materials.length > 0) {
+      console.log('🔍 First material chunks:', materials[0].chunks.length);
+      console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
+    }
+    
+    if (materials.length === 0) {
+      console.log('❌ No materials found');
+      return [];
+    }
+    
+    if (materials.length === 0) {
+      console.log('❌ No materials found');
+      return [];
+    }
+    
+    // Rest of the function stays the same...
+    const queryWords = query.toLowerCase()
+      .split(/\s+/)
+      .filter(word => word.length > 2)
+      .slice(0, 10);
+    
+    console.log('🔤 Search words:', queryWords);
+    
+    const relevantChunks = [];
+    
+   // Find this part in your searchCourseMaterials function (around line 2150)
+materials.forEach(material => {
+  // Bonus points if the query matches the material title
+  let titleBonus = 0;
+  queryWords.forEach(word => {
+    if (material.title.toLowerCase().includes(word.toLowerCase())) {
+      titleBonus += 10; // Big bonus for title matches
+    }
+  });
+  
+  material.chunks.forEach((chunk, chunkIndex) => {
+    let score = titleBonus; // Start with title bonus
+    const chunkText = chunk.text.toLowerCase();
+    
+    queryWords.forEach(word => {
+      if (chunkText.includes(word.toLowerCase())) {
+        score += 1;
+      }
+    });
+    
+    if (score > 0) {
+      relevantChunks.push({
+        text: chunk.text,
+        score: score,
+        materialTitle: material.title,
+        materialId: material._id,
+        chunkIndex: chunkIndex
+      });
+    }
+  });
+});
+    
+    // Add to results if any words found
+    if (score > 0) {
+      relevantChunks.push({
+        text: chunk.text,
+        score: score,
+        materialTitle: material.title,
+        materialId: material._id,
+        chunkIndex: chunkIndex
+      });
+    }
+
+    console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
+    
+    const topChunks = relevantChunks
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit);
+    
+    topChunks.forEach((chunk, index) => {
+      console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
+    });
+    
+    return topChunks;
+      
+  } catch (error) {
+    console.error('❌ Error searching course materials:', error);
+    return [];
+  }
+}
+
+function createTextChunks(text, chunkSize = 1000, overlap = 200) {
+  const chunks = [];
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  
+  let currentChunk = '';
+  let chunkIndex = 0;
+  
+  for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i].trim() + '.';
+    
+    // If adding this sentence would exceed chunk size, save current chunk
+    if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
+      chunks.push({
+        text: currentChunk.trim(),
+        index: chunkIndex++,
+        keywords: extractKeywords(currentChunk)
+      });
+      
+      // Start new chunk with overlap
+      const words = currentChunk.split(' ');
+      const overlapWords = words.slice(-Math.floor(overlap / 5));
+      currentChunk = overlapWords.join(' ') + ' ' + sentence;
+    } else {
+      currentChunk += ' ' + sentence;
+    }
+  }
+  
+  // Add the last chunk
+  if (currentChunk.trim().length > 0) {
+    chunks.push({
+      text: currentChunk.trim(),
+      index: chunkIndex,
+      keywords: extractKeywords(currentChunk)
+    });
+  }
+  
+  return chunks;
+}
+
+// Simple keyword extraction
+function extractKeywords(text) {
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 3);
+  
+  const wordCount = {};
+  words.forEach(word => {
+    wordCount[word] = (wordCount[word] || 0) + 1;
+  });
+  
+  return Object.keys(wordCount)
+    .sort((a, b) => wordCount[b] - wordCount[a])
+    .slice(0, 10);
+}
+
+// Clean up old images (optional - run manually or via cron)
+app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
+  try {
+    const { daysOld = 30 } = req.body;
+    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
+    
+    console.log(`🧹 Cleaning up images older than ${daysOld} days`);
+    
+    // Find messages with images older than cutoff date
+    const oldMessages = await Message.find({
+      image: { $exists: true },
+      createdAt: { $lt: cutoffDate },
+      deleted: true
+    });
+    
+    console.log(`📊 Found ${oldMessages.length} old deleted messages with images`);
+    
+    // Remove image data from old deleted messages
+    const result = await Message.updateMany(
+      {
+        image: { $exists: true },
+        createdAt: { $lt: cutoffDate },
+        deleted: true
+      },
+      {
+        $unset: { 
+          image: 1, 
+          imageName: 1, 
+          imageSize: 1 
+        }
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: `Cleaned up ${result.modifiedCount} old images`,
+      messagesProcessed: oldMessages.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error cleaning up images:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to cleanup images' 
+    });
+  }
+});
+
+// ADD THIS ROUTE TO YOUR server.js file after the other admin routes
+// (around line 2200, after the other admin coupon routes)
+
+// Get overall admin analytics
+app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('📊 Getting overall admin analytics...');
+    
+    // User stats
+    const totalUsers = await User.countDocuments();
+    const activeUsers = await User.countDocuments({
+      'streakData.lastLoginDate': { 
+        $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) 
+      }
+    });
+    
+    // Subscription stats
+    const subscriptionStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 },
+          activeCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$subscription.status', 'active'] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Coupon usage stats
+    const couponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+    
+    // Recent signups
+    const recentSignups = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select('firstName lastName email subscription createdAt');
+    
+    // Revenue estimation (based on active subscriptions)
+    const revenueData = await User.aggregate([
+      {
+        $match: {
+          'subscription.status': 'active',
+          'subscription.plan': { $in: ['monthly', 'yearly'] }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+    
+    const monthlyRevenue = (revenueData.find(r => r._id === 'monthly')?.count || 0) * 247;
+    const yearlyRevenue = (revenueData.find(r => r._id === 'yearly')?.count || 0) * 2497;
+    const estimatedMonthlyRevenue = monthlyRevenue + (yearlyRevenue / 12);
+    
+    res.json({
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        recentSignups: recentSignups.map(user => ({
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          plan: user.subscription?.plan || 'free',
+          signupDate: user.createdAt
+        }))
+      },
+      subscriptions: subscriptionStats,
+      coupons: couponStats,
+      revenue: {
+        estimatedMonthlyRevenue,
+        monthlySubscriptions: revenueData.find(r => r._id === 'monthly')?.count || 0,
+        yearlySubscriptions: revenueData.find(r => r._id === 'yearly')?.count || 0
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Error getting admin analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to get analytics',
+      message: error.message 
+    });
+  }
+});
+
+
+// ==========================================
+// COURSE MATERIALS API ROUTES
+// ==========================================
+
+// Upload course material endpoint
+app.post('/api/course-materials/upload', authenticateToken, upload.single('file'), async (req, res) => {
+  try {
+    const { title, description, tags } = req.body;
+    const file = req.file;
+    
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    console.log('📄 Processing uploaded file:', file.originalname);
+    
+    let extractedText = '';
+    let fileType = '';
+    
+    // Extract text based on file type
+    if (file.mimetype === 'application/pdf') {
+      const pdfData = await pdfParse(file.buffer);
+      extractedText = pdfData.text;
+      fileType = 'pdf';
+    } else if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      const docxData = await mammoth.extractRawText({ buffer: file.buffer });
+      extractedText = docxData.value;
+      fileType = 'docx';
+    } else if (file.mimetype === 'text/plain') {
+      extractedText = file.buffer.toString('utf-8');
+      fileType = 'txt';
+    }
+    
+    if (!extractedText || extractedText.trim().length === 0) {
+      return res.status(400).json({ error: 'Could not extract text from file' });
+    }
+    
+    // Break content into searchable chunks
+    const chunks = createTextChunks(extractedText);
+    
+  // Create course material record  
+let validUserId;
+if (req.user.userId === 'admin') {
+    validUserId = new mongoose.Types.ObjectId('000000000000000000000000'); // Use a dummy ObjectId for admin
+} else {
+    validUserId = new mongoose.Types.ObjectId(req.user.userId);
+}
+
+const courseMaterial = new CourseMaterial({
+    userId: validUserId,
+
+    userId: validUserId,
+      title: title || file.originalname,
+      description: description || '',
+      content: extractedText,
+      originalFileName: file.originalname,
+      fileType: fileType,
+      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+      chunks: chunks
+    });
+    
+    await courseMaterial.save();
+    
+    console.log('✅ Course material saved:', courseMaterial.title);
+    
+    res.json({
+      message: 'Course material uploaded successfully',
+      material: {
+        id: courseMaterial._id,
+        title: courseMaterial.title,
+        description: courseMaterial.description,
+        fileType: courseMaterial.fileType,
+        uploadedAt: courseMaterial.uploadedAt,
+        chunkCount: chunks.length,
+        contentLength: extractedText.length
+      }
+    });
+    
+  } catch (error) {
+    console.error('❌ Course material upload error:', error);
+    res.status(500).json({ 
+      error: 'Failed to upload course material',
+      details: error.message 
+    });
+  }
+});
+
+
+// Get all course materials for a user
+app.get('/api/course-materials', authenticateToken, async (req, res) => {
+  try {
+    // Handle admin userId
+    let queryUserId;
+    if (req.user.userId === 'admin') {
+      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    } else {
+      queryUserId = req.user.userId;
+    }
+    
+    const materials = await CourseMaterial.find({ 
+      userId: queryUserId,
+      isActive: true 
+    }).sort({ uploadedAt: -1 });
+    
+    res.json(materials.map(material => ({
+      id: material._id,
+      title: material.title,
+      description: material.description,
+      fileType: material.fileType,
+      originalFileName: material.originalFileName,
+      tags: material.tags,
+      uploadedAt: material.uploadedAt,
+      chunkCount: material.chunks.length,
+      contentLength: material.content.length
+    })));
+  } catch (error) {
+    console.error('❌ Get course materials error:', error);
+    res.status(500).json({ error: 'Failed to get course materials' });
+  }
+});
+
+// Delete a course material
+app.delete('/api/course-materials/:id', authenticateToken, async (req, res) => {
+  try {
+    // Handle admin userId
+    let queryUserId;
+    if (req.user.userId === 'admin') {
+      queryUserId = new mongoose.Types.ObjectId('000000000000000000000000');
+    } else {
+      queryUserId = req.user.userId;
+    }
+    
+    await CourseMaterial.findOneAndUpdate(
+      { _id: req.params.id, userId: queryUserId },
+      { isActive: false }
+    );
+    res.json({ message: 'Course material deleted successfully' });
+  } catch (error) {
+    console.error('❌ Delete course material error:', error);
+    res.status(500).json({ error: 'Failed to delete course material' });
+  }
+});
+
+console.log('✅ Admin analytics route loaded successfully');
+
+// ENHANCED ADMIN DASHBOARD HTML
+// Replace your existing admin-dashboard.html with this enhanced version:
+// Test course materials search endpoint
+app.post('/api/admin/test-course-materials-search', authenticateToken, async (req, res) => {
+  try {
+    const { query, userId: testUserId } = req.body;
+    const searchUserId = testUserId || req.user.userId;
+    
+    console.log('🧪 TESTING COURSE MATERIALS SEARCH');
+    console.log('Query:', query);
+    console.log('User ID:', searchUserId);
+    
+    // First, show what materials exist
+    const allMaterials = await CourseMaterial.find({ isActive: true });
+    console.log(`📚 Total active materials in database: ${allMaterials.length}`);
+    
+    allMaterials.forEach(material => {
+      console.log(`- "${material.title}" by user ${material.userId} (${material.chunks.length} chunks)`);
+    });
+    
+    // Now test the search
+    const results = await searchCourseMaterials(searchUserId, query, 5);
+    
+    res.json({
+      query,
+      searchUserId,
+      totalMaterials: allMaterials.length,
+      materialsFound: allMaterials.map(m => ({
+        title: m.title,
+        userId: m.userId,
+        chunks: m.chunks.length
+      })),
+      searchResults: results,
+      resultsCount: results.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Test search error:', error);
+    res.status(500).json({ error: 'Search test failed', details: error.message });
+  }
+});
+
 // Fix MongoDB index issue permanently
 app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
   try {
@@ -3724,7 +5143,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
+console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
@@ -3760,4 +5179,5 @@ app.post('/api/admin/reset-test-db', async (req, res) => {
     console.error('❌ Reset error:', error);
     res.status(500).json({ error: 'Failed to reset database' });
   }
-});
+
+    });
