@@ -539,7 +539,7 @@ const dailyProgressSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   date: { type: String, required: true }, // YYYY-MM-DD format
   goalProgress: [{
-    goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'Goal', required: true },
+    goalId: { type: mongoose.Schema.Types.ObjectId, ref: 'LifeGoal', required: true },
     completed: { type: Boolean, default: false },
     completedAt: { type: Date },
     area: { type: String, required: true } // Store area for easy filtering
