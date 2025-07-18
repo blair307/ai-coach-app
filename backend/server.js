@@ -18,11 +18,10 @@ const fetch = require('node-fetch'); // You may need to install this: npm instal
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 
+// Voice IDs (we'll update these when your voice clones are ready)
 const VOICE_IDS = {
     coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
-    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id',
-    coach3: process.env.ALEX_VOICE_ID || 'placeholder-alex-id',
-    coach4: process.env.SAM_VOICE_ID || 'placeholder-sam-id'
+    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id'
 };
 
 // Make sure all important settings are configured
@@ -384,19 +383,16 @@ const roomSchema = new mongoose.Schema({
 
 const Room = mongoose.model('Room', roomSchema);
 
-// Updated Chat History Schema - REPLACE THE OLD chatSchema
+// Chat History Schema with Conversation Memory
 const chatSchema = new mongoose.Schema({
-  userId: { type: String, required: true, index: true },
-  threadId: String, // Keep for compatibility but not needed for Chat Completion
+  userId: String,
+  threadId: String,
   messages: [{
-    role: { type: String, enum: ['user', 'assistant', 'system'], required: true },
-    content: { type: String, required: true },
-    timestamp: { type: Date, default: Date.now },
-    coach: String // Track which coach responded
+    role: String,
+    content: String,
+    timestamp: { type: Date, default: Date.now }
   }],
-  selectedCoach: String, // Track current coach for this conversation
-  updatedAt: { type: Date, default: Date.now },
-  createdAt: { type: Date, default: Date.now }
+  updatedAt: { type: Date, default: Date.now }
 });
 
 const Chat = mongoose.model('Chat', chatSchema);
@@ -1317,75 +1313,21 @@ try {
   }
 });
 
+// Coach Configuration
 const COACHES = {
   coach1: {
     name: "Blair Reynolds", 
-    voiceId: VOICE_IDS.coach1,
-    personality: `You are Blair Reynolds, a transformative emotional health coach for entrepreneurs. 
-
-Your coaching style:
-- Use gentle humor to help clients see new perspectives
-- Combine deep empathy with practical business insights
-- Focus on breaking through emotional barriers that limit success
-- Help entrepreneurs integrate personal growth with business growth
-- Ask thoughtful questions that lead to breakthrough moments
-- Share relatable examples from your entrepreneurial background
-
-Your tone is warm, insightful, and encouraging. You believe that emotional intelligence is the key to sustainable business success. You help entrepreneurs understand that taking care of their mental health isn't weakness - it's strategic advantage.`,
-    description: "Transformative, humor-focused coach with deep empathy. Combines entrepreneurial enthusiasm with personal and relational health expertise."
+    assistantId: "asst_tpShoq1kPGvtcFhMdxb6EmYg", 
+    voiceId: null, // We'll add this after setting up ElevenLabs
+    personality: "Humorous, empathy-oriented coach focused on transformative solutions",
+    description: "Entrepreneurial enthusiasm with a focus on personal and relational health"
   },
   coach2: {
     name: "Dave Charlson",
-    voiceId: VOICE_IDS.coach2,
-    personality: `You are Dave Charlson, a strategic business coach focused on sustainable growth and work-life integration.
-
-Your coaching style:
-- Provide practical, actionable strategies that entrepreneurs can implement immediately
-- Focus on building systems that support both business growth and personal well-being
-- Help clients create boundaries between work and personal life
-- Emphasize long-term sustainability over short-term burnout
-- Share proven frameworks and methodologies
-- Balance ambition with health and relationships
-
-Your tone is encouraging, systematic, and grounded. You believe that the best entrepreneurs are those who can scale their businesses without sacrificing their health, relationships, or values.`,
-    description: "Strategic, warm coach focused on sustainable growth and well-being. Balanced approach combining business success with personal fulfillment."
-  },
-  coach3: {
-    name: "Alex Stone",
-    voiceId: VOICE_IDS.coach3,
-    personality: `You are Alex Stone, a direct and confrontational executive coach who believes in radical transformation.
-
-Your coaching style:
-- Be extremely direct and honest, even if it's uncomfortable
-- Challenge limiting beliefs and excuses immediately
-- Use tough love to push people beyond their comfort zones
-- Focus on accountability and measurable results
-- Confront self-sabotaging behaviors head-on
-- Believe that significant change requires significant discomfort
-- Push entrepreneurs to think bigger and act bolder
-- Don't coddle - respect people enough to tell them hard truths
-
-Your tone is firm, confident, and unwavering. You believe that most people are living far below their potential and need a strong push to break through their limitations. You're supportive, but your support comes through challenging people to rise to their highest capabilities.`,
-    description: "Direct, confrontational executive coach focused on breakthrough results and eliminating limitations."
-  },
-  coach4: {
-    name: "Sam Heart",
-    voiceId: VOICE_IDS.coach4,
-    personality: `You are Sam Heart, an extraordinarily compassionate coach who offers unconditional love and support.
-
-Your coaching style:
-- Meet people exactly where they are without judgment
-- Offer unlimited compassion and understanding
-- Focus on self-acceptance before self-improvement
-- Validate feelings and experiences completely
-- Help people feel valued and worthy as they are right now
-- Use gentle encouragement rather than pressure
-- Believe that healing happens through love, not force
-- Help people discover their own inner wisdom and strength
-- Create a safe space for vulnerability and growth
-
-Your tone is warm, gentle, and infinitely patient. You believe that everyone is doing their best with the resources they have, and that true transformation happens when people feel completely accepted and loved. You never push - you invite and encourage.`,
-    description: "Extraordinarily compassionate coach focused on unconditional support and meeting people where they are."
+    assistantId: "asst_azEXcPuwPHRaSXWzv2tPzI4t", // We'll create Dave's assistant next
+    voiceId: null, // We'll add this after setting up ElevenLabs
+    personality: "Warm, strategic coach focused on sustainable growth and well-being",
+    description: "Balanced approach combining business success with personal fulfillment"
   }
 };
 
@@ -1423,34 +1365,8 @@ async function generateVoice(text, voiceId) {
     return `data:audio/mpeg;base64,${audioBase64}`;
 }
 
-// Generate voice asynchronously without blocking response
-async function generateVoiceAsync(text, voiceId, userId, coachId) {
-    try {
-        console.log('🎤 Generating voice in background for:', coachId);
-        
-        const cleanedResponse = text
-            .replace(/\*\*/g, '')
-            .replace(/\*/g, '')
-            .replace(/#{1,6}\s/g, '')
-            .replace(/`{1,3}[^`]*`{1,3}/g, '')
-            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-            .replace(/^\s*[-*+]\s/gm, '')
-            .replace(/^\s*\d+\.\s/gm, '')
-            .trim();
-
-        const audioUrl = await generateVoice(cleanedResponse, voiceId);
-        console.log('✅ Voice generated successfully in background');
-        
-    } catch (voiceError) {
-        console.error('⚠️ Background voice generation failed:', voiceError.message);
-    }
-}
-
-// FAST Chat Completion API - REPLACE THE OLD /api/chat/send ENDPOINT WITH THIS
+// Send message to AI Assistant with Coach Selection
 app.post('/api/chat/send', authenticateToken, async (req, res) => {
-  const startTime = Date.now();
-  console.log('🚀 FAST CHAT: Request started');
-    
   try {
     if (!openai) {
       return res.json({ 
@@ -1458,7 +1374,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
       });
     }
 
-    const { message, preferences = {} } = req.body;
+    const { message } = req.body;
     const userId = req.user.userId;
 
     // Get user's selected coach
@@ -1466,7 +1382,7 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
     const selectedCoach = user?.selectedCoach || 'coach1';
     const coach = COACHES[selectedCoach];
     
-    if (!coach) {
+    if (!coach || !coach.assistantId) {
       return res.status(400).json({ 
         error: 'Selected coach is not available. Please try again.' 
       });
@@ -1474,113 +1390,123 @@ app.post('/api/chat/send', authenticateToken, async (req, res) => {
 
     console.log(`🎯 Using ${coach.name} (${selectedCoach}) for user ${userId}`);
 
-    // Get or create conversation history
     let chat = await Chat.findOne({ userId });
-    if (!chat) {
-      chat = new Chat({
-        userId,
-        threadId: `chat_${userId}_${Date.now()}`, // We don't need real threads anymore
-        messages: []
-      });
-      await chat.save();
+    let threadId;
+
+    if (!chat || !chat.threadId) {
+      const thread = await openai.beta.threads.create();
+      threadId = thread.id;
+      
+      if (chat) {
+        chat.threadId = threadId;
+        await chat.save();
+      } else {
+        chat = new Chat({
+          userId,
+          threadId,
+          messages: []
+        });
+        await chat.save();
+      }
+    } else {
+      threadId = chat.threadId;
     }
 
-    // Build conversation context (last 10 messages for context)
-    const recentMessages = chat.messages.slice(-10);
-    
-    // Create messages array for OpenAI
-    const messages = [
-      {
-        role: 'system',
-        content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
-
-KEEP RESPONSES VERY SHORT - Maximum 2-3 sentences. Keep responses conversational, supportive, and practical for entrepreneurs. Focus on emotional health, stress management, leadership, and work-life balance. Respond with empathy and actionable advice.
-
-Current coaching preferences:
-- Tone: ${preferences.tone || 'supportive'}
-- Response length: ${preferences.responseLength || 'concise'}
-
-Be authentic to your coaching style while addressing the user's entrepreneurial and emotional health needs.`
-      }
-    ];
-
-    // Add conversation history
-    recentMessages.forEach(msg => {
-      messages.push({
-        role: msg.role,
-        content: msg.content
-      });
-    });
-
-    // Add current user message
-    messages.push({
-      role: 'user',
+    await openai.beta.threads.messages.create(threadId, {
+      role: "user",
       content: message
     });
 
-    console.log('⏱️ TIMING: Context built in:', Date.now() - startTime, 'ms');
+// Check for active runs and cancel them
+try {
+  const activeRuns = await openai.beta.threads.runs.list(threadId, { limit: 5 });
+  for (const existingRun of activeRuns.data) {
+    if (existingRun.status === 'in_progress' || existingRun.status === 'queued') {
+      console.log('⏳ Canceling existing run:', existingRun.id);
+      await openai.beta.threads.runs.cancel(threadId, existingRun.id);
+    }
+  }
+} catch (cancelError) {
+  console.log('⚠️ Could not cancel existing runs:', cancelError.message);
+}
 
-    // Make FAST Chat Completion API call
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // Using faster model
-      messages: messages,
-max_tokens: preferences.responseLength === 'detailed' ? 600 : 
-            preferences.responseLength === 'concise' ? 150 : 300,
-      temperature: 0.7,
-      stream: false
-    });
+const run = await openai.beta.threads.runs.create(threadId, {
+  assistant_id: coach.assistantId
+});
+      
 
-    console.log('⏱️ TIMING: OpenAI response in:', Date.now() - startTime, 'ms');
-
-    const response = completion.choices[0].message.content;
-
-
-    // Generate insights after successful chat (async, don't wait)
-    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
-      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    let runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+    
+    let attempts = 0;
+    while (runStatus.status !== 'completed' && attempts < 30) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      runStatus = await openai.beta.threads.runs.retrieve(threadId, run.id);
+      attempts++;
     }
 
-  // Save to database FIRST
+    if (runStatus.status !== 'completed') {
+      throw new Error('Assistant took too long to respond');
+    }
+
+    const messages = await openai.beta.threads.messages.list(threadId);
+    const assistantMessage = messages.data.find(msg => msg.role === 'assistant');
+    
+    if (!assistantMessage) {
+      throw new Error('No response from assistant');
+    }
+
+    const response = assistantMessage.content[0].text.value;
+
     chat.messages.push(
       { role: 'user', content: message, timestamp: new Date() },
       { role: 'assistant', content: response, timestamp: new Date(), coach: selectedCoach }
     );
-    
-    // Keep only last 50 messages to prevent database bloat
-    if (chat.messages.length > 50) {
-      chat.messages = chat.messages.slice(-50);
-    }
-    
     chat.updatedAt = new Date();
     await chat.save();
 
-    const totalTime = Date.now() - startTime;
-    console.log('🎉 FAST RESPONSE TIME:', totalTime, 'ms');
+    // Generate insights after successful chat
+    if (chat && chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
+      setTimeout(() => generateInsights(userId, chat.messages), 3000);
+    }
+
+// Generate voice if coach voice is enabled
+    let audioUrl = null;
+    const selectedCoachId = selectedCoach;
     
-    // Send response immediately (no waiting for voice)
+    if (ELEVENLABS_API_KEY && selectedCoachId && VOICE_IDS[selectedCoachId]) {
+        try {
+            console.log('🎤 Generating voice for coach:', selectedCoachId);
+            console.log('🎤 Using voice ID:', VOICE_IDS[selectedCoachId]);
+// Clean the response text for voice synthesis
+const cleanedResponse = response
+    .replace(/\*\*/g, '') // Remove ** bold markers
+    .replace(/\*/g, '')   // Remove * italic markers
+    .replace(/#{1,6}\s/g, '') // Remove # headers
+    .replace(/`{1,3}[^`]*`{1,3}/g, '') // Remove code blocks
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Convert [text](link) to just text
+    .replace(/^\s*[-*+]\s/gm, '') // Remove bullet points
+    .replace(/^\s*\d+\.\s/gm, '') // Remove numbered lists
+    .trim();
+
+audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[selectedCoachId]);
+            console.log('✅ Voice generated successfully');
+        } catch (voiceError) {
+            console.error('⚠️ Voice generation failed:', voiceError.message);
+            // Continue without voice - don't fail the whole request
+        }
+    }
+    
     res.json({ 
       response,
       coach: {
         name: coach.name,
         id: selectedCoach
       },
-      audio: null, // No audio in immediate response
-      responseTime: totalTime
+      audio: audioUrl ? { url: audioUrl, enabled: true } : null
     });
 
-    // Generate voice AFTER responding (async - doesn't block)
-    if (ELEVENLABS_API_KEY && selectedCoach && VOICE_IDS[selectedCoach]) {
-        generateVoiceAsync(response, VOICE_IDS[selectedCoach], userId, selectedCoach);
-        console.log('🎤 Voice generation started in background');
-    }
-
-    // Generate insights after successful chat (async)
-    if (chat.messages.length >= 6 && chat.messages.length % 4 === 0) {
-      setTimeout(() => generateInsights(userId, chat.messages), 3000);
-    }
-
   } catch (error) {
-    console.error('❌ Chat error:', error);
+    console.error('Assistant error:', error);
     
     const fallbacks = [
       "I'm experiencing technical difficulties right now. As an entrepreneur, you know that setbacks are temporary. While I get back online, remember that seeking support shows leadership strength, not weakness.",
@@ -1593,45 +1519,6 @@ max_tokens: preferences.responseLength === 'detailed' ? 600 :
       error: error.message,
       response: fallbacks[Math.floor(Math.random() * fallbacks.length)]
     });
-  }
-});
-
-// Get voice for a message (called separately by frontend)
-app.post('/api/chat/voice', authenticateToken, async (req, res) => {
-  try {
-    const { text, coachId } = req.body;
-    
-    if (!text || !coachId) {
-      return res.status(400).json({ error: 'Text and coachId required' });
-    }
-    
-    if (!ELEVENLABS_API_KEY || !VOICE_IDS[coachId]) {
-      return res.status(400).json({ error: 'Voice generation not available' });
-    }
-    
-    console.log('🎤 Generating voice on demand for:', coachId);
-    
-    // Clean the response text for voice synthesis
-    const cleanedResponse = text
-      .replace(/\*\*/g, '')
-      .replace(/\*/g, '')
-      .replace(/#{1,6}\s/g, '')
-      .replace(/`{1,3}[^`]*`{1,3}/g, '')
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-      .replace(/^\s*[-*+]\s/gm, '')
-      .replace(/^\s*\d+\.\s/gm, '')
-      .trim();
-
-    const audioUrl = await generateVoice(cleanedResponse, VOICE_IDS[coachId]);
-    
-    res.json({ 
-      audio: { url: audioUrl, enabled: true },
-      success: true
-    });
-    
-  } catch (error) {
-    console.error('Voice generation error:', error);
-    res.status(500).json({ error: 'Voice generation failed' });
   }
 });
 
@@ -4539,7 +4426,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔑 JWT Secret: ${process.env.JWT_SECRET ? 'configured' : 'using default'}`);
-console.log(`🤖 OpenAI Chat Completion: ${openai ? 'ready (gpt-4o)' : 'disabled'}`);
+  console.log(`🤖 OpenAI Assistant: ${openai ? 'ready (asst_tpShoq1kPGvtcFhMdxb6EmYg)' : 'disabled'}`);
   console.log(`💳 Stripe: ${process.env.STRIPE_SECRET_KEY ? 'ready' : 'not configured'}`);
   console.log(`📧 Email: ${transporter ? 'ready' : 'not configured'}`);
   console.log(`💾 Database Storage: Goals ✅ Notifications ✅ Chat Rooms ✅`);
@@ -4575,5 +4462,100 @@ app.post('/api/admin/reset-test-db', async (req, res) => {
     console.error('❌ Reset error:', error);
     res.status(500).json({ error: 'Failed to reset database' });
   }
-
+// Admin analytics endpoint - ADD THIS NEW SECTION
+app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
+  try {
+    console.log('📊 Loading admin analytics...');
+    
+    // Get user statistics
+    const totalUsers = await User.countDocuments();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const activeUsers = await User.countDocuments({
+      'streakData.lastLoginDate': { $gte: thirtyDaysAgo }
     });
+    
+    // Get recent signups
+    const recentSignups = await User.find({
+      createdAt: { $gte: thirtyDaysAgo }
+    })
+    .select('firstName lastName email subscription.plan createdAt')
+    .sort({ createdAt: -1 })
+    .limit(10);
+    
+    // Get subscription breakdown
+    const subscriptionStats = await User.aggregate([
+      {
+        $group: {
+          _id: '$subscription.plan',
+          count: { $sum: 1 },
+          activeCount: {
+            $sum: {
+              $cond: [
+                { $eq: ['$subscription.status', 'active'] },
+                1,
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+    
+    // Get coupon usage stats
+    const couponStats = await User.aggregate([
+      {
+        $match: {
+          'subscription.couponUsed': { $exists: true, $ne: null }
+        }
+      },
+      {
+        $group: {
+          _id: '$subscription.couponUsed',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { count: -1 }
+      }
+    ]);
+    
+    // Calculate revenue estimates
+    const monthlyUsers = subscriptionStats.find(s => s._id === 'monthly')?.activeCount || 0;
+    const yearlyUsers = subscriptionStats.find(s => s._id === 'yearly')?.activeCount || 0;
+    
+    // Assuming monthly = $29, yearly = $249 (adjust to your actual prices)
+    const monthlyRevenue = (monthlyUsers * 29) + (yearlyUsers * 249 / 12);
+    
+    const analytics = {
+      users: {
+        total: totalUsers,
+        active: activeUsers,
+        recentSignups: recentSignups.map(user => ({
+          name: `${user.firstName} ${user.lastName}`,
+          email: user.email,
+          plan: user.subscription?.plan || 'free',
+          signupDate: user.createdAt
+        }))
+      },
+      subscriptions: subscriptionStats,
+      coupons: couponStats,
+      revenue: {
+        monthlySubscriptions: monthlyUsers,
+        yearlySubscriptions: yearlyUsers,
+        estimatedMonthlyRevenue: monthlyRevenue
+      }
+    };
+    
+    console.log('✅ Analytics loaded successfully');
+    res.json(analytics);
+    
+  } catch (error) {
+    console.error('❌ Error loading analytics:', error);
+    res.status(500).json({ 
+      error: 'Failed to load analytics',
+      message: error.message 
+    });
+  }
+});
+    
+});
