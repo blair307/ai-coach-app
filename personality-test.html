@@ -492,6 +492,9 @@
 
     <script src="sidebar-toggle.js"></script>
     <script>
+
+                const API_BASE_URL = 'https://api.eehcommunity.com';
+
         // Assessment data and logic will go here
      let currentQuestionIndex = 0;
         let userAnswers = [];
@@ -1151,7 +1154,7 @@ async function saveTestResultsToServer(answers, results) {
             return { success: false, message: 'Saved locally only' };
         }
 
-        const response = await fetch('/api/personality-test/results', {
+        const response = await fetch(`${API_BASE_URL}/api/personality-test/results`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
