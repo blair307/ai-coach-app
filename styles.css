@@ -1,4 +1,3 @@
-.dropdown-name {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-primary);
@@ -1364,7 +1363,7 @@ button[onclick*="startCoachingSession"]:hover,
     --text-muted: #64748b;
     --border: #e2e8f0;
     --background: #ffffff;
-    --surface: #E0D8D4;
+    --surface: #f1f5f9;
     --glass: rgba(255, 255, 255, 0.85);
     --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
