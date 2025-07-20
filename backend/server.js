@@ -38,7 +38,31 @@ if (missingSettings.length > 0) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors()); // Allow all origins for testing
+// Enhanced CORS configuration for Flutter mobile app
+const corsOptions = {
+  origin: [
+    'http://localhost:3000',
+    'http://localhost:5000', 
+    'http://localhost:8080',
+    /^http:\/\/localhost:\d+$/,  // Allow any localhost port for Flutter
+    'https://your-frontend-domain.com' // Add your production domain later
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
 
 // ==========================================
 // STRIPE WEBHOOKS - MUST BE BEFORE express.json()
