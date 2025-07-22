@@ -2858,14 +2858,14 @@ app.post('/api/messages/:id/like', authenticateToken, async (req, res) => {
 const personalityTestSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   answers: [{
-    questionId: Number,
-    selectedOption: String,
-    type: String
+    questionId: { type: Number, required: true },
+    selectedOption: { type: String, required: true },
+    type: { type: String, required: true }
   }],
   results: {
-    allScores: Object,
-    topThree: Array,
-    totalQuestions: Number,
+    allScores: { type: Map, of: Number },
+    topThree: { type: Array, required: true },
+    totalQuestions: { type: Number, required: true },
     completedAt: { type: Date, default: Date.now }
   },
   retakeCount: { type: Number, default: 0 },
