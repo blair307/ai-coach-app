@@ -2877,6 +2877,12 @@ const PersonalityTest = mongoose.model('PersonalityTest', personalityTestSchema)
 // Save personality test results
 app.post('/api/personality-test/results', authenticateToken, async (req, res) => {
   try {
+
+ // ADD THESE DEBUG LINES HERE
+    console.log('🔍 RAW REQUEST BODY:', JSON.stringify(req.body, null, 2));
+    console.log('🔍 ANSWERS TYPE:', typeof req.body.answers);
+    console.log('🔍 ANSWERS LENGTH:', req.body.answers?.length);
+      
     const userId = req.user.userId;
     const { answers, results } = req.body;
     
