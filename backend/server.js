@@ -266,6 +266,7 @@ async function handlePaymentFailed(invoice) {
 }
 
 app.use(express.json({ limit: '10mb' }));
+app.use('/api/personality-test/*', express.json({ limit: '50mb' })); // ADD THIS LINE
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Initialize services
