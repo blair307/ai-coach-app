@@ -1619,6 +1619,18 @@ const searchTerms = message.toLowerCase()
 
 console.log('🔍 Searching for:', searchTerms);
 const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5);
+
+// ADD THESE NEW LINES:
+console.log('🔍 Course materials search details:', {
+  searchTerms,
+  userId,
+  materialsFound: relevantMaterials.length,
+  searchResults: relevantMaterials.map(m => ({
+    title: m.materialTitle,
+    score: m.score,
+    preview: m.text.substring(0, 100) + '...'
+  }))
+});
       
 // Build course materials context
 let courseMaterialsContext = '';
@@ -4592,6 +4604,55 @@ app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, re
   } catch (error) {
     console.error('Debug chunks error:', error);
     res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
+app.post('/api/admin/test-course-search', authenticateToken, async (req, res) => {
+  try {
+    const { query, testUserId } = req.body;
+    const userId = testUserId || req.user.userId;
+    
+    console.log('🧪 TESTING COURSE MATERIALS SEARCH');
+    console.log('Query:', query);
+    console.log('User ID:', userId);
+    
+    // First, show what materials exist
+    const allMaterials = await CourseMaterial.find({ isActive: true });
+    console.log(`📚 Total active materials in database: ${allMaterials.length}`);
+    
+    allMaterials.forEach(material => {
+      console.log(`- "${material.title}" by user ${material.userId} (${material.chunks.length} chunks)`);
+      // Show a preview of first chunk
+      if (material.chunks.length > 0) {
+        console.log(`  First chunk: "${material.chunks[0].text.substring(0, 150)}..."`);
+      }
+    });
+    
+    // Now test the search
+    const results = await searchCourseMaterials(userId, query, 5);
+    
+    res.json({
+      query,
+      userId,
+      totalMaterials: allMaterials.length,
+      materialsFound: allMaterials.map(m => ({
+        title: m.title,
+        userId: m.userId.toString(),
+        chunks: m.chunks.length,
+        firstChunkPreview: m.chunks[0]?.text.substring(0, 100) + '...'
+      })),
+      searchResults: results,
+      resultsCount: results.length,
+      searchWorked: results.length > 0
+    });
+    
+  } catch (error) {
+    console.error('❌ Test search error:', error);
+    res.status(500).json({ 
+      error: 'Search test failed', 
+      details: error.message,
+      stack: error.stack 
+    });
   }
 });
 
