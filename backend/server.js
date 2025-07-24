@@ -525,6 +525,7 @@ const insightSchema = new mongoose.Schema({
 const Insight = mongoose.model('Insight', insightSchema);
 
 // Course Materials Schema - NEW
+// Course Materials Schema - ENHANCED
 const courseMaterialSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
@@ -4940,23 +4941,6 @@ function extractBasicTopics(content) {
     .map(word => word.charAt(0).toUpperCase() + word.slice(1));
 }
 
-// Simple keyword extraction
-function extractKeywords(text) {
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(word => word.length > 3);
-  
-  const wordCount = {};
-  words.forEach(word => {
-    wordCount[word] = (wordCount[word] || 0) + 1;
-  });
-  
-  return Object.keys(wordCount)
-    .sort((a, b) => wordCount[b] - wordCount[a])
-    .slice(0, 10);
-}
-
 // Clean up old images (optional - run manually or via cron)
 app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
   try {
@@ -5153,7 +5137,17 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     }
     
     // Break content into searchable chunks
+  // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
+    console.log('🧩 Created', chunks.length, 'chunks from content');
+    
+    // NEW: Analyze document structure
+    const structure = await analyzeDocumentStructure(extractedText, title || file.originalname);
+    console.log('📋 Document structure analyzed:', {
+      outline: structure.outline.length,
+      topics: structure.keyTopics.length,
+      summary: structure.summary.substring(0, 100) + '...'
+    });
     
   // Create course material record  
 let validUserId;
@@ -5162,23 +5156,10 @@ if (req.user.userId === 'admin') {
 } else {
     validUserId = new mongoose.Types.ObjectId(req.user.userId);
 }
-
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
-
-    userId: validUserId,
       title: title || file.originalname,
-      description: description || '',
-      content: extractedText,
-      originalFileName: file.originalname,
-      fileType: fileType,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      chunks: chunks
-    });
-    
-    await courseMaterial.save();
-    
-    console.log('✅ Course material saved:', courseMaterial.title);
+      d
     
     res.json({
       message: 'Course material uploaded successfully',
