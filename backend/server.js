@@ -4607,28 +4607,28 @@ async function searchCourseMaterials(userId, query, limit = 3) {
       limit 
     });
     
-  // FIXED: Allow all users to search admin materials
-const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+    // FIXED: Allow all users to search admin materials
+    const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
 
-if (userId === 'admin' || userId.toString() === 'admin') {
-  // Admin searching - only search admin materials  
-  var searchQuery = {
-    isActive: true,
-    userId: adminObjectId
-  };
-} else {
-  // Regular user - search their materials + admin materials
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-  var searchQuery = {
-    isActive: true,
-    userId: {
-      $in: [
-        userObjectId, // User's own materials
-        adminObjectId // Admin materials (available to all users)
-      ]
+    if (userId === 'admin' || userId.toString() === 'admin') {
+      // Admin searching - only search admin materials  
+      var searchQuery = {
+        isActive: true,
+        userId: adminObjectId
+      };
+    } else {
+      // Regular user - search their materials + admin materials
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      var searchQuery = {
+        isActive: true,
+        userId: {
+          $in: [
+            userObjectId, // User's own materials
+            adminObjectId // Admin materials (available to all users)
+          ]
+        }
+      };
     }
-  };
-}
     
     console.log('📋 Search query:', searchQuery);
     
@@ -4636,7 +4636,7 @@ if (userId === 'admin' || userId.toString() === 'admin') {
     
     console.log('📚 Found materials:', materials.length);
 
-          // ADD THIS DEBUG - Log the first material's chunks
+    // ADD THIS DEBUG - Log the first material's chunks
     if (materials.length > 0) {
       console.log('🔍 First material chunks:', materials[0].chunks.length);
       console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
@@ -4647,12 +4647,7 @@ if (userId === 'admin' || userId.toString() === 'admin') {
       return [];
     }
     
-    if (materials.length === 0) {
-      console.log('❌ No materials found');
-      return [];
-    }
-    
-    // Rest of the function stays the same...
+    // Split query into search words
     const queryWords = query.toLowerCase()
       .split(/\s+/)
       .filter(word => word.length > 2)
@@ -4662,48 +4657,38 @@ if (userId === 'admin' || userId.toString() === 'admin') {
     
     const relevantChunks = [];
     
-   // Find this part in your searchCourseMaterials function (around line 2150)
-materials.forEach(material => {
-  // Bonus points if the query matches the material title
-  let titleBonus = 0;
-  queryWords.forEach(word => {
-    if (material.title.toLowerCase().includes(word.toLowerCase())) {
-      titleBonus += 10; // Big bonus for title matches
-    }
-  });
-  
-  material.chunks.forEach((chunk, chunkIndex) => {
-    let score = titleBonus; // Start with title bonus
-    const chunkText = chunk.text.toLowerCase();
-    
-    queryWords.forEach(word => {
-      if (chunkText.includes(word.toLowerCase())) {
-        score += 1;
-      }
+    // FIXED: Proper variable scoping for the search loop
+    materials.forEach(material => {
+      // Bonus points if the query matches the material title
+      let titleBonus = 0;
+      queryWords.forEach(word => {
+        if (material.title.toLowerCase().includes(word.toLowerCase())) {
+          titleBonus += 10; // Big bonus for title matches
+        }
+      });
+      
+      material.chunks.forEach((chunk, chunkIndex) => {
+        let score = titleBonus; // Start with title bonus
+        const chunkText = chunk.text.toLowerCase();
+        
+        queryWords.forEach(word => {
+          if (chunkText.includes(word.toLowerCase())) {
+            score += 1;
+          }
+        });
+        
+        // FIXED: Now score is properly defined in this scope
+        if (score > 0) {
+          relevantChunks.push({
+            text: chunk.text,
+            score: score,
+            materialTitle: material.title,
+            materialId: material._id,
+            chunkIndex: chunkIndex
+          });
+        }
+      });
     });
-    
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
-  });
-});
-    
-    // Add to results if any words found
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
 
     console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
     
