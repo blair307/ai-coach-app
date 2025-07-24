@@ -529,18 +529,27 @@ const courseMaterialSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   description: { type: String },
-  content: { type: String, required: true }, // Extracted text content
+  content: { type: String, required: true }, // Full extracted text content
   originalFileName: { type: String },
   fileType: { type: String, enum: ['pdf', 'docx', 'txt', 'md'], required: true },
   tags: [String],
   isActive: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now },
   lastUpdated: { type: Date, default: Date.now },
-  // For search optimization
+  // NEW: Document structure and summary
+  structure: {
+    outline: [String], // Main sections/modules/chapters
+    keyTopics: [String], // Important topics covered
+    summary: String, // AI-generated summary of the entire document
+    totalLength: Number, // Character count
+    estimatedReadTime: Number // Minutes
+  },
+  // For detailed search
   chunks: [{
     text: String,
     index: Number,
-    keywords: [String]
+    keywords: [String],
+    section: String // Which part of the document this chunk comes from
   }]
 });
 
