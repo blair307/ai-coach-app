@@ -4816,6 +4816,35 @@ async function searchCourseMaterials(userId, query, limit = 3) {
   }
 }
 
+function extractKeywords(text) {
+  if (!text) return [];
+
+  const stopWords = [
+    'the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'with',
+    'from', 'by', 'to', 'in', 'of', 'for', 'as', 'this', 'that', 'it', 'are',
+    'was', 'were', 'be', 'been', 'has', 'have', 'had', 'do', 'does', 'did',
+    'you', 'your', 'yours', 'we', 'our', 'ours', 'they', 'them', 'their',
+    'i', 'me', 'my', 'mine', 'he', 'she', 'him', 'her', 'his', 'hers'
+  ];
+
+  const words = text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 3 && !stopWords.includes(word));
+
+  const frequency = {};
+  for (const word of words) {
+    frequency[word] = (frequency[word] || 0) + 1;
+  }
+
+  return Object.entries(frequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([word]) => word);
+}
+
+
 function createTextChunks(text, chunkSize = 1000, overlap = 200) {
   const chunks = [];
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
