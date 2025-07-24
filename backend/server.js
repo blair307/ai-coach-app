@@ -5195,10 +5195,22 @@ if (req.user.userId === 'admin') {
 }
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
-      title: title || file.originalname,
-      
-    
-    res.json({
+    title: title || file.originalname,
+    description: description || '',
+    content: extractedText,
+    originalFileName: file.originalname,
+    fileType: fileType,
+    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+    structure: structure,
+    chunks: chunks,
+    isActive: true
+});
+
+await courseMaterial.save();
+
+console.log('✅ Course material saved:', courseMaterial.title);
+
+res.json({
       message: 'Course material uploaded successfully',
       material: {
         id: courseMaterial._id,
