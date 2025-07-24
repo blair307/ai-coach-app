@@ -1845,19 +1845,19 @@ function displayChatHistory(messages) {
 }
 
 // Voice toggle functionality - ADD THIS HERE
-let voiceEnabled = true;
+let voiceEnabled = false; // Changed from true to false
 
 function toggleVoice() {
     voiceEnabled = !voiceEnabled;
     const voiceBtn = document.getElementById('voiceToggleBtn');
     
     if (voiceEnabled) {
-        voiceBtn.textContent = 'Voice is On';
+        voiceBtn.textContent = 'Coach Voice On';  // Updated text
         voiceBtn.classList.remove('btn-secondary');
         voiceBtn.classList.add('btn-outline');
         showToast('Voice responses enabled');
     } else {
-        voiceBtn.textContent = 'Voice is Off';
+        voiceBtn.textContent = 'Coach Voice Off'; // Updated text
         voiceBtn.classList.remove('btn-outline');
         voiceBtn.classList.add('btn-secondary');
         showToast('Voice responses disabled');
