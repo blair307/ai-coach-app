@@ -4672,47 +4672,29 @@ app.post('/api/admin/test-course-search', authenticateToken, async (req, res) =>
 
 async function searchCourseMaterials(userId, query, limit = 3) {
   try {
-    console.log('🔍 SEARCHING COURSE MATERIALS:', { 
+    console.log('🔍 ENHANCED SEARCH - COURSE MATERIALS:', { 
       userId: userId.toString(), 
       query: query.substring(0, 50) + '...', 
       limit 
     });
     
-    // FIXED: Allow all users to search admin materials
+    // Get admin materials for all users
     const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
 
+    let searchQuery;
     if (userId === 'admin' || userId.toString() === 'admin') {
-      // Admin searching - only search admin materials  
-      var searchQuery = {
-        isActive: true,
-        userId: adminObjectId
-      };
+      searchQuery = { isActive: true, userId: adminObjectId };
     } else {
-      // Regular user - search their materials + admin materials
       const userObjectId = new mongoose.Types.ObjectId(userId);
-      var searchQuery = {
+      searchQuery = {
         isActive: true,
-        userId: {
-          $in: [
-            userObjectId, // User's own materials
-            adminObjectId // Admin materials (available to all users)
-          ]
-        }
+        userId: { $in: [userObjectId, adminObjectId] }
       };
     }
-    
-    console.log('📋 Search query:', searchQuery);
     
     const materials = await CourseMaterial.find(searchQuery);
-    
     console.log('📚 Found materials:', materials.length);
 
-    // ADD THIS DEBUG - Log the first material's chunks
-    if (materials.length > 0) {
-      console.log('🔍 First material chunks:', materials[0].chunks.length);
-      console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
-    }
-    
     if (materials.length === 0) {
       console.log('❌ No materials found');
       return [];
@@ -4726,52 +4708,107 @@ async function searchCourseMaterials(userId, query, limit = 3) {
     
     console.log('🔤 Search words:', queryWords);
     
-    const relevantChunks = [];
+    // Check if this is a "structure" type question
+    const structureKeywords = ['modules', 'chapters', 'sections', 'outline', 'structure', 'overview', 'contents', 'parts'];
+    const isStructureQuery = queryWords.some(word => structureKeywords.includes(word));
     
-    // FIXED: Proper variable scoping for the search loop
+    console.log('📋 Structure query detected:', isStructureQuery);
+    
+    const results = [];
+    
     materials.forEach(material => {
-      // Bonus points if the query matches the material title
-      let titleBonus = 0;
+      console.log(`🔍 Searching material: "${material.title}"`);
+      
+      // Always include document structure info for relevant materials
+      let titleScore = 0;
       queryWords.forEach(word => {
         if (material.title.toLowerCase().includes(word.toLowerCase())) {
-          titleBonus += 10; // Big bonus for title matches
+          titleScore += 15; // Higher bonus for title matches
         }
       });
       
+      // If this is a structure query, prioritize the document outline
+      if (isStructureQuery && material.structure) {
+        console.log('📋 Using document structure for query');
+        
+        let structureText = `Document: ${material.title}\n\n`;
+        structureText += `Summary: ${material.structure.summary}\n\n`;
+        
+        if (material.structure.outline && material.structure.outline.length > 0) {
+          structureText += `Modules/Sections:\n`;
+          material.structure.outline.forEach((item, index) => {
+            structureText += `${index + 1}. ${item}\n`;
+          });
+          structureText += '\n';
+        }
+        
+        if (material.structure.keyTopics && material.structure.keyTopics.length > 0) {
+          structureText += `Key Topics Covered: ${material.structure.keyTopics.join(', ')}\n`;
+        }
+        
+        results.push({
+          text: structureText,
+          score: titleScore + 20, // High score for structure responses
+          materialTitle: material.title,
+          materialId: material._id,
+          type: 'structure',
+          chunkIndex: -1 // Indicates this is structure, not a chunk
+        });
+      }
+      
+      // Also search through chunks for specific content
       material.chunks.forEach((chunk, chunkIndex) => {
-        let score = titleBonus; // Start with title bonus
+        let score = titleScore;
         const chunkText = chunk.text.toLowerCase();
         
         queryWords.forEach(word => {
           if (chunkText.includes(word.toLowerCase())) {
-            score += 1;
+            score += 2; // Points for word matches in chunks
           }
         });
         
-        // FIXED: Now score is properly defined in this scope
+        // Bonus for section matches
+        if (chunk.section) {
+          queryWords.forEach(word => {
+            if (chunk.section.toLowerCase().includes(word.toLowerCase())) {
+              score += 5;
+            }
+          });
+        }
+        
         if (score > 0) {
-          relevantChunks.push({
-            text: chunk.text,
+          let displayText = chunk.text;
+          
+          // If this chunk has a section, prepend it
+          if (chunk.section && chunk.section !== 'Introduction') {
+            displayText = `From "${chunk.section}" section:\n\n${chunk.text}`;
+          }
+          
+          results.push({
+            text: displayText,
             score: score,
             materialTitle: material.title,
             materialId: material._id,
-            chunkIndex: chunkIndex
+            type: 'chunk',
+            chunkIndex: chunkIndex,
+            section: chunk.section
           });
         }
       });
     });
 
-    console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
+    console.log(`🎯 Found ${results.length} total results`);
     
-    const topChunks = relevantChunks
+    // Sort by score and take top results
+    const topResults = results
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
     
-    topChunks.forEach((chunk, index) => {
-      console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
+    topResults.forEach((result, index) => {
+      console.log(`🏆 Result ${index + 1}: Score ${result.score}, Type: ${result.type}, from "${result.materialTitle}"`);
     });
     
-    return topChunks;
+    return topResults;
       
   } catch (error) {
     console.error('❌ Error searching course materials:', error);
