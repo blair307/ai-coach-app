@@ -5196,7 +5196,7 @@ if (req.user.userId === 'admin') {
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
       title: title || file.originalname,
-      d
+      
     
     res.json({
       message: 'Course material uploaded successfully',
