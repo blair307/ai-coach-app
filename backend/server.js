@@ -4882,6 +4882,118 @@ app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
   }
 });
 
+async function analyzeDocumentStructure(content, title) {
+  try {
+    if (!openai) {
+      console.log('⚠️ OpenAI not available for document analysis');
+      return {
+        outline: ['Document content'],
+        keyTopics: ['General content'],
+        summary: 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    }
+
+    console.log('🧠 Analyzing document structure with AI...');
+    
+    // Limit content for analysis (OpenAI has token limits)
+    const analysisContent = content.length > 8000 ? content.substring(0, 8000) + '...' : content;
+    
+    const prompt = `Analyze this course/training document and provide:
+
+1. OUTLINE: List the main sections, modules, or chapters (max 10 items)
+2. KEY TOPICS: Important topics covered (max 8 items) 
+3. SUMMARY: Brief 2-3 sentence summary of what this document teaches
+
+Document Title: "${title}"
+Content: ${analysisContent}
+
+Respond in this exact JSON format:
+{
+  "outline": ["Module 1: Topic", "Module 2: Topic", ...],
+  "keyTopics": ["Topic 1", "Topic 2", ...],
+  "summary": "This document covers..."
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 500,
+      temperature: 0.3
+    });
+
+    const response = completion.choices[0].message.content;
+    console.log('📋 AI analysis response:', response);
+    
+    try {
+      const analysis = JSON.parse(response);
+      return {
+        outline: analysis.outline || ['Document content'],
+        keyTopics: analysis.keyTopics || ['General content'],
+        summary: analysis.summary || 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    } catch (parseError) {
+      console.log('⚠️ Could not parse AI analysis, using fallback');
+      return {
+        outline: extractBasicOutline(content),
+        keyTopics: extractBasicTopics(content),
+        summary: 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    }
+    
+  } catch (error) {
+    console.error('❌ Error analyzing document structure:', error);
+    return {
+      outline: extractBasicOutline(content),
+      keyTopics: extractBasicTopics(content),
+      summary: 'Course material content available for reference.',
+      totalLength: content.length,
+      estimatedReadTime: Math.ceil(content.length / 1000)
+    };
+  }
+}
+
+// Helper functions for basic structure extraction
+function extractBasicOutline(content) {
+  const lines = content.split('\n');
+  const outline = [];
+  
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    // Look for lines that might be headers (short lines, maybe with numbers)
+    if (trimmed.length > 5 && trimmed.length < 100) {
+      if (trimmed.match(/^(chapter|module|section|part|\d+\.)/i) ||
+          trimmed.match(/^[A-Z][^.]*[A-Z]/)) {
+        outline.push(trimmed);
+      }
+    }
+  });
+  
+  return outline.slice(0, 10); // Max 10 items
+}
+
+function extractBasicTopics(content) {
+  // Simple keyword extraction for topics
+  const words = content.toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 4);
+  
+  const wordCount = {};
+  words.forEach(word => {
+    wordCount[word] = (wordCount[word] || 0) + 1;
+  });
+  
+  return Object.keys(wordCount)
+    .sort((a, b) => wordCount[b] - wordCount[a])
+    .slice(0, 8)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1));
+}
 // ADD THIS ROUTE TO YOUR server.js file after the other admin routes
 // (around line 2200, after the other admin coupon routes)
 
