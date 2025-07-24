@@ -4784,16 +4784,25 @@ function createTextChunks(text, chunkSize = 1000, overlap = 200) {
   
   let currentChunk = '';
   let chunkIndex = 0;
+  let currentSection = 'Introduction'; // Default section
   
   for (let i = 0; i < sentences.length; i++) {
     const sentence = sentences[i].trim() + '.';
+    
+    // Try to detect section headers
+    if (sentence.length < 100 && 
+        (sentence.match(/^(chapter|module|section|part|\d+\.)/i) ||
+         sentence.match(/^[A-Z][^.]*[A-Z]/))) {
+      currentSection = sentence.replace('.', '');
+    }
     
     // If adding this sentence would exceed chunk size, save current chunk
     if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
       chunks.push({
         text: currentChunk.trim(),
         index: chunkIndex++,
-        keywords: extractKeywords(currentChunk)
+        keywords: extractKeywords(currentChunk),
+        section: currentSection
       });
       
       // Start new chunk with overlap
@@ -4810,77 +4819,13 @@ function createTextChunks(text, chunkSize = 1000, overlap = 200) {
     chunks.push({
       text: currentChunk.trim(),
       index: chunkIndex,
-      keywords: extractKeywords(currentChunk)
+      keywords: extractKeywords(currentChunk),
+      section: currentSection
     });
   }
   
   return chunks;
 }
-
-// Simple keyword extraction
-function extractKeywords(text) {
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
-    .split(/\s+/)
-    .filter(word => word.length > 3);
-  
-  const wordCount = {};
-  words.forEach(word => {
-    wordCount[word] = (wordCount[word] || 0) + 1;
-  });
-  
-  return Object.keys(wordCount)
-    .sort((a, b) => wordCount[b] - wordCount[a])
-    .slice(0, 10);
-}
-
-// Clean up old images (optional - run manually or via cron)
-app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
-  try {
-    const { daysOld = 30 } = req.body;
-    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
-    
-    console.log(`🧹 Cleaning up images older than ${daysOld} days`);
-    
-    // Find messages with images older than cutoff date
-    const oldMessages = await Message.find({
-      image: { $exists: true },
-      createdAt: { $lt: cutoffDate },
-      deleted: true
-    });
-    
-    console.log(`📊 Found ${oldMessages.length} old deleted messages with images`);
-    
-    // Remove image data from old deleted messages
-    const result = await Message.updateMany(
-      {
-        image: { $exists: true },
-        createdAt: { $lt: cutoffDate },
-        deleted: true
-      },
-      {
-        $unset: { 
-          image: 1, 
-          imageName: 1, 
-          imageSize: 1 
-        }
-      }
-    );
-    
-    res.json({
-      success: true,
-      message: `Cleaned up ${result.modifiedCount} old images`,
-      messagesProcessed: oldMessages.length
-    });
-    
-  } catch (error) {
-    console.error('❌ Error cleaning up images:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Failed to cleanup images' 
-    });
-  }
-});
 
 async function analyzeDocumentStructure(content, title) {
   try {
@@ -4994,6 +4939,73 @@ function extractBasicTopics(content) {
     .slice(0, 8)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1));
 }
+
+// Simple keyword extraction
+function extractKeywords(text) {
+  const words = text.toLowerCase()
+    .replace(/[^\w\s]/g, '')
+    .split(/\s+/)
+    .filter(word => word.length > 3);
+  
+  const wordCount = {};
+  words.forEach(word => {
+    wordCount[word] = (wordCount[word] || 0) + 1;
+  });
+  
+  return Object.keys(wordCount)
+    .sort((a, b) => wordCount[b] - wordCount[a])
+    .slice(0, 10);
+}
+
+// Clean up old images (optional - run manually or via cron)
+app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
+  try {
+    const { daysOld = 30 } = req.body;
+    const cutoffDate = new Date(Date.now() - daysOld * 24 * 60 * 60 * 1000);
+    
+    console.log(`🧹 Cleaning up images older than ${daysOld} days`);
+    
+    // Find messages with images older than cutoff date
+    const oldMessages = await Message.find({
+      image: { $exists: true },
+      createdAt: { $lt: cutoffDate },
+      deleted: true
+    });
+    
+    console.log(`📊 Found ${oldMessages.length} old deleted messages with images`);
+    
+    // Remove image data from old deleted messages
+    const result = await Message.updateMany(
+      {
+        image: { $exists: true },
+        createdAt: { $lt: cutoffDate },
+        deleted: true
+      },
+      {
+        $unset: { 
+          image: 1, 
+          imageName: 1, 
+          imageSize: 1 
+        }
+      }
+    );
+    
+    res.json({
+      success: true,
+      message: `Cleaned up ${result.modifiedCount} old images`,
+      messagesProcessed: oldMessages.length
+    });
+    
+  } catch (error) {
+    console.error('❌ Error cleaning up images:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to cleanup images' 
+    });
+  }
+});
+
+
 // ADD THIS ROUTE TO YOUR server.js file after the other admin routes
 // (around line 2200, after the other admin coupon routes)
 
