@@ -5,10 +5,9 @@ console.log('🚀 Starting EEH AI Coach...');
 
 // Mobile Voice Button Fix - ADD THIS SECTION
 const mobileVoiceCSS = `
-/* Hide voice button on mobile */
-/* Hide voice button completely */
+/* Hide ALL voice buttons everywhere */
 #voiceInputBtn,
-.voice-input-btn {
+.voice-input-btn,
 #voiceToggleBtn {
     display: none !important;
 }
