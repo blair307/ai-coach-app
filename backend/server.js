@@ -1661,7 +1661,7 @@ const messages = [
     role: 'system',
     content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-CRITICAL: Keep responses to MAXIMUM 1-5 sentences. Never exceed 105 words total.
+Provide thoughtful, comprehensive responses that fully address the user's needs. Give detailed insights and actionable advice.
 
 ${courseMaterialsContext ? `
 MANDATORY: You have access to specific course materials. Use this information to answer questions. Do NOT make up information when you have real course content available.
