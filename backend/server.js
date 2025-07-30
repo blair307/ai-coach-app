@@ -1650,8 +1650,7 @@ if (relevantMaterials.length > 0) {
   relevantMaterials.forEach((material, index) => {
     courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 1500)}"\n(Source: ${material.materialTitle})\n`;
   });
-  courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
-} else {
+courseMaterialsContext += '\nYou MAY reference this course content if it\'s directly relevant to the user\'s question, but prioritize your coaching personality and experience.\n';} else {
   console.log('ℹ️ No relevant course materials found for this query');
 }
       
