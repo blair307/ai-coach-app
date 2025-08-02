@@ -8,6 +8,55 @@
     <link rel="stylesheet" href="styles.css">
 
     <style>
+/* BACK BUTTON STYLES - ADD THIS NEW SECTION */
+.back-to-homepage {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(99, 102, 241, 0.1);
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.back-to-homepage:hover {
+    color: #6366f1;
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(99, 102, 241, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+}
+
+.back-arrow {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+}
+
+.back-to-homepage:hover .back-arrow {
+    transform: translateX(-2px);
+}
+
+/* Make sure back button works on mobile */
+@media (max-width: 768px) {
+    .back-to-homepage {
+        top: 15px;
+        left: 15px;
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+}
+
 /* Password Show/Hide Styling */
 .password-input-wrapper {
     position: relative;
@@ -145,11 +194,19 @@
 
 </head>
 <body>
+    <!-- BACK TO HOMEPAGE BUTTON - ADD THIS RIGHT AFTER <body> -->
+    <a href="https://www.eehcommunity.com" class="back-to-homepage">
+        <svg class="back-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+        Back to Homepage
+    </a>
+
     <div class="auth-container">
         <div class="auth-card large">
             <div class="auth-header">
                 <h1>Start Your Journey</h1>
-                <p>Join other entrepreneurs in transforming their emotional health</p>
+                <p>Join thousands of entrepreneurs transforming their emotional health</p>
             </div>
 
             <form class="auth-form" id="signupForm">
