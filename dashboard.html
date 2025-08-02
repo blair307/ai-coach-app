@@ -1198,17 +1198,31 @@ function initializeActivityTracker() {
     // Apply CSS fix for progress alignment
     addProgressAlignmentFix();
     
-    // CHECK: If this is a brand new account (no activity data), start fresh
+    // CHECK: Is this truly a new user with no activity?
+    const registrationDate = localStorage.getItem('eeh_user_registration_date');
     const existingActivityData = localStorage.getItem('eeh_user_activity');
-    const existingActiveDays = localStorage.getItem('eeh_active_days');
+    const now = new Date();
+    const isNewUser = registrationDate && (now - new Date(registrationDate)) < (24 * 60 * 60 * 1000); // Less than 24 hours
     
-    // If no existing data, this might be a new account
-    if (!existingActivityData && !existingActiveDays) {
-        console.log('🆕 New account detected - starting with clean slate');
+    if (isNewUser || !existingActivityData) {
+        console.log('🆕 Brand new user detected - showing clean activity state');
+        // Clear any existing activity data for new users
+        localStorage.removeItem('eeh_user_activity');
         localStorage.removeItem('eeh_active_days');
+        
+        // Initialize with empty activity tracker
+        window.activityTracker = new ActivityTracker();
+        
+        // Force show the "getting started" message immediately
+        setTimeout(() => {
+            window.activityTracker.updateActivityDisplay();
+        }, 500);
+        
+        console.log('✅ Clean activity tracker initialized for new user');
+        return;
     }
     
-    // Initialize activity tracker (but don't let it add fake historical data)
+    // For existing users, initialize normally
     window.activityTracker = new ActivityTracker();
     
     // Make tracking functions globally available
@@ -1218,7 +1232,7 @@ function initializeActivityTracker() {
     window.trackNotificationCheck = () => window.activityTracker.trackNotificationCheck();
     window.trackBillingView = () => window.activityTracker.trackBillingView();
     
-    console.log('✅ Activity tracker initialized with safeguards');
+    console.log('✅ Activity tracker initialized for existing user');
 }
 
 // Update the main initialization to include activity tracker
