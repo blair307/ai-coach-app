@@ -379,6 +379,29 @@ profilePhoto: { type: String },
 
 const User = mongoose.model('User', userSchema);
 
+// Video Vault Schema - ADD THIS AFTER User model
+const videoSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  date: { type: Date, required: true },
+  youtubeUrl: { type: String, required: true }, // YouTube URL
+  duration: { type: String }, // e.g., "1h 30m"
+  attendees: [String], // List of attendee names
+  topics: [String], // Main topics covered
+  notes: {
+    summary: String,
+    keyPoints: [String],
+    actionItems: [String],
+    quotes: [String]
+  },
+  isPublic: { type: Boolean, default: true },
+  tags: [String],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const Video = mongoose.model('Video', videoSchema);
+
 // Goals Schema
 const goalSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -4582,6 +4605,130 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 });
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
+
+// ==========================================
+// VIDEO VAULT API ROUTES - ADD AFTER COUPON ROUTES
+// ==========================================
+
+// Get all videos
+app.get('/api/videos', authenticateToken, async (req, res) => {
+  try {
+    const { limit = 20, page = 1, search = '' } = req.query;
+    
+    let query = { isPublic: true };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { topics: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+
+    const total = await Video.countDocuments(query);
+    const videos = await Video.find(query)
+      .sort({ date: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    res.json({
+      videos,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Get videos error:', error);
+    res.status(500).json({ error: 'Failed to get videos' });
+  }
+});
+
+// Get single video
+app.get('/api/videos/:id', authenticateToken, async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    res.json(video);
+  } catch (error) {
+    console.error('Get video error:', error);
+    res.status(500).json({ error: 'Failed to get video' });
+  }
+});
+
+// Admin: Create new video
+app.post('/api/videos', authenticateAdmin, async (req, res) => {
+  try {
+    const { title, description, date, youtubeUrl, duration, attendees, topics, tags, notes } = req.body;
+    
+    if (!title || !date || !youtubeUrl) {
+      return res.status(400).json({ error: 'Title, date, and YouTube URL are required' });
+    }
+
+    const video = new Video({
+      title,
+      description,
+      date: new Date(date),
+      youtubeUrl,
+      duration,
+      attendees: attendees || [],
+      topics: topics || [],
+      tags: tags || [],
+      notes: notes || {}
+    });
+
+    await video.save();
+    
+    res.status(201).json({
+      message: 'Video uploaded successfully',
+      video
+    });
+  } catch (error) {
+    console.error('Upload video error:', error);
+    res.status(500).json({ error: 'Failed to upload video' });
+  }
+});
+
+// Admin: Update video
+app.put('/api/videos/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const video = await Video.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true }
+    );
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    res.json({
+      message: 'Video updated successfully',
+      video
+    });
+  } catch (error) {
+    console.error('Update video error:', error);
+    res.status(500).json({ error: 'Failed to update video' });
+  }
+});
+
+// Admin: Delete video
+app.delete('/api/videos/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const video = await Video.findByIdAndDelete(req.params.id);
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    res.json({ message: 'Video deleted successfully' });
+  } catch (error) {
+    console.error('Delete video error:', error);
+    res.status(500).json({ error: 'Failed to delete video' });
+  }
+});
+
+console.log('✅ Video Vault API routes loaded successfully');
 
 app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
   try {
