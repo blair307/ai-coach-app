@@ -536,6 +536,83 @@
             </div>
         </div>
 
+<!-- Videos Tab -->
+        <div class="tab-content" id="videos">
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Upload New Video</h2>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <form id="videoUploadForm" style="max-width: 600px;">
+                        <div class="form-group">
+                            <label for="videoTitle">Title *</label>
+                            <input type="text" id="videoTitle" name="title" required placeholder="e.g., Mastermind Session - January 2025">
+                        </div>
+                        <div class="form-group">
+                            <label for="videoDescription">Description</label>
+                            <textarea id="videoDescription" name="description" rows="3" placeholder="What was covered in this session..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoDate">Session Date *</label>
+                            <input type="date" id="videoDate" name="date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="youtubeUrl">YouTube URL * (Unlisted)</label>
+                            <input type="url" id="youtubeUrl" name="youtubeUrl" required placeholder="https://www.youtube.com/watch?v=...">
+                            <small>Upload video as "Unlisted" on YouTube, then paste the URL here</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="videoDuration">Duration</label>
+                            <input type="text" id="videoDuration" name="duration" placeholder="e.g., 1h 30m">
+                        </div>
+                        <div class="form-group">
+                            <label for="videoAttendees">Attendees (comma-separated)</label>
+                            <input type="text" id="videoAttendees" name="attendees" placeholder="John Smith, Sarah Johnson, Mike Davis">
+                        </div>
+                        <div class="form-group">
+                            <label for="videoTopics">Topics (comma-separated)</label>
+                            <input type="text" id="videoTopics" name="topics" placeholder="Leadership, Stress Management, Team Building">
+                        </div>
+                        <div class="form-group">
+                            <label for="videoTags">Tags (comma-separated)</label>
+                            <input type="text" id="videoTags" name="tags" placeholder="mastermind, leadership, growth">
+                        </div>
+                        
+                        <h4 style="margin: 2rem 0 1rem 0; color: #374151;">Notes (Optional)</h4>
+                        
+                        <div class="form-group">
+                            <label for="notesSummary">Summary</label>
+                            <textarea id="notesSummary" name="summary" rows="3" placeholder="Brief summary of the session..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notesKeyPoints">Key Points (one per line)</label>
+                            <textarea id="notesKeyPoints" name="keyPoints" rows="4" placeholder="• First key point&#10;• Second key point&#10;• Third key point"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notesActionItems">Action Items (one per line)</label>
+                            <textarea id="notesActionItems" name="actionItems" rows="4" placeholder="• Complete X by next week&#10;• Research Y topic&#10;• Follow up with Z"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notesQuotes">Notable Quotes (one per line)</label>
+                            <textarea id="notesQuotes" name="quotes" rows="3" placeholder="• 'Success is...'&#10;• 'The key to growth is...'"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" id="videoUploadBtn">Upload Video</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>All Videos</h2>
+                    <button class="btn btn-outline" onclick="loadVideos()">Refresh</button>
+                </div>
+                <div id="videosTableContainer">
+                    <div class="loading">Loading videos...</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Analytics Tab -->
         <div class="tab-content" id="analytics">
             <div class="analytics-grid" id="analyticsGrid">
@@ -758,6 +835,9 @@ switch(tabName) {
         break;
     case 'materials':
         loadCourseMaterials();
+        break;
+    case 'videos':
+        loadVideos();
         break;
     case 'analytics':
         loadAnalytics();
