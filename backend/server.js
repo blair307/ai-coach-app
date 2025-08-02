@@ -4657,7 +4657,7 @@ app.get('/api/videos/:id', authenticateToken, async (req, res) => {
 });
 
 // Admin: Create new video
-app.post('/api/videos', authenticateAdmin, async (req, res) => {
+app.post('/api/videos', authenticateToken, async (req, res) => {
   try {
     const { title, description, date, youtubeUrl, duration, attendees, topics, tags, notes } = req.body;
     
@@ -4690,7 +4690,7 @@ app.post('/api/videos', authenticateAdmin, async (req, res) => {
 });
 
 // Admin: Update video
-app.put('/api/videos/:id', authenticateAdmin, async (req, res) => {
+app.put('/api/videos/:id', authenticateToken, async (req, res) => {
   try {
     const video = await Video.findByIdAndUpdate(
       req.params.id,
@@ -4713,7 +4713,7 @@ app.put('/api/videos/:id', authenticateAdmin, async (req, res) => {
 });
 
 // Admin: Delete video
-app.delete('/api/videos/:id', authenticateAdmin, async (req, res) => {
+app.delete('/api/videos/:id', authenticateToken, async (req, res) => {
   try {
     const video = await Video.findByIdAndDelete(req.params.id);
     
