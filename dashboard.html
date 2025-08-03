@@ -622,27 +622,7 @@ body {
     <script src="notifications.js"></script>
     
     <script>
-// EMERGENCY FIX: Stop duplicate API calls
-let apiCallTracker = new Set();
 
-const originalFetch = window.fetch;
-window.fetch = function(url, options) {
-    const callKey = url + JSON.stringify(options?.headers || {});
-    
-    if (apiCallTracker.has(callKey)) {
-        console.log('🚫 BLOCKED duplicate API call:', url);
-        return Promise.reject(new Error('Duplicate API call blocked'));
-    }
-    
-    apiCallTracker.add(callKey);
-    
-    return originalFetch(url, options).finally(() => {
-        // Remove from tracker after 5 seconds
-        setTimeout(() => apiCallTracker.delete(callKey), 5000);
-    });
-};
-
-console.log('✅ Duplicate API call blocker activated');
 
 class ActivityTracker {
     constructor() {
