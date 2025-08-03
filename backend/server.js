@@ -379,28 +379,7 @@ profilePhoto: { type: String },
 
 const User = mongoose.model('User', userSchema);
 
-// Video Vault Schema - ADD THIS AFTER User model
-const videoSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: { type: String },
-  date: { type: Date, required: true },
-  youtubeUrl: { type: String, required: true }, // YouTube URL
-  duration: { type: String }, // e.g., "1h 30m"
-  attendees: [String], // List of attendee names
-  topics: [String], // Main topics covered
-  notes: {
-    summary: String,
-    keyPoints: [String],
-    actionItems: [String],
-    quotes: [String]
-  },
-  isPublic: { type: Boolean, default: true },
-  tags: [String],
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
 
-const Video = mongoose.model('Video', videoSchema);
 
 // Goals Schema
 const goalSchema = new mongoose.Schema({
