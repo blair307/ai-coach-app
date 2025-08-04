@@ -692,18 +692,18 @@ Be specific and actionable, not generic.`;
   }
 }
 
-// Function to update user streak
 async function updateUserStreak(userId) {
   try {
-    const user = await User.findById(userId);
+    // Only get the user data we need, not all related data
+    const user = await User.findById(userId).select('streakData').lean();
     if (!user) return { currentStreak: 0, longestStreak: 0 };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const lastLogin = user.streakData.lastLoginDate;
-    let currentStreak = user.streakData.currentStreak || 0;
-    let longestStreak = user.streakData.longestStreak || 0;
+    const lastLogin = user.streakData?.lastLoginDate;
+    let currentStreak = user.streakData?.currentStreak || 0;
+    let longestStreak = user.streakData?.longestStreak || 0;
 
     if (!lastLogin) {
       currentStreak = 1;
@@ -724,11 +724,15 @@ async function updateUserStreak(userId) {
       longestStreak = currentStreak;
     }
 
-    await User.findByIdAndUpdate(userId, {
-      'streakData.currentStreak': currentStreak,
-      'streakData.lastLoginDate': today,
-      'streakData.longestStreak': longestStreak
-    });
+    // Use updateOne instead of findByIdAndUpdate for better performance
+    await User.updateOne(
+      { _id: userId },
+      {
+        'streakData.currentStreak': currentStreak,
+        'streakData.lastLoginDate': today,
+        'streakData.longestStreak': longestStreak
+      }
+    );
 
     return { currentStreak, longestStreak };
   } catch (error) {
