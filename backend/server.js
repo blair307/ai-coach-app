@@ -319,6 +319,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 }
 
 // Connect to MongoDB
+// Connect to MongoDB
 console.log('🔍 Connecting to MongoDB...');
 console.log('📍 MongoDB URI configured:', !!process.env.MONGODB_URI);
 
@@ -332,12 +333,52 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log('📊 Database connection state:', mongoose.connection.readyState);
     createDefaultRooms();
+    
+    // ADD DATABASE INDEXES FOR PERFORMANCE
+    createDatabaseIndexes();
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
     console.error('🔍 Check your MONGODB_URI in Render environment variables');
     process.exit(1);
   });
+
+// ADD THIS NEW FUNCTION RIGHT AFTER THE MONGODB CONNECTION
+async function createDatabaseIndexes() {
+  try {
+    console.log('📋 Creating database indexes for performance...');
+    
+    // User indexes
+    await User.collection.createIndex({ email: 1 }, { unique: true });
+    console.log('✅ User email index created');
+    
+    // Goal indexes  
+    await LifeGoal.collection.createIndex({ userId: 1 });
+    console.log('✅ LifeGoal userId index created');
+    
+    // Notification indexes
+    await Notification.collection.createIndex({ userId: 1, createdAt: -1 });
+    console.log('✅ Notification indexes created');
+    
+    // Chat indexes
+    await Chat.collection.createIndex({ userId: 1 });
+    console.log('✅ Chat userId index created');
+    
+    // Daily progress indexes
+    await DailyProgress.collection.createIndex({ userId: 1, date: -1 });
+    console.log('✅ DailyProgress indexes created');
+    
+    // Message indexes
+    await Message.collection.createIndex({ userId: 1, createdAt: -1 });
+    console.log('✅ Message indexes created');
+    
+    console.log('🚀 All database indexes created successfully - queries should be much faster!');
+    
+  } catch (error) {
+    console.error('❌ Error creating indexes:', error);
+    // Don't crash the server if index creation fails
+  }
+}
 
 const userSchema = new mongoose.Schema({
   firstName: String,
