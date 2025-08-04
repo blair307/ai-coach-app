@@ -961,28 +961,54 @@ res.status(201).json({
 });
 
 // Login user with streak tracking
+// Login user with streak tracking
 app.post('/api/auth/login', async (req, res) => {
+  const loginStart = Date.now();
+  console.log('🚀 LOGIN START:', new Date().toISOString());
+  
   try {
     const { email, password } = req.body;
 
+    // Step 1: Database lookup
+    console.log('📊 Step 1: Looking up user...');
+    const step1Start = Date.now();
     const user = await User.findOne({ email });
+    console.log(`⏱️ Step 1 took: ${Date.now() - step1Start}ms`);
+
     if (!user) {
+      console.log('❌ User not found');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Step 2: Password comparison
+    console.log('🔐 Step 2: Checking password...');
+    const step2Start = Date.now();
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log(`⏱️ Step 2 took: ${Date.now() - step2Start}ms`);
+
     if (!isValidPassword) {
+      console.log('❌ Invalid password');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Step 3: Streak update (THIS IS LIKELY THE CULPRIT)
+    console.log('📈 Step 3: Updating streak...');
+    const step3Start = Date.now();
     const streakData = await updateUserStreak(user._id);
+    console.log(`⏱️ Step 3 took: ${Date.now() - step3Start}ms`);
 
+    // Step 4: JWT creation
+    console.log('🎟️ Step 4: Creating JWT...');
+    const step4Start = Date.now();
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
+    console.log(`⏱️ Step 4 took: ${Date.now() - step4Start}ms`);
 
+    console.log(`✅ TOTAL LOGIN TIME: ${Date.now() - loginStart}ms`);
+    
     res.json({
       message: 'Login successful',
       token,
@@ -995,7 +1021,7 @@ app.post('/api/auth/login', async (req, res) => {
       streakData
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error after', Date.now() - loginStart, 'ms:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
 });
