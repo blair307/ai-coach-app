@@ -994,7 +994,7 @@ app.post('/api/auth/login', async (req, res) => {
     // Step 3: Streak update (THIS IS LIKELY THE CULPRIT)
     console.log('📈 Step 3: Updating streak...');
     const step3Start = Date.now();
-    const streakData = await updateUserStreak(user._id);
+    const streakData = { currentStreak: 0, longestStreak: 0 };
     console.log(`⏱️ Step 3 took: ${Date.now() - step3Start}ms`);
 
     // Step 4: JWT creation
