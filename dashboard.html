@@ -1261,55 +1261,56 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 // FIXED DAYS ACTIVE TRACKER - Replace the existing SimpleProgressTracker class
 
+// REPLACE your SimpleProgressTracker class in dashboard.html with this FIXED version
+
 class SimpleProgressTracker {
     constructor() {
         this.storageKey = 'eeh_simple_progress';
-        this.activeDaysKey = 'eeh_active_days'; // Separate key for active days
+        this.activeDaysKey = 'eeh_active_days';
+        this.maxRetries = 2; // Maximum retry attempts
+        this.retryCount = {}; // Track retries per API
+        this.isUpdating = false; // Prevent concurrent updates
+        this.lastUpdateTime = 0; // Prevent too frequent updates
+        
         this.initializeData();
         this.startTracking();
-        console.log('✅ Fixed Progress Tracker initialized');
+        console.log('✅ FIXED Progress Tracker initialized with timeout protection');
     }
 
-initializeData() {
-    try {
-        // Load existing progress data
-        const stored = localStorage.getItem(this.storageKey);
-        if (stored) {
-            this.data = JSON.parse(stored);
-        } else {
-            this.data = {
-                coachingSessions: 0,
-                communityPosts: 0,
-                activeGoals: 0
-            };
-        }
+    initializeData() {
+        try {
+            // Load existing progress data
+            const stored = localStorage.getItem(this.storageKey);
+            if (stored) {
+                this.data = JSON.parse(stored);
+            } else {
+                this.data = {
+                    coachingSessions: 0,
+                    communityPosts: 0,
+                    activeGoals: 0
+                };
+            }
 
-        // Load active days separately as an array of date strings
-        const storedDays = localStorage.getItem(this.activeDaysKey);
-        if (storedDays) {
-            this.activeDays = JSON.parse(storedDays);
-        } else {
-            // NEW ACCOUNT: Start with empty array
+            // Load active days separately
+            const storedDays = localStorage.getItem(this.activeDaysKey);
+            if (storedDays) {
+                this.activeDays = JSON.parse(storedDays);
+            } else {
+                this.activeDays = [];
+            }
+
+            // Mark today as active
+            this.markActiveToday();
+            
+            console.log('📅 Initialized with active days:', this.activeDays.length, 'days');
+            
+        } catch (error) {
+            console.error('Error loading progress data:', error);
+            this.data = { coachingSessions: 0, communityPosts: 0, activeGoals: 0 };
             this.activeDays = [];
+            this.markActiveToday();
         }
-
-        // ONLY mark today as active (don't add fake previous days)
-        this.markActiveToday();
-        
-        console.log('📅 Initialized with active days:', this.activeDays.length, 'days');
-        
-    } catch (error) {
-        console.error('Error loading progress data:', error);
-        this.data = {
-            coachingSessions: 0,
-            communityPosts: 0,
-            activeGoals: 0
-        };
-        // Fresh start for new accounts
-        this.activeDays = [];
-        this.markActiveToday();
     }
-}
 
     save() {
         try {
@@ -1322,58 +1323,87 @@ initializeData() {
     }
 
     markActiveToday() {
-        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
         
         if (!this.activeDays.includes(today)) {
             this.activeDays.push(today);
             console.log('📅 Marked today as active:', today);
             
-            // Keep only last 365 days to prevent unlimited growth
             if (this.activeDays.length > 365) {
                 this.activeDays = this.activeDays.slice(-365);
             }
             
             this.save();
-            return true; // New day added
+            return true;
         }
-        return false; // Day already tracked
+        return false;
     }
 
-    // Get coaching sessions from API
+    // FIXED: Get coaching sessions with timeout and retry protection
     async getCoachingSessions() {
+        const apiKey = 'coachingSessions';
+        
+        if (this.retryCount[apiKey] >= this.maxRetries) {
+            console.log(`⚠️ Max retries reached for ${apiKey}, using cached value`);
+            return this.data.coachingSessions || 0;
+        }
+
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+            const token = localStorage.getItem('authToken');
             if (!token) return 0;
+
+            // FIXED: Shorter timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
 
             const response = await fetch('https://api.eehcommunity.com/api/chat/history', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(5000)
+                signal: controller.signal
             });
-            
+
+            clearTimeout(timeoutId);
+
             if (response.ok) {
                 const chatData = await response.json();
                 const userMessages = chatData.messages ? chatData.messages.filter(msg => msg.role === 'user') : [];
                 const sessions = Math.ceil(userMessages.length / 2);
+                
+                // Reset retry count on success
+                this.retryCount[apiKey] = 0;
+                
                 console.log('🎯 Coaching sessions from API:', sessions);
                 return sessions;
             } else {
-                console.log('API not available for coaching sessions');
-                return 0;
+                throw new Error(`API returned ${response.status}`);
             }
         } catch (error) {
-            console.log('Error getting coaching sessions:', error.message);
-            return 0;
+            this.retryCount[apiKey] = (this.retryCount[apiKey] || 0) + 1;
+            console.log(`❌ Error getting coaching sessions (attempt ${this.retryCount[apiKey]}):`, error.message);
+            
+            // Return cached value instead of 0
+            return this.data.coachingSessions || 0;
         }
     }
 
-    // Get community posts from API
+    // FIXED: Get community posts with timeout protection
     async getCommunityPosts() {
+        const apiKey = 'communityPosts';
+        
+        if (this.retryCount[apiKey] >= this.maxRetries) {
+            console.log(`⚠️ Max retries reached for ${apiKey}, using cached value`);
+            return this.data.communityPosts || 0;
+        }
+
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+            const token = localStorage.getItem('authToken');
             if (!token) return 0;
+
+            // FIXED: Much shorter timeout for this complex query
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 2000); // 2 second timeout
 
             // Get user info
             const payload = JSON.parse(atob(token.split('.')[1]));
@@ -1385,80 +1415,109 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(5000)
+                signal: controller.signal
             });
-            
-            if (!roomsResponse.ok) return 0;
-            
+
+            if (!roomsResponse.ok) {
+                throw new Error(`Rooms API returned ${roomsResponse.status}`);
+            }
+
             const rooms = await roomsResponse.json();
             let totalPosts = 0;
-            
-            // Check first 3 rooms for user messages
-            for (const room of rooms.slice(0, 3)) {
+
+            // FIXED: Only check first 2 rooms to prevent timeout
+            for (const room of rooms.slice(0, 2)) {
                 try {
                     const messagesResponse = await fetch(`https://api.eehcommunity.com/api/rooms/${room._id}/messages`, {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        signal: AbortSignal.timeout(3000)
+                        signal: controller.signal
                     });
-                    
+
                     if (messagesResponse.ok) {
                         const messages = await messagesResponse.json();
                         const userMessages = messages.filter(msg => msg.userId === userId).length;
                         totalPosts += userMessages;
                     }
                 } catch (roomError) {
-                    // Skip this room
+                    // Skip this room on error
+                    console.log(`⚠️ Skipping room ${room.name}:`, roomError.message);
                 }
             }
+
+            clearTimeout(timeoutId);
+            
+            // Reset retry count on success
+            this.retryCount[apiKey] = 0;
             
             console.log('💬 Community posts from API:', totalPosts);
             return totalPosts;
+            
         } catch (error) {
-            console.log('Error getting community posts:', error.message);
-            return 0;
+            this.retryCount[apiKey] = (this.retryCount[apiKey] || 0) + 1;
+            console.log(`❌ Error getting community posts (attempt ${this.retryCount[apiKey]}):`, error.message);
+            
+            // Return cached value instead of 0
+            return this.data.communityPosts || 0;
         }
     }
 
-    // Get active goals from API
+    // FIXED: Get active goals with timeout protection
     async getActiveGoals() {
+        const apiKey = 'activeGoals';
+        
+        if (this.retryCount[apiKey] >= this.maxRetries) {
+            console.log(`⚠️ Max retries reached for ${apiKey}, using cached value`);
+            return this.data.activeGoals || 0;
+        }
+
         try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+            const token = localStorage.getItem('authToken');
             if (!token) return 0;
+
+            // FIXED: Shorter timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
 
             const response = await fetch('https://api.eehcommunity.com/api/life-goals', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(8000)
+                signal: controller.signal
             });
-            
+
+            clearTimeout(timeoutId);
+
             if (response.ok) {
                 const goals = await response.json();
                 const totalGoals = goals.length;
+                
+                // Reset retry count on success
+                this.retryCount[apiKey] = 0;
+                
                 console.log('🎯 Total goals from API:', totalGoals);
                 return totalGoals;
             } else {
-                console.log('Goals API returned error:', response.status);
-                return 0;
+                throw new Error(`Goals API returned ${response.status}`);
             }
         } catch (error) {
-            console.log('Error getting goals:', error.message);
-            return 0;
+            this.retryCount[apiKey] = (this.retryCount[apiKey] || 0) + 1;
+            console.log(`❌ Error getting goals (attempt ${this.retryCount[apiKey]}):`, error.message);
+            
+            // Return cached value instead of 0
+            return this.data.activeGoals || 0;
         }
     }
 
-    // Get days active - THIS IS THE KEY FIX
     getDaysActive() {
-        // Clean up old dates (optional - remove dates older than 1 year)
+        // Clean up old dates
         const oneYearAgo = new Date();
         oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
         const oneYearAgoString = oneYearAgo.toISOString().split('T')[0];
         
-        // Filter out very old dates
         this.activeDays = this.activeDays.filter(date => date >= oneYearAgoString);
         
         const count = this.activeDays.length;
@@ -1466,41 +1525,64 @@ initializeData() {
         return count;
     }
 
-    // Update display with better error handling
+    // FIXED: Update display with concurrency protection
     async updateDisplay() {
+        // PREVENT CONCURRENT UPDATES
+        if (this.isUpdating) {
+            console.log('⚠️ Update already in progress, skipping');
+            return;
+        }
+
+        // PREVENT TOO FREQUENT UPDATES
+        const now = Date.now();
+        if (now - this.lastUpdateTime < 5000) { // 5 second minimum between updates
+            console.log('⚠️ Too soon since last update, skipping');
+            return;
+        }
+
+        this.isUpdating = true;
+        this.lastUpdateTime = now;
+
         try {
-            console.log('🔄 Updating progress display...');
+            console.log('🔄 Updating progress display (PROTECTED)...');
             
-            // Always mark today as active when updating
+            // Always mark today as active
             const newDay = this.markActiveToday();
             if (newDay) {
                 console.log('🎉 New active day recorded!');
             }
             
-            const coachingSessions = await this.getCoachingSessions();
+            // Get data with timeout protection
+            const [coachingSessions, activeGoals] = await Promise.allSettled([
+                this.getCoachingSessions(),
+                this.getActiveGoals()
+            ]);
+
+            // Skip community posts for now (it's the slowest)
             const daysActive = this.getDaysActive();
-            const communityPosts = await this.getCommunityPosts();
-            const activeGoals = await this.getActiveGoals();
+            const communityPosts = this.data.communityPosts || 0; // Use cached value
+
+            const finalCoachingSessions = coachingSessions.status === 'fulfilled' ? coachingSessions.value : (this.data.coachingSessions || 0);
+            const finalActiveGoals = activeGoals.status === 'fulfilled' ? activeGoals.value : (this.data.activeGoals || 0);
 
             console.log('📊 Progress numbers:', {
-                coachingSessions,
+                coachingSessions: finalCoachingSessions,
                 daysActive, 
                 communityPosts,
-                activeGoals
+                activeGoals: finalActiveGoals
             });
 
-            // Update DOM with animation
+            // Update DOM
             const elements = {
-                coachingSessionsCount: coachingSessions,
+                coachingSessionsCount: finalCoachingSessions,
                 activeDaysCount: daysActive,
                 communityPostsCount: communityPosts,
-                activeGoalsCount: activeGoals
+                activeGoalsCount: finalActiveGoals
             };
 
             for (const [id, value] of Object.entries(elements)) {
                 const element = document.getElementById(id);
                 if (element) {
-                    // Only animate if the value changed
                     const currentValue = parseInt(element.textContent) || 0;
                     if (currentValue !== value) {
                         element.style.transform = 'scale(1.1)';
@@ -1517,66 +1599,65 @@ initializeData() {
             }
 
             // Update stored values
-            this.data.coachingSessions = coachingSessions;
+            this.data.coachingSessions = finalCoachingSessions;
             this.data.communityPosts = communityPosts;
-            this.data.activeGoals = activeGoals;
+            this.data.activeGoals = finalActiveGoals;
             this.save();
 
             console.log('✅ Progress display updated - Days Active:', daysActive);
             
         } catch (error) {
             console.error('❌ Error updating display:', error);
+        } finally {
+            this.isUpdating = false;
         }
     }
 
     startTracking() {
-        // Update immediately
-        setTimeout(() => this.updateDisplay(), 1000);
+        // Update immediately with a delay
+        setTimeout(() => this.updateDisplay(), 2000);
         
-        // Update every 30 seconds
-        setInterval(() => this.updateDisplay(), 30000);
+        // FIXED: Much longer interval to prevent spam
+        setInterval(() => this.updateDisplay(), 60000); // 1 minute instead of 30 seconds
 
-        // Update when page becomes visible (user switches back to tab)
+        // Update when page becomes visible
         document.addEventListener('visibilitychange', () => {
             if (!document.hidden) {
                 console.log('👀 Page became visible - checking for new day');
                 this.markActiveToday();
-                setTimeout(() => this.updateDisplay(), 1000);
+                setTimeout(() => this.updateDisplay(), 2000);
             }
         });
 
-        // Update when user performs actions
         this.setupActivityListeners();
     }
 
-    // NEW: Track user activity to mark days as active
     setupActivityListeners() {
-        // Track clicks anywhere on the page
-        document.addEventListener('click', () => {
-            this.markActiveToday();
-        });
+        // Track user activity (throttled)
+        let lastActivity = 0;
+        const handleActivity = () => {
+            const now = Date.now();
+            if (now - lastActivity > 30000) { // Only once per 30 seconds
+                this.markActiveToday();
+                lastActivity = now;
+            }
+        };
 
-        // Track form submissions
-        document.addEventListener('submit', () => {
-            this.markActiveToday();
-        });
+        document.addEventListener('click', handleActivity);
+        document.addEventListener('submit', handleActivity);
+        window.addEventListener('popstate', handleActivity);
+        document.addEventListener('input', handleActivity);
 
-        // Track navigation
-        window.addEventListener('popstate', () => {
-            this.markActiveToday();
-        });
-
-        // Track when user types in inputs
-        document.addEventListener('input', () => {
-            this.markActiveToday();
-        });
-
-        console.log('👂 Activity listeners set up');
+        console.log('👂 Activity listeners set up (throttled)');
     }
 
-    // Manual refresh
+    // Manual refresh with protection
     async forceUpdate() {
-        console.log('🔄 Force updating...');
+        console.log('🔄 Force updating (PROTECTED)...');
+        
+        // Reset retry counts for force update
+        this.retryCount = {};
+        
         this.markActiveToday();
         await this.updateDisplay();
     }
@@ -1587,49 +1668,9 @@ initializeData() {
             daysActive: this.getDaysActive(),
             communityPosts: this.data.communityPosts,
             activeGoals: this.data.activeGoals,
-            activeDaysHistory: this.activeDays
+            activeDaysHistory: this.activeDays,
+            retryStatus: this.retryCount
         };
-    }
-
-    // NEW: Method to manually add previous days (for testing or backfill)
-    addActiveDays(daysAgo = 0) {
-        const date = new Date();
-        date.setDate(date.getDate() - daysAgo);
-        const dateString = date.toISOString().split('T')[0];
-        
-        if (!this.activeDays.includes(dateString)) {
-            this.activeDays.push(dateString);
-            this.activeDays.sort(); // Keep dates in order
-            this.save();
-            console.log('📅 Added active day:', dateString);
-            this.updateDisplay();
-        }
-    }
-
-    // NEW: Reset active days (for testing)
-    resetActiveDays() {
-        this.activeDays = [];
-        this.save();
-        console.log('🗑️ Reset active days');
-        this.markActiveToday(); // Start fresh with today
-        this.updateDisplay();
-    }
-}
-
-// Enhanced test function that also tests days active
-function simulateActivity() {
-    console.log('🧪 Testing progress tracker...');
-    
-    if (window.progressTracker) {
-        // Add some fake previous days for testing
-        window.progressTracker.addActiveDays(1); // Yesterday
-        window.progressTracker.addActiveDays(2); // 2 days ago
-        window.progressTracker.addActiveDays(5); // 5 days ago
-        
-        // Force update display
-        window.progressTracker.forceUpdate();
-        
-        console.log('📊 Current summary:', window.progressTracker.getSummary());
     }
 }
 
@@ -2087,33 +2128,42 @@ function formatNotificationTime(timestamp) {
     }
 
     // Notification counter
-    async function updateNotificationCount() {
-        try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-            if (!token) return;
+    // FIND THIS FUNCTION and REPLACE it:
+async function updateNotificationCount() {
+    try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+        if (!token) return;
+        
+        // ADD TIMEOUT PROTECTION
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+        
+        const response = await fetch('https://api.eehcommunity.com/api/notifications/unread-count', {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            signal: controller.signal // ADD THIS
+        });
+        
+        clearTimeout(timeoutId); // ADD THIS
+        
+        if (response.ok) {
+            const data = await response.json();
+            const count = data.count || 0;
+            const countElement = document.getElementById('headerNotificationCount');
             
-            const response = await fetch('https://api.eehcommunity.com/api/notifications/unread-count', {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                const count = data.count || 0;
-                const countElement = document.getElementById('headerNotificationCount');
-                
-                if (countElement) {
-                    countElement.textContent = count;
-                    countElement.setAttribute('data-count', count);
-                    countElement.style.display = count > 0 ? 'flex' : 'none';
-                }
+            if (countElement) {
+                countElement.textContent = count;
+                countElement.setAttribute('data-count', count);
+                countElement.style.display = count > 0 ? 'flex' : 'none';
             }
-        } catch (error) {
-            console.error('Error fetching notification count:', error);
         }
+    } catch (error) {
+        console.error('Error fetching notification count:', error.message);
+        // Don't retry on error
     }
+}
 
 // ENDING CODE TO FIND (STOP DELETING HERE)
 
