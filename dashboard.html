@@ -1350,7 +1350,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(5000)
+                signal: AbortSignal.timeout(3000)
             });
             
             if (response.ok) {
@@ -1433,7 +1433,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(8000)
+                signal: AbortSignal.timeout(3000)
             });
             
             if (response.ok) {
@@ -2324,7 +2324,7 @@ async function updateNotificationCount() {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            signal: AbortSignal.timeout(5000)
+            signal: AbortSignal.timeout(3000)
         });
         
         if (response.ok) {
