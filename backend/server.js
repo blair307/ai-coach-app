@@ -713,17 +713,30 @@ Be specific and actionable, not generic.`;
           });
           
           if (!existingInsight) {
-            const newInsight = new Insight({
-              userId,
-              type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
-              insight: insight.charAt(0).toUpperCase() + insight.slice(1),
-              source: 'ai_analysis',
-              confidence: 0.8
-            });
-            
-            await newInsight.save();
-            console.log('💡 Generated insight:', newInsight.insight);
-          }
+  // First, clean up old insights for this user (keep only latest 4)
+  const userInsights = await Insight.find({ userId })
+    .sort({ createdAt: -1 })
+    .skip(4); // Skip the 4 most recent, get the rest to delete
+  
+  if (userInsights.length > 0) {
+    await Insight.deleteMany({
+      _id: { $in: userInsights.map(i => i._id) }
+    });
+    console.log(`🧹 Cleaned up ${userInsights.length} old insights for user`);
+  }
+  
+  // Now create the new insight
+  const newInsight = new Insight({
+    userId,
+    type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
+    insight: insight.charAt(0).toUpperCase() + insight.slice(1),
+    source: 'ai_analysis',
+    confidence: 0.8
+  });
+  
+  await newInsight.save();
+  console.log('💡 Generated insight:', newInsight.insight);
+}
         }
       }
     }
