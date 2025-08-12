@@ -5567,6 +5567,57 @@ app.post('/api/debug/cleanup-insights', async (req, res) => {
   }
 });
 
+
+// LOGIN PERFORMANCE DEBUG - ADD THIS
+app.post('/api/debug/login-performance', async (req, res) => {
+  const { email, password } = req.body;
+  const results = {};
+  const start = Date.now();
+  
+  try {
+    // Step 1: User lookup (should be fast now)
+    console.log('🔍 Testing user lookup...');
+    const step1Start = Date.now();
+    const user = await User.findOne({ email });
+    results.userLookup = { time: Date.now() - step1Start, found: !!user };
+    
+    if (!user) {
+      return res.json({ ...results, totalTime: Date.now() - start, error: 'User not found' });
+    }
+    
+    // Step 2: Password check (THIS MIGHT BE SLOW)
+    console.log('🔐 Testing password check...');
+    const step2Start = Date.now();
+    const isValid = await bcrypt.compare(password, user.password);
+    results.passwordCheck = { time: Date.now() - step2Start, valid: isValid };
+    
+    if (!isValid) {
+      return res.json({ ...results, totalTime: Date.now() - start, error: 'Invalid password' });
+    }
+    
+    // Step 3: Streak update (THIS MIGHT BE SLOW)
+    console.log('📈 Testing streak update...');
+    const step3Start = Date.now();
+    const streakData = await updateUserStreak(user._id);
+    results.streakUpdate = { time: Date.now() - step3Start, streakData };
+    
+    // Step 4: JWT creation
+    console.log('🎟️ Testing JWT creation...');
+    const step4Start = Date.now();
+    const token = jwt.sign({ userId: user._id, email: user.email }, process.env.JWT_SECRET || 'your-secret-key', { expiresIn: '7d' });
+    results.jwtCreation = { time: Date.now() - step4Start, hasToken: !!token };
+    
+    results.totalTime = Date.now() - start;
+    res.json(results);
+    
+  } catch (error) {
+    results.error = error.message;
+    results.totalTime = Date.now() - start;
+    res.status(500).json(results);
+  }
+});
+
+
 // ==========================================
 // COURSE MATERIALS API ROUTES
 // ==========================================
