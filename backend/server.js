@@ -5382,6 +5382,38 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
 });
 
 
+// TEMPORARY DEBUG ENDPOINT - ADD THIS HERE
+app.get('/api/debug/health', async (req, res) => {
+  const start = Date.now();
+  console.log('🩺 Health check started at:', new Date().toISOString());
+  
+  try {
+    // Test database connection speed
+    console.log('🔍 Testing database connection...');
+    const dbStart = Date.now();
+    const userCount = await User.countDocuments();
+    const dbTime = Date.now() - dbStart;
+    console.log(`📊 Database query took: ${dbTime}ms`);
+    
+    res.json({
+      totalTime: Date.now() - start,
+      database: {
+        connectionTime: dbTime,
+        userCount: userCount,
+        status: 'connected'
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Health check error:', error);
+    res.status(500).json({ 
+      error: error.message, 
+      totalTime: Date.now() - start,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS API ROUTES
 // ==========================================
