@@ -1049,11 +1049,13 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Step 3: Streak update (THIS IS LIKELY THE CULPRIT)
-    console.log('📈 Step 3: Updating streak...');
-    const step3Start = Date.now();
-    const streakData = await updateUserStreak(user._id);
-    console.log(`⏱️ Step 3 took: ${Date.now() - step3Start}ms`);
+   // Step 3: Streak update (fire-and-forget)
+    console.log('📈 Step 3: Updating streak (async)…');
+    let streakData = { currentStreak: 0, longestStreak: 0 };
+    updateUserStreak(user._id)
+  .then(data => { streakData = data; })
+  .catch(err => console.error('Streak update error:', err));
+
 
     // Step 4: JWT creation
     console.log('🎟️ Step 4: Creating JWT...');
