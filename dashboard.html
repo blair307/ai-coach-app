@@ -1385,7 +1385,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: signal: AbortSignal.timeout(15000)
+                signal: AbortSignal.timeout(15000)
             });
             
             if (!roomsResponse.ok) return 0;
