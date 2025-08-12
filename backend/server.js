@@ -5527,6 +5527,46 @@ app.get('/api/debug/dashboard', async (req, res) => {
   }
 });
 
+// INSIGHTS CLEANUP ENDPOINT - ADD THIS
+app.post('/api/debug/cleanup-insights', async (req, res) => {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Delete insights older than 30 days
+    const result = await Insight.deleteMany({
+      createdAt: { $lt: thirtyDaysAgo }
+    });
+    
+    // Keep only latest 5 insights per user
+    const users = await User.find().select('_id');
+    let totalCleaned = 0;
+    
+    for (const user of users) {
+      const insights = await Insight.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .skip(5);
+      
+      if (insights.length > 0) {
+        await Insight.deleteMany({
+          _id: { $in: insights.map(i => i._id) }
+        });
+        totalCleaned += insights.length;
+      }
+    }
+    
+    const remaining = await Insight.countDocuments();
+    
+    res.json({
+      message: 'Insights cleaned up',
+      deletedOld: result.deletedCount,
+      deletedExcess: totalCleaned,
+      remainingInsights: remaining
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS API ROUTES
 // ==========================================
