@@ -933,7 +933,7 @@ activityList.innerHTML = `
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 
                 if (response.ok) {
@@ -963,7 +963,7 @@ activityList.innerHTML = `
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
-                    signal: AbortSignal.timeout(3000)
+                    signal: AbortSignal.timeout(15000)
                 });
                 
                 if (response.ok) {
@@ -1350,7 +1350,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(3000)
+                signal: AbortSignal.timeout(15000)
             });
             
             if (response.ok) {
@@ -1385,7 +1385,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(5000)
+                signal: signal: AbortSignal.timeout(15000)
             });
             
             if (!roomsResponse.ok) return 0;
@@ -1401,7 +1401,7 @@ initializeData() {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
                         },
-                        signal: AbortSignal.timeout(3000)
+                        signal: AbortSignal.timeout(15000)
                     });
                     
                     if (messagesResponse.ok) {
@@ -1433,7 +1433,7 @@ initializeData() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(3000)
+                signal: AbortSignal.timeout(15000)
             });
             
             if (response.ok) {
@@ -2145,7 +2145,7 @@ async function loadDashboardNotifications() {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                signal: AbortSignal.timeout(8000)
+                signal: signal: AbortSignal.timeout(15000)
             });
 
             if (response.ok) {
@@ -2324,7 +2324,7 @@ async function updateNotificationCount() {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            signal: AbortSignal.timeout(3000)
+            signal: AbortSignal.timeout(15000)
         });
         
         if (response.ok) {
