@@ -5414,6 +5414,106 @@ app.get('/api/debug/health', async (req, res) => {
   }
 });
 
+
+// COMPREHENSIVE DASHBOARD DEBUG ENDPOINT - REPLACE THE PREVIOUS ONE
+app.get('/api/debug/dashboard', async (req, res) => {
+  const results = {};
+  const overallStart = Date.now();
+  
+  try {
+    // Test 1: Dashboard stats (what your progress tracker calls)
+    console.log('🔍 Testing dashboard stats...');
+    const statsStart = Date.now();
+    const totalUsers = await User.countDocuments();
+    const paidUsers = await User.countDocuments({
+      'subscription.plan': { $in: ['monthly', 'yearly'] },
+      'subscription.status': 'active'
+    });
+    results.dashboardStats = {
+      time: Date.now() - statsStart,
+      totalUsers,
+      paidUsers
+    };
+
+    // Test 2: Life Goals (dashboard loads this)
+    console.log('🔍 Testing life goals...');
+    const goalsStart = Date.now();
+    const goalCount = await LifeGoal.countDocuments();
+    results.lifeGoals = {
+      time: Date.now() - goalsStart,
+      count: goalCount
+    };
+
+    // Test 3: Chat History (coaching sessions count)
+    console.log('🔍 Testing chat history...');
+    const chatStart = Date.now();
+    const chatCount = await Chat.countDocuments();
+    results.chatHistory = {
+      time: Date.now() - chatStart,
+      count: chatCount
+    };
+
+    // Test 4: Notifications (dashboard loads recent ones)
+    console.log('🔍 Testing notifications...');
+    const notifStart = Date.now();
+    const notifCount = await Notification.countDocuments();
+    results.notifications = {
+      time: Date.now() - notifStart,
+      count: notifCount
+    };
+
+    // Test 5: Messages (community posts count)
+    console.log('🔍 Testing messages...');
+    const msgStart = Date.now();
+    const msgCount = await Message.countDocuments();
+    results.messages = {
+      time: Date.now() - msgStart,
+      count: msgCount
+    };
+
+    // Test 6: Insights
+    console.log('🔍 Testing insights...');
+    const insightStart = Date.now();
+    const insightCount = await Insight.countDocuments();
+    results.insights = {
+      time: Date.now() - insightStart,
+      count: insightCount
+    };
+
+    // Test 7: Videos (if Video Vault is loaded)
+    console.log('🔍 Testing videos...');
+    const videoStart = Date.now();
+    const videoCount = await Video.countDocuments();
+    results.videos = {
+      time: Date.now() - videoStart,
+      count: videoCount
+    };
+
+    // Test 8: Daily Progress
+    console.log('🔍 Testing daily progress...');
+    const progressStart = Date.now();
+    const progressCount = await DailyProgress.countDocuments();
+    results.dailyProgress = {
+      time: Date.now() - progressStart,
+      count: progressCount
+    };
+
+    results.totalTime = Date.now() - overallStart;
+    results.timestamp = new Date().toISOString();
+    
+    console.log('📊 Complete dashboard debug results:', results);
+    res.json(results);
+    
+  } catch (error) {
+    console.error('❌ Dashboard debug error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      results: results,
+      totalTime: Date.now() - overallStart
+    });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS API ROUTES
 // ==========================================
