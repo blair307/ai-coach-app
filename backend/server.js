@@ -1805,29 +1805,7 @@ app.get('/api/notifications/unread-count', authenticateToken, async (req, res) =
       userId: req.user.userId,
 
 
-// ElevenLabs configuration
-const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
-const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
 
-const VOICE_IDS = {
-  coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
-  coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id',
-  coach3: 'openai-echo',
-  coach4: 'openai-nova'
-};
-
-// Validate required settings
-const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
-const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
-
-if (missingSettings.length > 0) {
-  console.error('⚠️ Missing required settings:', missingSettings);
-  console.error('Please check your .env file and add these settings');
-  process.exit(1);
-}
-
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // CORS configuration
 app.use((req, res, next) => {
