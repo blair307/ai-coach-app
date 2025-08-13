@@ -1802,22 +1802,8 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
 app.get('/api/notifications/unread-count', authenticateToken, async (req, res) => {
   try {
     const totalCount = await Notification.countDocuments({ 
-      userId:// Complete AI Coach Backend Server - Optimized
-const express = require('express');
-const cors = require('cors');
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const Stripe = require('stripe');
-const OpenAI = require('openai');
-const crypto = require('crypto');
-const nodemailer = require('nodemailer');
-const cron = require('node-cron');
-const multer = require('multer');
-const pdfParse = require('pdf-parse');
-const mammoth = require('mammoth');
-const fetch = require('node-fetch');
-require('dotenv').config();
+      userId: req.user.userId,
+
 
 // ElevenLabs configuration
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
