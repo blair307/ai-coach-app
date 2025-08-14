@@ -1249,11 +1249,15 @@ document.addEventListener('DOMContentLoaded', function() {
         updateNotificationCount();
         setInterval(updateNotificationCount, 30000);
         
-        // Load dashboard goals and notifications
-        setTimeout(loadDashboardGoals, 1500);
-        setTimeout(loadDashboardNotifications, 2000);
-        
-        console.log('✅ Dashboard initialized successfully');
+        // Load dashboard goals, notifications, and insights
+setTimeout(loadDashboardGoals, 1500);
+setTimeout(loadDashboardNotifications, 2000);
+setTimeout(loadDashboardInsights, 2500);
+
+console.log('✅ Dashboard initialized successfully');
+
+// Set up auto-refresh for insights every 2 minutes
+setInterval(loadDashboardInsights, 120000);
         
     } catch (error) {
         console.error('❌ Error initializing dashboard:', error);
@@ -2677,20 +2681,7 @@ async function updateNotificationCount() {
         }
     }
 
-    // Initialize everything
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Dashboard loading...');
-        
-        try {
-
-        
-        // Set up auto-refresh for insights every 2 minutes
-        setInterval(loadDashboardInsights, 120000);
-            
-        } catch (error) {
-            console.error('❌ Error initializing dashboard:', error);
-        }
-    });
+  
 
       
     </script>
