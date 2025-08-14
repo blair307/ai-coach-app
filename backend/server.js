@@ -48,6 +48,146 @@ app.use((req, res, next) => {
         next();
     }
 });
+
+// Initialize services
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+    });
+}
+
+// File upload configuration
+const multer = require('multer');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+
+const storage = multer.memoryStorage();
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only PDF, DOCX, and TXT files are allowed.'));
+        }
+    }
+});
+
+// Email configuration
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+    transporter = nodemailer.createTransporter({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS
+        }
+    });
+}
+
+// Connect to MongoDB and create schemas
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => {
+        console.log('✅ Connected to MongoDB Atlas successfully');
+        createDefaultRooms();
+        createDatabaseIndexes();
+    })
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err);
+        process.exit(1);
+    });
+
+async function createDatabaseIndexes() {
+    try {
+        await User.collection.createIndex({ email: 1 }, { unique: true });
+        await LifeGoal.collection.createIndex({ userId: 1 });
+        await Notification.collection.createIndex({ userId: 1, createdAt: -1 });
+        await Chat.collection.createIndex({ userId: 1 });
+        await DailyProgress.collection.createIndex({ userId: 1, date: -1 });
+        await Message.collection.createIndex({ userId: 1, createdAt: -1 });
+    } catch (error) {
+        console.error('Error creating indexes:', error);
+    }
+}
+
+// Define all schemas and models here...
+// [All the schema definitions from your working file would go here]
+
+// Then continue with the route that starts with:
+app.post('/api/daily-prompt/respond', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { promptId, response, mood, isPublic, timeToComplete } = req.body;
+
+        if (!promptId || !response || !response.trim()) {
+            return res.status(400).json({ error: 'Prompt ID and response are required' });
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const existingResponse = await DailyPromptResponse.findOne({
+            userId,
+            promptId,
+            createdAt: {
+                $gte: today,
+                $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000)
+            }
+        });
+
+        if (existingResponse) {
+            existingResponse.response = response.trim();
+            existingResponse.mood = mood || 'neutral';
+            existingResponse.isPublic = isPublic || false;
+            existingResponse.wordCount = response.trim().split(/\s+/).length;
+            existingResponse.timeToComplete = timeToComplete;
+            existingResponse.updatedAt = new Date();
+            await existingResponse.save();
+
+            res.json({
+                message: 'Response updated successfully',
+                response: existingResponse,
+                isUpdate: true
+            });
+        } else {
+            const newResponse = new DailyPromptResponse({
+                userId,
+                promptId,
+                response: response.trim(),
+                mood: mood || 'neutral',
+                wordCount: response.trim().split(/\s+/).length,
+                timeToComplete: timeToComplete
+            });
+
+            await newResponse.save();
+            await DailyPromptAssignment.findOneAndUpdate(
+                { date: today, promptId },
+                { $inc: { responseCount: 1 } }
+            );
+
+            try {
+                const notification = new Notification({
+                    userId,
+                    type: 'system',
+                    title: 'Daily Prompt Completed!',
+                    content: `Great job reflecting today! You've completed your daily prompt with a ${newResponse.wordCount}-word response.`,
+                    priority: 'normal'
+                });
+                await notification.save();
+            } catch (notifError) {
+                console.error('Error creating daily prompt notification:', notifError);
+            }
+
+            res.json({
+                message: 'Response submitted successfully',
+                response: newResponse,
+                isUpdate: false
+            });
         }
 
     } catch (error) {
