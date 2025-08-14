@@ -1,26 +1,53 @@
-await DailyPromptAssignment.findOneAndUpdate(
-                { date: today, promptId },
-                { $inc: { responseCount: 1 } }
-            );
+// Complete AI Coach Backend Server - Performance Optimized
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const Stripe = require('stripe');
+const OpenAI = require('openai');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+const cron = require('node-cron');
+require('dotenv').config();
 
-            try {
-                const notification = new Notification({
-                    userId,
-                    type: 'system',
-                    title: 'Daily Prompt Completed!',
-                    content: `Great job reflecting today! You've completed your daily prompt with a ${newResponse.wordCount}-word response.`,
-                    priority: 'normal'
-                });
-                await notification.save();
-            } catch (notifError) {
-                console.error('Error creating daily prompt notification:', notifError);
-            }
+const fetch = require('node-fetch');
 
-            res.json({
-                message: 'Response submitted successfully',
-                response: newResponse,
-                isUpdate: false
-            });
+// ElevenLabs configuration
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1';
+
+const VOICE_IDS = {
+    coach1: process.env.BLAIR_VOICE_ID || 'placeholder-blair-id',
+    coach2: process.env.DAVE_VOICE_ID || 'placeholder-dave-id',
+    coach3: 'openai-echo',
+    coach4: 'openai-nova'
+};
+
+// Validate required settings
+const requiredSettings = ['STRIPE_SECRET_KEY', 'JWT_SECRET', 'MONGODB_URI'];
+const missingSettings = requiredSettings.filter(setting => !process.env[setting]);
+
+if (missingSettings.length > 0) {
+    console.error('❌ Missing required settings:', missingSettings);
+    process.exit(1);
+}
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// CORS configuration
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
         }
 
     } catch (error) {
