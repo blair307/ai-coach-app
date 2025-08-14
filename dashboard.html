@@ -2682,27 +2682,7 @@ async function updateNotificationCount() {
         console.log('🚀 Dashboard loading...');
         
         try {
-            // Initialize progress tracker
-            window.progressTracker = new SimpleProgressTracker();
-            
-            // Make functions globally available
-            window.updateProgress = () => window.progressTracker.forceUpdate();
-            window.getProgressSummary = () => window.progressTracker.getSummary();
-            window.simulateActivity = simulateActivity;
-            
-            // Initialize timer and calendar
-            setTimeout(initializeTimerAndCalendar, 500);
-            
-            // Load notifications and other components
-            updateNotificationCount();
-            setInterval(updateNotificationCount, 30000);
-            
-          // Load dashboard goals, notifications, and insights
-setTimeout(loadDashboardGoals, 1500);
-setTimeout(loadDashboardNotifications, 2000);
-setTimeout(loadDashboardInsights, 2500);
-            
-            console.log('✅ Dashboard initialized successfully');
+
         
         // Set up auto-refresh for insights every 2 minutes
         setInterval(loadDashboardInsights, 120000);
