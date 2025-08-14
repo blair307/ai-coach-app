@@ -319,6 +319,7 @@ if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
 }
 
 // Connect to MongoDB
+// Connect to MongoDB
 console.log('🔍 Connecting to MongoDB...');
 console.log('📍 MongoDB URI configured:', !!process.env.MONGODB_URI);
 
@@ -332,12 +333,52 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('✅ Connected to MongoDB Atlas successfully');
     console.log('📊 Database connection state:', mongoose.connection.readyState);
     createDefaultRooms();
+    
+    // ADD DATABASE INDEXES FOR PERFORMANCE
+    createDatabaseIndexes();
   })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
     console.error('🔍 Check your MONGODB_URI in Render environment variables');
     process.exit(1);
   });
+
+// ADD THIS NEW FUNCTION RIGHT AFTER THE MONGODB CONNECTION
+async function createDatabaseIndexes() {
+  try {
+    console.log('📋 Creating database indexes for performance...');
+    
+    // User indexes
+    await User.collection.createIndex({ email: 1 }, { unique: true });
+    console.log('✅ User email index created');
+    
+    // Goal indexes  
+    await LifeGoal.collection.createIndex({ userId: 1 });
+    console.log('✅ LifeGoal userId index created');
+    
+    // Notification indexes
+    await Notification.collection.createIndex({ userId: 1, createdAt: -1 });
+    console.log('✅ Notification indexes created');
+    
+    // Chat indexes
+    await Chat.collection.createIndex({ userId: 1 });
+    console.log('✅ Chat userId index created');
+    
+    // Daily progress indexes
+    await DailyProgress.collection.createIndex({ userId: 1, date: -1 });
+    console.log('✅ DailyProgress indexes created');
+    
+    // Message indexes
+    await Message.collection.createIndex({ userId: 1, createdAt: -1 });
+    console.log('✅ Message indexes created');
+    
+    console.log('🚀 All database indexes created successfully - queries should be much faster!');
+    
+  } catch (error) {
+    console.error('❌ Error creating indexes:', error);
+    // Don't crash the server if index creation fails
+  }
+}
 
 const userSchema = new mongoose.Schema({
   firstName: String,
@@ -378,6 +419,29 @@ profilePhoto: { type: String },
 });
 
 const User = mongoose.model('User', userSchema);
+
+// Video Vault Schema - ADD THIS AFTER User model
+const videoSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String },
+  date: { type: Date, required: true },
+  youtubeUrl: { type: String, required: true }, // YouTube URL
+  duration: { type: String }, // e.g., "1h 30m"
+  attendees: [String], // List of attendee names
+  topics: [String], // Main topics covered
+  notes: {
+    summary: String,
+    keyPoints: [String],
+    actionItems: [String],
+    quotes: [String]
+  },
+  isPublic: { type: Boolean, default: true },
+  tags: [String],
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const Video = mongoose.model('Video', videoSchema);
 
 // Goals Schema
 const goalSchema = new mongoose.Schema({
@@ -525,22 +589,32 @@ const insightSchema = new mongoose.Schema({
 const Insight = mongoose.model('Insight', insightSchema);
 
 // Course Materials Schema - NEW
+// Course Materials Schema - ENHANCED
 const courseMaterialSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   title: { type: String, required: true },
   description: { type: String },
-  content: { type: String, required: true }, // Extracted text content
+  content: { type: String, required: true }, // Full extracted text content
   originalFileName: { type: String },
   fileType: { type: String, enum: ['pdf', 'docx', 'txt', 'md'], required: true },
   tags: [String],
   isActive: { type: Boolean, default: true },
   uploadedAt: { type: Date, default: Date.now },
   lastUpdated: { type: Date, default: Date.now },
-  // For search optimization
+  // NEW: Document structure and summary
+  structure: {
+    outline: [String], // Main sections/modules/chapters
+    keyTopics: [String], // Important topics covered
+    summary: String, // AI-generated summary of the entire document
+    totalLength: Number, // Character count
+    estimatedReadTime: Number // Minutes
+  },
+  // For detailed search
   chunks: [{
     text: String,
     index: Number,
-    keywords: [String]
+    keywords: [String],
+    section: String // Which part of the document this chunk comes from
   }]
 });
 
@@ -639,17 +713,30 @@ Be specific and actionable, not generic.`;
           });
           
           if (!existingInsight) {
-            const newInsight = new Insight({
-              userId,
-              type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
-              insight: insight.charAt(0).toUpperCase() + insight.slice(1),
-              source: 'ai_analysis',
-              confidence: 0.8
-            });
-            
-            await newInsight.save();
-            console.log('💡 Generated insight:', newInsight.insight);
-          }
+  // First, clean up old insights for this user (keep only latest 4)
+  const userInsights = await Insight.find({ userId })
+    .sort({ createdAt: -1 })
+    .skip(4); // Skip the 4 most recent, get the rest to delete
+  
+  if (userInsights.length > 0) {
+    await Insight.deleteMany({
+      _id: { $in: userInsights.map(i => i._id) }
+    });
+    console.log(`🧹 Cleaned up ${userInsights.length} old insights for user`);
+  }
+  
+  // Now create the new insight
+  const newInsight = new Insight({
+    userId,
+    type: ['stress', 'communication', 'productivity', 'emotional', 'leadership'].includes(type) ? type : 'emotional',
+    insight: insight.charAt(0).toUpperCase() + insight.slice(1),
+    source: 'ai_analysis',
+    confidence: 0.8
+  });
+  
+  await newInsight.save();
+  console.log('💡 Generated insight:', newInsight.insight);
+}
         }
       }
     }
@@ -659,18 +746,18 @@ Be specific and actionable, not generic.`;
   }
 }
 
-// Function to update user streak
 async function updateUserStreak(userId) {
   try {
-    const user = await User.findById(userId);
+    // Only get the user data we need, not all related data
+    const user = await User.findById(userId).select('streakData').lean();
     if (!user) return { currentStreak: 0, longestStreak: 0 };
 
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const lastLogin = user.streakData.lastLoginDate;
-    let currentStreak = user.streakData.currentStreak || 0;
-    let longestStreak = user.streakData.longestStreak || 0;
+    const lastLogin = user.streakData?.lastLoginDate;
+    let currentStreak = user.streakData?.currentStreak || 0;
+    let longestStreak = user.streakData?.longestStreak || 0;
 
     if (!lastLogin) {
       currentStreak = 1;
@@ -691,11 +778,15 @@ async function updateUserStreak(userId) {
       longestStreak = currentStreak;
     }
 
-    await User.findByIdAndUpdate(userId, {
-      'streakData.currentStreak': currentStreak,
-      'streakData.lastLoginDate': today,
-      'streakData.longestStreak': longestStreak
-    });
+    // Use updateOne instead of findByIdAndUpdate for better performance
+    await User.updateOne(
+      { _id: userId },
+      {
+        'streakData.currentStreak': currentStreak,
+        'streakData.lastLoginDate': today,
+        'streakData.longestStreak': longestStreak
+      }
+    );
 
     return { currentStreak, longestStreak };
   } catch (error) {
@@ -928,28 +1019,54 @@ res.status(201).json({
 });
 
 // Login user with streak tracking
+// Login user with streak tracking
 app.post('/api/auth/login', async (req, res) => {
+  const loginStart = Date.now();
+  console.log('🚀 LOGIN START:', new Date().toISOString());
+  
   try {
     const { email, password } = req.body;
 
+    // Step 1: Database lookup
+    console.log('📊 Step 1: Looking up user...');
+    const step1Start = Date.now();
     const user = await User.findOne({ email });
+    console.log(`⏱️ Step 1 took: ${Date.now() - step1Start}ms`);
+
     if (!user) {
+      console.log('❌ User not found');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Step 2: Password comparison
+    console.log('🔐 Step 2: Checking password...');
+    const step2Start = Date.now();
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log(`⏱️ Step 2 took: ${Date.now() - step2Start}ms`);
+
     if (!isValidPassword) {
+      console.log('❌ Invalid password');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Step 3: Streak update (THIS IS LIKELY THE CULPRIT)
+    console.log('📈 Step 3: Updating streak...');
+    const step3Start = Date.now();
     const streakData = await updateUserStreak(user._id);
+    console.log(`⏱️ Step 3 took: ${Date.now() - step3Start}ms`);
 
+    // Step 4: JWT creation
+    console.log('🎟️ Step 4: Creating JWT...');
+    const step4Start = Date.now();
     const token = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '7d' }
     );
+    console.log(`⏱️ Step 4 took: ${Date.now() - step4Start}ms`);
 
+    console.log(`✅ TOTAL LOGIN TIME: ${Date.now() - loginStart}ms`);
+    
     res.json({
       message: 'Login successful',
       token,
@@ -962,7 +1079,7 @@ app.post('/api/auth/login', async (req, res) => {
       streakData
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error after', Date.now() - loginStart, 'ms:', error);
     res.status(500).json({ message: 'Login failed', error: error.message });
   }
 });
@@ -1619,6 +1736,18 @@ const searchTerms = message.toLowerCase()
 
 console.log('🔍 Searching for:', searchTerms);
 const relevantMaterials = await searchCourseMaterials(userId, searchTerms, 5);
+
+// ADD THESE NEW LINES:
+console.log('🔍 Course materials search details:', {
+  searchTerms,
+  userId,
+  materialsFound: relevantMaterials.length,
+  searchResults: relevantMaterials.map(m => ({
+    title: m.materialTitle,
+    score: m.score,
+    preview: m.text.substring(0, 100) + '...'
+  }))
+});
       
 // Build course materials context
 let courseMaterialsContext = '';
@@ -1628,8 +1757,7 @@ if (relevantMaterials.length > 0) {
   relevantMaterials.forEach((material, index) => {
     courseMaterialsContext += `\nCourse Content ${index + 1}:\n"${material.text.substring(0, 1500)}"\n(Source: ${material.materialTitle})\n`;
   });
-  courseMaterialsContext += '\nYou MUST use this specific course content to answer the user\'s question. Reference it directly.\n';
-} else {
+courseMaterialsContext += '\nYou MAY reference this course content if it\'s directly relevant to the user\'s question, but prioritize your coaching personality and experience.\n';} else {
   console.log('ℹ️ No relevant course materials found for this query');
 }
       
@@ -1639,7 +1767,7 @@ const messages = [
     role: 'system',
     content: `You are ${coach.name}, ${coach.personality}. ${coach.description}. 
 
-CRITICAL: Keep responses to MAXIMUM 1-5 sentences. Never exceed 105 words total.
+Provide thoughtful, comprehensive responses that fully address the user's needs. Give detailed insights and actionable advice.
 
 ${courseMaterialsContext ? `
 MANDATORY: You have access to specific course materials. Use this information to answer questions. Do NOT make up information when you have real course content available.
@@ -1683,8 +1811,8 @@ Be authentic to your coaching style while addressing the user's entrepreneurial 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o", // Using faster model
       messages: messages,
-max_tokens: preferences.responseLength === 'detailed' ? 550 : 
-            preferences.responseLength === 'concise' ? 100 : 350,
+max_tokens: preferences.responseLength === 'detailed' ? 1000 : 
+            preferences.responseLength === 'concise' ? 250 : 500,
       temperature: 0.7,
       stream: false
     });
@@ -2778,6 +2906,7 @@ app.get('/api/insights', authenticateToken, async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch insights' });
   }
 });
+
 
 app.put('/api/insights/:id/read', authenticateToken, async (req, res) => {
   try {
@@ -4562,6 +4691,129 @@ app.get('/api/admin/coupons/:id/analytics', authenticateAdmin, async (req, res) 
 
 console.log('✅ Enhanced admin coupon management routes loaded successfully');
 
+// ==========================================
+// VIDEO VAULT API ROUTES - ADD AFTER COUPON ROUTES
+// ==========================================
+
+// Get all videos
+app.get('/api/videos', authenticateToken, async (req, res) => {
+  try {
+    const { limit = 20, page = 1, search = '' } = req.query;
+    
+    let query = { isPublic: true };
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { topics: { $in: [new RegExp(search, 'i')] } }
+      ];
+    }
+
+    const total = await Video.countDocuments(query);
+    const videos = await Video.find(query)
+      .sort({ date: -1 })
+      .limit(parseInt(limit))
+      .skip((parseInt(page) - 1) * parseInt(limit));
+
+    res.json({
+      videos,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (error) {
+    console.error('Get videos error:', error);
+    res.status(500).json({ error: 'Failed to get videos' });
+  }
+});
+
+// Get single video
+app.get('/api/videos/:id', authenticateToken, async (req, res) => {
+  try {
+    const video = await Video.findById(req.params.id);
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    res.json(video);
+  } catch (error) {
+    console.error('Get video error:', error);
+    res.status(500).json({ error: 'Failed to get video' });
+  }
+});
+
+// Admin: Create new video
+app.post('/api/videos', authenticateAdmin, async (req, res) => {
+  try {
+    const { title, description, date, youtubeUrl, duration, attendees, topics, tags, notes } = req.body;
+    
+    if (!title || !date || !youtubeUrl) {
+      return res.status(400).json({ error: 'Title, date, and YouTube URL are required' });
+    }
+
+    const video = new Video({
+      title,
+      description,
+      date: new Date(date),
+      youtubeUrl,
+      duration,
+      attendees: attendees || [],
+      topics: topics || [],
+      tags: tags || [],
+      notes: notes || {}
+    });
+
+    await video.save();
+    
+    res.status(201).json({
+      message: 'Video uploaded successfully',
+      video
+    });
+  } catch (error) {
+    console.error('Upload video error:', error);
+    res.status(500).json({ error: 'Failed to upload video' });
+  }
+});
+
+// Admin: Update video
+app.put('/api/videos/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const video = await Video.findByIdAndUpdate(
+      req.params.id,
+      { ...req.body, updatedAt: new Date() },
+      { new: true }
+    );
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    res.json({
+      message: 'Video updated successfully',
+      video
+    });
+  } catch (error) {
+    console.error('Update video error:', error);
+    res.status(500).json({ error: 'Failed to update video' });
+  }
+});
+
+// Admin: Delete video
+app.delete('/api/videos/:id', authenticateAdmin, async (req, res) => {
+  try {
+    const video = await Video.findByIdAndDelete(req.params.id);
+    
+    if (!video) {
+      return res.status(404).json({ error: 'Video not found' });
+    }
+    
+    res.json({ message: 'Video deleted successfully' });
+  } catch (error) {
+    console.error('Delete video error:', error);
+    res.status(500).json({ error: 'Failed to delete video' });
+  }
+});
+
+console.log('✅ Video Vault API routes loaded successfully');
 app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, res) => {
   try {
     const materialId = req.params.materialId;
@@ -4595,64 +4847,90 @@ app.get('/api/admin/debug-chunks/:materialId', authenticateToken, async (req, re
   }
 });
 
+app.post('/api/admin/test-course-search', authenticateToken, async (req, res) => {
+  try {
+    const { query, testUserId } = req.body;
+    const userId = testUserId || req.user.userId;
+    
+    console.log('🧪 TESTING COURSE MATERIALS SEARCH');
+    console.log('Query:', query);
+    console.log('User ID:', userId);
+    
+    // First, show what materials exist
+    const allMaterials = await CourseMaterial.find({ isActive: true });
+    console.log(`📚 Total active materials in database: ${allMaterials.length}`);
+    
+    allMaterials.forEach(material => {
+      console.log(`- "${material.title}" by user ${material.userId} (${material.chunks.length} chunks)`);
+      // Show a preview of first chunk
+      if (material.chunks.length > 0) {
+        console.log(`  First chunk: "${material.chunks[0].text.substring(0, 150)}..."`);
+      }
+    });
+    
+    // Now test the search
+    const results = await searchCourseMaterials(userId, query, 5);
+    
+    res.json({
+      query,
+      userId,
+      totalMaterials: allMaterials.length,
+      materialsFound: allMaterials.map(m => ({
+        title: m.title,
+        userId: m.userId.toString(),
+        chunks: m.chunks.length,
+        firstChunkPreview: m.chunks[0]?.text.substring(0, 100) + '...'
+      })),
+      searchResults: results,
+      resultsCount: results.length,
+      searchWorked: results.length > 0
+    });
+    
+  } catch (error) {
+    console.error('❌ Test search error:', error);
+    res.status(500).json({ 
+      error: 'Search test failed', 
+      details: error.message,
+      stack: error.stack 
+    });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS HELPER FUNCTIONS
 // ==========================================
 
 async function searchCourseMaterials(userId, query, limit = 3) {
   try {
-    console.log('🔍 SEARCHING COURSE MATERIALS:', { 
+    console.log('🔍 ENHANCED SEARCH - COURSE MATERIALS:', { 
       userId: userId.toString(), 
       query: query.substring(0, 50) + '...', 
       limit 
     });
     
-  // FIXED: Allow all users to search admin materials
-const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
+    // Get admin materials for all users
+    const adminObjectId = new mongoose.Types.ObjectId('000000000000000000000000');
 
-if (userId === 'admin' || userId.toString() === 'admin') {
-  // Admin searching - only search admin materials  
-  var searchQuery = {
-    isActive: true,
-    userId: adminObjectId
-  };
-} else {
-  // Regular user - search their materials + admin materials
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-  var searchQuery = {
-    isActive: true,
-    userId: {
-      $in: [
-        userObjectId, // User's own materials
-        adminObjectId // Admin materials (available to all users)
-      ]
+    let searchQuery;
+    if (userId === 'admin' || userId.toString() === 'admin') {
+      searchQuery = { isActive: true, userId: adminObjectId };
+    } else {
+      const userObjectId = new mongoose.Types.ObjectId(userId);
+      searchQuery = {
+        isActive: true,
+        userId: { $in: [userObjectId, adminObjectId] }
+      };
     }
-  };
-}
-    
-    console.log('📋 Search query:', searchQuery);
     
     const materials = await CourseMaterial.find(searchQuery);
-    
     console.log('📚 Found materials:', materials.length);
 
-          // ADD THIS DEBUG - Log the first material's chunks
-    if (materials.length > 0) {
-      console.log('🔍 First material chunks:', materials[0].chunks.length);
-      console.log('📝 First chunk preview:', materials[0].chunks[0]?.text?.substring(0, 100));
-    }
-    
     if (materials.length === 0) {
       console.log('❌ No materials found');
       return [];
     }
     
-    if (materials.length === 0) {
-      console.log('❌ No materials found');
-      return [];
-    }
-    
-    // Rest of the function stays the same...
+    // Split query into search words
     const queryWords = query.toLowerCase()
       .split(/\s+/)
       .filter(word => word.length > 2)
@@ -4660,62 +4938,107 @@ if (userId === 'admin' || userId.toString() === 'admin') {
     
     console.log('🔤 Search words:', queryWords);
     
-    const relevantChunks = [];
+    // Check if this is a "structure" type question
+    const structureKeywords = ['modules', 'chapters', 'sections', 'outline', 'structure', 'overview', 'contents', 'parts'];
+    const isStructureQuery = queryWords.some(word => structureKeywords.includes(word));
     
-   // Find this part in your searchCourseMaterials function (around line 2150)
-materials.forEach(material => {
-  // Bonus points if the query matches the material title
-  let titleBonus = 0;
-  queryWords.forEach(word => {
-    if (material.title.toLowerCase().includes(word.toLowerCase())) {
-      titleBonus += 10; // Big bonus for title matches
-    }
-  });
-  
-  material.chunks.forEach((chunk, chunkIndex) => {
-    let score = titleBonus; // Start with title bonus
-    const chunkText = chunk.text.toLowerCase();
+    console.log('📋 Structure query detected:', isStructureQuery);
     
-    queryWords.forEach(word => {
-      if (chunkText.includes(word.toLowerCase())) {
-        score += 1;
+    const results = [];
+    
+    materials.forEach(material => {
+      console.log(`🔍 Searching material: "${material.title}"`);
+      
+      // Always include document structure info for relevant materials
+      let titleScore = 0;
+      queryWords.forEach(word => {
+        if (material.title.toLowerCase().includes(word.toLowerCase())) {
+          titleScore += 15; // Higher bonus for title matches
+        }
+      });
+      
+      // If this is a structure query, prioritize the document outline
+      if (isStructureQuery && material.structure) {
+        console.log('📋 Using document structure for query');
+        
+        let structureText = `Document: ${material.title}\n\n`;
+        structureText += `Summary: ${material.structure.summary}\n\n`;
+        
+        if (material.structure.outline && material.structure.outline.length > 0) {
+          structureText += `Modules/Sections:\n`;
+          material.structure.outline.forEach((item, index) => {
+            structureText += `${index + 1}. ${item}\n`;
+          });
+          structureText += '\n';
+        }
+        
+        if (material.structure.keyTopics && material.structure.keyTopics.length > 0) {
+          structureText += `Key Topics Covered: ${material.structure.keyTopics.join(', ')}\n`;
+        }
+        
+        results.push({
+          text: structureText,
+          score: titleScore + 20, // High score for structure responses
+          materialTitle: material.title,
+          materialId: material._id,
+          type: 'structure',
+          chunkIndex: -1 // Indicates this is structure, not a chunk
+        });
       }
+      
+      // Also search through chunks for specific content
+      material.chunks.forEach((chunk, chunkIndex) => {
+        let score = titleScore;
+        const chunkText = chunk.text.toLowerCase();
+        
+        queryWords.forEach(word => {
+          if (chunkText.includes(word.toLowerCase())) {
+            score += 2; // Points for word matches in chunks
+          }
+        });
+        
+        // Bonus for section matches
+        if (chunk.section) {
+          queryWords.forEach(word => {
+            if (chunk.section.toLowerCase().includes(word.toLowerCase())) {
+              score += 5;
+            }
+          });
+        }
+        
+        if (score > 0) {
+          let displayText = chunk.text;
+          
+          // If this chunk has a section, prepend it
+          if (chunk.section && chunk.section !== 'Introduction') {
+            displayText = `From "${chunk.section}" section:\n\n${chunk.text}`;
+          }
+          
+          results.push({
+            text: displayText,
+            score: score,
+            materialTitle: material.title,
+            materialId: material._id,
+            type: 'chunk',
+            chunkIndex: chunkIndex,
+            section: chunk.section
+          });
+        }
+      });
     });
-    
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
-  });
-});
-    
-    // Add to results if any words found
-    if (score > 0) {
-      relevantChunks.push({
-        text: chunk.text,
-        score: score,
-        materialTitle: material.title,
-        materialId: material._id,
-        chunkIndex: chunkIndex
-      });
-    }
 
-    console.log(`🎯 Found ${relevantChunks.length} relevant chunks`);
+    console.log(`🎯 Found ${results.length} total results`);
     
-    const topChunks = relevantChunks
+    // Sort by score and take top results
+    const topResults = results
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
     
-    topChunks.forEach((chunk, index) => {
-      console.log(`🏆 Top chunk ${index + 1}: Score ${chunk.score}, from "${chunk.materialTitle}"`);
+    topResults.forEach((result, index) => {
+      console.log(`🏆 Result ${index + 1}: Score ${result.score}, Type: ${result.type}, from "${result.materialTitle}"`);
     });
     
-    return topChunks;
+    return topResults;
       
   } catch (error) {
     console.error('❌ Error searching course materials:', error);
@@ -4723,22 +5046,60 @@ materials.forEach(material => {
   }
 }
 
+function extractKeywords(text) {
+  if (!text) return [];
+
+  const stopWords = [
+    'the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'with',
+    'from', 'by', 'to', 'in', 'of', 'for', 'as', 'this', 'that', 'it', 'are',
+    'was', 'were', 'be', 'been', 'has', 'have', 'had', 'do', 'does', 'did',
+    'you', 'your', 'yours', 'we', 'our', 'ours', 'they', 'them', 'their',
+    'i', 'me', 'my', 'mine', 'he', 'she', 'him', 'her', 'his', 'hers'
+  ];
+
+  const words = text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, '') // Remove punctuation
+    .split(/\s+/)
+    .filter(word => word.length > 3 && !stopWords.includes(word));
+
+  const frequency = {};
+  for (const word of words) {
+    frequency[word] = (frequency[word] || 0) + 1;
+  }
+
+  return Object.entries(frequency)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([word]) => word);
+}
+
+
 function createTextChunks(text, chunkSize = 1000, overlap = 200) {
   const chunks = [];
   const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
   
   let currentChunk = '';
   let chunkIndex = 0;
+  let currentSection = 'Introduction'; // Default section
   
   for (let i = 0; i < sentences.length; i++) {
     const sentence = sentences[i].trim() + '.';
+    
+    // Try to detect section headers
+    if (sentence.length < 100 && 
+        (sentence.match(/^(chapter|module|section|part|\d+\.)/i) ||
+         sentence.match(/^[A-Z][^.]*[A-Z]/))) {
+      currentSection = sentence.replace('.', '');
+    }
     
     // If adding this sentence would exceed chunk size, save current chunk
     if (currentChunk.length + sentence.length > chunkSize && currentChunk.length > 0) {
       chunks.push({
         text: currentChunk.trim(),
         index: chunkIndex++,
-        keywords: extractKeywords(currentChunk)
+        keywords: extractKeywords(currentChunk),
+        section: currentSection
       });
       
       // Start new chunk with overlap
@@ -4755,19 +5116,115 @@ function createTextChunks(text, chunkSize = 1000, overlap = 200) {
     chunks.push({
       text: currentChunk.trim(),
       index: chunkIndex,
-      keywords: extractKeywords(currentChunk)
+      keywords: extractKeywords(currentChunk),
+      section: currentSection
     });
   }
   
   return chunks;
 }
 
-// Simple keyword extraction
-function extractKeywords(text) {
-  const words = text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
+async function analyzeDocumentStructure(content, title) {
+  try {
+    if (!openai) {
+      console.log('⚠️ OpenAI not available for document analysis');
+      return {
+        outline: ['Document content'],
+        keyTopics: ['General content'],
+        summary: 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    }
+
+    console.log('🧠 Analyzing document structure with AI...');
+    
+    // Limit content for analysis (OpenAI has token limits)
+    const analysisContent = content.length > 8000 ? content.substring(0, 8000) + '...' : content;
+    
+    const prompt = `Analyze this course/training document and provide:
+
+1. OUTLINE: List the main sections, modules, or chapters (max 10 items)
+2. KEY TOPICS: Important topics covered (max 8 items) 
+3. SUMMARY: Brief 2-3 sentence summary of what this document teaches
+
+Document Title: "${title}"
+Content: ${analysisContent}
+
+Respond in this exact JSON format:
+{
+  "outline": ["Module 1: Topic", "Module 2: Topic", ...],
+  "keyTopics": ["Topic 1", "Topic 2", ...],
+  "summary": "This document covers..."
+}`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 500,
+      temperature: 0.3
+    });
+
+    const response = completion.choices[0].message.content;
+    console.log('📋 AI analysis response:', response);
+    
+    try {
+      const analysis = JSON.parse(response);
+      return {
+        outline: analysis.outline || ['Document content'],
+        keyTopics: analysis.keyTopics || ['General content'],
+        summary: analysis.summary || 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    } catch (parseError) {
+      console.log('⚠️ Could not parse AI analysis, using fallback');
+      return {
+        outline: extractBasicOutline(content),
+        keyTopics: extractBasicTopics(content),
+        summary: 'Course material content available for reference.',
+        totalLength: content.length,
+        estimatedReadTime: Math.ceil(content.length / 1000)
+      };
+    }
+    
+  } catch (error) {
+    console.error('❌ Error analyzing document structure:', error);
+    return {
+      outline: extractBasicOutline(content),
+      keyTopics: extractBasicTopics(content),
+      summary: 'Course material content available for reference.',
+      totalLength: content.length,
+      estimatedReadTime: Math.ceil(content.length / 1000)
+    };
+  }
+}
+
+// Helper functions for basic structure extraction
+function extractBasicOutline(content) {
+  const lines = content.split('\n');
+  const outline = [];
+  
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    // Look for lines that might be headers (short lines, maybe with numbers)
+    if (trimmed.length > 5 && trimmed.length < 100) {
+      if (trimmed.match(/^(chapter|module|section|part|\d+\.)/i) ||
+          trimmed.match(/^[A-Z][^.]*[A-Z]/)) {
+        outline.push(trimmed);
+      }
+    }
+  });
+  
+  return outline.slice(0, 10); // Max 10 items
+}
+
+function extractBasicTopics(content) {
+  // Simple keyword extraction for topics
+  const words = content.toLowerCase()
+    .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
-    .filter(word => word.length > 3);
+    .filter(word => word.length > 4);
   
   const wordCount = {};
   words.forEach(word => {
@@ -4776,7 +5233,8 @@ function extractKeywords(text) {
   
   return Object.keys(wordCount)
     .sort((a, b) => wordCount[b] - wordCount[a])
-    .slice(0, 10);
+    .slice(0, 8)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1));
 }
 
 // Clean up old images (optional - run manually or via cron)
@@ -4826,6 +5284,7 @@ app.post('/api/admin/cleanup-images', authenticateAdmin, async (req, res) => {
     });
   }
 });
+
 
 // ADD THIS ROUTE TO YOUR server.js file after the other admin routes
 // (around line 2200, after the other admin coupon routes)
@@ -4936,6 +5395,178 @@ app.get('/api/admin/analytics', authenticateAdmin, async (req, res) => {
 });
 
 
+// TEMPORARY DEBUG ENDPOINT - ADD THIS HERE
+app.get('/api/debug/health', async (req, res) => {
+  const start = Date.now();
+  console.log('🩺 Health check started at:', new Date().toISOString());
+  
+  try {
+    // Test database connection speed
+    console.log('🔍 Testing database connection...');
+    const dbStart = Date.now();
+    const userCount = await User.countDocuments();
+    const dbTime = Date.now() - dbStart;
+    console.log(`📊 Database query took: ${dbTime}ms`);
+    
+    res.json({
+      totalTime: Date.now() - start,
+      database: {
+        connectionTime: dbTime,
+        userCount: userCount,
+        status: 'connected'
+      },
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Health check error:', error);
+    res.status(500).json({ 
+      error: error.message, 
+      totalTime: Date.now() - start,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+
+// COMPREHENSIVE DASHBOARD DEBUG ENDPOINT - REPLACE THE PREVIOUS ONE
+app.get('/api/debug/dashboard', async (req, res) => {
+  const results = {};
+  const overallStart = Date.now();
+  
+  try {
+    // Test 1: Dashboard stats (what your progress tracker calls)
+    console.log('🔍 Testing dashboard stats...');
+    const statsStart = Date.now();
+    const totalUsers = await User.countDocuments();
+    const paidUsers = await User.countDocuments({
+      'subscription.plan': { $in: ['monthly', 'yearly'] },
+      'subscription.status': 'active'
+    });
+    results.dashboardStats = {
+      time: Date.now() - statsStart,
+      totalUsers,
+      paidUsers
+    };
+
+    // Test 2: Life Goals (dashboard loads this)
+    console.log('🔍 Testing life goals...');
+    const goalsStart = Date.now();
+    const goalCount = await LifeGoal.countDocuments();
+    results.lifeGoals = {
+      time: Date.now() - goalsStart,
+      count: goalCount
+    };
+
+    // Test 3: Chat History (coaching sessions count)
+    console.log('🔍 Testing chat history...');
+    const chatStart = Date.now();
+    const chatCount = await Chat.countDocuments();
+    results.chatHistory = {
+      time: Date.now() - chatStart,
+      count: chatCount
+    };
+
+    // Test 4: Notifications (dashboard loads recent ones)
+    console.log('🔍 Testing notifications...');
+    const notifStart = Date.now();
+    const notifCount = await Notification.countDocuments();
+    results.notifications = {
+      time: Date.now() - notifStart,
+      count: notifCount
+    };
+
+    // Test 5: Messages (community posts count)
+    console.log('🔍 Testing messages...');
+    const msgStart = Date.now();
+    const msgCount = await Message.countDocuments();
+    results.messages = {
+      time: Date.now() - msgStart,
+      count: msgCount
+    };
+
+    // Test 6: Insights
+    console.log('🔍 Testing insights...');
+    const insightStart = Date.now();
+    const insightCount = await Insight.countDocuments();
+    results.insights = {
+      time: Date.now() - insightStart,
+      count: insightCount
+    };
+
+    // Test 7: Videos (if Video Vault is loaded)
+    console.log('🔍 Testing videos...');
+    const videoStart = Date.now();
+    const videoCount = await Video.countDocuments();
+    results.videos = {
+      time: Date.now() - videoStart,
+      count: videoCount
+    };
+
+    // Test 8: Daily Progress
+    console.log('🔍 Testing daily progress...');
+    const progressStart = Date.now();
+    const progressCount = await DailyProgress.countDocuments();
+    results.dailyProgress = {
+      time: Date.now() - progressStart,
+      count: progressCount
+    };
+
+    results.totalTime = Date.now() - overallStart;
+    results.timestamp = new Date().toISOString();
+    
+    console.log('📊 Complete dashboard debug results:', results);
+    res.json(results);
+    
+  } catch (error) {
+    console.error('❌ Dashboard debug error:', error);
+    res.status(500).json({ 
+      error: error.message,
+      results: results,
+      totalTime: Date.now() - overallStart
+    });
+  }
+});
+
+// INSIGHTS CLEANUP ENDPOINT - ADD THIS
+app.post('/api/debug/cleanup-insights', async (req, res) => {
+  try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    
+    // Delete insights older than 30 days
+    const result = await Insight.deleteMany({
+      createdAt: { $lt: thirtyDaysAgo }
+    });
+    
+    // Keep only latest 5 insights per user
+    const users = await User.find().select('_id');
+    let totalCleaned = 0;
+    
+    for (const user of users) {
+      const insights = await Insight.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .skip(5);
+      
+      if (insights.length > 0) {
+        await Insight.deleteMany({
+          _id: { $in: insights.map(i => i._id) }
+        });
+        totalCleaned += insights.length;
+      }
+    }
+    
+    const remaining = await Insight.countDocuments();
+    
+    res.json({
+      message: 'Insights cleaned up',
+      deletedOld: result.deletedCount,
+      deletedExcess: totalCleaned,
+      remainingInsights: remaining
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==========================================
 // COURSE MATERIALS API ROUTES
 // ==========================================
@@ -4974,7 +5605,17 @@ app.post('/api/course-materials/upload', authenticateToken, upload.single('file'
     }
     
     // Break content into searchable chunks
+  // Break content into searchable chunks
     const chunks = createTextChunks(extractedText);
+    console.log('🧩 Created', chunks.length, 'chunks from content');
+    
+    // NEW: Analyze document structure
+    const structure = await analyzeDocumentStructure(extractedText, title || file.originalname);
+    console.log('📋 Document structure analyzed:', {
+      outline: structure.outline.length,
+      topics: structure.keyTopics.length,
+      summary: structure.summary.substring(0, 100) + '...'
+    });
     
   // Create course material record  
 let validUserId;
@@ -4983,25 +5624,24 @@ if (req.user.userId === 'admin') {
 } else {
     validUserId = new mongoose.Types.ObjectId(req.user.userId);
 }
-
 const courseMaterial = new CourseMaterial({
     userId: validUserId,
+    title: title || file.originalname,
+    description: description || '',
+    content: extractedText,
+    originalFileName: file.originalname,
+    fileType: fileType,
+    tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
+    structure: structure,
+    chunks: chunks,
+    isActive: true
+});
 
-    userId: validUserId,
-      title: title || file.originalname,
-      description: description || '',
-      content: extractedText,
-      originalFileName: file.originalname,
-      fileType: fileType,
-      tags: tags ? tags.split(',').map(tag => tag.trim()) : [],
-      chunks: chunks
-    });
-    
-    await courseMaterial.save();
-    
-    console.log('✅ Course material saved:', courseMaterial.title);
-    
-    res.json({
+await courseMaterial.save();
+
+console.log('✅ Course material saved:', courseMaterial.title);
+
+res.json({
       message: 'Course material uploaded successfully',
       material: {
         id: courseMaterial._id,
