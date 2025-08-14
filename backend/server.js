@@ -5475,37 +5475,6 @@ app.post('/api/admin/test-course-materials-search', authenticateToken, async (re
   }
 });
 
-// Fix MongoDB index issue permanently
-app.get('/api/admin/fix-mongodb-indexes', async (req, res) => {
-  try {
-    console.log('🔧 Fixing MongoDB indexes...');
-    
-    // Drop the problematic id_1 index
-    try {
-      await User.collection.dropIndex('id_1');
-      console.log('✅ Dropped problematic id_1 index');
-    } catch (dropError) {
-      console.log('ℹ️ id_1 index not found or already dropped');
-    }
-    
-    // Ensure only the proper indexes exist
-    await User.collection.createIndex({ email: 1 }, { unique: true });
-    console.log('✅ Recreated email index');
-    
-    // List all indexes to confirm
-    const indexes = await User.collection.indexes();
-    console.log('📋 Current indexes:', indexes);
-    
-    res.json({ 
-      message: 'MongoDB indexes fixed successfully',
-      indexes: indexes
-    });
-    
-  } catch (error) {
-    console.error('❌ Index fix error:', error);
-    res.status(500).json({ error: 'Failed to fix indexes' });
-  }
-});
 
 // Start server
 app.listen(PORT, () => {
