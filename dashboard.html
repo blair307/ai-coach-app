@@ -1466,18 +1466,26 @@ initializeData() {
         return count;
     }
 
-    // Update display with better error handling
-    async updateDisplay() {
-        try {
-            console.log('🔄 Updating progress display...');
-            
-            // Always mark today as active when updating
-            const newDay = this.markActiveToday();
-            if (newDay) {
-                console.log('🎉 New active day recorded!');
-            }
-            
-            const coachingSessions = await this.getCoachingSessions();
+   // Update display with better error handling
+async updateDisplay() {
+    // Prevent concurrent updates
+    if (this.isUpdating) {
+        console.log('⏳ Update already in progress, skipping...');
+        return;
+    }
+    
+    this.isUpdating = true;
+    
+    try {
+        console.log('🔄 Updating progress display...');
+        
+        // Always mark today as active when updating
+        const newDay = this.markActiveToday();
+        if (newDay) {
+            console.log('🎉 New active day recorded!');
+        }
+        
+        const coachingSessions = await this.getCoachingSessions();
             const daysActive = this.getDaysActive();
             const communityPosts = await this.getCommunityPosts();
             const activeGoals = await this.getActiveGoals();
@@ -1526,28 +1534,38 @@ initializeData() {
             
         } catch (error) {
             console.error('❌ Error updating display:', error);
+        } finally {
+            this.isUpdating = false;
         }
     }
+    
+startTracking() {
+    // Prevent multiple intervals
+    if (this.updateInterval) {
+        clearInterval(this.updateInterval);
+    }
+    
+    // Update immediately
+    setTimeout(() => this.updateDisplay(), 1000);
+    
+    // Update every 30 seconds (store interval ID)
+    this.updateInterval = setInterval(() => this.updateDisplay(), 30000);
 
-    startTracking() {
-        // Update immediately
-        setTimeout(() => this.updateDisplay(), 1000);
-        
-        // Update every 30 seconds
-        setInterval(() => this.updateDisplay(), 30000);
-
-        // Update when page becomes visible (user switches back to tab)
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
+    // Update when page becomes visible (but prevent rapid updates)
+    if (!this.visibilityHandler) {
+        this.visibilityHandler = () => {
+            if (!document.hidden && !this.isUpdating) {
                 console.log('👀 Page became visible - checking for new day');
                 this.markActiveToday();
                 setTimeout(() => this.updateDisplay(), 1000);
             }
-        });
-
-        // Update when user performs actions
-        this.setupActivityListeners();
+        };
+        document.addEventListener('visibilitychange', this.visibilityHandler);
     }
+
+    // Update when user performs actions
+    this.setupActivityListeners();
+}
 
     // NEW: Track user activity to mark days as active
     setupActivityListeners() {
