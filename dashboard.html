@@ -1269,6 +1269,9 @@ class SimpleProgressTracker {
     constructor() {
         this.storageKey = 'eeh_simple_progress';
         this.activeDaysKey = 'eeh_active_days'; // Separate key for active days
+        this.cache = {};
+        this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        this.AUTO_UPDATE_INTERVAL = 2.5 * 60 * 1000; // 2.5 minutes
         this.initializeData();
         this.startTracking();
         console.log('✅ Fixed Progress Tracker initialized');
@@ -1343,7 +1346,25 @@ initializeData() {
         return false; // Day already tracked
     }
 
-    // Get coaching sessions from API
+   // Helper to check if cache is valid
+    isCacheValid(key) {
+        const cached = this.cache[key];
+        if (!cached) return false;
+        return (Date.now() - cached.timestamp) < this.CACHE_DURATION;
+    }
+
+    // Get coaching sessions from API (cached version)
+    async getCachedCoachingSessions() {
+        const cacheKey = 'coachingSessions';
+        if (this.isCacheValid(cacheKey)) {
+            return this.cache[cacheKey].data;
+        }
+        
+        const data = await this.getCoachingSessions();
+        this.cache[cacheKey] = { data, timestamp: Date.now() };
+        return data;
+    }
+
     async getCoachingSessions() {
         try {
             const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
@@ -1373,7 +1394,18 @@ initializeData() {
         }
     }
 
-    // Get community posts from API
+    // Get community posts from API (cached version)
+    async getCachedCommunityPosts() {
+        const cacheKey = 'communityPosts';
+        if (this.isCacheValid(cacheKey)) {
+            return this.cache[cacheKey].data;
+        }
+        
+        const data = await this.getCommunityPosts();
+        this.cache[cacheKey] = { data, timestamp: Date.now() };
+        return data;
+    }
+
     async getCommunityPosts() {
         try {
             const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
@@ -1426,7 +1458,18 @@ initializeData() {
         }
     }
 
-    // Get active goals from API
+   // Get active goals from API (cached version)
+    async getCachedActiveGoals() {
+        const cacheKey = 'activeGoals';
+        if (this.isCacheValid(cacheKey)) {
+            return this.cache[cacheKey].data;
+        }
+        
+        const data = await this.getActiveGoals();
+        this.cache[cacheKey] = { data, timestamp: Date.now() };
+        return data;
+    }
+
     async getActiveGoals() {
         try {
             const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
@@ -1470,7 +1513,7 @@ initializeData() {
         return count;
     }
 
-   // Update display with better error handling
+// Update display with better error handling
 async updateDisplay() {
     // Prevent concurrent updates
     if (this.isUpdating) {
@@ -1489,10 +1532,10 @@ async updateDisplay() {
             console.log('🎉 New active day recorded!');
         }
         
-        const coachingSessions = await this.getCoachingSessions();
+        const coachingSessions = await this.getCachedCoachingSessions();
             const daysActive = this.getDaysActive();
-            const communityPosts = await this.getCommunityPosts();
-            const activeGoals = await this.getActiveGoals();
+            const communityPosts = await this.getCachedCommunityPosts();
+            const activeGoals = await this.getCachedActiveGoals();
 
             console.log('📊 Progress numbers:', {
                 coachingSessions,
@@ -1552,8 +1595,8 @@ startTracking() {
     // Update immediately
     setTimeout(() => this.updateDisplay(), 1000);
     
-    // Update every 30 seconds (store interval ID)
-    this.updateInterval = setInterval(() => this.updateDisplay(), 30000);
+    // Update every 2.5 minutes instead of 30 seconds
+    this.updateInterval = setInterval(() => this.updateDisplay(), this.AUTO_UPDATE_INTERVAL);
 
     // Update when page becomes visible (but prevent rapid updates)
     if (!this.visibilityHandler) {
@@ -1567,38 +1610,15 @@ startTracking() {
         document.addEventListener('visibilitychange', this.visibilityHandler);
     }
 
-    // Update when user performs actions
-    this.setupActivityListeners();
+    // Activity listeners removed for less frequent updates
 }
 
-    // NEW: Track user activity to mark days as active
-    setupActivityListeners() {
-        // Track clicks anywhere on the page
-        document.addEventListener('click', () => {
-            this.markActiveToday();
-        });
+  
 
-        // Track form submissions
-        document.addEventListener('submit', () => {
-            this.markActiveToday();
-        });
-
-        // Track navigation
-        window.addEventListener('popstate', () => {
-            this.markActiveToday();
-        });
-
-        // Track when user types in inputs
-        document.addEventListener('input', () => {
-            this.markActiveToday();
-        });
-
-        console.log('👂 Activity listeners set up');
-    }
-
-    // Manual refresh
+   // Manual refresh
     async forceUpdate() {
         console.log('🔄 Force updating...');
+        this.cache = {}; // Clear cache
         this.markActiveToday();
         await this.updateDisplay();
     }
