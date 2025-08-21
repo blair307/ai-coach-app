@@ -355,13 +355,14 @@
             line-height: 1.4;
         }
 
-        /* CHAT AREA */
         .chat-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-        }
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    min-width: 0;
+    overflow: hidden;
+}
 
         /* CHAT HEADER - REMOVED */
         .chat-header {
@@ -495,14 +496,17 @@
         }
 
         .message-content {
-            margin-left: 3rem;
-            background: var(--surface);
-            padding: 1rem;
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--border);
-            position: relative;
-            transition: all 0.2s ease;
-        }
+    margin-left: 3rem;
+    background: var(--surface);
+    padding: 1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: all 0.2s ease;
+    max-width: calc(100% - 3rem);
+    box-sizing: border-box;
+    overflow: hidden;
+}
 
         .message-content p {
             margin: 0;
