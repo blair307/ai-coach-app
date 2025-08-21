@@ -1872,7 +1872,7 @@ if (message.image) {
             </div>
             <div class="message-content ${isOwnMessage ? 'own-message-content' : ''}">
                 ${imageHTML}
-                ${content ? `<p>${escapeHtml(content)}</p>` : ''}
+                ${content ? `<p>${makeLinksClickable(escapeHtml(content))}</p>` : ''}
                 <div class="message-actions">
                     ${actionButtons}
                 </div>
