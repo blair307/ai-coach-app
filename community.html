@@ -1890,7 +1890,11 @@ if (message.image) {
 } // ADD THIS CLOSING BRACE
         
           
-
+// Make URLs clickable
+function makeLinksClickable(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>');
+}
         // Load messages for a room
         async function loadMessages(roomId) {
             try {
