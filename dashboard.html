@@ -627,10 +627,10 @@ body {
 class ActivityTracker {
     constructor() {
         this.storageKey = 'eeh_user_activity';
-        this.maxActivities = 15; // Keep more activities for better display
+        this.maxActivities = 15;
         this.activities = this.loadActivities();
         this.startTracking();
-        console.log('✅ Enhanced Activity Tracker initialized');
+        console.log('Activity Tracker initialized (visual feed only)');
     }
 
     loadActivities() {
@@ -918,79 +918,11 @@ activityList.innerHTML = `
         this.addActivity('settings', 'Updated profile settings');
     }
 
-    async checkForRecentApiActivity() {
-        try {
-            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
-            if (!token) return;
-
-            const lastCheck = localStorage.getItem('eeh_last_activity_check');
-            const lastCheckTime = lastCheck ? new Date(lastCheck) : new Date(Date.now() - 24 * 60 * 60 * 1000);
-            
-            // Check for recent coaching activity
-            try {
-                const response = await fetch('https://api.eehcommunity.com/api/chat/history', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: AbortSignal.timeout(5000)
-                });
-                
-                if (response.ok) {
-                    const chatData = await response.json();
-                    const messages = chatData.messages || [];
-                    
-                    // Find recent user messages
-                    const recentUserMessages = messages.filter(msg => 
-                        msg.role === 'user' && 
-                        new Date(msg.timestamp || msg.createdAt) > lastCheckTime
-                    );
-                    
-                    if (recentUserMessages.length > 0) {
-                        const sessionLength = recentUserMessages.length > 5 ? 'long' : 
-                                            recentUserMessages.length > 2 ? 'medium' : 'short';
-                        this.addActivity('coaching', 'Had coaching session', { sessionLength });
-                    }
-                }
-            } catch (error) {
-                console.log('Could not check coaching activity:', error.message);
-            }
-
-            // Check for recent daily prompt responses
-            try {
-                const response = await fetch('https://api.eehcommunity.com/api/daily-prompt/history?limit=1', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    signal: AbortSignal.timeout(5000)
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    const responses = data.responses || [];
-                    
-                    if (responses.length > 0) {
-                        const latestResponse = responses[0];
-                        const responseTime = new Date(latestResponse.createdAt || latestResponse.updatedAt);
-                        
-                        if (responseTime > lastCheckTime) {
-                            this.addActivity('daily-prompt', 'Completed daily prompt', {
-                                wordCount: latestResponse.wordCount,
-                                mood: latestResponse.mood
-                            });
-                        }
-                    }
-                }
-            } catch (error) {
-                console.log('Could not check daily prompt activity:', error.message);
-            }
-
-            localStorage.setItem('eeh_last_activity_check', new Date().toISOString());
-
-        } catch (error) {
-            console.error('Error checking external activities:', error);
-        }
+   async checkForRecentApiActivity() {
+        // API calls now handled by SimpleProgressTracker
+        // This method just checks for pending activities from other pages
+        console.log('API activity checking delegated to SimpleProgressTracker');
+        return;
     }
 
     startTracking() {
@@ -1077,6 +1009,23 @@ activityList.innerHTML = `
                 }
             }
         });
+    }
+}
+
+        // COORDINATION FUNCTION - Links both trackers
+function coordinateTrackers() {
+    // When progress tracker updates, also refresh activity display
+    if (window.progressTracker && window.activityTracker) {
+        const originalUpdate = window.progressTracker.updateDisplay;
+        window.progressTracker.updateDisplay = async function() {
+            await originalUpdate.call(this);
+            // Also refresh activity display when progress updates
+            if (window.activityTracker) {
+                window.activityTracker.updateActivityDisplay();
+            }
+        };
+        
+        console.log('Trackers coordinated successfully');
     }
 }
 
@@ -1200,17 +1149,8 @@ function initializeActivityTracker() {
     // Apply CSS fix for progress alignment
     addProgressAlignmentFix();
     
-    // CHECK: If this is a brand new account (no activity data), start fresh
-    const existingActivityData = localStorage.getItem('eeh_user_activity');
-    const existingActiveDays = localStorage.getItem('eeh_active_days');
-    
-    // If no existing data, this might be a new account
-    if (!existingActivityData && !existingActiveDays) {
-        console.log('🆕 New account detected - starting with clean slate');
-        localStorage.removeItem('eeh_active_days');
-    }
-    
-    // Initialize activity tracker (but don't let it add fake historical data)
+    // Initialize activity tracker for visual feed only
+    // SimpleProgressTracker handles the numbers and API calls
     window.activityTracker = new ActivityTracker();
     
     // Make tracking functions globally available
@@ -1223,44 +1163,87 @@ function initializeActivityTracker() {
     console.log('✅ Activity tracker initialized with safeguards');
 }
 
-// Update the main initialization to include activity tracker
+// PHASED LOADING + OPTIMIZED INTERVALS
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Dashboard loading...');
+    console.log('🚀 Dashboard starting phased loading...');
     
     try {
-
-         initializeProfileDropdown();
+        // PHASE 1: Instant UI (0ms delay)
+        console.log('Phase 1: UI initialization');
+        initializeProfileDropdown();
         
-        // Initialize progress tracker
-        window.progressTracker = new SimpleProgressTracker();
+        // PHASE 2: Core tracking (300ms delay - non-blocking)
+        setTimeout(() => {
+            console.log('Phase 2: Core tracking');
+            window.progressTracker = new SimpleProgressTracker();
+            
+            // Make functions globally available
+            window.updateProgress = () => window.progressTracker.forceUpdate();
+            window.getProgressSummary = () => window.progressTracker.getSummary();
+            window.simulateActivity = simulateActivity;
+        }, 300);
         
-        // Initialize activity tracker and fixes
-        setTimeout(initializeActivityTracker, 500);
+        // PHASE 3: Activity tracker (800ms delay)
+        setTimeout(() => {
+            console.log('Phase 3: Activity tracker');
+            initializeActivityTracker();
+            
+            // Coordinate both trackers
+            setTimeout(coordinateTrackers, 500);
+        }, 800);
         
-        // Make functions globally available
-        window.updateProgress = () => window.progressTracker.forceUpdate();
-        window.getProgressSummary = () => window.progressTracker.getSummary();
-        window.simulateActivity = simulateActivity;
+        // PHASE 4: Timer and calendar (1000ms delay)  
+        setTimeout(() => {
+            console.log('Phase 4: Timer and calendar');
+            initializeTimerAndCalendar();
+        }, 1000);
         
-        // Initialize timer and calendar
-        setTimeout(initializeTimerAndCalendar, 800);
+        // PHASE 5: Dashboard content (staggered loading)
+        setTimeout(() => {
+            console.log('Phase 5: Dashboard goals');
+            loadDashboardGoals();
+        }, 1500);
         
-        // Load notifications and other components
-        updateNotificationCount();
-        setInterval(updateNotificationCount, 30000);
+        setTimeout(() => {
+            console.log('Phase 6: Dashboard notifications');
+            loadDashboardNotifications();
+        }, 2200);
         
-        // Load dashboard goals, notifications, and insights
-setTimeout(loadDashboardGoals, 1500);
-setTimeout(loadDashboardNotifications, 2000);
-setTimeout(loadDashboardInsights, 2500);
-
-console.log('✅ Dashboard initialized successfully');
-
-// Set up auto-refresh for insights every 2 minutes
-setInterval(loadDashboardInsights, 120000);
+        setTimeout(() => {
+            console.log('Phase 7: Dashboard insights');
+            loadDashboardInsights();
+        }, 2800);
+        
+        // PHASE 6: Notification count (3000ms delay)
+        setTimeout(() => {
+            console.log('Phase 8: Notification count');
+            updateNotificationCount();
+        }, 3000);
+        
+        // OPTIMIZED INTERVALS (start after 5 seconds)
+        setTimeout(() => {
+            console.log('Starting optimized intervals...');
+            
+            // Notification count every 10 minutes (was 30 seconds)
+            setInterval(updateNotificationCount, 10 * 60 * 1000);
+            
+            // Insights refresh every 15 minutes (was 2 minutes)  
+            setInterval(loadDashboardInsights, 15 * 60 * 1000);
+            
+            // Progress refresh every 5 minutes (add this)
+            setInterval(() => {
+                if (window.progressTracker) {
+                    window.progressTracker.forceUpdate();
+                }
+            }, 5 * 60 * 1000);
+            
+            console.log('✅ All intervals optimized and started');
+        }, 5000);
+        
+        console.log('✅ Dashboard phased loading initiated');
         
     } catch (error) {
-        console.error('❌ Error initializing dashboard:', error);
+        console.error('⌚ Error initializing dashboard:', error);
     }
 });
 // FIXED DAYS ACTIVE TRACKER - Replace the existing SimpleProgressTracker class
@@ -1268,13 +1251,13 @@ setInterval(loadDashboardInsights, 120000);
 class SimpleProgressTracker {
     constructor() {
         this.storageKey = 'eeh_simple_progress';
-        this.activeDaysKey = 'eeh_active_days'; // Separate key for active days
+        this.activeDaysKey = 'eeh_active_days';
         this.cache = {};
         this.CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-        this.AUTO_UPDATE_INTERVAL = 2.5 * 60 * 1000; // 2.5 minutes
+        this.AUTO_UPDATE_INTERVAL = 5 * 60 * 1000; // Changed to 5 minutes
         this.initializeData();
         this.startTracking();
-        console.log('✅ Fixed Progress Tracker initialized');
+        console.log('Progress Tracker initialized (numbers only)');
     }
 
 initializeData() {
