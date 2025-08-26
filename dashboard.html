@@ -1406,7 +1406,57 @@ initializeData() {
         return data;
     }
 
-    
+    async getCommunityPosts() {
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
+            if (!token) return 0;
+
+            // Get user info
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const userId = payload.userId;
+
+            // Get rooms first
+            const roomsResponse = await fetch('https://api.eehcommunity.com/api/rooms', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                signal: AbortSignal.timeout(5000)
+            });
+            
+            if (!roomsResponse.ok) return 0;
+            
+            const rooms = await roomsResponse.json();
+            let totalPosts = 0;
+            
+            // Check first 3 rooms for user messages
+            for (const room of rooms.slice(0, 3)) {
+                try {
+                    const messagesResponse = await fetch(`https://api.eehcommunity.com/api/rooms/${room._id}/messages`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    
+                    if (messagesResponse.ok) {
+                        const messages = await messagesResponse.json();
+                        const userMessages = messages.filter(msg => msg.userId === userId).length;
+                        totalPosts += userMessages;
+                    }
+                } catch (roomError) {
+                    // Skip this room
+                }
+            }
+            
+            console.log('💬 Community posts from API:', totalPosts);
+            return totalPosts;
+        } catch (error) {
+            console.log('Error getting community posts:', error.message);
+            return 0;
+        }
+    }
 
    // Get active goals from API (cached version)
     async getCachedActiveGoals() {
@@ -1482,58 +1532,50 @@ async updateDisplay() {
             console.log('🎉 New active day recorded!');
         }
         
-               // Get all the small numbers in one cheap request
-        const token = localStorage.getItem('authToken');
-        let daysActive = 0, goalsCount = 0, unreadNotifications = 0, communityPosts = 0;
+        const coachingSessions = await this.getCachedCoachingSessions();
+            const daysActive = this.getDaysActive();
+            const communityPosts = await this.getCachedCommunityPosts();
+            const activeGoals = await this.getCachedActiveGoals();
 
-        if (token) {
-            const res = await fetch('https://api.eehcommunity.com/api/dashboard/summary', {
-                headers: { 'Authorization': `Bearer ${token}` }
+            console.log('📊 Progress numbers:', {
+                coachingSessions,
+                daysActive, 
+                communityPosts,
+                activeGoals
             });
-            if (res.ok) {
-                const s = await res.json();
-                daysActive = s.daysActive || 0;
-                goalsCount = s.goalsCount || 0;
-                unreadNotifications = s.unreadNotifications || 0;
-                communityPosts = s.communityPosts || 0;
-            }
-        }
 
-        // Update the three dashboard stat cards
-        const elements = {
-            activeDaysCount: daysActive,
-            communityPostsCount: communityPosts,
-            activeGoalsCount: goalsCount
-        };
+            // Update DOM with animation
+            const elements = {
+                coachingSessionsCount: coachingSessions,
+                activeDaysCount: daysActive,
+                communityPostsCount: communityPosts,
+                activeGoalsCount: activeGoals
+            };
 
-        for (const [id, value] of Object.entries(elements)) {
-            const element = document.getElementById(id);
-            if (element) {
-                const currentValue = parseInt(element.textContent) || 0;
-                if (currentValue !== value) {
-                    element.style.transform = 'scale(1.1)';
-                    element.style.transition = 'all 0.3s ease';
-                    setTimeout(() => {
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    // Only animate if the value changed
+                    const currentValue = parseInt(element.textContent) || 0;
+                    if (currentValue !== value) {
+                        element.style.transform = 'scale(1.1)';
+                        element.style.transition = 'all 0.3s ease';
+                        
+                        setTimeout(() => {
+                            element.textContent = value;
+                            element.style.transform = 'scale(1)';
+                        }, 150);
+                    } else {
                         element.textContent = value;
-                        element.style.transform = 'scale(1)';
-                    }, 150);
-                } else {
-                    element.textContent = value;
+                    }
                 }
             }
-        }
 
-        // Also set the small bell counter in the header if present
-        const headerBadge = document.getElementById('headerNotificationCount');
-        if (headerBadge && typeof unreadNotifications === 'number') {
-            headerBadge.textContent = unreadNotifications;
-        }
-
-        // Save light cache (optional)
-        this.data.communityPosts = communityPosts;
-        this.data.activeGoals = goalsCount;
-        this.save();
-
+            // Update stored values
+            this.data.coachingSessions = coachingSessions;
+            this.data.communityPosts = communityPosts;
+            this.data.activeGoals = activeGoals;
+            this.save();
 
             console.log('✅ Progress display updated - Days Active:', daysActive);
             
