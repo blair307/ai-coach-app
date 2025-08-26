@@ -357,8 +357,6 @@ async function createDatabaseIndexes() {
     
     // Message indexes
     await Message.collection.createIndex({ userId: 1, createdAt: -1 });
-    await Message.collection.createIndex({ roomId: 1, createdAt: -1 });
-
     console.log('✅ Message indexes created');
     
     console.log('🚀 All database indexes created successfully - queries should be much faster!');
@@ -2531,37 +2529,6 @@ app.get('/api/notifications/recent', authenticateToken, async (req, res) => {
     res.json([]);
   }
 });
-
-// New summary endpoint for dashboard (inserted above Rooms routes)
-app.get('/api/dashboard/summary', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.userId;
-
-    // 1) Days active (from User.daysActive array)
-    const user = await User.findById(userId).select('daysActive');
-    const daysActive = user?.daysActive?.length || 0;
-
-    // 2) Total goals for this user
-    const goalsCount = await LifeGoal.countDocuments({ userId });
-
-    // 3) Unread notifications
-    const unreadNotifications = await Notification.countDocuments({ userId, read: false });
-
-    // 4) Total community posts by this user
-    const communityPosts = await Message.countDocuments({ userId });
-
-    res.json({
-      daysActive,
-      goalsCount,
-      unreadNotifications,
-      communityPosts
-    });
-  } catch (error) {
-    console.error('Error in dashboard summary:', error);
-    res.status(500).json({ error: 'Failed to load dashboard summary' });
-  }
-});
-
 
 // ==========================================
 // ENHANCED CHAT ROOMS API ROUTES
