@@ -1517,7 +1517,9 @@
         let currentUser = null;
         let rooms = [];
         let isInitialized = false;
-        let currentReplyTo = null;
+       let currentReplyTo = null;
+        let messageCache = {}; // Cache messages per room
+        let lastScrollPositions = {}; // Remember scroll positions
 
         // Local message storage for permanent deletions
         let deletedMessages = new Set();
@@ -1784,9 +1786,15 @@ if (emojiButton) emojiButton.disabled = false;
 const imageButton = document.getElementById('imageBtn');
 if (imageButton) imageButton.disabled = false;
 
-await loadMessages(roomId);
+// Save current scroll position before switching
+                const messagesContainer = document.getElementById('communityMessages');
+                if (messagesContainer && currentRoomId) {
+                    lastScrollPositions[currentRoomId] = messagesContainer.scrollTop;
+                }
 
-                console.log('✅ Successfully switched to room:', room.name);
+                await loadMessages(roomId);
+
+                console.log('Successfully switched to room:', room.name);
             } catch (error) {
                 console.error('❌ Error switching rooms:', error);
                 showErrorMessage('Failed to switch rooms. Please try again.');
@@ -1899,7 +1907,8 @@ function makeLinksClickable(text) {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     return text.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>');
 }
-        // Load messages for a room
+
+        // Load messages for a room with caching
         async function loadMessages(roomId) {
             try {
                 const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
@@ -1907,9 +1916,23 @@ function makeLinksClickable(text) {
                     throw new Error('No authentication token');
                 }
 
-                console.log('📨 Loading messages for room:', roomId);
+                console.log('Loading messages for room:', roomId);
 
                 const messagesContainer = document.getElementById('communityMessages');
+                
+                // Check cache first
+                if (messageCache[roomId]) {
+                    console.log('Using cached messages for', roomId);
+                    displayThreadedMessages(messageCache[roomId]);
+                    // Restore scroll position
+                    if (lastScrollPositions[roomId]) {
+                        setTimeout(() => {
+                            messagesContainer.scrollTop = lastScrollPositions[roomId];
+                        }, 100);
+                    }
+                    return;
+                }
+
                 if (messagesContainer) {
                     messagesContainer.innerHTML = `
                         <div class="welcome-message">
@@ -1936,15 +1959,18 @@ function makeLinksClickable(text) {
                 }
 
                 const messages = await response.json();
-                console.log('💬 Loaded messages for room:', roomId, {
+                console.log('Loaded messages for room:', roomId, {
                     total: messages.length,
                     replies: messages.filter(m => m.replyTo).length
                 });
                 
+                // Cache the messages
+                messageCache[roomId] = messages;
+                
                 displayThreadedMessages(messages);
                 
             } catch (error) {
-                console.error('❌ Error loading messages:', error);
+                console.error('Error loading messages:', error);
                 displayThreadedMessages([]);
             }
         }
@@ -2195,12 +2221,14 @@ if (preview) preview.style.display = 'none';
 if (fileInput) fileInput.value = '';
 cancelReply();
 
+                // Add message to UI immediately instead of full reload
+                addMessageToUI(newMessage);
+                
                 if (currentReplyTo) {
-                    showToast('✅ Reply sent! Will appear under original message.', 'success');
+                    showToast('Reply sent!', 'success');
+                } else {
+                    showToast('Message sent!', 'success');
                 }
-
-                // Reload messages to show the new threaded structure
-                await loadMessages(currentRoomId);
 
             } catch (error) {
                 console.error('❌ Error sending message:', error);
@@ -2269,12 +2297,10 @@ cancelReply();
                         showToast('✅ Message permanently deleted!', 'success');
                     }
 
-                    // Refresh messages to show updated state
-                    setTimeout(() => {
-                        if (currentRoomId) {
-                            loadMessages(currentRoomId);
-                        }
-                    }, 1000);
+                   // Clear cache so next load gets fresh data
+                    if (messageCache[currentRoomId]) {
+                        delete messageCache[currentRoomId];
+                    }
 
                 } else {
                     throw new Error(data.message || `Server error: ${response.status}`);
@@ -2726,6 +2752,30 @@ if (window.communityAutoRefresh) {
 // Auto-refresh disabled temporarily for debugging
 console.log('🛑 Auto-refresh disabled to prevent loops');
 
+// Add single message to UI without full reload
+        function addMessageToUI(message) {
+            const messagesContainer = document.getElementById('communityMessages');
+            if (!messagesContainer) return;
+            
+            // Remove welcome message if it exists
+            const welcomeMsg = messagesContainer.querySelector('.welcome-message');
+            if (welcomeMsg) {
+                welcomeMsg.remove();
+            }
+            
+            const messageElement = createMessageElement(message);
+            messagesContainer.appendChild(messageElement);
+            
+            // Smooth scroll to bottom
+            messagesContainer.scrollTo({
+                top: messagesContainer.scrollHeight,
+                behavior: 'smooth'
+            });
+        }
+
+        // Export functions for global access
+        window.initializeCommunity = initializeCommunity;
+        
         // Export functions for global access
         window.initializeCommunity = initializeCommunity;
         window.retryInitialization = retryInitialization;
