@@ -807,7 +807,7 @@
 const API_BASE_URL = 'https://api.eehcommunity.com';
 let currentPrompt = null;
 let currentResponse = null;
-let selectedEmotion = 'content';
+let selectedEmotion = null;
 let responseStartTime = null;
 
 // Initialize page
@@ -820,7 +820,10 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupEmotionSelector() {
     document.querySelectorAll('.mood-option').forEach(option => {
         option.addEventListener('click', function() {
-            console.log('🎭 Emotion clicked:', this.dataset.emotion);
+            console.log('Emotion clicked:', this.dataset.emotion);
+            
+            // Check if this option is already selected
+            const wasSelected = this.classList.contains('selected');
             
             // Reset all options to default style
             document.querySelectorAll('.mood-option').forEach(opt => {
@@ -830,24 +833,25 @@ function setupEmotionSelector() {
                 opt.style.borderColor = '#e2e8f0';
             });
             
-            // Check if clicking the same option (to unselect)
-            if (selectedEmotion === this.dataset.emotion) {
-                selectedEmotion = 'content'; // Reset to default
-                console.log('🔄 Emotion unselected, reset to default: content');
-            } else {
-                // Select the new option
+            if (!wasSelected) {
+                // Select the clicked option
                 this.classList.add('selected');
                 this.style.background = '#2696FE';
                 this.style.color = 'white';
                 this.style.borderColor = '#2696FE';
                 selectedEmotion = this.dataset.emotion;
-                console.log('✅ Selected emotion set to:', selectedEmotion);
+                console.log('Selected emotion set to:', selectedEmotion);
+            } else {
+                // Option was already selected, so unselect it
+                selectedEmotion = null;
+                console.log('Emotion unselected');
             }
         });
     });
     
-    console.log('🎯 Emotion selector initialized with', document.querySelectorAll('.mood-option').length, 'options');
+    console.log('Emotion selector initialized with', document.querySelectorAll('.mood-option').length, 'options');
 }
+    
 async function initializePage() {
     try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('authToken');
