@@ -764,7 +764,8 @@ async function updateUserStreak(userId) {
 // Helper function to get next prompt
 async function getNextPrompt() {
   try {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+
     
     const availablePrompts = await DailyPrompt.find({
       isActive: true,
