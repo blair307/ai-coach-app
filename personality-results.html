@@ -1608,38 +1608,62 @@ async function captureCharts() {
     const images = {};
     
     try {
-        // Capture pie chart
+        // Capture pie chart - FIXED VERSION
         const pieChartCanvas = document.getElementById('pieChart');
-        if (pieChartCanvas) {
-            const pieChartContainer = pieChartCanvas.closest('.chart-container');
-            const pieChartImage = await html2canvas(pieChartContainer, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                width: 400,
-                height: 400
-            });
-            images.pieChart = pieChartImage.toDataURL('image/png');
+        if (pieChartCanvas && pieChart) {
+            // Method 1: Direct canvas capture (most reliable for Chart.js)
+            try {
+                images.pieChart = pieChartCanvas.toDataURL('image/png', 1.0);
+                console.log('✅ Pie chart captured via canvas.toDataURL');
+            } catch (canvasError) {
+                console.log('⚠️ Canvas method failed, trying html2canvas...');
+                
+                // Method 2: html2canvas fallback with optimized settings
+                const pieChartContainer = pieChartCanvas.closest('.chart-container');
+                const pieChartImage = await html2canvas(pieChartContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 1,
+                    useCORS: true,
+                    allowTaint: true,
+                    width: 400,
+                    height: 400
+                });
+                images.pieChart = pieChartImage.toDataURL('image/png');
+            }
         }
         
-        // Capture radar chart
+        // Capture radar chart - FIXED VERSION
         const radarChartCanvas = document.getElementById('radarChart');
-        if (radarChartCanvas) {
-            const radarChartContainer = radarChartCanvas.closest('.chart-container');
-            const radarChartImage = await html2canvas(radarChartContainer, {
-                backgroundColor: '#ffffff',
-                scale: 2,
-                width: 400,
-                height: 400
-            });
-            images.radarChart = radarChartImage.toDataURL('image/png');
+        if (radarChartCanvas && radarChart) {
+            // Method 1: Direct canvas capture (most reliable for Chart.js)
+            try {
+                images.radarChart = radarChartCanvas.toDataURL('image/png', 1.0);
+                console.log('✅ Radar chart captured via canvas.toDataURL');
+            } catch (canvasError) {
+                console.log('⚠️ Canvas method failed, trying html2canvas...');
+                
+                // Method 2: html2canvas fallback with optimized settings
+                const radarChartContainer = radarChartCanvas.closest('.chart-container');
+                const radarChartImage = await html2canvas(radarChartContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 1,
+                    useCORS: true,
+                    allowTaint: true,
+                    width: 400,
+                    height: 400
+                });
+                images.radarChart = radarChartImage.toDataURL('image/png');
+            }
         }
+        
     } catch (error) {
-        console.error('Error capturing charts:', error);
+        console.error('❌ Error capturing charts:', error);
+        images.pieChart = null;
+        images.radarChart = null;
     }
     
     return images;
 }
-
 function createPDFDefinition(resultsData, chartImages = {}) {
     const completionDate = new Date(resultsData.completedAt).toLocaleDateString('en-US', {
         year: 'numeric',
