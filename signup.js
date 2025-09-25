@@ -154,28 +154,15 @@ switch (coupon.type) {
         showCouponMessage('🎉 Coupon applied! Your account is now completely FREE!', 'success');
         break;
         
-    case 'first_month_free':
-        applyOneMonthFree();
-        showCouponMessage('🎉 One month free applied! First month is FREE!', 'success');
-        break;
-        
-    case 'six_months_free':
-        applySixMonthsFree();
-        showCouponMessage('🎉 Six months free applied! First 6 months are FREE!', 'success');
-        break;
-        
-    case 'test_discount':
-        applyTestDiscount();
-        showCouponMessage('🎉 Test discount applied! Payment reduced to $1 for testing!', 'success');
-        break;
-        
     case 'standard_discount':
         // Handle any admin-created discount coupons
+        applyCustomDiscount(coupon);
         showCouponMessage(`🎉 Coupon applied! ${coupon.description}`, 'success');
         break;
         
     default:
         // For any other coupon type, just show the description
+        applyCustomDiscount(coupon);
         showCouponMessage(`🎉 Coupon applied! ${coupon.description}`, 'success');
         break;
 }
@@ -385,6 +372,32 @@ function showCouponMessage(message, type) {
     couponMessage.style.display = 'block';
     couponMessage.style.color = type === 'success' ? '#10b981' : '#ef4444';
     couponMessage.style.fontWeight = '600';
+}
+
+// Function to apply custom discount (replaces hardcoded ones)
+function applyCustomDiscount(coupon) {
+    // Update pricing display
+    const originalPrices = document.querySelectorAll('.original-price');
+    const discountedPrices = document.querySelectorAll('.discounted-price');
+    
+    // Show discount on pricing
+    originalPrices.forEach(price => {
+        price.style.textDecoration = 'line-through';
+        price.style.opacity = '0.7';
+    });
+    
+    discountedPrices.forEach(price => {
+        price.style.display = 'inline';
+        price.style.color = '#10b981';
+        price.style.fontWeight = 'bold';
+        price.textContent = coupon.description;
+    });
+    
+    // Update submit button text
+    document.getElementById('submitButtonText').textContent = `Start Free Trial`;
+    
+    // Show discount notice using the actual coupon description
+    showDiscountNotice('customDiscountNotice', '🎉 Discount Applied!', coupon.description);
 }
 
 // Validate signup form
