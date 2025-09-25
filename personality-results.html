@@ -1608,58 +1608,33 @@ async function captureCharts() {
     const images = {};
     
     try {
-        // Capture pie chart - FIXED VERSION
+        // Capture pie chart
         const pieChartCanvas = document.getElementById('pieChart');
-        if (pieChartCanvas && pieChart) {
-            // Method 1: Direct canvas capture (most reliable for Chart.js)
-            try {
-                images.pieChart = pieChartCanvas.toDataURL('image/png', 1.0);
-                console.log('✅ Pie chart captured via canvas.toDataURL');
-            } catch (canvasError) {
-                console.log('⚠️ Canvas method failed, trying html2canvas...');
-                
-                // Method 2: html2canvas fallback with optimized settings
-                const pieChartContainer = pieChartCanvas.closest('.chart-container');
-                const pieChartImage = await html2canvas(pieChartContainer, {
-                    backgroundColor: '#ffffff',
-                    scale: 1,
-                    useCORS: true,
-                    allowTaint: true,
-                    width: 400,
-                    height: 400
-                });
-                images.pieChart = pieChartImage.toDataURL('image/png');
-            }
+        if (pieChartCanvas) {
+            const pieChartContainer = pieChartCanvas.closest('.chart-container');
+            const pieChartImage = await html2canvas(pieChartContainer, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                width: 400,
+                height: 400
+            });
+            images.pieChart = pieChartImage.toDataURL('image/png');
         }
         
-        // Capture radar chart - FIXED VERSION
+        // Capture radar chart
         const radarChartCanvas = document.getElementById('radarChart');
-        if (radarChartCanvas && radarChart) {
-            // Method 1: Direct canvas capture (most reliable for Chart.js)
-            try {
-                images.radarChart = radarChartCanvas.toDataURL('image/png', 1.0);
-                console.log('✅ Radar chart captured via canvas.toDataURL');
-            } catch (canvasError) {
-                console.log('⚠️ Canvas method failed, trying html2canvas...');
-                
-                // Method 2: html2canvas fallback with optimized settings
-                const radarChartContainer = radarChartCanvas.closest('.chart-container');
-                const radarChartImage = await html2canvas(radarChartContainer, {
-                    backgroundColor: '#ffffff',
-                    scale: 1,
-                    useCORS: true,
-                    allowTaint: true,
-                    width: 400,
-                    height: 400
-                });
-                images.radarChart = radarChartImage.toDataURL('image/png');
-            }
+        if (radarChartCanvas) {
+            const radarChartContainer = radarChartCanvas.closest('.chart-container');
+            const radarChartImage = await html2canvas(radarChartContainer, {
+                backgroundColor: '#ffffff',
+                scale: 2,
+                width: 400,
+                height: 400
+            });
+            images.radarChart = radarChartImage.toDataURL('image/png');
         }
-        
     } catch (error) {
-        console.error('❌ Error capturing charts:', error);
-        images.pieChart = null;
-        images.radarChart = null;
+        console.error('Error capturing charts:', error);
     }
     
     return images;
@@ -1763,75 +1738,35 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             };
         }),
 
-       // Charts Section - NEW PAGE WITH BETTER ERROR HANDLING
+        // Charts Section - NEW PAGE
         {
             text: 'Visual Analysis',
             style: 'header',
             pageBreak: 'before',
             margin: [0, 40, 0, 20]
-        }
-    ];
-
-    // ADD PIE CHART with fallback
-    if (chartImages.pieChart) {
-        content.push({
+        },
+        ...(chartImages.pieChart ? [{
             text: 'Personality Type Distribution',
             style: 'chartTitle',
             margin: [0, 0, 0, 10]
-        });
-        content.push({
+        }, {
             image: chartImages.pieChart,
-            width: 400,
+            width: 350,
             alignment: 'center',
             margin: [0, 0, 0, 30]
-        });
-    } else {
-        // Fallback if chart capture failed
-        content.push({
-            text: 'Personality Type Distribution',
-            style: 'chartTitle',
-            margin: [0, 0, 0, 10]
-        });
-        content.push({
-            text: '(Chart visualization unavailable - please view online results for charts)',
-            style: 'chartFallback',
-            alignment: 'center',
-            margin: [0, 20, 0, 30]
-        });
-    }
-
-    // ADD RADAR CHART with fallback
-    if (chartImages.radarChart) {
-        content.push({
-            text: 'Quadrant Analysis',
-            style: 'chartTitle',
-            pageBreak: 'before',
-            margin: [0, 40, 0, 10]
-        });
-        content.push({
-            image: chartImages.radarChart,
-            width: 400,
-            alignment: 'center',
-            margin: [0, 0, 0, 30]
-        });
-    } else {
-        // Fallback if chart capture failed
-        content.push({
-            text: 'Quadrant Analysis',
-            style: 'chartTitle',
-            pageBreak: 'before',
-            margin: [0, 40, 0, 10]
-        });
-        content.push({
-            text: '(Chart visualization unavailable - please view online results for charts)',
-            style: 'chartFallback',
-            alignment: 'center',
-            margin: [0, 20, 0, 30]
-        });
-    }
-
-    // Add detailed analysis for each top personality type - EACH ON NEW PAGE
-    resultsData.topThree.forEach(([typeName, score], index) => {
+        }] : []),
+       ...(chartImages.radarChart ? [{
+    text: 'Quadrant Analysis',
+    style: 'chartTitle',
+    pageBreak: 'before',
+    margin: [0, 40, 0, 10]
+}, {
+    image: chartImages.radarChart,
+    width: 350,
+    alignment: 'center',
+    margin: [0, 0, 0, 30]
+}] : []),
+    ];
 
     // Add detailed analysis for each top personality type - EACH ON NEW PAGE
     resultsData.topThree.forEach(([typeName, score], index) => {
@@ -2063,11 +1998,6 @@ function createPDFDefinition(resultsData, chartImages = {}) {
             },
             bold: {
                 bold: true
-            },
-            chartFallback: {
-                fontSize: 10,
-                color: '#6b7280',
-                italics: true
             }
         },
         defaultStyle: {
